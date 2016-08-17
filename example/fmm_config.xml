@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<fmm_config>
+    <input>
+        <ubodt>
+            <file>ubodt.txt</file>
+            <nhash>231</nhash>
+            <multiplier>30</multiplier>
+        </ubodt>
+        <network>
+            <file>data/edges.shp</file>
+            <id>id</id>
+        </network>
+        <gps>
+            <file>data/trips.shp</file>
+            <id>id</id>
+        </gps>
+    </input>
+    <parameters>
+        <k>4</k>
+        <r>0.4</r>
+        <pf>0</pf>
+        <gps_error>0.5</gps_error>
+    </parameters>
+    <output>
+        <mode>2</mode>
+        <file>mr.txt</file>
+    </output>
+</fmm_config>
