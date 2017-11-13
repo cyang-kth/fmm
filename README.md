@@ -44,12 +44,10 @@ The process will firstly creates executable files will be generated under `dist`
 
 Then it will copy the executable files into the `~/bin` path, which should be added to the `PATH` variable by default. 
 
-Manually add the `~/bin` path to `$PATH` variable by:
+To manually add the `~/bin` path to `$PATH` variable, open a new terminal and run:
 
-1. Open the file `~/.bashrc`:
-2. Appending this line to end `export PATH=$PATH:$HOME/bin` 
-3. Open a terminal and run `source ~/.bashrc` to update the PATH variable
-4. In a terminal, run `echo $PATH` to verify that `$HOME/bin` folder is added to the `$PATH`. 
+    echo 'export PATH=$PATH:$HOME/bin' >> ~/.bashrc
+    source ~/.bashrc
 
 ### Verfication of installation
 
