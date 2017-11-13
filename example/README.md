@@ -34,4 +34,4 @@ Run the `fmm` application with:
 
     fmm fmm_config.xml
 
-A matched result file will be generated as `mr.txt`, which is a CSV file and the `c_path` column contains the matched path information, for details see [output](#output). 
+A matched result file will be generated as `mr.txt`, which is a CSV file and the `c_path` column contains the matched path information, for details see the [output section](../README.md#output). 
