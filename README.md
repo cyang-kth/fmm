@@ -71,10 +71,20 @@ A simple example of map matching is provided in the [example](example) folder.
 
 Two files should be prepared for the map matching program:
 
-1. GPS trajectory file: an ESRI shapefile (LineString), each row stores a trajectory with its ID. 
-2. Network file: an ESRI shapefile (LineString), each row stores a network edge with ID, source and target fields, which defines the topology of network graph.
+1. GPS trajectory file: an ESRI shapefile (LineString) with an **ID field**. Each row stores a trajectory. 
+2. Network file: an ESRI shapefile (LineString), each row stores a network edge with **ID, source and target fields**, which defines the topology of network graph.
 
 For more details, please to refer to the [ubodt configuration](#configuration-of-ubodt_gen) and [fmm configuration](#configuration-of-fmm).
+
+#### Useful resources
+
+If you already have a road network file in GDAL supported formats, e.g., ESRI shp, GeoJSON and CSV, you may encounter a problem of creating topology of the network, namely, defining id, source and target fields. Spatial database [PostGIS](http://postgis.net/) and its extension [pgRouting](http://pgrouting.org/) can solve the problem:
+
+1. [Add shapefiles to PostGIS database](https://gis.stackexchange.com/questions/41799/adding-shapefiles-to-postgis-database)
+2. [Create topology of road network with the function pgr_createTopology in pgrouting](http://docs.pgrouting.org/2.2/en/src/topology/doc/pgr_createTopology.html)
+3. [Export PostGIS table to shapefile](https://gis.stackexchange.com/questions/55206/how-can-i-get-a-shapefile-from-a-postgis-query)
+
+
 
 ### Output
 
