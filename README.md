@@ -1,6 +1,8 @@
 # Fast Map matching (FMM) 
 
-This project is an open source implementation of the fast map matching (FMM) algorithm, which addresses the bottleneck of repeated routing queries in map matching by precomputing a upper-bounded origin destination table (UBODT). 
+This project is an open source implementation of the fast map matching (FMM) algorithm in C++. The algorithm employs a prevalent hidden Markov model to solve map matching problem and addresses the bottleneck of repeated routing queries by precomputing an upper-bounded origin destination table (UBODT). 
+
+Experiments on a large real-world dataset report a **single processor** map matching speed of **25000-45000 points/second**.
 
 For details of the algorithm, refer to the paper [Fast map matching, an algorithm integrating hidden Markov model with precomputation](http://www.tandfonline.com/doi/full/10.1080/13658816.2017.1400548)
 
@@ -17,7 +19,7 @@ For details of the algorithm, refer to the paper [Fast map matching, an algorith
 
 ### Requirements
 
-- Linux/Unix environment
+- Linux/Unix environment (tested on Ubuntu 14.04)
 - gcc >= 4.8.4 (gnu++11 used)
 - [GDAL](http://www.gdal.org/) >= 1.11.2: IO with ESRI shapefile, Geometry data type
 - [Boost Graph](http://www.boost.org/doc/libs/1_65_1/libs/graph/doc/index.html) >= 1.54.0: routing algorithms used in UBODT Generator
@@ -61,31 +63,7 @@ Open a new terminal and type `fmm`, you should see the following output:
 
 ## Example
 
-A simple example of map matching is provided in the [example](example) folder, with the network and trajectories shown below. 
-
-![example](example/example.png)
-
-To run the map matching, change to `example` folder
-
-    cd example
-
-### Step 1. Generate an upper-bounded origin destination table from the network shapefile.
-
-Run UBODT generator with the provided configuration file:
-
-    ubodt_gen ubodt_config.xml
-
-A new UBODT file `ubodt.txt` will be generated. 
-
-### Step 2. Run map matching with UBODT 
-
-Add `ubodt.txt` to the map matching configuration file `fmm_config.xml`. 
-
-Run the `fmm` application with:
-
-    fmm fmm_config.xml
-
-A matched result file will be generated as `mr.txt`, which is a CSV file and the `c_path` column contains the matched path information, for details see [output](#output). 
+A simple example of map matching is provided in the [example](example) folder. 
 
 ## Input and output
 
