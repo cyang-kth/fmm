@@ -1,4 +1,4 @@
-# Fast Map matching (FMM) 
+# Fast map matching (FMM) 
 
 This project is an open source implementation of the fast map matching (FMM) algorithm in C++. The algorithm employs a prevalent hidden Markov model to solve map matching problem and addresses the bottleneck of repeated routing queries by precomputing an upper-bounded origin destination table (UBODT). 
 
