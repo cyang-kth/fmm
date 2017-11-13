@@ -6,6 +6,8 @@ Experiments on a large real-world dataset report a **single processor** map matc
 
 For details of the algorithm, refer to the paper [Fast map matching, an algorithm integrating hidden Markov model with precomputation](http://www.tandfonline.com/doi/full/10.1080/13658816.2017.1400548)
 
+![demo](demo.png)
+
 ## Table of Contents
 
 - [Install](#install)

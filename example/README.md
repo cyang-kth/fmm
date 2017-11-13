@@ -10,7 +10,7 @@
 
 ## Road network and GPS trajectories 
 
-![example](example/example.png)
+![example](example.png)
 
 ## Run map matching
 
