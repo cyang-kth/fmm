@@ -104,6 +104,17 @@ public:
         write_complete_path(c_path_ptr);
         m_fstream<<std::endl;
     };
+    void write_opath_cpath_offset(int tr_id,O_Path *o_path_ptr,C_Path *c_path_ptr){
+        DEBUG(2) std::cout<<__FILE__<<"    Line"<<__LINE__<<":    "<<__FUNCTION__<<std::endl;
+        m_fstream<<tr_id;
+        m_fstream<<";";
+        write_o_path(o_path_ptr);
+        m_fstream<<";";
+        write_offset(o_path_ptr);
+        m_fstream<<";";
+        write_complete_path(c_path_ptr);
+        m_fstream<<std::endl;
+    };
 private:
     // Write the optimal path
     void write_o_path(O_Path *o_path_ptr)
@@ -120,6 +131,18 @@ private:
         }
         m_fstream<< (*o_path_ptr)[N-1]->edge->id_attr;
         DEBUG(3) std::cout<<"Finish writing Optimal path"<<std::endl;
+    };
+    void write_offset(O_Path *o_path_ptr){
+        if (o_path_ptr==nullptr) {
+            DEBUG(2) std::cout<<"Matched path NULL"<<std::endl;
+            return;
+        };
+        int N = o_path_ptr->size();
+        for(int i=0; i<N-1; ++i)
+        {
+            m_fstream<<(*o_path_ptr)[i]->edge->length - (*o_path_ptr)[i]->offset<<",";
+        }
+        m_fstream<<(*o_path_ptr)[N-1]->edge->length - (*o_path_ptr)[N-1]->offset;
     };
     // Write the complete path
     void write_complete_path(C_Path *c_path_ptr){

@@ -151,6 +151,7 @@ Two example configuration files are given in the [example](example) folder.
             + 0: id + o_path + c_path (Default mode)
             + 1: id + o_path + c_path + geom(wkb)
             + 2: id + o_path + c_path + geom(wkt) // consumes a lot of storage, for small data set
+            + 3: id + o_path + (L-offset) + c_path
         - file: the matched file
 
 ## Performance measurement
