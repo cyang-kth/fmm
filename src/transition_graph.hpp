@@ -134,7 +134,7 @@ public:
     {
         double sp_dist=0;
         //  Transition on the same edge
-        if ( ca->edge->id == cb->edge->id && ca->offset < cb->offset )
+        if ( ca->edge->id == cb->edge->id && ca->offset <= cb->offset )
         {
             sp_dist = cb->offset - ca->offset;
         }
@@ -158,7 +158,7 @@ public:
     {
         double sp_dist=0;
         //  Transition on the same edge
-        if ( ca->edge->id == cb->edge->id && ca->offset < cb->offset )
+        if ( ca->edge->id == cb->edge->id && ca->offset <= cb->offset )
         {
             sp_dist = cb->offset - ca->offset;
         }

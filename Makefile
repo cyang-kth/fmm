@@ -7,7 +7,7 @@ build_fmm:initial
 	@echo ----- fmm build success ----- 
 build_fmm_debug:initial
 	@echo ----- Start to build fmm_debug -----
-	g++ -std=gnu++11 -DDEBUG_LEVEL='2' -O3 app/fmm.cpp -o dist/fmm_debug -lgdal
+	g++ -std=gnu++11 -DDEBUG_LEVEL='2' -DOPI_DEBUG_LEVEL='2' -O3 app/fmm.cpp -o dist/fmm_debug -lgdal
 	@echo ----- fmm_debug build success ----- 
 build_ubodt_gen:initial
 	@echo ----- Start to build ubodt_gen ----- 
