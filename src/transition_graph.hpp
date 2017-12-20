@@ -72,7 +72,12 @@ public:
                         A degenerate case is that the same point
                         is reported multiple times where both eu_dist and sp_dist = 0
                     */
-                    double tran_prob =eu_dist>sp_dist?sp_dist/eu_dist:eu_dist/(sp_dist+0.00001);
+                    double tran_prob = 1.0;
+                    if (eu_dist<0.00001) {
+                        tran_prob =sp_dist>0.00001?0:1.0;
+                    } else {
+                        tran_prob =eu_dist>sp_dist?sp_dist/eu_dist:eu_dist/sp_dist;
+                    }
                     if (ca->cumu_prob + tran_prob * cb -> obs_prob >= cb->cumu_prob)
                     {
                         cb->cumu_prob = ca->cumu_prob + tran_prob * cb->obs_prob;

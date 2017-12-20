@@ -18,7 +18,11 @@ install: build
 	@echo ----- Copy executables to home/bin ----- 
 	cp dist/fmm $(HOME)/bin
 	cp dist/ubodt_gen $(HOME)/bin
-	@echo ----- Finish ----- 
+	@echo ----- Finish -----
+install_debug: build_fmm_debug
+	@echo ----- Copy debug executables to home/bin ----- 
+	cp dist/fmm_debug $(HOME)/bin
+	@echo ----- Finish -----
 clean:
 	rm dist/*
 	

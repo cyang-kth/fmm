@@ -9,12 +9,13 @@
 #ifndef MM_TYPES_HPP
 #define MM_TYPES_HPP
 #include <vector>
+#include <string>
 #include "gdal/ogrsf_frmts.h" // C++ API for GDAL
 namespace MM {
 struct Edge
 {
     int id; // This is the id, which is continuous distributed 
-    int id_attr; // This is the external ID attribute, which does not have to be continuous
+    std::string id_attr; // This is the external ID attribute, which does not have to be continuous
     int source; // source node ID
     int target; // target node ID
     double length; // length of the edge polyline

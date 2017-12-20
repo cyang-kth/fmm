@@ -127,7 +127,7 @@ public:
             int id = ogrFeature->GetFID();
             Edge *e = &network_edges[id];
             e->id = id;
-            e->id_attr = ogrFeature->GetFieldAsInteger(id_idx);
+            e->id_attr = std::string(ogrFeature->GetFieldAsString(id_idx));
             e->source = ogrFeature->GetFieldAsInteger(source_idx);
             e->target = ogrFeature->GetFieldAsInteger(target_idx);
             OGRGeometry *rawgeometry = ogrFeature->GetGeometryRef();
@@ -169,7 +169,7 @@ public:
         return &network_edges;
     };
     // Get the ID attribute of an edge according to its index
-    int get_edge_id_attr(int eid)
+    std::string get_edge_id_attr(int eid)
     {
         return network_edges[eid].id_attr;
     };
