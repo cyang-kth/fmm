@@ -22,7 +22,7 @@ For details of the algorithm, refer to the paper [Fast map matching, an algorith
 ### Requirements
 
 - Linux/Unix environment (tested on Ubuntu 14.04)
-- gcc >= 4.8.4 (gnu++11 used)
+- gcc >= 4.4 (gnu++11 used)
 - [GDAL](http://www.gdal.org/) >= 1.11.2: IO with ESRI shapefile, Geometry data type
 - [Boost Graph](http://www.boost.org/doc/libs/1_65_1/libs/graph/doc/index.html) >= 1.54.0: routing algorithms used in UBODT Generator
 - [Boost Geometry](http://www.boost.org/doc/libs/1_65_1/libs/geometry/doc/html/index.html) >= 1.54.0: Rtree, Geometry computation
@@ -94,7 +94,7 @@ The output of program `ubodt_gen` is a CSV file containing the following informa
 - target: target (destination) node 
 - next_n: the next node visited after source in the shortest path
 - prev_n: the previous node visited before target in the shortest path
-- next_e: the next edge visited after source in the shortest path
+- next_e: the next **edge index** visited after source in the shortest path
 - distance: the shortest path distance
 
 The output of program `fmm` is a CSV file containing the following information:
@@ -103,6 +103,8 @@ The output of program `fmm` is a CSV file containing the following information:
 - o_path: optimal path, edges matched for each point in a trajectory
 - c_path: complete path, edges traversed by the trajectory
 - geom: geometry of the complete path 
+
+**Note**: In UBODT, the edge index is stored in `next_e`. However, in the final output, the element is exported as the id attribute of edge specified by the configuration `fmm_config>network>id`, which is a string value. 
 
 ## Configuration
 
@@ -170,7 +172,9 @@ The speed is about:
 
 ## Contact and citation
 
-Can Yang, Ph.D. student, Email: cyang(at)kth.se
+Can Yang, Ph.D. student at KTH, Royal Institute of Technology in Sweden 
+
+Email: cyang(at)kth.se
 
 Homepage: https://people.kth.se/~cyang/
 
