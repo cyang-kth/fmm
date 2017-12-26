@@ -8,6 +8,16 @@ Install it with
 
     make install
 
+
+Run it with 
+
+    fmm_ubodt_dijkstra fmm_config.xml
+
+Two additional statistics will be reported. 
+
+    Routing distance called :13457 (Dijkstra queries in optimal path inference step)
+    Routing path called :128 (Dijkstra queries in complete path construction step)
+
 #### Implementation details
 
 In `fmm_ubodt_dijkstra.cpp` file, we create a `graph` and register it in the `ubodt` and register `ubodt` in a transition graph `tg`.
@@ -26,3 +36,4 @@ It will first return `delta` as an estimation, if optimal path is found but the 
         o_path_ptr = tg.viterbi(config.penalty_factor,true); // Run viterbi with ubodt+dijkstra
         c_path_ptr = ubodt.construct_complete_path_routing(o_path_ptr);
     }
+
