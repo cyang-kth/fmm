@@ -53,6 +53,14 @@ public:
         O_Path *opt_path = new O_Path(N);
         /* Update transition probabilities */
         Traj_Candidates::iterator csa = m_traj_candidates->begin();
+        /* Initialize the cumu probabilities of the first layer */
+        Point_Candidates::iterator ca = csa->begin();
+        while (ca != csa->end())
+        {
+            ca->cumu_prob = ca->obs_prob;
+            ++ca;
+        }
+        /* Updating the cumu probabilities of subsequent layers */
         Traj_Candidates::iterator csb = m_traj_candidates->begin();
         ++csb;
         OPI_DEBUG(2) std::cout<<"step;from;to;sp;eu;tran_prob;e_prob;cumu_prob"<<std::endl;
