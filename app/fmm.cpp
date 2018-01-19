@@ -151,7 +151,7 @@ int main (int argc, char **argv)
             }
         } else if (config.mode == 3){
             // Offset
-            rw.write_header("id;o_path;c_path;offset");
+            rw.write_header("id;o_path;offset;c_path");
             while (tr_reader.has_next_feature())
             {
                 Trajectory trajectory = tr_reader.read_next_trajectory();
@@ -175,8 +175,39 @@ int main (int argc, char **argv)
                 delete o_path_ptr;
                 delete c_path_ptr;
             }
-        }
-        else {
+        } else if (config.mode == 4){
+            // modified version 2, with the corrected endnodes in the output geometry. 
+            // Added by Diao
+            rw.write_header("id;o_path;c_path;m_geom");
+            while (tr_reader.has_next_feature())
+            {
+                DEBUG(2) std::cout<<"Start of the loop"<<std::endl;
+                Trajectory trajectory = tr_reader.read_next_trajectory();
+                int points_in_tr = trajectory.geom->getNumPoints();
+                if (progress%step_size==0) std::cout<<"Progress "<<progress << " / " << num_trajectories <<std::endl;
+                DEBUG(1) std::cout<<"\n============================="<<std::endl;
+                DEBUG(1) std::cout<<"Process trips with id : "<<trajectory.id<<std::endl;
+                // Candidate search
+                Traj_Candidates traj_candidates = network.search_tr_cs_knn(trajectory,config.k,config.radius);
+                TransitionGraph tg = TransitionGraph(&traj_candidates,trajectory.geom,&ubodt);
+                // Optimal path inference
+                O_Path *o_path_ptr = tg.viterbi(config.penalty_factor);
+                // Complete path construction as an array of indices of edges vector
+                C_Path *c_path_ptr = ubodt.construct_complete_path(o_path_ptr);
+                // Write result, added by Diao 
+                OGRLineString *m_geom = network.complete_path_to_geometry_matched_endnodes(o_path_ptr,c_path_ptr);
+                rw.write_map_matched_result_wkt(trajectory.id,o_path_ptr,c_path_ptr,m_geom);
+                // update statistics
+                total_points+=points_in_tr;
+                if (c_path_ptr!=nullptr) points_matched+=points_in_tr;
+                DEBUG(1) std::cout<<"Free memory of o_path and c_path"<<std::endl;
+                ++progress;
+                delete o_path_ptr;
+                delete c_path_ptr;
+                delete m_geom;
+                DEBUG(1) std::cout<<"============================="<<std::endl;
+            }
+        }   else    {
             std::cout<<"ERROR: Unrecognized output mode"<<std::endl;
         };
         std::cout<<"\n============================="<<std::endl;

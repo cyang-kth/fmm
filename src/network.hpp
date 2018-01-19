@@ -17,7 +17,7 @@
 #include "algorithm.hpp"
 #include "gps.hpp"
 #include <iomanip>
-#include<algorithm> // Partial sort copy
+#include <algorithm> // Partial sort copy
 // Data structures for Rtree
 #include <boost/geometry/geometries/box.hpp>
 #include <boost/geometry/index/rtree.hpp>
@@ -380,6 +380,73 @@ public:
         }
         return line;
     };
+
+    /**
+     * Added in 2018.01.17, by Diao
+     * Modified in 2018.01.19 by Can
+     * 
+     * a modified version of geometry path construction,
+     * which the offset is taken into consideration, and the 
+     * final path with a correct start point and end point corresponding
+     * to the original trajectory. Namely at both the first and last edge 
+     * in the complete path, only the part traversed is exported while 
+     * complete_path_to_geometry() returns the entire geometry of start and 
+     * end edge. 
+     * 
+     * Construct the geometry of a complete path,
+     * @param  complete_path: a pointer to a complete path, which is
+     * a vector of edge indices traversed by a trajectory
+     * @return  a pointer to the geometry of the complete path, The
+     * caller should take care of freeing its memory.
+     */
+    OGRLineString *complete_path_to_geometry_matched_endnodes(O_Path *o_path_ptr, C_Path *complete_path)
+    {
+        if (complete_path==nullptr || complete_path->empty()) return nullptr;
+        // if (complete_path->empty()) return nullptr;
+        OGRLineString *line = new OGRLineString();
+        int NOsegs = o_path_ptr->size();
+        int NCsegs = complete_path->size();
+    
+        DEBUG(2) std::cout<< "optimal path size "<<NOsegs <<std::endl;
+        DEBUG(2) std::cout<< "Complete path size "<<NCsegs <<std::endl;
+        if (NCsegs ==1)
+        {
+            double firstoffset = (*o_path_ptr)[0]->offset;
+            double lastoffset = (*o_path_ptr)[NOsegs-1]->offset;
+            OGRLineString * firstseg = network_edges[(*complete_path)[0]].geom;
+            // OGRLineString * firstlineseg= ALGORITHM::cutoffseg_unique(firstoffset,lastoffset,firstseg);
+            OGRLineString * firstlineseg= ALGORITHM::cutoffseg_unique_v2(firstoffset,lastoffset,firstseg);
+            append_segs_to_line(line,firstlineseg,0);
+            // Free the memory
+            delete firstlineseg;
+        }
+        else
+        {
+            double firstoffset = (*o_path_ptr)[0]->offset;
+            double lastoffset = (*o_path_ptr)[NOsegs-1]->offset;
+            OGRLineString * firstseg = network_edges[(*complete_path)[0]].geom;
+            OGRLineString * lastseg = network_edges[(*complete_path)[NCsegs-1]].geom;
+            // OGRLineString * firstlineseg= ALGORITHM::cutoffseg(firstoffset, firstseg, 0);   
+            // OGRLineString * lastlineseg= ALGORITHM::cutoffseg(lastoffset, lastseg, 1);
+            OGRLineString * firstlineseg= ALGORITHM::cutoffseg_v2(firstoffset, firstseg, 0);   
+            OGRLineString * lastlineseg= ALGORITHM::cutoffseg_v2(lastoffset, lastseg, 1);
+            append_segs_to_line(line,firstlineseg,0);
+            if (NCsegs>2)
+            {
+                for(int i=1;i<NCsegs-1;++i)
+                {
+                    OGRLineString * middleseg = network_edges[(*complete_path)[i]].geom;
+                    append_segs_to_line(line,middleseg,1);
+                }
+            };
+            append_segs_to_line(line,lastlineseg,1);
+            // Free the memory
+            delete firstlineseg;
+            delete lastlineseg;
+        }
+        return line;
+    };
+
     /**
      * Detect if a complete path contains reverse movement
      *
