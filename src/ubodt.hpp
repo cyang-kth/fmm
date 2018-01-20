@@ -27,7 +27,7 @@ public:
      *  @param  multiplier: used to calculate ID of an OD pair as n_o * multiplier + n_d 
      *  @param  hash_value: the number of buckets in the hashtable 
      */
-    UBODT(int multiplier,int hash_value):MULTIPLIER(multiplier),NHASH(hash_value) {};
+    UBODT(int multiplier,int hash_value):NHASH(hash_value),MULTIPLIER(multiplier) {};
 
     /**
      * Read UBODT from a CSV file, which should be generated from the ubodt_gen program in format
