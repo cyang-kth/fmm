@@ -183,7 +183,7 @@ public:
         // Build an rtree for candidate search
         std::cout<<"Start to construct boost rtree"<<std::endl;
         // create some Items
-        for (int i = 0 ; i < network_edges.size(); ++i)
+        for (std::size_t i = 0 ; i < network_edges.size(); ++i)
         {
             // create a boost_box
             CS_DEBUG(3) std::cout<<"iteration "<<i<<std::endl;
@@ -210,7 +210,7 @@ public:
      *  the candidates selected for each point in a trajectory
      *
      */
-    Traj_Candidates search_tr_cs_knn(Trajectory &trajectory,int k,double radius)
+    Traj_Candidates search_tr_cs_knn(Trajectory &trajectory,std::size_t k,double radius)
     {
         OGRLineString *geom = trajectory.geom;
         int NumberPoints = geom->getNumPoints();
@@ -267,7 +267,7 @@ public:
     };
 
     /* Only Rtree intersection, for test */
-    Traj_Candidates search_tr_cs_ri(Trajectory &trajectory,int k,double radius)
+    Traj_Candidates search_tr_cs_ri(Trajectory &trajectory,std::size_t k,double radius)
     {
         OGRLineString *geom = trajectory.geom;
         int NumberPoints = geom->getNumPoints();
@@ -363,7 +363,7 @@ public:
         OGRLineString *line = new OGRLineString();
         int Nsegs = complete_path->size();
         DEBUG(2) std::cout<< "Complete path size "<<Nsegs <<std::endl;
-        int totalNpoints=0;
+        // int totalNpoints=0;
         // Redesign this part
         auto iter = complete_path->begin();
         // The 0 means the offset at the start of the geom_B to the end of the geom_A which finally forms geom_A,geom_B

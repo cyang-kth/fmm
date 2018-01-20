@@ -206,8 +206,8 @@ private:
         hashtable[h]=r;
     };
     static const int BUFFER_LINE = 1024;
-    const int NHASH; // number of buckets
     const long long MULTIPLIER; // multipler to get a unique ID
+    const int NHASH; // number of buckets
     //int maxnode=0;
     record** hashtable;
 };

@@ -3,7 +3,7 @@ initial:
 	mkdir -p $(HOME)/bin
 build_fmm:initial
 	@echo ----- Start to build fmm -----
-	g++ -std=gnu++11  -O3 app/fmm.cpp -o dist/fmm -lgdal
+	g++ -Wall -std=gnu++11  -O3 app/fmm.cpp -o dist/fmm -lgdal
 	@echo ----- fmm build success ----- 
 build_fmm_debug:initial
 	@echo ----- Start to build fmm_debug -----

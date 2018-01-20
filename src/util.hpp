@@ -88,7 +88,7 @@ void print_geometry(OGRLineString *geom){
     char *wkt;
     geom->exportToWkt(&wkt);
     std::cout<<"Geometry in WKT: "<<wkt<<std::endl;
-    OGRFree(wkt);
+    CPLFree(wkt);
 };
 
 

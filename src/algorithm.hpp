@@ -97,7 +97,7 @@ void linear_referencing(OGRPoint *point,OGRLineString *linestring,double *result
     double y = point->getY();
     int i=0;
     // Iterating to check p(i) == p(i+2)
-    int seg_idx=0;
+    // int seg_idx=0;
     while(i<Npoints-1)
     {
         double x1 = linestring->getX(i);
