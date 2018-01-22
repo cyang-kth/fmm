@@ -349,37 +349,6 @@ public:
         }
         return tr_cs;
     };
-    /**
-     * Construct the geometry of a complete path
-     * @param  complete_path: a pointer to a complete path, which is
-     * a vector of edge indices traversed by a trajectory
-     * @return  a pointer to the geometry of the complete path, The
-     * caller should take care of freeing its memory.
-     */
-    OGRLineString *complete_path_to_geometry(C_Path *complete_path)
-    {
-        if (complete_path==nullptr || complete_path->empty()) return nullptr;
-        // if (complete_path->empty()) return nullptr;
-        OGRLineString *line = new OGRLineString();
-        int Nsegs = complete_path->size();
-        DEBUG(2) std::cout<< "Complete path size "<<Nsegs <<std::endl;
-        // int totalNpoints=0;
-        // Redesign this part
-        auto iter = complete_path->begin();
-        // The 0 means the offset at the start of the geom_B to the end of the geom_A which finally forms geom_A,geom_B
-        append_segs_to_line(line,network_edges[*iter].geom,0);
-        DEBUG(2) std::cout<<"Edge fetched "<<*iter<<std::endl;
-        DEBUG(2) UTIL::print_geometry(line);
-        ++iter;
-        while(iter!=complete_path->end())
-        {
-            append_segs_to_line(line,network_edges[*iter].geom,1);
-            DEBUG(2) std::cout<<"Edge fetched "<<*iter<<std::endl;
-            DEBUG(2) UTIL::print_geometry(line);
-            ++iter;
-        }
-        return line;
-    };
 
     /**
      * Added in 2018.01.17, by Diao
@@ -389,17 +358,18 @@ public:
      * which the offset is taken into consideration, and the 
      * final path with a correct start point and end point corresponding
      * to the original trajectory. Namely at both the first and last edge 
-     * in the complete path, only the part traversed is exported while 
-     * complete_path_to_geometry() returns the entire geometry of start and 
-     * end edge. 
+     * in the complete path, only the part traversed is exported. 
      * 
      * Construct the geometry of a complete path,
-     * @param  complete_path: a pointer to a complete path, which is
-     * a vector of edge indices traversed by a trajectory
+     * @param o_path_ptr: a pointer to the o_path_ptr, where each element 
+     * is a Candidate object. This input is needed because the offset is used to 
+     * split the first and last edge in the complete path.
+     * @param  complete_path: a pointer to a complete path, where each element
+     * is an integer representing spatial contiguous edge index 
      * @return  a pointer to the geometry of the complete path, The
      * caller should take care of freeing its memory.
      */
-    OGRLineString *complete_path_to_geometry_matched_endnodes(O_Path *o_path_ptr, C_Path *complete_path)
+    OGRLineString *complete_path_to_geometry(O_Path *o_path_ptr, C_Path *complete_path)
     {
         if (complete_path==nullptr || complete_path->empty()) return nullptr;
         // if (complete_path->empty()) return nullptr;
@@ -414,8 +384,7 @@ public:
             double firstoffset = (*o_path_ptr)[0]->offset;
             double lastoffset = (*o_path_ptr)[NOsegs-1]->offset;
             OGRLineString * firstseg = network_edges[(*complete_path)[0]].geom;
-            // OGRLineString * firstlineseg= ALGORITHM::cutoffseg_unique(firstoffset,lastoffset,firstseg);
-            OGRLineString * firstlineseg= ALGORITHM::cutoffseg_unique_v2(firstoffset,lastoffset,firstseg);
+            OGRLineString * firstlineseg= ALGORITHM::cutoffseg_unique(firstoffset,lastoffset,firstseg);
             append_segs_to_line(line,firstlineseg,0);
             // Free the memory
             delete firstlineseg;
@@ -426,10 +395,8 @@ public:
             double lastoffset = (*o_path_ptr)[NOsegs-1]->offset;
             OGRLineString * firstseg = network_edges[(*complete_path)[0]].geom;
             OGRLineString * lastseg = network_edges[(*complete_path)[NCsegs-1]].geom;
-            // OGRLineString * firstlineseg= ALGORITHM::cutoffseg(firstoffset, firstseg, 0);   
-            // OGRLineString * lastlineseg= ALGORITHM::cutoffseg(lastoffset, lastseg, 1);
-            OGRLineString * firstlineseg= ALGORITHM::cutoffseg_v2(firstoffset, firstseg, 0);   
-            OGRLineString * lastlineseg= ALGORITHM::cutoffseg_v2(lastoffset, lastseg, 1);
+            OGRLineString * firstlineseg= ALGORITHM::cutoffseg(firstoffset, firstseg, 0);   
+            OGRLineString * lastlineseg= ALGORITHM::cutoffseg(lastoffset, lastseg, 1);
             append_segs_to_line(line,firstlineseg,0);
             if (NCsegs>2)
             {

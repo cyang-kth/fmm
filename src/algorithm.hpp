@@ -121,105 +121,6 @@ void linear_referencing(OGRPoint *point,OGRLineString *linestring,double *result
     *result_offset=final_offset;
 }; // linear_referencing
 
-
-/**
- * added by Diao 18.01.17
- * @param   offset1        input offset(from start node)
- * @param   offset2        input offset(from start node), should be larger or equal with offset1 
- * @param   linestring     input linestring 
- * @return  cutoffline     output cutoff linstring, the caller should take care of freeing the memory
- */
-OGRLineString * cutoffseg_unique(double offset1, double offset2, OGRLineString * linestring)
-{
-    OGRLineString* cutoffline = new OGRLineString();
-    int Npoints = linestring->getNumPoints();
-    CS_DEBUG(2) std::cout<< "offset_1: "<<offset1 <<std::endl;
-    CS_DEBUG(2) std::cout<< "offset_2: "<<offset2 <<std::endl;
-    CS_DEBUG(2) std::cout<< "matching edge piont Num: "<<Npoints <<std::endl;
-    if (Npoints==2)
-    {
-        double x1 = linestring->getX(0);
-        double y1 = linestring->getY(0);
-        double x2 = linestring->getX(1);
-        double y2 = linestring->getY(1);
-        double L = std::sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1)); 
-        double ratio1 = offset1/L;
-        double new_x1 = x1+ratio1*(x2-x1);
-        double new_y1 = y1+ratio1*(y2-y1);
-        double ratio2 = offset2/L;
-        double new_x2 = x1+ratio2*(x2-x1);
-        double new_y2 = y1+ratio2*(y2-y1);
-        cutoffline->addPoint(new_x1, new_y1);
-        cutoffline->addPoint(new_x2, new_y2);
-    }
-    else
-    {
-        double length_parsed1=0;
-        double length_parsed2=0;
-        int restart_id1 = 0;
-        int restart_id2 = 0;
-        double new_x2 = 0;
-        double new_y2 = 0;
-        int i = 0;
-        int j = 0;
-        while(i<Npoints-1)
-        {
-            double x1 = linestring->getX(i);
-            double y1 = linestring->getY(i);
-            double x2 = linestring->getX(i+1);
-            double y2 = linestring->getY(i+1);
-            double L = std::sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
-            length_parsed1 = length_parsed1 + L;
-            CS_DEBUG(2) std::cout<< "length_parsed1 : "<<length_parsed1 <<std::endl;
-            if(offset1<length_parsed1)
-            {
-                double ratio1 = (offset1-length_parsed1+L)/L;
-                double new_x1 = x1+ratio1*(x2-x1);
-                double new_y1 = y1+ratio1*(y2-y1);
-                cutoffline->addPoint(new_x1, new_y1);
-                restart_id1 = i+1;
-                break;
-            }
-            ++ i;
-        };
-        while(j<Npoints-1)
-        {
-            double x1 = linestring->getX(j);
-            double y1 = linestring->getY(j);
-            double x2 = linestring->getX(j+1);
-            double y2 = linestring->getY(j+1);
-            double L = std::sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
-            length_parsed2 = length_parsed2 + L;
-            CS_DEBUG(2) std::cout<< "length_parsed2 : "<<length_parsed2 <<std::endl;
-            // here the "=" is necessay, or there would be instance that new_x2 = new_y2= 0
-            // due to the decimal precision probelm, we add 0.01 here (based on the real data test) 
-            if(offset2<length_parsed2+0.01)
-            {   
-                CS_DEBUG(2) std::cout<< "SUCCESSFULLY ENTER"<<std::endl;
-                double ratio2 = (offset2-length_parsed2+L)/L;
-                new_x2 = x1+ratio2*(x2-x1);
-                new_y2 = y1+ratio2*(y2-y1);
-                restart_id2 = j+1;
-                break;
-            }
-            ++j;
-        };
-        CS_DEBUG(2) std::cout<< "restart_1 id: "<<restart_id1 <<std::endl;
-        CS_DEBUG(2) std::cout<< "restart_2 id: "<<restart_id2 <<std::endl;
-        // restart_id1 =< restart_id2
-        if (restart_id1 != restart_id2)
-        {   // 
-            for(int k=restart_id1; k<restart_id2; ++k)
-            {
-                cutoffline->addPoint(linestring->getX(k), linestring->getY(k));
-            }
-        }
-        cutoffline->addPoint(new_x2, new_y2);
-    }
-    return cutoffline;
-};//cutoffseg_twoparameters
-
-
 /**
  * added by Diao 18.01.17
  * modified by Can 18.01.19 
@@ -228,7 +129,7 @@ OGRLineString * cutoffseg_unique(double offset1, double offset2, OGRLineString *
  * @param   mode          input mode, 0 represent cutoff from start node, 1 from endnode
  * @return  cutoffline    output cutoff linstring, the caller should take care of freeing the memory
  */
-OGRLineString * cutoffseg_unique_v2(double offset1, double offset2, OGRLineString * linestring)
+OGRLineString * cutoffseg_unique(double offset1, double offset2, OGRLineString * linestring)
 {
     OGRLineString* cutoffline = new OGRLineString();
     int Npoints = linestring->getNumPoints();
@@ -289,113 +190,6 @@ OGRLineString * cutoffseg_unique_v2(double offset1, double offset2, OGRLineStrin
 
 /**
  * added by Diao 18.01.17
- * @param   offset        input offset(from start node)
- * @param   linestring    input linestring 
- * @param   mode          input mode, 0 represent cutoff from start node, 1 from endnode
- * @return  cutoffline    output cutoff linstring, the caller should take care of freeing the memory
- */
-OGRLineString * cutoffseg(double offset, OGRLineString * linestring, int mode)
-{
-    OGRLineString* cutoffline = new OGRLineString();
-    int Npoints = linestring->getNumPoints();
-    if (mode==0)
-    {
-        if (Npoints==2) 
-        {
-            double x1 = linestring->getX(0);
-            double y1 = linestring->getY(0);
-            double x2 = linestring->getX(1);
-            double y2 = linestring->getY(1);
-            double L = std::sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));    
-            double ratio = offset/L;
-            double new_x = x1+ratio*(x2-x1);
-            double new_y = y1+ratio*(y2-y1);
-            cutoffline->addPoint(new_x, new_y);
-            cutoffline->addPoint(x2, y2);
-        }
-        else
-        {
-            double length_parsed=0;
-            int restart_id = 0;
-            int i = 0;
-            CS_DEBUG(2)  std::cout<< "offset: "<<offset <<std::endl;
-            while(i<Npoints-1)
-            {       
-                double x1 = linestring->getX(i);
-                double y1 = linestring->getY(i);
-                double x2 = linestring->getX(i+1);
-                double y2 = linestring->getY(i+1);
-                double L = std::sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
-                length_parsed = length_parsed + L;
-                CS_DEBUG(2) std::cout<< "length of current edge: "<<L <<std::endl;
-                CS_DEBUG(2) std::cout<< "length parsed: "<<length_parsed <<std::endl;
-                if(offset<length_parsed)
-                {
-                    double ratio = (offset-length_parsed+L)/L;
-                    CS_DEBUG(2) std::cout<< "ratio: "<<ratio <<std::endl;
-                    double new_x = x1+ratio*(x2-x1);
-                    double new_y = y1+ratio*(y2-y1);
-                    cutoffline->addPoint(new_x, new_y);
-                    restart_id = i+1;
-                    break;
-                }
-                ++i;
-            };
-            CS_DEBUG(2) std::cout<< "restart_id: "<<restart_id <<std::endl;
-            for(int j=restart_id; j<Npoints; ++j)
-            {   
-                cutoffline->addPoint(linestring->getX(j), linestring->getY(j));
-            }
-        }
-    }
-    else
-    {
-        if (Npoints==2)
-        {
-            double x1 = linestring->getX(0);
-            double y1 = linestring->getY(0);
-            double x2 = linestring->getX(1);
-            double y2 = linestring->getY(1);
-            double L = std::sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));   
-            double ratio = offset/L;
-            double new_x = x1+ratio*(x2-x1);
-            double new_y = y1+ratio*(y2-y1);
-            CS_DEBUG(2) std::cout<< "final L: "<<L <<std::endl;
-            CS_DEBUG(2) std::cout<< "final offset: "<<offset <<std::endl;
-            CS_DEBUG(2) std::cout<< "final ratio: "<<ratio <<std::endl;
-            cutoffline->addPoint(x1, y1);
-            cutoffline->addPoint(new_x, new_y);
-        }
-        else
-        {
-            double length_parsed=0;
-            int i = 0;
-            while(i<Npoints-1)
-            {
-                double x1 = linestring->getX(i);
-                double y1 = linestring->getY(i);
-                double x2 = linestring->getX(i+1);
-                double y2 = linestring->getY(i+1);
-                double L = std::sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
-                cutoffline->addPoint(linestring->getX(i), linestring->getY(i));
-                length_parsed = length_parsed + L;
-                if(offset<=length_parsed)
-                {
-                    double ratio = (offset-length_parsed+L)/L;
-                    double new_x = x1+ratio*(x2-x1);
-                    double new_y = y1+ratio*(y2-y1);
-                    cutoffline->addPoint(new_x, new_y);
-                    break;
-                }
-                ++i;
-            };
-        }
-    }
-    return cutoffline;
-};//cutoffseg
-
-/**
- * added by Diao 18.01.17
  * modified by Can 18.01.19
  * @param   offset        input offset(from start node)
  * @param   linestring    input linestring 
@@ -403,7 +197,7 @@ OGRLineString * cutoffseg(double offset, OGRLineString * linestring, int mode)
  *                        export the part of start-> p
  * @return  cutoffline    output cutoff linstring, the caller should take care of freeing the memory
  */
-OGRLineString * cutoffseg_v2(double offset, OGRLineString * linestring, int mode)
+OGRLineString * cutoffseg(double offset, OGRLineString * linestring, int mode)
 {
     OGRLineString* cutoffline = new OGRLineString();
     int Npoints = linestring->getNumPoints();
