@@ -1,4 +1,5 @@
-install: build
+build: build_fmm build_ubodt_gen
+install: 
 	@echo ----- Copy executables to home/bin ----- 
 	cp dist/fmm $(HOME)/bin
 	cp dist/ubodt_gen $(HOME)/bin
@@ -18,7 +19,6 @@ build_ubodt_gen:initial
 	@echo ----- Start to build ubodt_gen ----- 
 	g++ -std=gnu++11  -O3 app/ubodt_gen.cpp -o dist/ubodt_gen -lgdal
 	@echo ----- ubodt_gen build success ----- 
-build: build_fmm build_ubodt_gen
 install_debug: build_fmm_debug
 	@echo ----- Copy debug executables to home/bin ----- 
 	cp dist/fmm_debug $(HOME)/bin

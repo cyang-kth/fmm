@@ -35,14 +35,18 @@ The required libraries can be installed with
 
 Change to the project directory, open a terminal and run
 
-    make install 
+    make  
 
-The process will firstly creates executable files will be generated under `dist` folder:
+It will build executable files under the `dist` folder:
 
 - `ubodt_gen`: the Upper bounded origin destination table (UBODT) generator (precomputation) program
 - `fmm`: the map matching program
 
-Then it will copy the executable files into the `~/bin` path, which should be added to the `PATH` variable by default. 
+Then run 
+
+    make install
+
+It will copy the executable files into the `~/bin` path, which should be added to the `PATH` variable by default. 
 
 To manually add the `~/bin` path to `$PATH` variable, open a new terminal and run:
 
