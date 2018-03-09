@@ -1,9 +1,9 @@
 /**
  * Content
- * Precomputation of UBODT
+ * Precomputation of UBODT (Optimized)
  *      
  * @author: Can Yang
- * @version: 2017.11.11
+ * @version: 2018.03.09
  */
 #include "../src/network_graph_opt.hpp"
 #include "config.hpp"

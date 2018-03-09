@@ -1,4 +1,4 @@
-build: build_fmm build_ubodt_gen
+build: build_fmm build_ubodt_gen build_ubodt_gen_opt
 install: 
 	@echo ----- Copy executables to home/bin ----- 
 	cp dist/fmm $(HOME)/bin

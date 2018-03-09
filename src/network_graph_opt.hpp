@@ -1,6 +1,15 @@
 /**
  * Content
- * Definition of the NetworkGraphOpt class
+ * An optimizated network graph class
+ * 
+ * The optimization is achieved by recording the output  
+ * of routing in two variables predecessor map and distance map
+ * and regularly updating and cleaning them. 
+ *
+ * It avoids intialization of distances and predecessors vector 
+ * in each iteration of the driving distance calculation. With a 
+ * large road network, a small proportion of their nodes are visited
+ * in the precomputation.  
  *      
  * @author: Can Yang
  * @version: 2018.03.09
