@@ -15,6 +15,7 @@
 #include <boost/config.hpp>
 #include <boost/graph/graph_traits.hpp>
 #include <boost/graph/adjacency_list.hpp>
+#include <boost/graph/dijkstra_shortest_paths.hpp>
 #include <boost/graph/dijkstra_shortest_paths_no_color_map.hpp>
 #include <boost/property_map/property_map.hpp>
 #include "types.hpp"
@@ -171,17 +172,31 @@ private:
         // std::cout << "Progress source " << source << std::endl;
         std::deque<vertex_descriptor> nodesInDistance;
         examined_vertices.push_back(source);
+        double inf = std::numeric_limits<double>::max();
+        // In BGL, http://www.boost.org/doc/libs/1_66_0/boost/graph/dijkstra_shortest_paths_no_color_map.hpp
+        // The named parameter version is only defined for dijkstra_shortest_paths_no_color_map
+        // Therefore, we need to explicitly pass in the arguments
+        // boost::choose_param choose parameter with default value
         try {
+            // This part to be fixed
             dijkstra_shortest_paths_no_color_map_no_init(
                 g,
                 source,
-                weight_map(get(&Edge_Property::length, g)),
-                boost::predecessor_map(&predecessors_map[0]),
-                boost::distance_map(&distances_map[0]),
-                visitor(
-                    driving_distance_visitor(
-                        delta, nodesInDistance, distances_map, examined_vertices
-                    )
+                //boost::predecessor_map(&predecessors_map[0]),
+                make_iterator_property_map(predecessors_map.begin(),get(boost::vertex_index, g),predecessors_map[0]),
+                //boost::distance_map(boost::make_iterator_property_map(distances_map.begin(), get(boost::vertex_index, g))),
+                //&distances_map[0],
+                make_iterator_property_map(distances_map.begin(),get(boost::vertex_index, g),distances_map[0]),
+                //make_iterator_property_map(distances_map.begin(), boost::vertex_index_map(get(boost::vertex_index, g)),distances_map[0]),
+                //boost::distance_map(boost::make_iterator_property_map(distances_map.begin(), get(boost::vertex_index, g))),
+                get(&Edge_Property::length, g),
+                get(boost::vertex_index, g),
+                std::less<double>(), //DistanceCompare distance_compare,
+                boost::closed_plus<double>(inf),
+                inf,
+                0,
+                driving_distance_visitor(
+                    delta, nodesInDistance, distances_map, examined_vertices
                 )
             );
         } catch (found_goals& goal) {

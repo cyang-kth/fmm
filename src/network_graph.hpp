@@ -165,6 +165,8 @@ private:
         // a list of costs stored for one node to all nodes in the graph
         std::vector<double> distances(num_vertices(g));
         std::deque<vertex_descriptor> nodesInDistance;
+        // http://www.boost.org/doc/libs/1_66_0/boost/graph/dijkstra_shortest_paths.hpp
+        // The function below is defined as a Named Parameter Variant
         try {
             dijkstra_shortest_paths(
                 g,
