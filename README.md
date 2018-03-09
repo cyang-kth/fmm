@@ -1,10 +1,14 @@
 # Fast map matching (FMM) 
 
-This project is an open source implementation of the fast map matching (FMM) algorithm in C++. The algorithm employs a prevalent hidden Markov model to solve map matching problem and addresses the bottleneck of repeated routing queries by precomputing an upper-bounded origin destination table (UBODT). 
+This project is an implementation of the fast map matching (FMM) algorithm introduced in this paper [Fast map matching, an algorithm integrating hidden Markov model with precomputation](http://www.tandfonline.com/doi/full/10.1080/13658816.2017.1400548), which acelerates the performance by precomputation. 
 
-Experiments on a large real-world dataset report a **single processor** map matching speed of **25000-45000 points/second**.
+## Features of fmm 
 
-For details of the algorithm, refer to the paper [Fast map matching, an algorithm integrating hidden Markov model with precomputation](http://www.tandfonline.com/doi/full/10.1080/13658816.2017.1400548)
+- Highly optimized code in C++ 
+- Integration of Boost library (rtree index and routing engine) 
+- Aceleration of map matching by precomputation with matching speed of **25000-45000 points/second** (single processor)
+- Customized output mode (matched point,matched line,offset,edge ID)
+- Tested on large road network and millions of GPS data 
 
 ![demo](demo.png)
 
