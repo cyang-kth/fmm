@@ -15,6 +15,7 @@ For details of the algorithm, refer to the paper [Fast map matching, an algorith
 - [Input and output](#input-and-output)
 - [Configuration](#configuration)
 - [Performance measurement](#performance-measurement)
+- [Optimization on large network](#optimization-on-large-network)
 - [Contact and citation](#contact-and-citation)
 
 ## Install
@@ -169,10 +170,30 @@ A case study is reported in the paper with real world datasets:
 - UBODT size: 4,305,012 rows
 - k = 8 (candidate set size), r = 300 meters (search radius)
 
-The speed is about:
+The speed of map matching is about:
 
 - 25000 points/s (WKB Geometry output, mode 1)
 - 45000 points/s (No geometry output, mode 0)
+
+### Optimization on large network
+
+In case of a large road network with hundreds of thousand of nodes, the driving distance function used in pgrouting and BGL can be slow as it requires initializing two vectors with graph size in order to maintain the output of routing. An optimized version is designed in the `src/network_graph_opt.hpp`
+by regularly updating the two vectors for each source node. 
+
+To run the optimized ubodt precomputation app, 
+
+```
+ubodt_gen_opt ubodt_config.xml
+```
+
+Statistics on the network of Netherland (700k nodes and 1 million edges)
+http://geodata.nationaalgeoregister.nl/nwbwegen/extract/nwbwegen.zip
+
+| delta (m) | running time | rows       | file size |
+|-----------|--------------|------------|-----------|
+| 1000      | 3min27.5s    | 19,022,620 | 766 MB    |
+| 3000      | 4min32.9s    | 79,998,367 | 3,2GB     |
+
 
 ## Contact and citation
 
