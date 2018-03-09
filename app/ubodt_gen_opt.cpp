@@ -5,7 +5,7 @@
  * @author: Can Yang
  * @version: 2017.11.11
  */
-#include "../src/network_graph.hpp"
+#include "../src/network_graph_opt.hpp"
 #include "config.hpp"
 #include <iostream>
 #include <ctime>
@@ -15,12 +15,12 @@ int main(int argc, char* argv[])
 {
     std::cout<<"------------ Fast map matching (FMM) ------------"<<endl;
     std::cout<<"------------     Author: Can Yang    ------------"<<endl;
-    std::cout<<"------------   Version: 2017.11.11   ------------"<<endl;
-    std::cout<<"------------  Applicaton: ubodt_gen  ------------"<<endl;
+    std::cout<<"------------   Version: 2018.03.09   ------------"<<endl;
+    std::cout<<"------------Application: ubodt_gen_opt------------"<<endl;
     if (argc<2) {
         std::cout<<"No configuration file supplied"<<endl;
         std::cout<<"A configuration file is given in the example folder"<<endl;
-        std::cout<<"Run `ubodt_gen config.xml`"<<endl;
+        std::cout<<"Run `ubodt_gen_opt config.xml`"<<endl;
     } else {
         clock_t begin_time = clock(); // program start time
         std::string configfile(argv[1]);
@@ -35,8 +35,8 @@ int main(int argc, char* argv[])
             config.network_id,
             config.network_source,
             config.network_target);
-        MM::NetworkGraph graph(&network);
-        //MM::NetworkGraphOpt graph(&network);
+        // MM::NetworkGraph graph(&network);
+        MM::NetworkGraphOpt graph(&network);
         graph.precompute_ubodt(config.result_file,config.delta);
         clock_t end_time = clock(); // program end time
         // Unit is second

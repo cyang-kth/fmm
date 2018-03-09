@@ -50,8 +50,7 @@ public:
         }
         num_vertices = boost::num_vertices(g);
         std::cout << "Graph nodes " << num_vertices << std::endl;
-        predecessors_map= std::vector<vertex_descriptor>(num_vertices);
-        distances_map = std::vector<double>(num_vertices);
+        initialize_distances_predecessors();
         std::cout << "Construct graph from network edges end" << std::endl;
     };
     /**
@@ -101,6 +100,7 @@ private:
         ) : m_distance_goal(distance_goal), m_nodes(nodesInDistance), m_dist(distances),
         m_examined_vertices(examined_vertices_ref) {};
         template <class Graph>void examine_vertex(vertex_descriptor u, Graph &g) {
+            DEBUG (2) std::cout << "Examine node " << u << std::endl;
             m_nodes.push_back(u);
             if (m_dist[u] > m_distance_goal) {
                 m_nodes.pop_back();
@@ -109,6 +109,7 @@ private:
         };
         template <class Graph>void edge_relaxed(edge_descriptor e, Graph &g) {
             // Add v to the examined vertices
+            DEBUG (2) std::cout << "Examine edge" << e << std::endl;
             m_examined_vertices.push_back(boost::target(e, g));
         };
     private:
@@ -170,9 +171,11 @@ private:
         // https://github.com/pgRouting/pgrouting-build/blob/44deced99d05617a41948eec07d0b22c7f236cbf/src/dijkstra/src/pgr_dijkstra.hpp#L508
         // 
         // std::cout << "Progress source " << source << std::endl;
+        DEBUG (2) std::cout << "Debug progress source " << source << std::endl;
         std::deque<vertex_descriptor> nodesInDistance;
         examined_vertices.push_back(source);
         double inf = std::numeric_limits<double>::max();
+        distances_map[source]=0;
         // In BGL, http://www.boost.org/doc/libs/1_66_0/boost/graph/dijkstra_shortest_paths_no_color_map.hpp
         // The named parameter version is only defined for dijkstra_shortest_paths_no_color_map
         // Therefore, we need to explicitly pass in the arguments
@@ -203,6 +206,7 @@ private:
             //std::cout << "Found goals" << std::endl;
         }
         // Get successors for each node reached
+        DEBUG (2) std::cout << "Find nodes in distance # "<< nodesInDistance.size() <<std::endl;
         std::vector<vertex_descriptor> successors =
             get_successors(nodesInDistance, predecessors_map);
         double cost;
@@ -221,11 +225,22 @@ private:
             }
             ++k;
         }
+        DEBUG (2) std::cout << "Clean examined vertices"<< examined_vertices.size() <<std::endl;
         clean_distances_predecessors();
     };
     /*
        Clean the distance map and predecessor map 
      */
+    void initialize_distances_predecessors(){
+        // Need initialization 
+        predecessors_map= std::vector<vertex_descriptor>(num_vertices);
+        distances_map = std::vector<double>(num_vertices);
+        for (int i = 0; i < num_vertices; ++i) {
+            distances_map[i] = std::numeric_limits<double>::max();
+            predecessors_map[i] = i;
+        }
+
+    }
     void clean_distances_predecessors(){
         // Update the properties of examined nodes
         int N = examined_vertices.size();
