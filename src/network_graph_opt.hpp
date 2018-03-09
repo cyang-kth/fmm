@@ -1,13 +1,12 @@
 /**
  * Content
- * Definition of the NetworkGraph class
+ * Definition of the NetworkGraphOpt class
  *      
  * @author: Can Yang
- * @version: 2017.11.11
+ * @version: 2018.03.09
  */
-
-#ifndef MM_NETWORK_GRAPH_HPP
-#define MM_NETWORK_GRAPH_HPP
+#ifndef MM_NETWORK_GRAPH_OPT_HPP
+#define MM_NETWORK_GRAPH_OPT_HPP
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
@@ -16,15 +15,15 @@
 #include <boost/config.hpp>
 #include <boost/graph/graph_traits.hpp>
 #include <boost/graph/adjacency_list.hpp>
-#include <boost/graph/dijkstra_shortest_paths.hpp>
+#include <boost/graph/dijkstra_shortest_paths_no_color_map.hpp>
 #include <boost/property_map/property_map.hpp>
 #include "types.hpp"
 #include "reader.hpp"
 #include "float.h"
 #include "network.hpp"
 #include <algorithm> // std::reverse
-namespace MM {
-class NetworkGraph
+namespace MM{
+class NetworkGraphOpt
 {
 public:
     // A infinity value used in the routing algorithm
@@ -32,7 +31,7 @@ public:
     /**
      *  Construct a network graph from a network object
      */
-    NetworkGraph(Network *network) {
+    NetworkGraphOpt(Network *network) {
         std::vector<Edge> *edges = network->get_edges();
         std::cout << "Construct graph from network edges start" << std::endl;
         edge_descriptor e;
@@ -48,8 +47,10 @@ public:
             g[e].length = network_edge.length;
             //printf( "Edge read %d,%d,%d,%lf\n",network_edge.id,network_edge.source,network_edge.target,network_edge.length);
         }
-        int Npoints = boost::num_vertices(g);
-        std::cout << "Graph nodes " << Npoints << std::endl;
+        num_vertices = boost::num_vertices(g);
+        std::cout << "Graph nodes " << num_vertices << std::endl;
+        predecessors_map= std::vector<vertex_descriptor>(num_vertices);
+        distances_map = std::vector<double>(num_vertices);
         std::cout << "Construct graph from network edges end" << std::endl;
     };
     /**
@@ -94,8 +95,10 @@ private:
         explicit driving_distance_visitor(
             double distance_goal,
             std::deque< vertex_descriptor > &nodesInDistance,
-            std::vector< double > &distances
-        ) : m_distance_goal(distance_goal), m_nodes(nodesInDistance), m_dist(distances) {};
+            std::vector< double > &distances,
+            std::vector< vertex_descriptor > &examined_vertices_ref
+        ) : m_distance_goal(distance_goal), m_nodes(nodesInDistance), m_dist(distances),
+        m_examined_vertices(examined_vertices_ref) {};
         template <class Graph>void examine_vertex(vertex_descriptor u, Graph &g) {
             m_nodes.push_back(u);
             if (m_dist[u] > m_distance_goal) {
@@ -103,10 +106,15 @@ private:
                 throw found_goals();
             }
         };
+        template <class Graph>void edge_relaxed(edge_descriptor e, Graph &g) {
+            // Add v to the examined vertices
+            m_examined_vertices.push_back(boost::target(e, g));
+        };
     private:
         double m_distance_goal; //Delta
         std::deque< vertex_descriptor > &m_nodes; //Precedessors
         std::vector< double > &m_dist; // Distances
+        std::vector< vertex_descriptor > & m_examined_vertices; //Examined nodes
     }; // driving_distance_visitor
     
     Graph_T g; // The member storing a boost graph
@@ -161,20 +169,18 @@ private:
         // https://github.com/pgRouting/pgrouting-build/blob/44deced99d05617a41948eec07d0b22c7f236cbf/src/dijkstra/src/pgr_dijkstra.hpp#L508
         // 
         // std::cout << "Progress source " << source << std::endl;
-        std::vector<vertex_descriptor> predecessors(num_vertices(g));
-        // a list of costs stored for one node to all nodes in the graph
-        std::vector<double> distances(num_vertices(g));
         std::deque<vertex_descriptor> nodesInDistance;
+        examined_vertices.push_back(source);
         try {
-            dijkstra_shortest_paths(
+            dijkstra_shortest_paths_no_color_map_no_init(
                 g,
                 source,
-                weight_map(get(&Edge_Property::length, g)).
-                predecessor_map(&predecessors[0]).
-                distance_map(&distances[0]).
+                weight_map(get(&Edge_Property::length, g)),
+                boost::predecessor_map(&predecessors_map[0]),
+                boost::distance_map(&distances_map[0]),
                 visitor(
                     driving_distance_visitor(
-                        delta, nodesInDistance, distances
+                        delta, nodesInDistance, distances_map, examined_vertices
                     )
                 )
             );
@@ -183,7 +189,7 @@ private:
         }
         // Get successors for each node reached
         std::vector<vertex_descriptor> successors =
-            get_successors(nodesInDistance, predecessors);
+            get_successors(nodesInDistance, predecessors_map);
         double cost;
         int edge_id;
         int k = 0;
@@ -192,34 +198,37 @@ private:
             node = nodesInDistance[k];
             if (source != node) {
                 // The cost is need to identify the edge ID
-                cost = distances[successors[k]] - distances[source];
+                cost = distances_map[successors[k]] - distances_map[source];
                 edge_id = get_edge_id(source, successors[k], cost);
                 stream << source << ";" << node << ";" << successors[k] << ";"
-                       << predecessors[node] << ";" << edge_id << ";" << distances[node]
+                       << predecessors_map[node] << ";" << edge_id << ";" << distances_map[node]
                        << "\n";
             }
             ++k;
         }
-    };
-    /**
-     * Optimized for a large road network
-     * http://www.boost.org/doc/libs/1_41_0/libs/graph/doc/dijkstra_shortest_paths.html
-     * http://www.boost.org/doc/libs/1_60_0/libs/graph/doc/breadth_first_visit.html
-     * http://www.boost.org/doc/libs/1_41_0/libs/graph/doc/dijkstra_shortest_paths_no_color_map.html
-     * dijkstra_shortest_paths_no_color_map_no_init()
-     * We may create a single distance map and predecessor map and update its content partly each time in the process
-     * 
-     */
-    void driving_distance_opt(const vertex_descriptor& source, double delta, std::ostream& stream){
-
+        clean_distances_predecessors();
     };
     /*
        Clean the distance map and predecessor map 
      */
-    void clean_graph(){
-
+    void clean_distances_predecessors(){
+        // Update the properties of examined nodes
+        int N = examined_vertices.size();
+        for (int i = 0; i < N; ++i) {
+            vertex_descriptor v = examined_vertices[i];
+            distances_map[v] = std::numeric_limits<double>::max();
+            predecessors_map[v] = v;
+        }
+        examined_vertices.clear();
+        // Clear the examined vertices
     };
     static constexpr double DOUBLE_MIN = 1.e-6; // This is used for comparing double values
-}; // NetworkGraph
+    // Two maps record the routing output
+    std::vector<vertex_descriptor> predecessors_map;
+    // a list of costs stored for one node to all nodes in the graph
+    std::vector<double> distances_map;
+    std::vector<vertex_descriptor> examined_vertices; // Nodes whose distance in the dist_map is updated.
+    int num_vertices=0;
+}; // NetworkGraphOpt
 } // MM
-#endif /* MM_NETWORK_GRAPH_HPP */
+#endif /* MM_NETWORK_GRAPH_OPT_HPP */

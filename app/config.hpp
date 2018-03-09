@@ -136,7 +136,7 @@ public:
     std::string network_source;
     std::string network_target;
 
-    // RODT configurations
+    // UBODT configurations
     std::string ubodt_file;
     int multiplier;
     int nhash;
@@ -156,7 +156,7 @@ public:
     int mode;
     // Parameters
     double gps_error;
-    // Used by hashtable in RODT
+    // Used by hashtable in UBODT
 
     // Used by Rtree search
     int k;
@@ -201,7 +201,7 @@ public:
     void print_config_ubodt()
     {
         std::cout<<"------------------------------------------"<<std::endl;
-        std::cout<<"Configuration parameters for RODT construction: "<<std::endl;
+        std::cout<<"Configuration parameters for UBODT construction: "<<std::endl;
         std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"Network_file: "<<network_file<<std::endl;;
         std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"Network id: "<< network_id<<std::endl;
         std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"Network source: "<< network_source<<std::endl;
@@ -212,7 +212,7 @@ public:
     };
     bool validate()
     {
-        std::cout<<"Validating configuration for RODT construction:"<<std::endl;
+        std::cout<<"Validating configuration for UBODT construction:"<<std::endl;
         if (!fileExists(network_file))
         {
             std::cout<<std::setw(12)<<""<<"Error,Network file not found"<<std::endl;

@@ -6,6 +6,7 @@
  * @version: 2017.11.11
  */
 #include "../src/network_graph.hpp"
+#include "../src/network_graph_opt.hpp"
 #include "config.hpp"
 #include <iostream>
 #include <ctime>
@@ -35,7 +36,8 @@ int main(int argc, char* argv[])
             config.network_id,
             config.network_source,
             config.network_target);
-        MM::NetworkGraph graph(&network);
+        // MM::NetworkGraph graph(&network);
+        MM::NetworkGraphOpt graph(&network);
         graph.precompute_ubodt(config.result_file,config.delta);
         clock_t end_time = clock(); // program end time
         // Unit is second
