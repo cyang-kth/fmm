@@ -136,6 +136,8 @@ Two example configuration files are given in the [example](example) folder.
     + output
         * file: output file in CSV format
 
+**Note that delta should be specified in the same unit as the network file.** 
+
 ### Configuration of fmm
 
 - fmm_config
@@ -156,7 +158,7 @@ Two example configuration files are given in the [example](example) folder.
         - k: number of candidates in MM
         - r: search radius r
         - pf: penalty factor for reversed movement
-        - gps_error: error used in emission probability calculation
+        - gps_error: gps error used in emission probability calculation
     * output
         - mode: output mode
             + 0: id + o_path + c_path (Default mode)
@@ -164,6 +166,8 @@ Two example configuration files are given in the [example](example) folder.
             + 2: id + o_path + c_path + geom(wkt) // consumes a lot of storage, for small data set
             + 3: id + o_path + (L-offset) + c_path
         - file: the matched file
+
+**Note that search radius and gps error should be specified in the same unit as the network file.** 
 
 ## Performance measurement
 

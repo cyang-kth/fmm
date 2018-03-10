@@ -29,7 +29,7 @@ int main (int argc, char **argv)
 {
     std::cout<<"------------ Fast map matching (FMM) ------------"<<endl;
     std::cout<<"------------     Author: Can Yang    ------------"<<endl;
-    std::cout<<"------------   Version: 2017.11.11   ------------"<<endl;
+    std::cout<<"------------   Version: 2018.03.09   ------------"<<endl;
     std::cout<<"------------     Applicaton: fmm     ------------"<<endl;
     if (argc<2)
     {

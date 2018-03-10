@@ -116,6 +116,14 @@ public:
             std::cout<<std::setw(12)<<""<<"Error, Algorithm parameters invalid."<<std::endl;
             return false;
         }
+        // Check the definition of parameters search radius and gps error
+        if (radius/gps_error>10){
+            std::cout<<std::setw(12)<<""<<"Error, the gps error "<< gps_error 
+            <<" is too small compared with search radius "<< radius <<std::endl;
+            std::cout<<std::setw(12)<<"It may cause underflow, try to increase gps error or descrease search radius"<<std::endl;
+            return false;    
+        }    
+     
         std::cout<<"Validating success."<<std::endl;
         return true;
     };

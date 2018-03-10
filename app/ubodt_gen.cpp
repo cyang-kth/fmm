@@ -15,7 +15,7 @@ int main(int argc, char* argv[])
 {
     std::cout<<"------------ Fast map matching (FMM) ------------"<<endl;
     std::cout<<"------------     Author: Can Yang    ------------"<<endl;
-    std::cout<<"------------   Version: 2017.11.11   ------------"<<endl;
+    std::cout<<"------------   Version: 2018.03.09   ------------"<<endl;
     std::cout<<"------------  Applicaton: ubodt_gen  ------------"<<endl;
     if (argc<2) {
         std::cout<<"No configuration file supplied"<<endl;
