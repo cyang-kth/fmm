@@ -48,8 +48,8 @@ public:
             g[e].length = network_edge.length;
             //printf( "Edge read %d,%d,%d,%lf\n",network_edge.id,network_edge.source,network_edge.target,network_edge.length);
         }
-        int Npoints = boost::num_vertices(g);
-        std::cout << "Graph nodes " << Npoints << std::endl;
+        num_vertices = boost::num_vertices(g);
+        std::cout << "Graph nodes " << num_vertices << std::endl;
         std::cout << "Construct graph from network edges end" << std::endl;
     };
     /**
@@ -60,9 +60,13 @@ public:
     void precompute_ubodt(const std::string &filename, double delta) {
         std::ofstream myfile(filename);
         std::cout << "Start to generate UBODT with delta " << delta << std::endl;
+        int step_size = num_vertices/20;
+        if (step_size<10) step_size=10;
+        //int num_vertices = vertices(g);
         myfile << "source;target;next_n;prev_n;next_e;distance\n";
         vertex_iterator vi, vend;
         for (boost::tie(vi, vend) = vertices(g); vi != vend; ++vi) {
+            if (*vi%step_size==0) std::cout<<"Progress "<<*vi<< " / " << num_vertices <<std::endl;
             driving_distance(*vi, delta, myfile);
         }
         myfile.close();
@@ -152,18 +156,16 @@ private:
      * write the UBODT rows to a file
      */
     void driving_distance(const vertex_descriptor& source, double delta, std::ostream& stream) {
-        if (source % 5000 == 0) {
-            std::cout << "Progress source " << source << std::endl;
-        }
         // The two lines below can be problematic when the network is large but delta is small.
+        // check the network_graph_opt.hpp for a solution
         // 
         // The implementation is based on 
         // https://github.com/pgRouting/pgrouting-build/blob/44deced99d05617a41948eec07d0b22c7f236cbf/src/dijkstra/src/pgr_dijkstra.hpp#L508
         // 
         // std::cout << "Progress source " << source << std::endl;
-        std::vector<vertex_descriptor> predecessors(num_vertices(g));
+        std::vector<vertex_descriptor> predecessors(num_vertices);
         // a list of costs stored for one node to all nodes in the graph
-        std::vector<double> distances(num_vertices(g));
+        std::vector<double> distances(num_vertices);
         std::deque<vertex_descriptor> nodesInDistance;
         // http://www.boost.org/doc/libs/1_66_0/boost/graph/dijkstra_shortest_paths.hpp
         // The function below is defined as a Named Parameter Variant
@@ -203,25 +205,8 @@ private:
             ++k;
         }
     };
-    /**
-     * Optimized for a large road network
-     * http://www.boost.org/doc/libs/1_41_0/libs/graph/doc/dijkstra_shortest_paths.html
-     * http://www.boost.org/doc/libs/1_60_0/libs/graph/doc/breadth_first_visit.html
-     * http://www.boost.org/doc/libs/1_41_0/libs/graph/doc/dijkstra_shortest_paths_no_color_map.html
-     * dijkstra_shortest_paths_no_color_map_no_init()
-     * We may create a single distance map and predecessor map and update its content partly each time in the process
-     * 
-     */
-    void driving_distance_opt(const vertex_descriptor& source, double delta, std::ostream& stream){
-
-    };
-    /*
-       Clean the distance map and predecessor map 
-     */
-    void clean_graph(){
-
-    };
     static constexpr double DOUBLE_MIN = 1.e-6; // This is used for comparing double values
+    int num_vertices=0;
 }; // NetworkGraph
 } // MM
 #endif /* MM_NETWORK_GRAPH_HPP */

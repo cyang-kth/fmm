@@ -6,9 +6,9 @@ This project is an implementation of the fast map matching (FMM) algorithm intro
 
 - Highly optimized code in C++ 
 - Integration of Boost library (Rtree index and routing engine) 
-- Map matching speed of **25000-45000 points/second** (single processor)
+- Map matching speed of **25,000-45,000 points/second** (single processor)
 - Customized output mode (matched point,matched line,offset,edge ID)
-- Tested on city level road network and millions of GPS data 
+- Tested on city level road network and **millions of GPS records** 
 
 ![demo](demo.png)
 

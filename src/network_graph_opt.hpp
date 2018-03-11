@@ -71,8 +71,11 @@ public:
         std::ofstream myfile(filename);
         std::cout << "Start to generate UBODT with delta " << delta << std::endl;
         myfile << "source;target;next_n;prev_n;next_e;distance\n";
+        int step_size = num_vertices/20;
+        if (step_size<10) step_size=10;
         vertex_iterator vi, vend;
         for (boost::tie(vi, vend) = vertices(g); vi != vend; ++vi) {
+            if (*vi%step_size==0) std::cout<<"Progress "<<*vi<< " / " << num_vertices <<std::endl;
             driving_distance(*vi, delta, myfile);
         }
         myfile.close();
@@ -171,15 +174,6 @@ private:
      * write the UBODT rows to a file
      */
     void driving_distance(const vertex_descriptor& source, double delta, std::ostream& stream) {
-        if (source % 5000 == 0) {
-            std::cout << "Progress source " << source << std::endl;
-        }
-        // The two lines below can be problematic when the network is large but delta is small.
-        // 
-        // The implementation is based on 
-        // https://github.com/pgRouting/pgrouting-build/blob/44deced99d05617a41948eec07d0b22c7f236cbf/src/dijkstra/src/pgr_dijkstra.hpp#L508
-        // 
-        // std::cout << "Progress source " << source << std::endl;
         DEBUG (2) std::cout << "Debug progress source " << source << std::endl;
         std::deque<vertex_descriptor> nodesInDistance;
         examined_vertices.push_back(source);
