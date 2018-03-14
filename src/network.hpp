@@ -421,6 +421,8 @@ public:
             delete firstlineseg;
             delete lastlineseg;
         }
+        GC_DEBUG(2) std::cout<< "Export result" <<std::endl;
+        GC_DEBUG(2) UTIL::print_geometry(line);
         return line;
     };
 

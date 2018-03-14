@@ -225,12 +225,11 @@ OGRLineString * cutoffseg(double offset, OGRLineString * linestring, int mode)
             if (1-ratio>0.0001) cutoffline->addPoint(new_x, new_y);
         }
     } else {
-        double L=0; // length parsed
+        double L_processed=0; // length parsed
         int i = 0; 
         int p_idx = 0;
         double px=0;
         double py=0;
-        double ratio = 0;
         // Find the idx of the point to be exported close to p 
         while(i<Npoints-1)
         {       
@@ -239,30 +238,37 @@ OGRLineString * cutoffseg(double offset, OGRLineString * linestring, int mode)
             double x2 = linestring->getX(i+1);
             double y2 = linestring->getY(i+1);
             double deltaL = std::sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1)); // length of current segment
-            ratio = (offset-L)/deltaL;
+            double ratio = (offset-L_processed)/deltaL;
             GC_DEBUG(3) std::cout<< " deltaL " << deltaL <<std::endl;
             GC_DEBUG(3) std::cout<< " Offset " << offset <<std::endl;
-            GC_DEBUG(3) std::cout<< " L " << L <<std::endl;
+            GC_DEBUG(3) std::cout<< " L_processed " << L_processed <<std::endl;
             GC_DEBUG(3) std::cout<< " Ratio " << ratio <<std::endl;
-            //if(offset>L && offset<L+deltaL)
-            if(ratio>0 && 1-ratio>0.0001)
+            //if
+            if(offset>=L_processed && offset<=L_processed+deltaL)
             {
                 // double ratio = (offset-L)/deltaL;
                 // Think 
                 px= x1+ratio*(x2-x1);
                 py = y1+ratio*(y2-y1);
-                p_idx = i;
                 // cutoffline->addPoint(new_x, new_y);
                 break;
             }
             ++i;
-            L += deltaL; 
+            L_processed += deltaL; 
         };
+        if (offset>L_processed) {
+            // The offset value is slightly bigger than the length because 
+            // of precision
+            // implies that px and py are still 0
+            px = linestring->getX(i);
+            py = linestring->getY(i);
+        }
         GC_DEBUG(3) std::cout<< " px " << px <<std::endl;
         GC_DEBUG(3) std::cout<< " py " << py <<std::endl;
         GC_DEBUG(3) std::cout<< " i " << py <<std::endl;
+        p_idx = i;
         if (mode==0){ // export p -> end
-            if (1-ratio>0.0001) cutoffline->addPoint(px,py);
+            cutoffline->addPoint(px,py);
             for(int j=p_idx+1; j<Npoints; ++j)
             {   
                 cutoffline->addPoint(linestring->getX(j), linestring->getY(j));
@@ -272,7 +278,7 @@ OGRLineString * cutoffseg(double offset, OGRLineString * linestring, int mode)
             {   
                 cutoffline->addPoint(linestring->getX(j), linestring->getY(j));
             }
-            if (1-ratio>0.0001) cutoffline->addPoint(px,py);
+            cutoffline->addPoint(px,py);
         }   
     }
     return cutoffline;
