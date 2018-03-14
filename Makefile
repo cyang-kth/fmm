@@ -14,7 +14,7 @@ build_fmm:initial
 	@echo ----- fmm build success ----- 
 build_install_fmm_debug:initial
 	@echo ----- Start to build fmm_debug -----
-	g++ -std=gnu++11 -DOPI_DEBUG_LEVEL='2' -O3 app/fmm.cpp -o dist/fmm_debug -lgdal
+	g++ -std=gnu++11 -DGC_DEBUG_LEVEL='3' -O3 app/fmm.cpp -o dist/fmm_debug -lgdal
 	@echo ----- fmm_debug build success ----- 
 	@echo ----- Copy debug executables to home/bin ----- 
 	cp dist/fmm_debug $(HOME)/bin

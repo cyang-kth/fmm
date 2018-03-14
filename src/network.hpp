@@ -376,27 +376,37 @@ public:
         OGRLineString *line = new OGRLineString();
         int NOsegs = o_path_ptr->size();
         int NCsegs = complete_path->size();
-    
-        DEBUG(2) std::cout<< "optimal path size "<<NOsegs <<std::endl;
-        DEBUG(2) std::cout<< "Complete path size "<<NCsegs <<std::endl;
+        GC_DEBUG(2) std::cout<< __FILE__ << __LINE__ <<" Optimal path size "<<NOsegs <<std::endl;
+        GC_DEBUG(2) std::cout<< __FILE__ << __LINE__ <<" Complete path size "<<NCsegs <<std::endl;
         if (NCsegs ==1)
         {
             double firstoffset = (*o_path_ptr)[0]->offset;
             double lastoffset = (*o_path_ptr)[NOsegs-1]->offset;
+            GC_DEBUG(2) std::cout<< "first offset " << firstoffset <<std::endl;
+            GC_DEBUG(2) std::cout<< "last offset " << lastoffset <<std::endl;
             OGRLineString * firstseg = network_edges[(*complete_path)[0]].geom;
             OGRLineString * firstlineseg= ALGORITHM::cutoffseg_unique(firstoffset,lastoffset,firstseg);
             append_segs_to_line(line,firstlineseg,0);
+            GC_DEBUG(2) UTIL::print_geometry(firstlineseg);
             // Free the memory
             delete firstlineseg;
-        }
-        else
-        {
+        } else {
             double firstoffset = (*o_path_ptr)[0]->offset;
             double lastoffset = (*o_path_ptr)[NOsegs-1]->offset;
             OGRLineString * firstseg = network_edges[(*complete_path)[0]].geom;
             OGRLineString * lastseg = network_edges[(*complete_path)[NCsegs-1]].geom;
-            OGRLineString * firstlineseg= ALGORITHM::cutoffseg(firstoffset, firstseg, 0);   
+            OGRLineString * firstlineseg= ALGORITHM::cutoffseg(firstoffset, firstseg, 0); 
             OGRLineString * lastlineseg= ALGORITHM::cutoffseg(lastoffset, lastseg, 1);
+            GC_DEBUG(2) std::cout<< "First offset " << firstoffset <<std::endl;
+            GC_DEBUG(2) std::cout<< "First line " <<std::endl;
+            GC_DEBUG(2) UTIL::print_geometry(firstseg);
+            GC_DEBUG(2) std::cout<< "First line cutoff " <<std::endl;
+            GC_DEBUG(2) UTIL::print_geometry(firstlineseg);
+            GC_DEBUG(2) std::cout<< "last offset " << lastoffset <<std::endl;
+            GC_DEBUG(2) std::cout<< "Last line " <<std::endl;
+            GC_DEBUG(2) UTIL::print_geometry(lastseg);
+            GC_DEBUG(2) std::cout<< "Last line cutoff " <<std::endl;
+            GC_DEBUG(2) UTIL::print_geometry(lastlineseg);
             append_segs_to_line(line,firstlineseg,0);
             if (NCsegs>2)
             {
