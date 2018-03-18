@@ -136,11 +136,8 @@ public:
                 auto segs = look_sp_path(a->edge->target,b->edge->source);
                 // No transition exist in UBODT
                 if (segs.empty() &&  a->edge->target!=b->edge->source){
-                CPC_DEBUG(2) std::cout<<"Large gap from "<< a->edge->target <<" to "<< b->edge->source <<std::endl;
-                CPC_DEBUG(2) std::cout<<"Construct complete path skipped"<<std::endl;
-#ifdef GAP_EXPLORE
-                std::cout<<"Large gap from "<< a->edge->target <<" to "<< b->edge->source <<std::endl;
-#endif // GAP_EXPLORE
+                CPC_DEBUG(1) std::cout<<"Large gap from "<< a->edge->target <<" to "<< b->edge->source <<std::endl;
+                CPC_DEBUG(1) std::cout<<"Construct complete path skipped"<<std::endl;
                     delete edges; // free the memory of edges
                     return nullptr;
                 }
