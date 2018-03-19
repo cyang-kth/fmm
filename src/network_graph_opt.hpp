@@ -9,8 +9,11 @@
  * It avoids intialization of distances and predecessors vector 
  * in each iteration of the driving distance calculation. With a 
  * large road network, a small proportion of their nodes are visited
- * in the precomputation.  
- *      
+ * in the precomputation. 2018.03.09 
+ *
+ * Add a property map for vertices in the graph to store discontinuous ID
+ * for nodes. 
+ * 
  * @author: Can Yang
  * @version: 2018.03.09
  */
@@ -32,6 +35,7 @@
 #include "float.h"
 #include "network.hpp"
 #include <algorithm> // std::reverse
+#include <unordered_map>
 namespace MM{
 class NetworkGraphOpt
 {
@@ -44,14 +48,44 @@ public:
     NetworkGraphOpt(Network *network) {
         std::vector<Edge> *edges = network->get_edges();
         std::cout << "Construct graph from network edges start" << std::endl;
+        // Key is the external ID and value is the index of vertice
+        std::unordered_map<int,int> vertex_map; 
+        int current_idx=-1;
         edge_descriptor e;
         bool inserted;
         g = Graph_T(); //18
         int N = edges->size();
+        int source_idx = 0;
+        int target_idx = 0;
         printf("Network edges :%d \n", N);
         for (int i = 0; i < N; ++i) {
             Edge &network_edge = (*edges)[i];
-            boost::tie(e, inserted) = add_edge(network_edge.source, network_edge.target, g);
+            auto search = vertex_map.find(network_edge.source);
+            // Search for source node idx 
+            if(search != vertex_map.end()) {
+                // A node exists already
+                source_idx = search->second;
+            } else {
+                // A new node is found
+                ++current_idx;
+                vertex_map.insert({network_edge.source,current_idx});
+                source_idx = current_idx;
+                vertex_id_vec.push_back(network_edge.source);
+            };
+            // Search for target node idx 
+            search = vertex_map.find(network_edge.target);
+            if(search != vertex_map.end()) {
+                // A node exists already
+                target_idx = search->second;
+            } else {
+                // A new node is found
+                ++current_idx;
+                vertex_map.insert({network_edge.target,current_idx});
+                target_idx = current_idx;
+                vertex_id_vec.push_back(network_edge.target);
+            };
+            // boost::tie(e, inserted) = add_edge(network_edge.source, network_edge.target, g);
+            boost::tie(e, inserted) = add_edge(source_idx,target_idx, g);
             // id is the FID read, id_attr is the external property in SHP
             g[e].id = network_edge.id;
             g[e].length = network_edge.length;
@@ -222,9 +256,12 @@ private:
                 // The cost is need to identify the edge ID
                 cost = distances_map[successors[k]] - distances_map[source];
                 edge_id = get_edge_id(source, successors[k], cost);
-                stream << source << ";" << node << ";" << successors[k] << ";"
-                       << predecessors_map[node] << ";" << edge_id << ";" << distances_map[node]
+                stream << vertex_id_vec[source] << ";" << vertex_id_vec[node] << ";" << vertex_id_vec[successors[k]] << ";"
+                       << vertex_id_vec[predecessors_map[node]] << ";" << edge_id << ";" << distances_map[node]
                        << "\n";
+                // stream << source << ";" << node << ";" << successors[k] << ";"
+                //        << predecessors_map[node] << ";" << edge_id << ";" << distances_map[node]
+                //        << "\n";
             }
             ++k;
         }
@@ -260,6 +297,7 @@ private:
     std::vector<vertex_descriptor> predecessors_map;
     // a list of costs stored for one node to all nodes in the graph
     std::vector<double> distances_map;
+    std::vector<int> vertex_id_vec; // stores the external ID of each vertex in G
     std::vector<vertex_descriptor> examined_vertices; // Nodes whose distance in the dist_map is updated.
     int num_vertices=0;
 }; // NetworkGraphOpt
