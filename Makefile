@@ -1,9 +1,8 @@
-build: build_fmm build_ubodt_gen build_ubodt_gen_opt
+build: build_fmm build_ubodt_gen
 install: 
 	@echo ----- Copy executables to home/bin ----- 
 	cp dist/fmm $(HOME)/bin
 	cp dist/ubodt_gen $(HOME)/bin
-	cp dist/ubodt_gen_opt $(HOME)/bin
 	@echo ----- Finish -----
 initial:
 	mkdir -p dist
@@ -23,10 +22,6 @@ build_ubodt_gen:initial
 	@echo ----- Start to build ubodt_gen ----- 
 	g++ -std=gnu++11  -O3 app/ubodt_gen.cpp -o dist/ubodt_gen -lgdal
 	@echo ----- ubodt_gen build success ----- 
-build_ubodt_gen_opt:initial
-	@echo ----- Start to build ubodt_gen_opt ----- 
-	g++ -std=gnu++11  -O3 app/ubodt_gen_opt.cpp -o dist/ubodt_gen_opt -lgdal
-	@echo ----- ubodt_gen_opt build success -----
 build_install_ubodt_gen_debug:initial
 	@echo ----- Start to build ubodt_gen_debug ----- 
 	g++ -std=gnu++11 -DDEBUG_LEVEL='2' -O3 app/ubodt_gen.cpp -o dist/ubodt_gen_debug -lgdal
@@ -34,4 +29,9 @@ build_install_ubodt_gen_debug:initial
 	@echo ----- ubodt_gen build success ----- 
 clean:
 	rm dist/*
+	rm $(HOME)/bin/fmm
+	rm $(HOME)/bin/fmm_debug
+	rm $(HOME)/bin/ubodt_gen
+	rm $(HOME)/bin/ubodt_gen_debug
+	rm $(HOME)/bin/ubodt_gen_opt
 	

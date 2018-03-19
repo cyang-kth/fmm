@@ -188,12 +188,6 @@ The speed of map matching is about:
 In case of a large road network with hundreds of thousand of nodes, the driving distance function used in pgrouting and BGL can be slow as it requires initializing two vectors with graph size in order to maintain the output of routing. An optimized version is designed in the `src/network_graph_opt.hpp`
 by regularly updating the two vectors for each source node. 
 
-To run the optimized ubodt precomputation app, 
-
-```
-ubodt_gen_opt ubodt_config.xml
-```
-
 Statistics on the network of Netherland (700k nodes and 1 million edges)
 http://geodata.nationaalgeoregister.nl/nwbwegen/extract/nwbwegen.zip
 

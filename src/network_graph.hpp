@@ -1,4 +1,8 @@
 /**
+ * This class is deprecated, use NetworkGraphOpt instead, which 
+ * is optimized for large road network and supports discontinuous
+ * node ID.
+ * 
  * Content
  * Definition of the NetworkGraph class
  *      
