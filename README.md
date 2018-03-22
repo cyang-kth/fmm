@@ -136,7 +136,7 @@ Two example configuration files are given in the [example](example) folder.
     + output
         * file: output file in CSV format
 
-**Note that delta should be specified in the same unit as the network file.** 
+:warning **Delta** should be specified in the same spatial unit as the network file. If the reference system is WGS84 (in degree), then 1 degree of latitude or longitude equals to about 111km. It is suggested to try some small values first (e.g., 0.01 degree). 
 
 ### Configuration of fmm
 
