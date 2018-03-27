@@ -103,7 +103,7 @@ public:
         // Back track to find optimal path
         OPI_DEBUG(2) std::cout<<"Find last optimal candidate"<<std::endl;
         Candidate *track_cand=nullptr;
-        double final_prob = 0;
+        double final_prob = -0.001;
         Point_Candidates& last_candidates = m_traj_candidates->back();
         for (
             Point_Candidates::iterator c = last_candidates.begin();
