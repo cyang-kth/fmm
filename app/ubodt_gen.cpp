@@ -30,12 +30,12 @@ int main(int argc, char* argv[])
             std::cout<<"Invalid configuration file, program stop"<<endl;
             return 0;
         };
+        config.print();
         std::cout<<"Write UBODT to file "<<config.result_file<<'\n';
         MM::Network network(config.network_file,
             config.network_id,
             config.network_source,
             config.network_target);
-        // MM::NetworkGraph graph(&network);
         MM::NetworkGraphOpt graph(&network);
         std::cout<<"Upperbound config (delta): "<<config.delta<<'\n';
         graph.precompute_ubodt(config.result_file,config.delta);

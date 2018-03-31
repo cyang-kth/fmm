@@ -67,7 +67,7 @@ public:
         result_file=tree.get<std::string>("fmm_config.output.file");
         mode=tree.get("fmm_config.output.mode",0);
     };
-    void print_config_mm()
+    void print()
     {
         std::cout<<"------------------------------------------"<<'\n';
         std::cout<<"Configuration parameters for map matching application: "<<'\n';
@@ -203,10 +203,12 @@ public:
         network_id=tree.get("ubodt_config.input.network.id","id");
         network_source=tree.get("ubodt_config.input.network.source","source");
         network_target=tree.get("ubodt_config.input.network.target","target");
+        // int temp = tree.get("ubodt_config.input.network.nid_index",0);
+        // nid_index= temp>0; 
         // Output
         result_file=tree.get<std::string>("ubodt_config.output.file");
     };
-    void print_config_ubodt()
+    void print()
     {
         std::cout<<"------------------------------------------"<<'\n';
         std::cout<<"Configuration parameters for UBODT construction: "<<'\n';

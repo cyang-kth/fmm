@@ -44,7 +44,7 @@ int main (int argc, char **argv)
             std::cout<<"Invalid configuration file, program stop"<<endl;
             return 0;
         };
-        config.print_config_mm();
+        config.print();
         clock_t begin_time = clock(); // program start time
         GPS_ERROR = config.gps_error; // Default value is 50 meter
         Network network(config.network_file,config.network_id,config.network_source,config.network_target);
