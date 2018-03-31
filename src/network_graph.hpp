@@ -38,7 +38,7 @@ public:
      */
     NetworkGraph(Network *network) {
         std::vector<Edge> *edges = network->get_edges();
-        std::cout << "Construct graph from network edges start" << std::endl;
+        std::cout << "Construct graph from network edges start" << '\n';
         edge_descriptor e;
         bool inserted;
         g = Graph_T(); //18
@@ -53,8 +53,8 @@ public:
             //printf( "Edge read %d,%d,%d,%lf\n",network_edge.id,network_edge.source,network_edge.target,network_edge.length);
         }
         num_vertices = boost::num_vertices(g);
-        std::cout << "Graph nodes " << num_vertices << std::endl;
-        std::cout << "Construct graph from network edges end" << std::endl;
+        std::cout << "Graph nodes " << num_vertices << '\n';
+        std::cout << "Construct graph from network edges end" << '\n';
     };
     /**
      * Precompute an UBODT with delta and save it to the file
@@ -63,14 +63,14 @@ public:
      */
     void precompute_ubodt(const std::string &filename, double delta) {
         std::ofstream myfile(filename);
-        std::cout << "Start to generate UBODT with delta " << delta << std::endl;
+        std::cout << "Start to generate UBODT with delta " << delta << '\n';
         int step_size = num_vertices/20;
         if (step_size<10) step_size=10;
         //int num_vertices = vertices(g);
         myfile << "source;target;next_n;prev_n;next_e;distance\n";
         vertex_iterator vi, vend;
         for (boost::tie(vi, vend) = vertices(g); vi != vend; ++vi) {
-            if (*vi%step_size==0) std::cout<<"Progress "<<*vi<< " / " << num_vertices <<std::endl;
+            if (*vi%step_size==0) std::cout<<"Progress "<<*vi<< " / " << num_vertices <<'\n';
             driving_distance(*vi, delta, myfile);
         }
         myfile.close();
@@ -132,7 +132,7 @@ private:
             }
         }
         std::cout << "Edge not found for source " << source << " target " << target
-                  << " cost " << cost << std::endl;
+                  << " cost " << cost << '\n';
         return -1;
     };
     
@@ -166,7 +166,7 @@ private:
         // The implementation is based on 
         // https://github.com/pgRouting/pgrouting-build/blob/44deced99d05617a41948eec07d0b22c7f236cbf/src/dijkstra/src/pgr_dijkstra.hpp#L508
         // 
-        // std::cout << "Progress source " << source << std::endl;
+        // std::cout << "Progress source " << source << '\n';
         std::vector<vertex_descriptor> predecessors(num_vertices);
         // a list of costs stored for one node to all nodes in the graph
         std::vector<double> distances(num_vertices);
@@ -187,7 +187,7 @@ private:
                 )
             );
         } catch (found_goals& goal) {
-            //std::cout << "Found goals" << std::endl;
+            //std::cout << "Found goals" << '\n';
         }
         // Get successors for each node reached
         std::vector<vertex_descriptor> successors =

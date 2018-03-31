@@ -37,18 +37,25 @@ public:
     m_fstream_ptr(new std::ofstream(result_file)),
     m_fstream(*m_fstream_ptr),m_network_ptr(network_ptr)
     {
-        std::cout<<"Write result to file: "<<result_file<<std::endl;
+        std::cout<<"Write result to file: "<<result_file<<'\n';
     };
     // Destructor
     ~ResultWriter(){
         delete m_fstream_ptr;
+    };
+    void write_vector(){
+    };
+    void write_string(){
+    };
+    inline void write_endofline(){
+        m_fstream<<'\n';
     };
     /**
      * Write the results to a CSV file storing:
      *     trajectory id;optimal path;complete path;geometry(WKT)
      */
     void write_map_matched_result_wkt(int tr_id,O_Path *o_path_ptr,C_Path *c_path_ptr, OGRLineString *m_geom){
-        DEBUG(2) std::cout<<__FILE__<<"    Line"<<__LINE__<<":    "<<__FUNCTION__<<std::endl;
+        DEBUG(2) std::cout<<__FILE__<<"    Line"<<__LINE__<<":    "<<__FUNCTION__<<'\n';
         m_fstream<<tr_id;
         m_fstream<<";";
         write_o_path(o_path_ptr);
@@ -58,10 +65,10 @@ public:
         if (m_geom!=nullptr){
             char *wkt;
             m_geom->exportToWkt(&wkt);
-            m_fstream<<wkt<<std::endl;
+            m_fstream<<wkt<<'\n';
             CPLFree(wkt);
         } else {
-            m_fstream<<std::endl;
+            m_fstream<<'\n';
         }
     };
     /**
@@ -69,7 +76,7 @@ public:
      *     trajectory id;optimal path;complete path;geometry(WKB)
      */
     void write_map_matched_result_wkb(int tr_id,O_Path *o_path_ptr,C_Path *c_path_ptr, OGRLineString *m_geom){
-        DEBUG(2) std::cout<<__FILE__<<"    Line"<<__LINE__<<":    "<<__FUNCTION__<<std::endl;
+        DEBUG(2) std::cout<<__FILE__<<"    Line"<<__LINE__<<":    "<<__FUNCTION__<<'\n';
         m_fstream<<tr_id;
         m_fstream<<";";
         write_o_path(o_path_ptr);
@@ -83,29 +90,29 @@ public:
             m_geom->exportToWkb(wkbNDR,wkb);
             // http://www.gdal.org/cpl__string_8h.html
             char *hex_wkb = CPLBinaryToHex(binary_size,wkb);
-            m_fstream<<hex_wkb<<std::endl;
+            m_fstream<<hex_wkb<<'\n';
             CPLFree(hex_wkb);
             // CPLBinaryToHex()
         } else {
-            m_fstream<<std::endl;
+            m_fstream<<'\n';
         }
     };
     // write a header text to the csv file
     void write_header(const std::string &header="id;m_path;geom"){
-        m_fstream<<header<<std::endl;
+        m_fstream<<header<<'\n';
     };
     // write opitmal path and complete path to the csv file
     void write_opath_cpath(int tr_id,O_Path *o_path_ptr,C_Path *c_path_ptr){
-        DEBUG(2) std::cout<<__FILE__<<"    Line"<<__LINE__<<":    "<<__FUNCTION__<<std::endl;
+        DEBUG(2) std::cout<<__FILE__<<"    Line"<<__LINE__<<":    "<<__FUNCTION__<<'\n';
         m_fstream<<tr_id;
         m_fstream<<";";
         write_o_path(o_path_ptr);
         m_fstream<<";";
         write_complete_path(c_path_ptr);
-        m_fstream<<std::endl;
+        m_fstream<<'\n';
     };
     void write_opath_cpath_offset(int tr_id,O_Path *o_path_ptr,C_Path *c_path_ptr){
-        DEBUG(2) std::cout<<__FILE__<<"    Line"<<__LINE__<<":    "<<__FUNCTION__<<std::endl;
+        DEBUG(2) std::cout<<__FILE__<<"    Line"<<__LINE__<<":    "<<__FUNCTION__<<'\n';
         m_fstream<<tr_id;
         m_fstream<<";";
         write_o_path(o_path_ptr);
@@ -113,15 +120,15 @@ public:
         write_offset(o_path_ptr);
         m_fstream<<";";
         write_complete_path(c_path_ptr);
-        m_fstream<<std::endl;
+        m_fstream<<'\n';
     };
 private:
     // Write the optimal path
     void write_o_path(O_Path *o_path_ptr)
     {
-        DEBUG(2) std::cout<<__FILE__<<"    Line"<<__LINE__<<":    "<<__FUNCTION__<<std::endl;
+        DEBUG(2) std::cout<<__FILE__<<"    Line"<<__LINE__<<":    "<<__FUNCTION__<<'\n';
         if (o_path_ptr==nullptr) {
-            DEBUG(2) std::cout<<"Matched path NULL"<<std::endl;
+            DEBUG(2) std::cout<<"Matched path NULL"<<'\n';
             return;
         };
         int N = o_path_ptr->size();
@@ -130,11 +137,11 @@ private:
             m_fstream<< (*o_path_ptr)[i]->edge->id_attr<<",";
         }
         m_fstream<< (*o_path_ptr)[N-1]->edge->id_attr;
-        DEBUG(3) std::cout<<"Finish writing Optimal path"<<std::endl;
+        DEBUG(3) std::cout<<"Finish writing Optimal path"<<'\n';
     };
     void write_offset(O_Path *o_path_ptr){
         if (o_path_ptr==nullptr) {
-            DEBUG(2) std::cout<<"Matched path NULL"<<std::endl;
+            DEBUG(2) std::cout<<"Matched path NULL"<<'\n';
             return;
         };
         int N = o_path_ptr->size();

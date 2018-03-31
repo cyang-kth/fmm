@@ -69,62 +69,62 @@ public:
     };
     void print_config_mm()
     {
-        std::cout<<"------------------------------------------"<<std::endl;
-        std::cout<<"Configuration parameters for map matching application: "<<std::endl;
-        std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"Network_file: "<<network_file<<std::endl;;
-        std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"Network id: "<< network_id<<std::endl;
-        std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"Network source: "<< network_source<<std::endl;
-        std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"Network target: "<< network_target<<std::endl;
-        std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"ubodt_file: "<< ubodt_file<<std::endl;
-        std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"multiplier: "<< multiplier<<std::endl;
-        std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"nhash: "<< nhash<<std::endl;
-        std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"delta: "<< delta<<std::endl;
-        std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"gps_file: "<< gps_file<<std::endl;
-        std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"gps_id: "<< gps_id<<std::endl;
-        std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"k: "<< k<<std::endl;
-        std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"radius: "<< radius<<std::endl;
-        std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"gps_error: "<< gps_error<<std::endl;
-        std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"penalty_factor: "<< penalty_factor<<std::endl;
-        std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"result_file:"<< result_file<<std::endl;
-        std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"geometry mode: "<< mode<<"(0 no geometry, 1 wkb, 2 wkt)"<<std::endl;
-        std::cout<<"------------------------------------------"<<std::endl;
+        std::cout<<"------------------------------------------"<<'\n';
+        std::cout<<"Configuration parameters for map matching application: "<<'\n';
+        std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"Network_file: "<<network_file<<'\n';;
+        std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"Network id: "<< network_id<<'\n';
+        std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"Network source: "<< network_source<<'\n';
+        std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"Network target: "<< network_target<<'\n';
+        std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"ubodt_file: "<< ubodt_file<<'\n';
+        std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"multiplier: "<< multiplier<<'\n';
+        std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"nhash: "<< nhash<<'\n';
+        std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"delta: "<< delta<<'\n';
+        std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"gps_file: "<< gps_file<<'\n';
+        std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"gps_id: "<< gps_id<<'\n';
+        std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"k: "<< k<<'\n';
+        std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"radius: "<< radius<<'\n';
+        std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"gps_error: "<< gps_error<<'\n';
+        std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"penalty_factor: "<< penalty_factor<<'\n';
+        std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"result_file:"<< result_file<<'\n';
+        std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"geometry mode: "<< mode<<"(0 no geometry, 1 wkb, 2 wkt)"<<'\n';
+        std::cout<<"------------------------------------------"<<'\n';
     };
     bool validate_mm()
     {
-        std::cout<<"Validating configuration for map match application:"<<std::endl;
+        std::cout<<"Validating configuration for map match application:"<<'\n';
         if (!fileExists(gps_file))
         {
-            std::cout<<std::setw(12)<<""<<"Error, GPS_file not found. Program stop."<<std::endl;
+            std::cout<<std::setw(12)<<""<<"Error, GPS_file not found. Program stop."<<'\n';
             return false;
         };
         if (!fileExists(network_file))
         {
-            std::cout<<std::setw(12)<<""<<"Error, Network file not found. Program stop."<<std::endl;
+            std::cout<<std::setw(12)<<""<<"Error, Network file not found. Program stop."<<'\n';
             return false;
         };
         if (!fileExists(ubodt_file))
         {
-            std::cout<<std::setw(12)<<""<<"Error, UBODT file not found. Program stop."<<std::endl;
+            std::cout<<std::setw(12)<<""<<"Error, UBODT file not found. Program stop."<<'\n';
             return false;
         };
         if (fileExists(result_file))
         {
-            std::cout<<std::setw(4)<<""<<"Warning, overwrite existing result file."<<result_file<<std::endl;
+            std::cout<<std::setw(4)<<""<<"Warning, overwrite existing result file."<<result_file<<'\n';
         };
         if (gps_error<=0||multiplier<=0||nhash<=0||radius<=0||k<=0)
         {
-            std::cout<<std::setw(12)<<""<<"Error, Algorithm parameters invalid."<<std::endl;
+            std::cout<<std::setw(12)<<""<<"Error, Algorithm parameters invalid."<<'\n';
             return false;
         }
         // Check the definition of parameters search radius and gps error
         if (radius/gps_error>10){
             std::cout<<std::setw(12)<<""<<"Error, the gps error "<< gps_error 
-            <<" is too small compared with search radius "<< radius <<std::endl;
-            std::cout<<std::setw(12)<<"It may cause underflow, try to increase gps error or descrease search radius"<<std::endl;
+            <<" is too small compared with search radius "<< radius <<'\n';
+            std::cout<<std::setw(12)<<"It may cause underflow, try to increase gps error or descrease search radius"<<'\n';
             return false;    
         }    
      
-        std::cout<<"Validating success."<<std::endl;
+        std::cout<<"Validating success."<<'\n';
         return true;
     };
     static bool fileExists(std::string &filename)
@@ -189,7 +189,7 @@ public:
 
         // Create empty property tree object
         boost::property_tree::ptree tree;
-        std::cout<<"Read configuration from xml file: "<<file<<std::endl;
+        std::cout<<"Read configuration from xml file: "<<file<<'\n';
         boost::property_tree::read_xml(file, tree);
         // Parse the XML into the property tree.
         // Without default value, the throwing version of get to find attribute.
@@ -208,34 +208,34 @@ public:
     };
     void print_config_ubodt()
     {
-        std::cout<<"------------------------------------------"<<std::endl;
-        std::cout<<"Configuration parameters for UBODT construction: "<<std::endl;
-        std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"Network_file: "<<network_file<<std::endl;;
-        std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"Network id: "<< network_id<<std::endl;
-        std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"Network source: "<< network_source<<std::endl;
-        std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"Network target: "<< network_target<<std::endl;
-        std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"delta: "<< delta<<std::endl;
-        std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"Output file:"<< result_file<<std::endl;
-        std::cout<<"------------------------------------------"<<std::endl;
+        std::cout<<"------------------------------------------"<<'\n';
+        std::cout<<"Configuration parameters for UBODT construction: "<<'\n';
+        std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"Network_file: "<<network_file<<'\n';;
+        std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"Network id: "<< network_id<<'\n';
+        std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"Network source: "<< network_source<<'\n';
+        std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"Network target: "<< network_target<<'\n';
+        std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"delta: "<< delta<<'\n';
+        std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"Output file:"<< result_file<<'\n';
+        std::cout<<"------------------------------------------"<<'\n';
     };
     bool validate()
     {
-        std::cout<<"Validating configuration for UBODT construction:"<<std::endl;
+        std::cout<<"Validating configuration for UBODT construction:"<<'\n';
         if (!fileExists(network_file))
         {
-            std::cout<<std::setw(12)<<""<<"Error,Network file not found"<<std::endl;
+            std::cout<<std::setw(12)<<""<<"Error,Network file not found"<<'\n';
             return false;
         }
         if (fileExists(result_file))
         {
-            std::cout<<std::setw(4)<<""<<"Warning, overwrite existing result file."<<result_file<<std::endl;
+            std::cout<<std::setw(4)<<""<<"Warning, overwrite existing result file."<<result_file<<'\n';
         }
         if (delta<=0)
         {
-            std::cout<<std::setw(12)<<""<<"Error,Delta value should be positive."<<std::endl;
+            std::cout<<std::setw(12)<<""<<"Error,Delta value should be positive."<<'\n';
             return false;
         }
-        std::cout<<"Validating success."<<std::endl;
+        std::cout<<"Validating success."<<'\n';
         return true;
     };
     static bool fileExists(std::string &filename)

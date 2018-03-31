@@ -45,12 +45,12 @@ bool fileExists(std::string &filename)
  *  step;offset;distance;edge_id
  */
 void print_traj_candidates(Traj_Candidates &tr_cs) {
-    std::cout << "step;offset;distance;edge_id" << std::endl;
+    std::cout << "step;offset;distance;edge_id" << '\n';
     Traj_Candidates::iterator tr_cs_iter;
     Point_Candidates::iterator p_cs_iter;
     for (tr_cs_iter = tr_cs.begin(); tr_cs_iter != tr_cs.end(); ++tr_cs_iter) {
         for (p_cs_iter = tr_cs_iter->begin(); p_cs_iter != tr_cs_iter->end(); ++p_cs_iter) {
-            std::cout << std::distance(tr_cs.begin(), tr_cs_iter) << ";" << p_cs_iter->offset << ";" << p_cs_iter->dist << ";" << p_cs_iter->edge->id_attr<< std::endl;
+            std::cout << std::distance(tr_cs.begin(), tr_cs_iter) << ";" << p_cs_iter->offset << ";" << p_cs_iter->dist << ";" << p_cs_iter->edge->id_attr<< '\n';
         }
     }
 }
@@ -62,7 +62,7 @@ void print_c_path(C_Path *c_path_ptr) {
     {
         std::cout<< (*c_path_ptr)[i]<<" ";
     }
-    std::cout<<std::endl;
+    std::cout<<'\n';
 }
 
 /** 
@@ -70,24 +70,24 @@ void print_c_path(C_Path *c_path_ptr) {
  */
 void print_traj_candidates_count(Traj_Candidates &tr_cs) {
     Traj_Candidates::iterator tr_cs_iter;
-    std::cout<<"Summary of transition graph: "<<std::endl;
-    std::cout<<"Count of candidates"<<std::endl;
+    std::cout<<"Summary of transition graph: "<<'\n';
+    std::cout<<"Count of candidates"<<'\n';
     for (tr_cs_iter = tr_cs.begin(); tr_cs_iter != tr_cs.end(); ++tr_cs_iter) {
         std::cout<< tr_cs_iter->size() <<" ";
     }
-    std::cout<< std::endl;
+    std::cout<< '\n';
 };
 /**
  * Print the OGRLineString in WKT format
  */
 void print_geometry(OGRLineString *geom){
     if (geom==nullptr) {
-        std::cout<<"Geometry in WKT: NULL"<<std::endl;
+        std::cout<<"Geometry in WKT: NULL"<<'\n';
         return;
     }
     char *wkt;
     geom->exportToWkt(&wkt);
-    std::cout<<"Geometry in WKT: "<<wkt<<std::endl;
+    std::cout<<"Geometry in WKT: "<<wkt<<'\n';
     CPLFree(wkt);
 };
 
@@ -100,7 +100,7 @@ std::chrono::time_point<std::chrono::system_clock> get_current_time(){
 // Print a timestamp
 void print_time(const std::chrono::time_point<std::chrono::system_clock> &start_time){
     std::time_t start_time_t = std::chrono::system_clock::to_time_t(start_time);
-    std::cout<<"Time "<<std::ctime(&start_time_t)<<std::endl;
+    std::cout<<"Time "<<std::ctime(&start_time_t)<<'\n';
 };
 
 /**

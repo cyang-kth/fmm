@@ -47,7 +47,7 @@ public:
      */
     NetworkGraphOpt(Network *network) {
         std::vector<Edge> *edges = network->get_edges();
-        std::cout << "Construct graph from network edges start" << std::endl;
+        std::cout << "Construct graph from network edges start" << '\n';
         // Key is the external ID and value is the index of vertice
         std::unordered_map<int,int> vertex_map; 
         int current_idx=-1;
@@ -92,9 +92,9 @@ public:
             //printf( "Edge read %d,%d,%d,%lf\n",network_edge.id,network_edge.source,network_edge.target,network_edge.length);
         }
         num_vertices = boost::num_vertices(g);
-        std::cout << "Graph nodes " << num_vertices << std::endl;
+        std::cout << "Graph nodes " << num_vertices << '\n';
         initialize_distances_predecessors();
-        std::cout << "Construct graph from network edges end" << std::endl;
+        std::cout << "Construct graph from network edges end" << '\n';
     };
     /**
      * Precompute an UBODT with delta and save it to the file
@@ -103,13 +103,13 @@ public:
      */
     void precompute_ubodt(const std::string &filename, double delta) {
         std::ofstream myfile(filename);
-        std::cout << "Start to generate UBODT with delta " << delta << std::endl;
+        std::cout << "Start to generate UBODT with delta " << delta << '\n';
         myfile << "source;target;next_n;prev_n;next_e;distance\n";
         int step_size = num_vertices/20;
         if (step_size<10) step_size=10;
         vertex_iterator vi, vend;
         for (boost::tie(vi, vend) = vertices(g); vi != vend; ++vi) {
-            if (*vi%step_size==0) std::cout<<"Progress "<<*vi<< " / " << num_vertices <<std::endl;
+            if (*vi%step_size==0) std::cout<<"Progress "<<*vi<< " / " << num_vertices <<'\n';
             driving_distance(*vi, delta, myfile);
         }
         myfile.close();
@@ -146,7 +146,7 @@ private:
         ) : m_distance_goal(distance_goal), m_nodes(nodesInDistance), m_dist(distances),
         m_examined_vertices(examined_vertices_ref) {};
         template <class Graph>void examine_vertex(vertex_descriptor u, Graph &g) {
-            DEBUG (2) std::cout << "Examine node " << u << std::endl;
+            DEBUG (2) std::cout << "Examine node " << u << '\n';
             m_nodes.push_back(u);
             if (m_dist[u] > m_distance_goal) {
                 m_nodes.pop_back();
@@ -155,7 +155,7 @@ private:
         };
         template <class Graph>void edge_relaxed(edge_descriptor e, Graph &g) {
             // Add v to the examined vertices
-            DEBUG (2) std::cout << "Examine edge" << e << std::endl;
+            DEBUG (2) std::cout << "Examine edge" << e << '\n';
             m_examined_vertices.push_back(boost::target(e, g));
         };
     private:
@@ -180,7 +180,7 @@ private:
             }
         }
         std::cout << "Edge not found for source " << source << " target " << target
-                  << " cost " << cost << std::endl;
+                  << " cost " << cost << '\n';
         return -1;
     };
     
@@ -208,7 +208,7 @@ private:
      * write the UBODT rows to a file
      */
     void driving_distance(const vertex_descriptor& source, double delta, std::ostream& stream) {
-        DEBUG (2) std::cout << "Debug progress source " << source << std::endl;
+        DEBUG (2) std::cout << "Debug progress source " << source << '\n';
         std::deque<vertex_descriptor> nodesInDistance;
         examined_vertices.push_back(source);
         double inf = std::numeric_limits<double>::max();
@@ -240,10 +240,10 @@ private:
                 )
             );
         } catch (found_goals& goal) {
-            //std::cout << "Found goals" << std::endl;
+            //std::cout << "Found goals" << '\n';
         }
         // Get successors for each node reached
-        DEBUG (2) std::cout << "Find nodes in distance # "<< nodesInDistance.size() <<std::endl;
+        DEBUG (2) std::cout << "Find nodes in distance # "<< nodesInDistance.size() <<'\n';
         std::vector<vertex_descriptor> successors =
             get_successors(nodesInDistance, predecessors_map);
         double cost;
@@ -265,7 +265,7 @@ private:
             }
             ++k;
         }
-        DEBUG (2) std::cout << "Clean examined vertices"<< examined_vertices.size() <<std::endl;
+        DEBUG (2) std::cout << "Clean examined vertices"<< examined_vertices.size() <<'\n';
         clean_distances_predecessors();
     };
     /*

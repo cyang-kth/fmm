@@ -60,7 +60,7 @@ int main (int argc, char **argv)
     int num_trajectories = tr_reader.get_num_trajectories();
     int step_size = num_trajectories/20;
     if (step_size<10) step_size=10;
-    std::cout<<"Start to map match trajectories with total number "<< num_trajectories <<std::endl;
+    std::cout<<"Start to map match trajectories with total number "<< num_trajectories <<'\n';
     if (config.mode == 0)
     {
         rw.write_header("id;o_path;c_path");
@@ -68,9 +68,9 @@ int main (int argc, char **argv)
         {
             Trajectory trajectory = tr_reader.read_next_trajectory();
             int points_in_tr = trajectory.geom->getNumPoints();
-            if (progress%step_size==0) std::cout<<"Progress "<<progress << " / " << num_trajectories <<std::endl;
-            DEBUG(1) std::cout<<"\n============================="<<std::endl;
-            DEBUG(1) std::cout<<"Process trips with id : "<<trajectory.id<<std::endl;
+            if (progress%step_size==0) std::cout<<"Progress "<<progress << " / " << num_trajectories <<'\n';
+            DEBUG(1) std::cout<<"\n============================="<<'\n';
+            DEBUG(1) std::cout<<"Process trips with id : "<<trajectory.id<<'\n';
             // Candidate search
             Traj_Candidates traj_candidates = network.search_tr_cs_knn(trajectory,config.k,config.radius);
             TransitionGraphRouting tg(&traj_candidates,trajectory.geom,&ubodt);
@@ -87,7 +87,7 @@ int main (int argc, char **argv)
             // update statistics
             total_points+=points_in_tr;
             if (c_path_ptr!=nullptr) points_matched+=points_in_tr;
-            DEBUG(1) std::cout<<"============================="<<std::endl;
+            DEBUG(1) std::cout<<"============================="<<'\n';
             ++progress;
             delete o_path_ptr;
             delete c_path_ptr;
@@ -100,9 +100,9 @@ int main (int argc, char **argv)
         {
             Trajectory trajectory = tr_reader.read_next_trajectory();
             int points_in_tr = trajectory.geom->getNumPoints();
-            if (progress%step_size==0) std::cout<<"Progress "<<progress << " / " << num_trajectories <<std::endl;
-            DEBUG(1) std::cout<<"\n============================="<<std::endl;
-            DEBUG(1) std::cout<<"Process trips with id : "<<trajectory.id<<std::endl;
+            if (progress%step_size==0) std::cout<<"Progress "<<progress << " / " << num_trajectories <<'\n';
+            DEBUG(1) std::cout<<"\n============================="<<'\n';
+            DEBUG(1) std::cout<<"Process trips with id : "<<trajectory.id<<'\n';
             // Candidate search
             Traj_Candidates traj_candidates = network.search_tr_cs_knn(trajectory,config.k,config.radius);
             TransitionGraphRouting tg(&traj_candidates,trajectory.geom,&ubodt);
@@ -121,7 +121,7 @@ int main (int argc, char **argv)
             // update statistics
             total_points+=points_in_tr;
             if (c_path_ptr!=nullptr) points_matched+=points_in_tr;
-            DEBUG(1) std::cout<<"============================="<<std::endl;
+            DEBUG(1) std::cout<<"============================="<<'\n';
             ++progress;
             delete o_path_ptr;
             delete c_path_ptr;
@@ -133,12 +133,12 @@ int main (int argc, char **argv)
         rw.write_header("id;o_path;c_path;m_geom");
         while (tr_reader.has_next_feature())
         {
-            DEBUG(2) std::cout<<"Start of the loop"<<std::endl;
+            DEBUG(2) std::cout<<"Start of the loop"<<'\n';
             Trajectory trajectory = tr_reader.read_next_trajectory();
             int points_in_tr = trajectory.geom->getNumPoints();
-            if (progress%step_size==0) std::cout<<"Progress "<<progress << " / " << num_trajectories <<std::endl;
-            DEBUG(1) std::cout<<"\n============================="<<std::endl;
-            DEBUG(1) std::cout<<"Process trips with id : "<<trajectory.id<<std::endl;
+            if (progress%step_size==0) std::cout<<"Progress "<<progress << " / " << num_trajectories <<'\n';
+            DEBUG(1) std::cout<<"\n============================="<<'\n';
+            DEBUG(1) std::cout<<"Process trips with id : "<<trajectory.id<<'\n';
             // Candidate search
             Traj_Candidates traj_candidates = network.search_tr_cs_knn(trajectory,config.k,config.radius);
             TransitionGraphRouting tg(&traj_candidates,trajectory.geom,&ubodt);
@@ -156,29 +156,29 @@ int main (int argc, char **argv)
             // update statistics
             total_points+=points_in_tr;
             if (c_path_ptr!=nullptr) points_matched+=points_in_tr;
-            DEBUG(1) std::cout<<"Free memory of o_path and c_path"<<std::endl;
+            DEBUG(1) std::cout<<"Free memory of o_path and c_path"<<'\n';
             ++progress;
             delete o_path_ptr;
             delete c_path_ptr;
             delete m_geom;
-            DEBUG(1) std::cout<<"============================="<<std::endl;
+            DEBUG(1) std::cout<<"============================="<<'\n';
         }
     };
-    std::cout<<"\n============================="<<std::endl;
-    std::cout<<"MM process finished"<<std::endl;
+    std::cout<<"\n============================="<<'\n';
+    std::cout<<"MM process finished"<<'\n';
     clock_t end_time = clock(); // program end time
     // Unit is second
     double time_spent = (double)(end_time - begin_time) / CLOCKS_PER_SEC;
-    std::cout<<"Time takes "<<time_spent<<std::endl;
+    std::cout<<"Time takes "<<time_spent<<'\n';
     std::cout<<"Finish map match total points "<<total_points
-             <<" and points matched "<<points_matched<<std::endl;
-    std::cout<<"Matched percentage: "<<points_matched/(double)total_points<<std::endl;
-    std::cout<<"Routing distance called :"<< ubodt.get_routing_distance_times() <<std::endl;
-    std::cout<<"Routing path called :"<< ubodt.get_routing_path_times() <<std::endl;
+             <<" and points matched "<<points_matched<<'\n';
+    std::cout<<"Matched percentage: "<<points_matched/(double)total_points<<'\n';
+    std::cout<<"Routing distance called :"<< ubodt.get_routing_distance_times() <<'\n';
+    std::cout<<"Routing path called :"<< ubodt.get_routing_path_times() <<'\n';
 #ifdef ROUTING_RECORD_DEBUG
     ubodt.save_routing_statistics_to_file("routing_stat.txt");
     ubodt.save_routing_path_to_file("routing_stat_path.txt");
 #endif // ROUTING_RECORD_DEBUG
-    std::cout<<"Point match speed:"<<points_matched/time_spent<<"pt/s"<<std::endl;
+    std::cout<<"Point match speed:"<<points_matched/time_spent<<"pt/s"<<'\n';
     return 0;
 };

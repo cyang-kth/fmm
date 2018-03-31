@@ -30,19 +30,19 @@ int main(int argc, char* argv[])
             std::cout<<"Invalid configuration file, program stop"<<endl;
             return 0;
         };
-        std::cout<<"Write UBODT to file "<<config.result_file<<std::endl;
+        std::cout<<"Write UBODT to file "<<config.result_file<<'\n';
         MM::Network network(config.network_file,
             config.network_id,
             config.network_source,
             config.network_target);
         // MM::NetworkGraph graph(&network);
         MM::NetworkGraphOpt graph(&network);
-        std::cout<<"Upperbound config (delta): "<<config.delta<<std::endl;
+        std::cout<<"Upperbound config (delta): "<<config.delta<<'\n';
         graph.precompute_ubodt(config.result_file,config.delta);
         clock_t end_time = clock(); // program end time
         // Unit is second
         double time_spent = (double)(end_time - begin_time) / CLOCKS_PER_SEC;
-        std::cout<<"Time takes "<<time_spent<<std::endl;        
+        std::cout<<"Time takes "<<time_spent<<'\n';        
     }
     std::cout<<"------------    Program finished     ------------"<<endl;
     return 0;

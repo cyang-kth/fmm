@@ -49,7 +49,7 @@ public:
      */
     TrajectoryReader(const std::string & filename,const std::string & id_name)
     {
-        std::cout<<"Reading meta data of GPS trajectories from: " << filename << std::endl;
+        std::cout<<"Reading meta data of GPS trajectories from: " << filename << '\n';
         OGRRegisterAll();
 #if GDAL_VERSION_MAJOR < 2
         poDS = OGRSFDriverRegistrar::Open(filename.c_str());
@@ -70,7 +70,7 @@ public:
         NUM_FEATURES= ogrlayer->GetFeatureCount();
         if (id_idx<0)
         {
-            std::cout<< "ERROR: id column not found with "<<id_name<< std::endl;
+            std::cout<< "ERROR: id column not found with "<<id_name<< '\n';
 #if GDAL_VERSION_MAJOR < 2
         OGRDataSource::DestroyDataSource( poDS );
 #else
@@ -78,9 +78,9 @@ public:
 #endif // GDAL_VERSION_MAJOR
             std::exit(EXIT_FAILURE);
         }
-        std::cout<<"    Index of ID column: " << id_idx<< std::endl;
-        std::cout<<"    Total number of trajectories: " << NUM_FEATURES << std::endl;
-        std::cout<<"Finish reading meta data" << std::endl;
+        std::cout<<"    Index of ID column: " << id_idx<< '\n';
+        std::cout<<"    Total number of trajectories: " << NUM_FEATURES << '\n';
+        std::cout<<"Finish reading meta data" << '\n';
     };
     // If there are still features not read
     bool has_next_feature()
@@ -92,7 +92,7 @@ public:
     {
         OGRFeature *ogrFeature =ogrlayer->GetNextFeature();
         int trid = ogrFeature->GetFieldAsInteger(id_idx);
-        DEBUG(2) std::cout<<"Read trajectory id : "<<trid<<std::endl;
+        DEBUG(2) std::cout<<"Read trajectory id : "<<trid<<'\n';
         OGRGeometry *rawgeometry = ogrFeature->GetGeometryRef();
         OGRLineString *linestring = (OGRLineString*) rawgeometry->clone();
         OGRFeature::DestroyFeature(ogrFeature);
@@ -103,7 +103,7 @@ public:
     std::vector<Trajectory> read_next_N_trajectories(int N=30000)
     {
         int trajectories_size = NUM_FEATURES-_cursor<N ? NUM_FEATURES-_cursor:N;
-        std::cout<<std::setw(4)<<""<<"Read features with buffer from : "<< _cursor << " to " << _cursor + N <<std::endl;
+        std::cout<<std::setw(4)<<""<<"Read features with buffer from : "<< _cursor << " to " << _cursor + N <<'\n';
         std::vector<Trajectory> trajectories(trajectories_size);
         int i=0;
         while(i<trajectories_size)
@@ -124,7 +124,7 @@ public:
     // memories
     std::vector<Trajectory> read_all_trajectories()
     {
-        std::cout<<"\t Read all trajectoires" << std::endl;
+        std::cout<<"\t Read all trajectoires" << '\n';
         std::vector<Trajectory> trajectories(NUM_FEATURES);
         int i=0;
         while(i<NUM_FEATURES)
@@ -138,7 +138,7 @@ public:
             trajectories[i].geom = linestring;
             ++i;
         }
-        std::cout<<"\t Read trajectory set size : "<< i <<std::endl;
+        std::cout<<"\t Read trajectory set size : "<< i <<'\n';
         return trajectories;
     };
     // Get the number of trajectories in the file

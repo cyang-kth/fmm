@@ -71,8 +71,8 @@ void closest_point_on_segment(double x,double y,double x1,double y1,double x2,do
     double prj_y = y1+ ratio*(y1_y2);
     *offset = std::sqrt((prj_x-x1)*(prj_x-x1)+(prj_y-y1)*(prj_y-y1));
     *dist = std::sqrt((prj_x-x)*(prj_x-x)+(prj_y-y)*(prj_y-y));
-    // std::cout<<"Ratio is "<<ratio<<" prjx "<<prj_x<<" prjy "<<prj_y<<std::endl;
-    CS_DEBUG(2) std::cout<<"Offset is "<<*offset<<" Distance "<<*dist<<std::endl;
+    // std::cout<<"Ratio is "<<ratio<<" prjx "<<prj_x<<" prjy "<<prj_y<<'\n';
+    CS_DEBUG(2) std::cout<<"Offset is "<<*offset<<" Distance "<<*dist<<'\n';
 }; // closest_point_on_segment
 
 
@@ -106,7 +106,7 @@ void linear_referencing(OGRPoint *point,OGRLineString *linestring,double *result
         double y2 = linestring->getY(i+1);
         double temp_min_dist;
         double temp_min_offset;
-        CS_DEBUG(3) std::cout<<"\nProcess segment "<<i<<std::endl;
+        CS_DEBUG(3) std::cout<<"\nProcess segment "<<i<<'\n';
         closest_point_on_segment(x,y,x1,y1,x2,y2,&temp_min_dist,&temp_min_offset);
         if (temp_min_dist<min_dist)
         {
@@ -114,7 +114,7 @@ void linear_referencing(OGRPoint *point,OGRLineString *linestring,double *result
             final_offset = length_parsed+temp_min_offset;
         }
         length_parsed+=std::sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
-        CS_DEBUG(3) std::cout<<"Length parsed "<<length_parsed<<std::endl;
+        CS_DEBUG(3) std::cout<<"Length parsed "<<length_parsed<<'\n';
         ++i;
     };
     *result_dist=min_dist;
@@ -134,9 +134,9 @@ OGRLineString * cutoffseg_unique(double offset1, double offset2, OGRLineString *
     OGRLineString* cutoffline = new OGRLineString();
     int Npoints = linestring->getNumPoints();
     // Geometry construction debug 
-    GC_DEBUG(2) std::cout<< "offset_1: "<<offset1 <<std::endl;
-    GC_DEBUG(2) std::cout<< "offset_2: "<<offset2 <<std::endl;
-    GC_DEBUG(2) std::cout<< "matching edge point Num: "<<Npoints <<std::endl;
+    GC_DEBUG(2) std::cout<< "offset_1: "<<offset1 <<'\n';
+    GC_DEBUG(2) std::cout<< "offset_2: "<<offset2 <<'\n';
+    GC_DEBUG(2) std::cout<< "matching edge point Num: "<<Npoints <<'\n';
     if (Npoints==2) // A single segment
     {
         double x1 = linestring->getX(0);
@@ -204,7 +204,7 @@ OGRLineString * cutoffseg(double offset, OGRLineString * linestring, int mode)
 {
     OGRLineString* cutoffline = new OGRLineString();
     int Npoints = linestring->getNumPoints();
-    GC_DEBUG(3) std::cout<< " Npoints " << Npoints <<std::endl;
+    GC_DEBUG(3) std::cout<< " Npoints " << Npoints <<'\n';
     if (Npoints==2) 
     {
         double x1 = linestring->getX(0);
@@ -239,10 +239,10 @@ OGRLineString * cutoffseg(double offset, OGRLineString * linestring, int mode)
             double y2 = linestring->getY(i+1);
             double deltaL = std::sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1)); // length of current segment
             double ratio = (offset-L_processed)/deltaL;
-            GC_DEBUG(3) std::cout<< " deltaL " << deltaL <<std::endl;
-            GC_DEBUG(3) std::cout<< " Offset " << offset <<std::endl;
-            GC_DEBUG(3) std::cout<< " L_processed " << L_processed <<std::endl;
-            GC_DEBUG(3) std::cout<< " Ratio " << ratio <<std::endl;
+            GC_DEBUG(3) std::cout<< " deltaL " << deltaL <<'\n';
+            GC_DEBUG(3) std::cout<< " Offset " << offset <<'\n';
+            GC_DEBUG(3) std::cout<< " L_processed " << L_processed <<'\n';
+            GC_DEBUG(3) std::cout<< " Ratio " << ratio <<'\n';
             //if
             if(offset>=L_processed && offset<=L_processed+deltaL)
             {
@@ -263,9 +263,9 @@ OGRLineString * cutoffseg(double offset, OGRLineString * linestring, int mode)
             px = linestring->getX(i);
             py = linestring->getY(i);
         }
-        GC_DEBUG(3) std::cout<< " px " << px <<std::endl;
-        GC_DEBUG(3) std::cout<< " py " << py <<std::endl;
-        GC_DEBUG(3) std::cout<< " i " << py <<std::endl;
+        GC_DEBUG(3) std::cout<< " px " << px <<'\n';
+        GC_DEBUG(3) std::cout<< " py " << py <<'\n';
+        GC_DEBUG(3) std::cout<< " i " << py <<'\n';
         p_idx = i;
         if (mode==0){ // export p -> end
             cutoffline->addPoint(px,py);

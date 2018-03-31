@@ -46,8 +46,8 @@ public:
      */
     O_Path *viterbi(double pf=0)
     {
-        OPI_DEBUG(2) std::cout<<"-----------------------"<<std::endl;
-        OPI_DEBUG(2) std::cout<<"Viterbi start!"<<std::endl;
+        OPI_DEBUG(2) std::cout<<"-----------------------"<<'\n';
+        OPI_DEBUG(2) std::cout<<"Viterbi start!"<<'\n';
         if (m_traj_candidates->empty()) return nullptr;
         int N = m_traj_candidates->size();
         O_Path *opt_path = new O_Path(N);
@@ -63,7 +63,7 @@ public:
         /* Updating the cumu probabilities of subsequent layers */
         Traj_Candidates::iterator csb = m_traj_candidates->begin();
         ++csb;
-        OPI_DEBUG(2) std::cout<<"step;from;to;sp;eu;tran_prob;e_prob;cumu_prob"<<std::endl;
+        OPI_DEBUG(2) std::cout<<"step;from;to;sp;eu;tran_prob;e_prob;cumu_prob"<<'\n';
         while (csb != m_traj_candidates->end())
         {
             Point_Candidates::iterator ca = csa->begin();
@@ -91,7 +91,7 @@ public:
                         cb->cumu_prob = ca->cumu_prob + tran_prob * cb->obs_prob;
                         cb->prev = &(*ca);
                     }
-                    OPI_DEBUG(2) std::cout<<step <<";"<<ca->edge->id_attr<<";"<<cb->edge->id_attr<<";"<<sp_dist<<";"<<eu_dist<<";"<<tran_prob<<";"<<cb->obs_prob<<";"<<ca->cumu_prob + tran_prob * cb->obs_prob<<std::endl;
+                    OPI_DEBUG(2) std::cout<<step <<";"<<ca->edge->id_attr<<";"<<cb->edge->id_attr<<";"<<sp_dist<<";"<<eu_dist<<";"<<tran_prob<<";"<<cb->obs_prob<<";"<<ca->cumu_prob + tran_prob * cb->obs_prob<<'\n';
                     ++cb;
                 }
                 ++ca;
@@ -101,7 +101,7 @@ public:
         } // End of calculating transition probability
 
         // Back track to find optimal path
-        OPI_DEBUG(2) std::cout<<"Find last optimal candidate"<<std::endl;
+        OPI_DEBUG(2) std::cout<<"Find last optimal candidate"<<'\n';
         Candidate *track_cand=nullptr;
         double final_prob = -0.001;
         Point_Candidates& last_candidates = m_traj_candidates->back();
@@ -118,18 +118,18 @@ public:
                 track_cand = &(*c);
             }
         }
-        OPI_DEBUG(2) std::cout<<"Back tracking"<<std::endl;
+        OPI_DEBUG(2) std::cout<<"Back tracking"<<'\n';
         int i = N-1;
         (*opt_path)[i]=track_cand;
-        OPI_DEBUG(2) std::cout<<"Optimal Path candidate index "<<i<<" edge id "<<track_cand->edge->id_attr<<std::endl;
+        OPI_DEBUG(2) std::cout<<"Optimal Path candidate index "<<i<<" edge id "<<track_cand->edge->id_attr<<'\n';
         // Iterate from tail to head to assign path
         while ((track_cand=track_cand->prev)!=NULL)
         {
             (*opt_path)[i-1]=track_cand;
-            OPI_DEBUG(2) std::cout<<"Optimal Path candidate index "<< i-1 <<" edge_id "<<track_cand->edge->id_attr<<std::endl;
+            OPI_DEBUG(2) std::cout<<"Optimal Path candidate index "<< i-1 <<" edge_id "<<track_cand->edge->id_attr<<'\n';
             --i;
         }
-        OPI_DEBUG(2) std::cout<<"Viterbi ends"<<std::endl;
+        OPI_DEBUG(2) std::cout<<"Viterbi ends"<<'\n';
         return opt_path;
     };
     /**
@@ -199,7 +199,7 @@ public:
      */
     static std::vector<double> cal_eu_dist(OGRLineString *trajectory)
     {
-        OPI_DEBUG(2) std::cout<<"Calculating lengths of segments"<<std::endl;
+        OPI_DEBUG(2) std::cout<<"Calculating lengths of segments"<<'\n';
         int N = trajectory->getNumPoints();
         std::vector<double> lengths(N-1);
         double x0 = trajectory->getX(0);

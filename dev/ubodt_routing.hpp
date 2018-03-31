@@ -25,7 +25,7 @@ public:
         m_g(g), LARGE_GAP_DISTANCE(delta){};
     void read_csv(const std::string &filename)
     {
-        std::cout<<"Reading UBODT file from: " << filename << std::endl;
+        std::cout<<"Reading UBODT file from: " << filename << '\n';
         hashtable = (record **) malloc(sizeof(record*)*NHASH);
         /* This initialization is required to later free the memory, to figure out the problem */
         for (int i = 0; i < NHASH; i++)
@@ -107,7 +107,7 @@ public:
         }
         if (r==NULL)
         {
-            // std::cout<<"Routing invoked source "<<source <<" target "<<target<<std::endl;
+            // std::cout<<"Routing invoked source "<<source <<" target "<<target<<'\n';
             ++routing_distance_called;
             double distance = m_g->single_source_target_distance(source,target);
             return distance;
@@ -145,7 +145,7 @@ public:
     */
     std::vector<int> look_sp_path_norouting(int source,int target)
     {
-        CPC_DEBUG(4) std::cout<<"Look shortest path from "<< source <<" to "<<target<<std::endl;
+        CPC_DEBUG(4) std::cout<<"Look shortest path from "<< source <<" to "<<target<<'\n';
         std::vector<int> edges;
         if (source==target) return edges;
         record *r=look_up_record(source,target);
@@ -161,7 +161,7 @@ public:
     };
     std::vector<int> look_sp_path_routing(int source,int target)
     {
-        CPC_DEBUG(4) std::cout<<"Look shortest path from "<< source <<" to "<<target<<std::endl;
+        CPC_DEBUG(4) std::cout<<"Look shortest path from "<< source <<" to "<<target<<'\n';
         std::vector<int> edges;
         if (source==target) return edges;
         record *r=look_up_record(source,target);
@@ -188,8 +188,8 @@ public:
     */
     C_Path *construct_complete_path_norouting(O_Path *path)
     {
-        CPC_DEBUG(2) std::cout<<"-----------------------"<<std::endl;
-        CPC_DEBUG(2) std::cout<<"Construct complete path"<<std::endl;
+        CPC_DEBUG(2) std::cout<<"-----------------------"<<'\n';
+        CPC_DEBUG(2) std::cout<<"Construct complete path"<<'\n';
         if (path==nullptr) return nullptr;
         C_Path *edges= new C_Path();
         int N = path->size();
@@ -204,8 +204,8 @@ public:
                 // No transition exist in UBODT
                 if (segs.empty() &&  a->edge->target!=b->edge->source)
                 {
-                    CPC_DEBUG(2) std::cout<<"Large gap from "<< a->edge->target <<" to "<< b->edge->source <<std::endl;
-                    CPC_DEBUG(2) std::cout<<"Construct complete path skipped"<<std::endl;
+                    CPC_DEBUG(2) std::cout<<"Large gap from "<< a->edge->target <<" to "<< b->edge->source <<'\n';
+                    CPC_DEBUG(2) std::cout<<"Construct complete path skipped"<<'\n';
                     delete edges; // free the memory of edges
                     return nullptr;
                 }
@@ -216,13 +216,13 @@ public:
                 edges->push_back(b->edge->id);
             }
         }
-        CPC_DEBUG(2) std::cout<<"Construct complete path finished "<<std::endl;
+        CPC_DEBUG(2) std::cout<<"Construct complete path finished "<<'\n';
         return edges;
     };
     C_Path *construct_complete_path_routing(O_Path *path)
     {
-        CPC_DEBUG(2) std::cout<<"-----------------------"<<std::endl;
-        CPC_DEBUG(2) std::cout<<"Construct complete path"<<std::endl;
+        CPC_DEBUG(2) std::cout<<"-----------------------"<<'\n';
+        CPC_DEBUG(2) std::cout<<"Construct complete path"<<'\n';
         if (path==nullptr) return nullptr;
         C_Path *edges= new C_Path();
         int N = path->size();
@@ -237,8 +237,8 @@ public:
                 // No path exist.
                 if (segs.empty() &&  a->edge->target!=b->edge->source)
                 {
-                    CPC_DEBUG(2) std::cout<<"Large gap from "<< a->edge->target <<" to "<< b->edge->source <<std::endl;
-                    CPC_DEBUG(2) std::cout<<"Construct complete path skipped"<<std::endl;
+                    CPC_DEBUG(2) std::cout<<"Large gap from "<< a->edge->target <<" to "<< b->edge->source <<'\n';
+                    CPC_DEBUG(2) std::cout<<"Construct complete path skipped"<<'\n';
                     delete edges; // free the memory of edges
                     return nullptr;
                 }
@@ -249,7 +249,7 @@ public:
                 edges->push_back(b->edge->id);
             }
         }
-        CPC_DEBUG(2) std::cout<<"Construct complete path finished "<<std::endl;
+        CPC_DEBUG(2) std::cout<<"Construct complete path finished "<<'\n';
         return edges;
     };
 
@@ -282,12 +282,12 @@ public:
                 outputfile<< it->first << ";" << it->second << '\n';
             outputfile.close();
         }
-        else std::cout << "Unable to write statistics to file"<<std::endl;
+        else std::cout << "Unable to write statistics to file"<<'\n';
     };
     ~UBODT_Routing()
     {
         /* Clean hashtable */
-        std::cout<< "Clean UBODT" << std::endl;
+        std::cout<< "Clean UBODT" << '\n';
         int i;
         for (i=0; i<NHASH; ++i)
         {
@@ -301,7 +301,7 @@ public:
         }
         // Destory hash table pointer
         free(hashtable);
-        std::cout<< "Clean UBODT finished" << std::endl;
+        std::cout<< "Clean UBODT finished" << '\n';
     };
     int get_routing_path_times()
     {

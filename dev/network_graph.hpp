@@ -27,7 +27,7 @@ public:
      */
     NetworkGraph(Network *network) {
         std::vector<Edge> *edges = network->get_edges();
-        std::cout << "Construct graph from network edges start" << std::endl;
+        std::cout << "Construct graph from network edges start" << '\n';
         edge_descriptor e;
         bool inserted;
         g = Graph_T(); //18
@@ -42,8 +42,8 @@ public:
             //printf( "Edge read %d,%d,%d,%lf\n",network_edge.id,network_edge.source,network_edge.target,network_edge.length);
         }
         int Npoints = boost::num_vertices(g);
-        std::cout << "Graph nodes " << Npoints << std::endl;
-        std::cout << "Construct graph from network edges end" << std::endl;
+        std::cout << "Graph nodes " << Npoints << '\n';
+        std::cout << "Construct graph from network edges end" << '\n';
     };
     /**
      * Precompute an UBODT with delta and save it to the file
@@ -52,7 +52,7 @@ public:
      */
     void precompute_ubodt(const std::string &filename, double delta) {
         std::ofstream myfile(filename);
-        std::cout << "Start to generate UBODT with delta " << delta << std::endl;
+        std::cout << "Start to generate UBODT with delta " << delta << '\n';
         myfile << "source;target;next_n;last_n;next_e;distance\n";
         vertex_iterator vi, vend;
         for (boost::tie(vi, vend) = vertices(g); vi != vend; ++vi) {
@@ -88,7 +88,7 @@ public:
                 visitor(one_to_one_distance_visitor(target))
             );
         } catch (found_goals& goal) {
-            //std::cout << "Found goals" << std::endl;
+            //std::cout << "Found goals" << '\n';
             found = true;
         }
         if (found) {
@@ -119,7 +119,7 @@ public:
                 )
             );
         } catch (found_goals& goal) {
-            //std::cout << "Found goals" << std::endl;
+            //std::cout << "Found goals" << '\n';
             found = true;
         }
         if (found) {
@@ -157,7 +157,7 @@ public:
                 )
             );
         } catch (found_goals& goal) {
-            //std::cout << "Found goals" << std::endl;
+            //std::cout << "Found goals" << '\n';
             found = true;
         }
         if (found) {
@@ -303,7 +303,7 @@ private:
             }
         }
         std::cout << "Edge not found for source " << source << " target " << target
-                  << " cost " << cost << std::endl;
+                  << " cost " << cost << '\n';
         return -1;
     };
     std::vector<vertex_descriptor> get_successors(std::deque<vertex_descriptor> &nodesInDistance, std::vector<vertex_descriptor>& predecessors) {
@@ -324,16 +324,16 @@ private:
     // The reason that template is used here as we want to write to both std or to a file
     void driving_distance(const vertex_descriptor& source, double delta, std::ostream& stream) {
         if (source % 5000 == 0) {
-            std::cout << "Progress source " << source << std::endl;
+            std::cout << "Progress source " << source << '\n';
         }
-        // std::cout << "Progress source " << source << std::endl;
+        // std::cout << "Progress source " << source << '\n';
         std::vector<vertex_descriptor> predecessors(num_vertices(g));
         // a list of costs stored for one node to all nodes in the graph
         std::vector<double> distances(num_vertices(g));
         std::deque<vertex_descriptor> nodesInDistance;
 
-        // std::cout << "First value of predecessors is " << *(predecessors.begin()) << std::endl;
-        // std::cout << "First value of distance is " << *(distances.begin()) << std::endl;
+        // std::cout << "First value of predecessors is " << *(predecessors.begin()) << '\n';
+        // std::cout << "First value of distance is " << *(distances.begin()) << '\n';
         // http://www.boost.org/doc/libs/1_61_0/libs/graph/doc/dijkstra_shortest_paths.html
 
         try {
@@ -350,7 +350,7 @@ private:
                 )
             );
         } catch (found_goals& goal) {
-            //std::cout << "Found goals" << std::endl;
+            //std::cout << "Found goals" << '\n';
         }
 
         // Get successors for each node reached

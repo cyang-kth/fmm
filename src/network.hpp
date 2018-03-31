@@ -66,8 +66,8 @@ public:
             const std::string &source_name="source",
             const std::string &target_name="target")
     {
-        std::cout<<"Read network shp file from " << filename <<std::endl;
-        std::cout<<"Id column "<<id_name <<std::endl;
+        std::cout<<"Read network shp file from " << filename <<'\n';
+        std::cout<<"Id column "<<id_name <<'\n';
         OGRRegisterAll();
 #if GDAL_VERSION_MAJOR < 2
         OGRDataSource *poDS = OGRSFDriverRegistrar::Open(filename.c_str());
@@ -81,7 +81,7 @@ public:
         }
         OGRLayer  *ogrlayer = poDS->GetLayer(0);
         int NUM_FEATURES = ogrlayer->GetFeatureCount();
-        std::cout<< "\tNumber of edges in file: " << NUM_FEATURES << std::endl;
+        std::cout<< "\tNumber of edges in file: " << NUM_FEATURES << '\n';
         network_edges= std::vector<Edge>(NUM_FEATURES);
         // Initialize network edges
         OGRFeatureDefn *ogrFDefn = ogrlayer->GetLayerDefn();
@@ -90,12 +90,12 @@ public:
         int id_idx=ogrFDefn->GetFieldIndex(id_name.c_str());
         int source_idx=ogrFDefn->GetFieldIndex(source_name.c_str());
         int target_idx=ogrFDefn->GetFieldIndex(target_name.c_str());
-        std::cout<< "\tSHP ID idx: " <<id_idx<< std::endl;
-        std::cout<< "\tSHP source idx: " <<source_idx<< std::endl;
-        std::cout<< "\tSHP target idx: " <<target_idx<< std::endl;
+        std::cout<< "\tSHP ID idx: " <<id_idx<< '\n';
+        std::cout<< "\tSHP source idx: " <<source_idx<< '\n';
+        std::cout<< "\tSHP target idx: " <<target_idx<< '\n';
         if (source_idx<0||target_idx<0||id_idx<0)
         {
-            std::cout<<std::setw(12)<<""<< "id, source or target column not found "<< std::endl;
+            std::cout<<std::setw(12)<<""<< "id, source or target column not found "<< '\n';
 #if GDAL_VERSION_MAJOR < 2
             OGRDataSource::DestroyDataSource( poDS );
 #else
@@ -105,7 +105,7 @@ public:
         }
         if (wkbFlatten(ogrFDefn->GetGeomType()) != wkbLineString)
         {
-            std::cout<<std::setw(12)<<""<< "Geometry type is not LineString"<< std::endl;
+            std::cout<<std::setw(12)<<""<< "Geometry type is not LineString"<< '\n';
 #if GDAL_VERSION_MAJOR < 2
             OGRDataSource::DestroyDataSource( poDS );
 #else
@@ -118,9 +118,9 @@ public:
         if (srid==-1)
         {
             srid= 4326;
-            std::cout<< "\tWarning: srid is not found, set to 4326 for default"<< std::endl;
+            std::cout<< "\tWarning: srid is not found, set to 4326 for default"<< '\n';
         }
-        std::cout<< "\tSRID is "<<srid<< std::endl;
+        std::cout<< "\tSRID is "<<srid<< '\n';
         // Bug here
         while( (ogrFeature = ogrlayer->GetNextFeature()) != NULL)
         {
@@ -150,18 +150,18 @@ public:
 #else
         GDALClose( poDS );
 #endif // GDAL_VERSION_MAJOR
-        std::cout<<"Read network finish."<< std::endl;
-        std::cout<<"\tThe maximum node ID is "<< max_node_id << std::endl;
-        std::cout<<"\tTotal number of edges read "<< network_edges.size()<< std::endl;
+        std::cout<<"Read network finish."<< '\n';
+        std::cout<<"\tThe maximum node ID is "<< max_node_id << '\n';
+        std::cout<<"\tTotal number of edges read "<< network_edges.size()<< '\n';
     }; // Network constructor
     ~Network()
     {
-        std::cout<< "Cleaning network" << std::endl;
+        std::cout<< "Cleaning network" << '\n';
         for (auto &item:network_edges)
         {
             OGRGeometryFactory::destroyGeometry(item.geom);
         }
-        std::cout<< "Cleaning network finished" << std::endl;
+        std::cout<< "Cleaning network finished" << '\n';
     }
     // Get the edge vector
     std::vector<Edge> *get_edges()
@@ -181,23 +181,23 @@ public:
     void build_rtree_index()
     {
         // Build an rtree for candidate search
-        std::cout<<"Start to construct boost rtree"<<std::endl;
+        std::cout<<"Start to construct boost rtree"<<'\n';
         // create some Items
         for (std::size_t i = 0 ; i < network_edges.size(); ++i)
         {
             // create a boost_box
-            CS_DEBUG(3) std::cout<<"iteration "<<i<<std::endl;
+            CS_DEBUG(3) std::cout<<"iteration "<<i<<'\n';
             Edge *edge = &network_edges[i];
             // boundary is returned is a multipoint geometry, but not the envelop
             // instead, it is only the first and last point
             double x1,y1,x2,y2;
             ALGORITHM::boundingbox_geometry(edge->geom,&x1,&y1,&x2,&y2);
-            CS_DEBUG(3) std::cout<<"Process trajectory: "<<i<<std::endl;
-            CS_DEBUG(3) std::cout<<"x1,y1,x2,y2: "<<x1<<","<<y1<<","<<x2<<","<<y2<<std::endl;
+            CS_DEBUG(3) std::cout<<"Process trajectory: "<<i<<'\n';
+            CS_DEBUG(3) std::cout<<"x1,y1,x2,y2: "<<x1<<","<<y1<<","<<x2<<","<<y2<<'\n';
             boost_box b(boost_point(x1,y1), boost_point(x2,y2));
             rtree.insert(std::make_pair(b,edge));
         }
-        std::cout<<"Finish construct boost rtree"<<std::endl;
+        std::cout<<"Finish construct boost rtree"<<'\n';
     };
     /**
      *  Search for k nearest neighboring (KNN) candidates of a
@@ -217,7 +217,7 @@ public:
         Traj_Candidates tr_cs(NumberPoints);
         for (int i=0; i<NumberPoints; ++i)
         {
-            CS_DEBUG(2) std::cout<<"Search candidates for point index "<<i<< std::endl;
+            CS_DEBUG(2) std::cout<<"Search candidates for point index "<<i<< '\n';
             // Construct a bounding boost_box
             OGRPoint point;
             geom->getPoint(i,&point);
@@ -234,9 +234,9 @@ public:
                 float offset;
                 double dist;
                 ALGORITHM::linear_referencing(&point,edge->geom,&dist,&offset);
-                CS_DEBUG(2) std::cout<<"Edge id: "<<edge->id<< std::endl;
-                CS_DEBUG(2) std::cout<<"Dist: "<<dist<< std::endl;
-                CS_DEBUG(2) std::cout<<"Offset: "<<offset<< std::endl;
+                CS_DEBUG(2) std::cout<<"Edge id: "<<edge->id<< '\n';
+                CS_DEBUG(2) std::cout<<"Dist: "<<dist<< '\n';
+                CS_DEBUG(2) std::cout<<"Offset: "<<offset<< '\n';
                 if (dist<=radius)
                 {
                     Candidate c = {offset,dist,Network::emission_prob(dist),edge,NULL,0};
@@ -255,7 +255,7 @@ public:
             else
             {
                 // Find the KNN neighbors
-                CS_DEBUG(2) std::cout<<"Perform KNN search"<< std::endl;
+                CS_DEBUG(2) std::cout<<"Perform KNN search"<< '\n';
                 tr_cs[i]=Point_Candidates(k);
                 std::partial_sort_copy(
                     pcs.begin(),pcs.end(),
@@ -274,7 +274,7 @@ public:
         Traj_Candidates tr_cs(NumberPoints);
         for (int i=0; i<NumberPoints; ++i)
         {
-            CS_DEBUG(2) std::cout<<"Search candidates for point index "<<i<< std::endl;
+            CS_DEBUG(2) std::cout<<"Search candidates for point index "<<i<< '\n';
             // Construct a bounding boost_box
             OGRPoint point;
             geom->getPoint(i,&point);
@@ -315,7 +315,7 @@ public:
         Traj_Candidates tr_cs(NumberPoints);
         for (int i=0; i<NumberPoints; ++i)
         {
-            CS_DEBUG(2) std::cout<<"Search candidates for point index "<<i<< std::endl;
+            CS_DEBUG(2) std::cout<<"Search candidates for point index "<<i<< '\n';
             // Construct a bounding boost_box
             OGRPoint point;
             geom->getPoint(i,&point);
@@ -332,9 +332,9 @@ public:
                 float offset;
                 double dist;
                 ALGORITHM::linear_referencing(&point,edge->geom,&dist,&offset);
-                CS_DEBUG(2) std::cout<<"Edge id: "<<edge->id<< std::endl;
-                CS_DEBUG(2) std::cout<<"Dist: "<<dist<< std::endl;
-                CS_DEBUG(2) std::cout<<"Offset: "<<offset<< std::endl;
+                CS_DEBUG(2) std::cout<<"Edge id: "<<edge->id<< '\n';
+                CS_DEBUG(2) std::cout<<"Dist: "<<dist<< '\n';
+                CS_DEBUG(2) std::cout<<"Offset: "<<offset<< '\n';
                 if (dist<=radius)
                 {
                     Candidate c = {offset,dist,Network::emission_prob(dist),edge,NULL,0};
@@ -376,14 +376,14 @@ public:
         OGRLineString *line = new OGRLineString();
         int NOsegs = o_path_ptr->size();
         int NCsegs = complete_path->size();
-        GC_DEBUG(2) std::cout<< __FILE__ << __LINE__ <<" Optimal path size "<<NOsegs <<std::endl;
-        GC_DEBUG(2) std::cout<< __FILE__ << __LINE__ <<" Complete path size "<<NCsegs <<std::endl;
+        GC_DEBUG(2) std::cout<< __FILE__ << __LINE__ <<" Optimal path size "<<NOsegs <<'\n';
+        GC_DEBUG(2) std::cout<< __FILE__ << __LINE__ <<" Complete path size "<<NCsegs <<'\n';
         if (NCsegs ==1)
         {
             double firstoffset = (*o_path_ptr)[0]->offset;
             double lastoffset = (*o_path_ptr)[NOsegs-1]->offset;
-            GC_DEBUG(2) std::cout<< "first offset " << firstoffset <<std::endl;
-            GC_DEBUG(2) std::cout<< "last offset " << lastoffset <<std::endl;
+            GC_DEBUG(2) std::cout<< "first offset " << firstoffset <<'\n';
+            GC_DEBUG(2) std::cout<< "last offset " << lastoffset <<'\n';
             OGRLineString * firstseg = network_edges[(*complete_path)[0]].geom;
             OGRLineString * firstlineseg= ALGORITHM::cutoffseg_unique(firstoffset,lastoffset,firstseg);
             append_segs_to_line(line,firstlineseg,0);
@@ -397,15 +397,15 @@ public:
             OGRLineString * lastseg = network_edges[(*complete_path)[NCsegs-1]].geom;
             OGRLineString * firstlineseg= ALGORITHM::cutoffseg(firstoffset, firstseg, 0); 
             OGRLineString * lastlineseg= ALGORITHM::cutoffseg(lastoffset, lastseg, 1);
-            GC_DEBUG(2) std::cout<< "First offset " << firstoffset <<std::endl;
-            GC_DEBUG(2) std::cout<< "First line " <<std::endl;
+            GC_DEBUG(2) std::cout<< "First offset " << firstoffset <<'\n';
+            GC_DEBUG(2) std::cout<< "First line " <<'\n';
             GC_DEBUG(2) UTIL::print_geometry(firstseg);
-            GC_DEBUG(2) std::cout<< "First line cutoff " <<std::endl;
+            GC_DEBUG(2) std::cout<< "First line cutoff " <<'\n';
             GC_DEBUG(2) UTIL::print_geometry(firstlineseg);
-            GC_DEBUG(2) std::cout<< "last offset " << lastoffset <<std::endl;
-            GC_DEBUG(2) std::cout<< "Last line " <<std::endl;
+            GC_DEBUG(2) std::cout<< "last offset " << lastoffset <<'\n';
+            GC_DEBUG(2) std::cout<< "Last line " <<'\n';
             GC_DEBUG(2) UTIL::print_geometry(lastseg);
-            GC_DEBUG(2) std::cout<< "Last line cutoff " <<std::endl;
+            GC_DEBUG(2) std::cout<< "Last line cutoff " <<'\n';
             GC_DEBUG(2) UTIL::print_geometry(lastlineseg);
             append_segs_to_line(line,firstlineseg,0);
             if (NCsegs>2)
@@ -421,7 +421,7 @@ public:
             delete firstlineseg;
             delete lastlineseg;
         }
-        GC_DEBUG(2) std::cout<< "Export result" <<std::endl;
+        GC_DEBUG(2) std::cout<< "Export result" <<'\n';
         GC_DEBUG(2) UTIL::print_geometry(line);
         return line;
     };
@@ -471,7 +471,7 @@ private:
     static void append_segs_to_line(OGRLineString *line,OGRLineString *segs,int offset=0)
     {
         int Npoints = segs->getNumPoints();
-        DEBUG(2) std::cout<< "Number of points "<< Npoints <<std::endl;
+        DEBUG(2) std::cout<< "Number of points "<< Npoints <<'\n';
         for(int i=0; i<Npoints; ++i)
         {
             if (i>=offset)
