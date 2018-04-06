@@ -10,7 +10,7 @@
 
 ## Road network and GPS trajectories 
 
-![example](example.png)
+![input](input.png)
 
 ## Run map matching
 
@@ -35,3 +35,7 @@ Run the `fmm` application with:
     fmm fmm_config.xml
 
 A matched result file will be generated as `mr.txt`, which is a CSV file and the `c_path` column contains the matched path information, for details see the [output section](../README.md#output). 
+
+## Matching result
+
+![output](output.png)

@@ -12,6 +12,6 @@
         <delta>3</delta>
     </parameters>
     <output>
-        <file>ubodt.bin</file>        
+        <file>ubodt.txt</file>        
     </output>
 </ubodt_config>

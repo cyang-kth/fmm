@@ -15,7 +15,7 @@ This project is an implementation of the fast map matching (FMM) algorithm intro
 ## Table of Contents
 
 - [Install](#install)
-- [Example](#example)
+- [Example](example)
 - [Input and output](#input-and-output)
 - [Configuration](#configuration)
 - [Performance measurement](#performance-measurement)
@@ -69,11 +69,7 @@ Open a new terminal and type `fmm`, you should see the following output:
     ------------     Applicaton: fmm     ------------
     No configuration file supplied
     A configuration file is given in the example folder
-    Run `fmm config.xml`
-
-## Example
-
-A simple example of map matching is provided in the [example](example) folder. 
+    Run `fmm config.xml` 
 
 ## Input and output
 
