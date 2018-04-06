@@ -47,3 +47,8 @@ test/log/
 # Debug files
 *.dSYM/
 *.su
+
+# Binary files
+
+*.bin
+*.binary

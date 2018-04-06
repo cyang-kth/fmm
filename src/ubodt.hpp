@@ -15,6 +15,7 @@
 #include <vector>
 #include <map> /* used for statistics */
 #include <fstream>
+#include <boost/archive/binary_iarchive.hpp>
 #include "types.hpp"
 #include "multilevel_debug.h"
 namespace MM
@@ -38,7 +39,7 @@ public:
      */
     void read_csv(const std::string &filename)
     {
-        std::cout<<"Reading UBODT file from: " << filename << '\n';
+        std::cout<<"Reading UBODT file (CSV format) from: " << filename << '\n';
         hashtable = (record **) malloc(sizeof(record*)*NHASH);
         /* This initialization is required to later free the memory, to figure out the problem */
         for (int i = 0; i < NHASH; i++){
@@ -65,18 +66,56 @@ public:
                    &r->cost
             );
             r->next=NULL;
-//            if (r->source>=maxnode) maxnode=r->source;
-//            if (r->target>=maxnode) maxnode=r->target;
             if (NUM_ROWS%1000000==0) printf("Read rows: %d\n",NUM_ROWS);
             /* Insert into the hash table */
             insert(r);
         };
         fclose(stream);
-        printf("    Number of rows read %d.\n",NUM_ROWS);
+        std::cout<<"    Number of rows read " << NUM_ROWS << '\n';
         double lf = NUM_ROWS/(double)NHASH;
-        printf("    Estimated load factor #elements/#tablebuckets %lf.\n",lf);
-        if (lf>10) printf("    *** Warning, load factor is too large.\n");
-        printf("Finish reading UBODT.\n");
+        std::cout<<"    Estimated load factor #elements/#tablebuckets "<<lf<<"\n";
+        if (lf>10) std::cout<<"    *** Warning, load factor is too large.\n";
+        std::cout<<"Finish reading UBODT.\n";
+    };
+    /**
+     * Read ubodt from a binary file
+     */
+    void read_binary(const std::string &filename)
+    {
+        std::cout<<"Reading UBODT file (CSV binary) from: " << filename << '\n';
+        hashtable = (record **) malloc(sizeof(record*)*NHASH);
+        /* This initialization is required to later free the memory, to figure out the problem */
+        for (int i = 0; i < NHASH; i++){
+            hashtable[i] = NULL;
+        }
+        int NUM_ROWS = 0;
+        std::ifstream ifs(filename.c_str());
+        // Check byte offset
+        std::streampos archiveOffset = ifs.tellg(); 
+        std::streampos streamEnd = ifs.seekg(0, std::ios_base::end).tellg();
+        ifs.seekg(archiveOffset);
+        boost::archive::binary_iarchive ia(ifs);
+        while (ifs.tellg() < streamEnd)
+        {
+            ++NUM_ROWS;
+            record *r =(record *) malloc(sizeof(record));
+            ia >> r->source;
+            ia >> r->target;
+            ia >> r->first_n;
+            ia >> r->prev_n;
+            ia >> r->next_e;
+            ia >> r->cost;
+            r->next=NULL;
+            if (NUM_ROWS%1000000==0) printf("Read rows: %d\n",NUM_ROWS);
+            /* Insert into the hash table */
+            insert(r);
+        }
+        ifs.close();
+        std::cout<<"    Number of rows read " << NUM_ROWS << '\n';
+        double lf = NUM_ROWS/(double)NHASH;
+        std::cout<<"    Estimated load factor #elements/#tablebuckets "<<lf<<"\n";
+        if (lf>10) std::cout<<"    *** Warning, load factor is too large.\n";
+        std::cout<<"Finish reading UBODT.\n";
     };
     record *look_up(int source,int target)
     {

@@ -31,6 +31,7 @@ This project is an implementation of the fast map matching (FMM) algorithm intro
 - [GDAL](http://www.gdal.org/) >= 1.11.2: IO with ESRI shapefile, Geometry data type
 - [Boost Graph](http://www.boost.org/doc/libs/1_65_1/libs/graph/doc/index.html) >= 1.54.0: routing algorithms used in UBODT Generator
 - [Boost Geometry](http://www.boost.org/doc/libs/1_65_1/libs/geometry/doc/html/index.html) >= 1.54.0: Rtree, Geometry computation
+- [Boost Serialization](https://www.boost.org/doc/libs/1_66_0/libs/serialization/doc/index.html) >= 1.54.0: Serialization of UBODT in binary format
 
 The required libraries can be installed with 
 
@@ -97,8 +98,9 @@ If you already have a road network file in GDAL supported formats, e.g., ESRI sh
 
 ### Output
 
-The output of program `ubodt_gen` is a CSV file containing the following information:
+The output of program `ubodt_gen` is a CSV file or a Binary file, which is automatically detected from the file extension `csv` or `bin`. Binary file can be used to save space in case of a large road network. 
 
+The CSV file contains the following information:
 - source: source (origin) node 
 - target: target (destination) node 
 - next_n: the next node visited after source in the shortest path
@@ -134,7 +136,7 @@ Two example configuration files are given in the [example](example) folder.
     + parameters
         * delta: Upper bound of shortest path distance
     + output
-        * file: output file in CSV format
+        * file: output file in CSV format or Binary format, detected from the file extension (`csv` or `bin`) automatically.
 
 :warning: **Delta** should be specified in the same spatial unit as the network file. If the reference system is WGS84 (in degree), then 1 degree of latitude or longitude equals to about 111km. It is suggested to try some small values first (e.g., 0.01 degree). 
 
@@ -143,7 +145,7 @@ Two example configuration files are given in the [example](example) folder.
 - fmm_config
     * input
         - ubodt
-            + file: ubodt file path
+            + file: ubodt file path, CSV or Binary format detected from the file extension (`csv` or `bin`) automatically.
             + nhash: hashtable bucket size, recommended to be a prime number
             + multipler: used to get a unique key as `n_o*multiplier+n_d` in hash table, recommended to be the number of nodes in network file
         - network
@@ -171,7 +173,7 @@ Two example configuration files are given in the [example](example) folder.
 
 ## Performance measurement
 
-A case study is reported in the paper with real world datasets:
+A case study is reported in the original paper with real world datasets in Stockholm:
 
 - GPS: 644,695 trajectories containing 6,812,720 points
 - Road network: 23,921 nodes and 57,928 directed edges 
@@ -183,15 +185,10 @@ The speed of map matching is about:
 - 25000 points/s (WKB Geometry output, mode 1)
 - 45000 points/s (No geometry output, mode 0)
 
-### Optimization on large network
-
-In case of a large road network with hundreds of thousand of nodes, the driving distance function used in pgrouting and BGL can be slow as it requires initializing two vectors with graph size in order to maintain the output of routing. An optimized version is designed in the `src/network_graph_opt.hpp`
-by regularly updating the two vectors for each source node. 
-
-Statistics on the network of Netherland (700k nodes and 1 million edges)
+Statistics of ubodt construction on the network of Netherland (700k nodes and 1 million edges)
 http://geodata.nationaalgeoregister.nl/nwbwegen/extract/nwbwegen.zip
 
-| delta (m) | running time | rows       | file size |
+| delta (m) | running time | rows       | csv  size |
 |-----------|--------------|------------|-----------|
 | 1000      | 3min27.5s    | 19,022,620 | 766 MB    |
 | 3000      | 4min32.9s    | 79,998,367 | 3,2GB     |

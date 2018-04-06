@@ -52,7 +52,11 @@ int main (int argc, char **argv)
         int multiplier = config.multiplier;
         int NHASH = config.nhash;
         UBODT ubodt(multiplier,NHASH);
-        ubodt.read_csv(config.ubodt_file);
+        if (config.binary_flag==1){
+            ubodt.read_binary(config.ubodt_file);
+        } else {
+            ubodt.read_csv(config.ubodt_file);            
+        }
         TrajectoryReader tr_reader(config.gps_file,config.gps_id);
         ResultWriter rw(config.result_file,&network);
         int progress=0;
@@ -176,7 +180,7 @@ int main (int argc, char **argv)
                 delete c_path_ptr;
             }
         } else {
-            std::cout<<"ERROR: Unrecognized output mode"<<'\n';
+            return 0;
         };
         std::cout<<"\n============================="<<'\n';
         std::cout<<"MM process finished"<<'\n';

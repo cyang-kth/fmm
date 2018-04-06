@@ -39,8 +39,8 @@ struct record
     int source;
     int target;
     int first_n; // next_n in the paper
-    int next_e;
     int prev_n;
+    int next_e;
     double cost;
     record *next; // the next record used in Hashtable
 };

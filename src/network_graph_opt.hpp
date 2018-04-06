@@ -36,6 +36,7 @@
 #include "network.hpp"
 #include <algorithm> // std::reverse
 #include <unordered_map>
+#include <boost/archive/binary_oarchive.hpp> // Binary output of UBODT
 namespace MM{
 class NetworkGraphOpt
 {
@@ -101,16 +102,26 @@ public:
      * @param filename [description]
      * @param delta    [description]
      */
-    void precompute_ubodt(const std::string &filename, double delta) {
+    void precompute_ubodt(const std::string &filename, double delta, bool binary=true) {
+        int step_size = num_vertices/10;
+        if (step_size<10) step_size=10;
         std::ofstream myfile(filename);
         std::cout << "Start to generate UBODT with delta " << delta << '\n';
-        myfile << "source;target;next_n;prev_n;next_e;distance\n";
-        int step_size = num_vertices/20;
-        if (step_size<10) step_size=10;
-        vertex_iterator vi, vend;
-        for (boost::tie(vi, vend) = vertices(g); vi != vend; ++vi) {
-            if (*vi%step_size==0) std::cout<<"Progress "<<*vi<< " / " << num_vertices <<'\n';
-            driving_distance(*vi, delta, myfile);
+        std::cout << "Output format " << (binary?"binary":"csv") << '\n';
+        if (binary){
+            boost::archive::binary_oarchive oa(myfile);
+            vertex_iterator vi, vend;
+            for (boost::tie(vi, vend) = vertices(g); vi != vend; ++vi) {
+                if (*vi%step_size==0) std::cout<<"Progress "<<*vi<< " / " << num_vertices <<'\n';
+                driving_distance_binary(*vi, delta, oa);
+            }
+        } else {
+            myfile << "source;target;next_n;prev_n;next_e;distance\n";
+            vertex_iterator vi, vend;
+            for (boost::tie(vi, vend) = vertices(g); vi != vend; ++vi) {
+                if (*vi%step_size==0) std::cout<<"Progress "<<*vi<< " / " << num_vertices <<'\n';
+                driving_distance_csv(*vi, delta, myfile);
+            }
         }
         myfile.close();
     };
@@ -207,7 +218,7 @@ private:
      * Given a source node and an upper bound distance delta 
      * write the UBODT rows to a file
      */
-    void driving_distance(const vertex_descriptor& source, double delta, std::ostream& stream) {
+    void driving_distance_csv(const vertex_descriptor& source, double delta, std::ostream& stream) {
         DEBUG (2) std::cout << "Debug progress source " << source << '\n';
         std::deque<vertex_descriptor> nodesInDistance;
         examined_vertices.push_back(source);
@@ -262,6 +273,57 @@ private:
                 // stream << source << ";" << node << ";" << successors[k] << ";"
                 //        << predecessors_map[node] << ";" << edge_id << ";" << distances_map[node]
                 //        << "\n";
+            }
+            ++k;
+        }
+        DEBUG (2) std::cout << "Clean examined vertices"<< examined_vertices.size() <<'\n';
+        clean_distances_predecessors();
+    };
+    void driving_distance_binary(const vertex_descriptor& source, double delta, boost::archive::binary_oarchive& oa) {
+        DEBUG (2) std::cout << "Debug progress source " << source << '\n';
+        std::deque<vertex_descriptor> nodesInDistance;
+        examined_vertices.push_back(source);
+        double inf = std::numeric_limits<double>::max();
+        distances_map[source]=0;
+        try {
+            // This part to be fixed
+            dijkstra_shortest_paths_no_color_map_no_init(
+                g,
+                source,
+                make_iterator_property_map(predecessors_map.begin(),get(boost::vertex_index, g),predecessors_map[0]),
+                make_iterator_property_map(distances_map.begin(),get(boost::vertex_index, g),distances_map[0]),
+                get(&Edge_Property::length, g),
+                get(boost::vertex_index, g),
+                std::less<double>(), //DistanceCompare distance_compare,
+                boost::closed_plus<double>(inf),
+                inf,
+                0,
+                driving_distance_visitor(
+                    delta, nodesInDistance, distances_map, examined_vertices
+                )
+            );
+        } catch (found_goals& goal) {
+            //std::cout << "Found goals" << '\n';
+        }
+        // Get successors for each node reached
+        DEBUG (2) std::cout << "Find nodes in distance # "<< nodesInDistance.size() <<'\n';
+        std::vector<vertex_descriptor> successors =get_successors(nodesInDistance, predecessors_map);
+        double cost;
+        int edge_id;
+        int k = 0;
+        vertex_descriptor node;
+        while (k < nodesInDistance.size()) {
+            node = nodesInDistance[k];
+            if (source != node) {
+                // The cost is need to identify the edge ID
+                cost = distances_map[successors[k]] - distances_map[source];
+                edge_id = get_edge_id(source, successors[k], cost);
+                oa << vertex_id_vec[source];
+                oa << vertex_id_vec[node];
+                oa << vertex_id_vec[successors[k]];
+                oa << vertex_id_vec[predecessors_map[node]];
+                oa << edge_id;
+                oa << distances_map[node];
             }
             ++k;
         }
