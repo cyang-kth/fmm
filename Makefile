@@ -18,6 +18,13 @@ build_install_fmm_debug:initial
 	@echo ----- Copy debug executables to home/bin ----- 
 	cp dist/fmm_debug $(HOME)/bin
 	@echo ----- Finish -----
+build_install_fmm_omp:initial
+	@echo ----- Start to build fmm_omp -----
+	g++ -std=gnu++11 -fopenmp -O3 app/fmm_omp.cpp -o dist/fmm_omp -lgdal -lboost_serialization
+	@echo ----- fmm_omp build success ----- 
+	@echo ----- Copy debug executables to home/bin ----- 
+	cp dist/fmm_omp $(HOME)/bin
+	@echo ----- Finish -----
 build_ubodt_gen:initial
 	@echo ----- Start to build ubodt_gen ----- 
 	g++ -std=gnu++11  -O3 app/ubodt_gen.cpp -o dist/ubodt_gen -lgdal -lboost_serialization
