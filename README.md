@@ -4,22 +4,22 @@ This project is an implementation of the fast map matching (FMM) algorithm intro
 
 ## Features of fmm 
 
-- Highly optimized code in C++ 
-- Integration of Boost library (Rtree index and routing engine) 
+- Highly optimized code in C++ using Boost libraries (Graph and Rtree index) 
 - Map matching speed of **25,000-45,000 points/second** (single processor)
 - Customized output mode (matched point,matched line,offset,edge ID)
 - Tested on city level road network and **millions of GPS records** 
+- :tada: Parallel map matching with OpenMP ( **5-8 times** the single processor speed). 
 
 ![demo](demo.png)
 
 ## Table of Contents
 
 - [Install](#install)
-- [Example](example)
+- [Run map matching](#run-map-matching)
 - [Input and output](#input-and-output)
 - [Configuration](#configuration)
+- [Example](#example)
 - [Performance measurement](#performance-measurement)
-- [Optimization on large network](#optimization-on-large-network)
 - [Contact and citation](#contact-and-citation)
 
 ## Install
@@ -46,13 +46,14 @@ Change to the project directory, open a terminal and run
 It will build executable files under the `dist` folder:
 
 - `ubodt_gen`: the Upper bounded origin destination table (UBODT) generator (precomputation) program
-- `fmm`: the map matching program
+- `fmm`: the map matching program (single processor)
+- `fmm_omp`: parallel map matching implemented with OpenMP. 
 
 Then run 
 
     make install
 
-It will copy the executable files into the `~/bin` path, which should be added to the `PATH` variable by default. 
+It will copy these executable files into the `~/bin` path, which should be added to the `PATH` variable by default. 
 
 To manually add the `~/bin` path to `$PATH` variable, open a new terminal and run:
 
@@ -70,6 +71,19 @@ Open a new terminal and type `fmm`, you should see the following output:
     No configuration file supplied
     A configuration file is given in the example folder
     Run `fmm config.xml` 
+
+## Run map matching
+
+The programs take configuration in xml format as input
+
+    # Run UBODT precomputation 
+    ubodt_gen ubodt_config.xml 
+    # Run map matching (Single processor)
+    fmm fmm_config.xml
+    # Run map matching parallely (omp stands for OpenMP) 
+    fmm_omp fmm_config.xml
+
+Check the [example](example) for configuration file format.
 
 ## Input and output
 
@@ -89,8 +103,6 @@ If you already have a road network file in GDAL supported formats, e.g., ESRI sh
 1. [Add shapefiles to PostGIS database](https://gis.stackexchange.com/questions/41799/adding-shapefiles-to-postgis-database)
 2. [Create topology of road network with the function pgr_createTopology in pgrouting](http://docs.pgrouting.org/2.2/en/src/topology/doc/pgr_createTopology.html)
 3. [Export PostGIS table to shapefile](https://gis.stackexchange.com/questions/55206/how-can-i-get-a-shapefile-from-a-postgis-query)
-
-
 
 ### Output
 
@@ -167,7 +179,13 @@ Two example configuration files are given in the [example](example) folder.
 
 **Note that search radius and gps error should be specified in the same unit as the network file.** 
 
+## Example
+
+Check the [example](example) folder. 
+
 ## Performance measurement
+
+### Map matching
 
 A case study is reported in the original paper with real world datasets in Stockholm:
 
@@ -176,10 +194,12 @@ A case study is reported in the original paper with real world datasets in Stock
 - UBODT size: 4,305,012 rows
 - k = 8 (candidate set size), r = 300 meters (search radius)
 
-The speed of map matching is about:
+The speed of map matching (single processor) is about:
 
 - 25000 points/s (WKB Geometry output, mode 1)
 - 45000 points/s (No geometry output, mode 0)
+
+### UBODT precomputation
 
 Statistics of ubodt construction on the network of Netherland (700k nodes and 1 million edges)
 http://geodata.nationaalgeoregister.nl/nwbwegen/extract/nwbwegen.zip
