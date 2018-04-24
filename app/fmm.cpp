@@ -45,7 +45,8 @@ int main (int argc, char **argv)
             return 0;
         };
         config.print();
-        clock_t begin_time = clock(); // program start time
+        // clock_t begin_time = clock(); // program start time
+        std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
         GPS_ERROR = config.gps_error; // Default value is 50 meter
         Network network(config.network_file,config.network_id,config.network_source,config.network_target);
         network.build_rtree_index();
@@ -63,7 +64,7 @@ int main (int argc, char **argv)
         int points_matched=0;
         int total_points=0;
         int num_trajectories = tr_reader.get_num_trajectories();
-        int step_size = num_trajectories/20;
+        int step_size = num_trajectories/10;
         if (step_size<10) step_size=10;
         std::cout<<"Start to map match trajectories with total number "<< num_trajectories <<'\n';
         if (config.mode == 0)
@@ -184,9 +185,11 @@ int main (int argc, char **argv)
         };
         std::cout<<"\n============================="<<'\n';
         std::cout<<"MM process finished"<<'\n';
-        clock_t end_time = clock(); // program end time
+        std::chrono::steady_clock::time_point end= std::chrono::steady_clock::now();
+        // clock_t end_time = clock(); // program end time
         // Unit is second
-        double time_spent = (double)(end_time - begin_time) / CLOCKS_PER_SEC;
+        // double time_spent = (double)(end_time - begin_time) / CLOCKS_PER_SEC;
+        double time_spent = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()/1000.;
         std::cout<<"Time takes "<<time_spent<<'\n';
         std::cout<<"Finish map match total points "<<total_points
                  <<" and points matched "<<points_matched<<'\n';
