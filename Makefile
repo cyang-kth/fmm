@@ -9,7 +9,7 @@ initial:
 	mkdir -p $(HOME)/bin
 build_fmm:initial
 	@echo ----- Start to build fmm -----
-	g++ -Wall -std=gnu++11  -O3 app/fmm.cpp -o dist/fmm -lgdal -lboost_serialization
+	g++ -Wall -Wno-unknown-pragmas -std=gnu++11  -O3 app/fmm.cpp -o dist/fmm -lgdal -lboost_serialization
 	@echo ----- fmm build success ----- 
 build_install_fmm_debug:initial
 	@echo ----- Start to build fmm_debug -----
