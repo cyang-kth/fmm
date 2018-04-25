@@ -8,7 +8,7 @@ This project is an implementation of the fast map matching (FMM) algorithm intro
 - Map matching speed of **25,000-45,000 points/second** (single processor)
 - Customized output mode (matched point,matched line,offset,edge ID)
 - Tested on city level road network and **millions of GPS records** 
-- :tada: Parallel map matching with OpenMP ( **5-8 times** the single processor speed). 
+- :tada: Parallel map matching with OpenMP ( **5-6 times** of the single processor speed). 
 
 ![demo](demo.png)
 
@@ -194,10 +194,19 @@ A case study is reported in the original paper with real world datasets in Stock
 - UBODT size: 4,305,012 rows
 - k = 8 (candidate set size), r = 300 meters (search radius)
 
-The speed of map matching (single processor) is about:
+As reported in the paper, on a desktop with Intel(R) Core(TM) 2 Quad CPU Q9650 @ 3.00GHz (4 processors), the speed of map matching (single processor) is about:
 
 - 25000 points/s (WKB Geometry output, mode 1)
 - 45000 points/s (No geometry output, mode 0)
+
+On Intel(R) Core(TM) i7-2600 CPU @ 3.40GHz (8 processors), the speed are reported as: 
+
+| Program | WKB speed | WKT speed | No geom speed |
+|---------|-----------|-----------|---------------|
+| fmm     | 52,890    | 17,905    | 58,830        |
+| fmm_omp | 221,797   | 77,910    | 289,031       |
+
+
 
 ### UBODT precomputation
 

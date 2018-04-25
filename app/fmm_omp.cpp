@@ -98,6 +98,11 @@ int main (int argc, char **argv)
                     if (c_path_ptr != nullptr) points_matched += points_in_tr;
                     DEBUG(1) std::cout << "=============================" << '\n';
                     ++progress;
+                    if (progress % step_size == 0) {
+                        std::stringstream buf;
+                        buf << "Progress " << progress << " / " << num_trajectories << '\n';
+                        std::cout << buf.rdbuf();
+                    }
                     delete o_path_ptr;
                     delete c_path_ptr;
                 }

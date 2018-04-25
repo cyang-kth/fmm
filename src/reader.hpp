@@ -103,7 +103,7 @@ public:
     std::vector<Trajectory> read_next_N_trajectories(int N=30000)
     {
         int trajectories_size = NUM_FEATURES-_cursor<N ? NUM_FEATURES-_cursor:N;
-        std::cout<<std::setw(4)<<""<<"Read features with buffer from : "<< _cursor << " to " << _cursor + N <<'\n';
+        // std::cout<<std::setw(4)<<""<<"Read features with buffer from : "<< _cursor << " to " << _cursor + N <<'\n';
         std::vector<Trajectory> trajectories(trajectories_size);
         int i=0;
         while(i<trajectories_size)
