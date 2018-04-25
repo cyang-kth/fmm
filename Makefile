@@ -34,6 +34,11 @@ build_ubodt_gen:initial
 	@echo ----- Start to build ubodt_gen ----- 
 	g++ -std=gnu++11  -O3 app/ubodt_gen.cpp -o dist/ubodt_gen -lgdal -lboost_serialization
 	@echo ----- ubodt_gen build success ----- 
+build_install_ubodt_gen_omp:initial
+	@echo ----- Start to build ubodt_gen_omp ----- 
+	g++ -std=gnu++11 -fopenmp -O3 app/ubodt_gen_omp.cpp -o dist/ubodt_gen_omp -lgdal -lboost_serialization
+	cp dist/ubodt_gen_omp $(HOME)/bin
+	@echo ----- ubodt_gen build success ----- 
 build_install_ubodt_gen_debug:initial
 	@echo ----- Start to build ubodt_gen_debug ----- 
 	g++ -std=gnu++11 -DDEBUG_LEVEL='2' -O3 app/ubodt_gen.cpp -o dist/ubodt_gen_debug -lgdal -lboost_serialization

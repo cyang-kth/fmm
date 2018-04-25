@@ -17,8 +17,8 @@
  * @author: Can Yang
  * @version: 2018.03.09
  */
-#ifndef MM_NETWORK_GRAPH_OPT_HPP
-#define MM_NETWORK_GRAPH_OPT_HPP
+#ifndef MM_NETWORK_GRAPH_OPT_OMP_HPP
+#define MM_NETWORK_GRAPH_OPT_OMP_HPP
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
@@ -34,11 +34,12 @@
 #include "reader.hpp"
 #include "float.h"
 #include "network.hpp"
+#include <omp.h>
 #include <algorithm> // std::reverse
 #include <unordered_map>
 #include <boost/archive/binary_oarchive.hpp> // Binary output of UBODT
 namespace MM{
-class NetworkGraphOpt
+class NetworkGraphOptOmp
 {
 public:
     // A infinity value used in the routing algorithm
@@ -46,7 +47,7 @@ public:
     /**
      *  Construct a network graph from a network object
      */
-    NetworkGraphOpt(Network *network) {
+    NetworkGraphOptOmp(Network *network) {
         std::vector<Edge> *edges = network->get_edges();
         std::cout << "Construct graph from network edges start" << '\n';
         // Key is the external ID and value is the index of vertice
@@ -94,7 +95,9 @@ public:
         }
         num_vertices = boost::num_vertices(g);
         std::cout << "Graph nodes " << num_vertices << '\n';
-        initialize_distances_predecessors();
+        int num_threads = 8;
+        std::cout << "Number of thread available is " << num_threads << '\n';
+        initialize_distances_predecessors(num_threads);
         std::cout << "Construct graph from network edges end" << '\n';
     };
     /**
@@ -108,21 +111,33 @@ public:
         std::ofstream myfile(filename);
         std::cout << "Start to generate UBODT with delta " << delta << '\n';
         std::cout << "Output format " << (binary?"binary":"csv") << '\n';
-        if (binary){
-            boost::archive::binary_oarchive oa(myfile);
-            vertex_iterator vi, vend;
-            for (boost::tie(vi, vend) = vertices(g); vi != vend; ++vi) {
-                if (*vi%step_size==0) std::cout<<"Progress "<<*vi<< " / " << num_vertices <<'\n';
-                driving_distance_binary(*vi, delta, oa);
-            }
-        } else {
+        // if (binary){
+        //     boost::archive::binary_oarchive oa(myfile);
+        //     vertex_iterator vi, vend;
+        //     for (boost::tie(vi, vend) = vertices(g); vi != vend; ++vi) {
+        //         if (*vi%step_size==0) std::cout<<"Progress "<<*vi<< " / " << num_vertices <<'\n';
+        //         driving_distance_binary(*vi, delta, oa);
+        //     }
+        // } else {
             myfile << "source;target;next_n;prev_n;next_e;distance\n";
-            vertex_iterator vi, vend;
-            for (boost::tie(vi, vend) = vertices(g); vi != vend; ++vi) {
-                if (*vi%step_size==0) std::cout<<"Progress "<<*vi<< " / " << num_vertices <<'\n';
-                driving_distance_csv(*vi, delta, myfile);
+            int progress = 0; 
+            #pragma omp parallel for
+            for (int i=0; i<num_vertices; ++i) {
+                int thread_id = omp_get_thread_num();
+                driving_distance_csv(i, delta, myfile, thread_id);
+                ++progress;
+                if (progress%step_size==0) {
+                    std::stringstream buf;
+                    buf << "Progress " << progress << " / " << num_vertices <<'\n';
+                    std::cout << buf.rdbuf();
+                }
             }
-        }
+            // for (boost::tie(vi, vend) = vertices(g); vi != vend; ++vi) {
+            //     int thread_id = omp_get_thread_num();
+            //     if (*vi%step_size==0) std::cout<<"Progress "<<*vi<< " / " << num_vertices <<'\n';
+            //     driving_distance_csv(*vi, delta, myfile, thread_id);
+            // }
+        // }
         myfile.close();
     };
 private:
@@ -153,15 +168,17 @@ private:
             double distance_goal,
             std::deque< vertex_descriptor > &nodesInDistance,
             std::vector< double > &distances,
-            std::vector< vertex_descriptor > &examined_vertices_ref
-        ) : m_distance_goal(distance_goal), m_nodes(nodesInDistance), m_dist(distances),
+            std::vector< vertex_descriptor > &examined_vertices_ref,
+            int thread_id
+        ) : m_distance_goal(distance_goal), m_nodes(nodesInDistance), m_dist(distances),m_thread_id(thread_id),
         m_examined_vertices(examined_vertices_ref) {};
+        // 
         template <class Graph>void examine_vertex(vertex_descriptor u, Graph &g) {
             DEBUG (2) std::cout << "Examine node " << u << '\n';
             m_nodes.push_back(u);
             if (m_dist[u] > m_distance_goal) {
                 m_nodes.pop_back();
-                throw found_goals();
+                throw m_thread_id;
             }
         };
         template <class Graph>void edge_relaxed(edge_descriptor e, Graph &g) {
@@ -174,6 +191,7 @@ private:
         std::deque< vertex_descriptor > &m_nodes; //Precedessors
         std::vector< double > &m_dist; // Distances
         std::vector< vertex_descriptor > & m_examined_vertices; //Examined nodes
+        int m_thread_id;
     }; // driving_distance_visitor
     
     Graph_T g; // The member storing a boost graph
@@ -218,12 +236,11 @@ private:
      * Given a source node and an upper bound distance delta 
      * write the UBODT rows to a file
      */
-    void driving_distance_csv(const vertex_descriptor& source, double delta, std::ostream& stream) {
-        DEBUG (2) std::cout << "Debug progress source " << source << '\n';
+    void driving_distance_csv(const vertex_descriptor& source, double delta, std::ostream& stream, int thread_id) {
         std::deque<vertex_descriptor> nodesInDistance;
-        examined_vertices.push_back(source);
+        examined_vertices_pool[thread_id].push_back(source);
         double inf = std::numeric_limits<double>::max();
-        distances_map[source]=0;
+        distances_map_pool[thread_id][source]=0;
         // In BGL, http://www.boost.org/doc/libs/1_66_0/boost/graph/dijkstra_shortest_paths_no_color_map.hpp
         // The named parameter version is only defined for dijkstra_shortest_paths_no_color_map
         // Therefore, we need to explicitly pass in the arguments
@@ -234,12 +251,12 @@ private:
                 g,
                 source,
                 //boost::predecessor_map(&predecessors_map[0]),
-                make_iterator_property_map(predecessors_map.begin(),get(boost::vertex_index, g),predecessors_map[0]),
-                //boost::distance_map(boost::make_iterator_property_map(distances_map.begin(), get(boost::vertex_index, g))),
-                //&distances_map[0],
-                make_iterator_property_map(distances_map.begin(),get(boost::vertex_index, g),distances_map[0]),
-                //make_iterator_property_map(distances_map.begin(), boost::vertex_index_map(get(boost::vertex_index, g)),distances_map[0]),
-                //boost::distance_map(boost::make_iterator_property_map(distances_map.begin(), get(boost::vertex_index, g))),
+                make_iterator_property_map(predecessors_map_pool[thread_id].begin(),get(boost::vertex_index, g),predecessors_map_pool[thread_id][0]),
+                //boost::distance_map(boost::make_iterator_property_map(distances_map_pool[thread_id].begin(), get(boost::vertex_index, g))),
+                //&distances_map_pool[thread_id][0],
+                make_iterator_property_map(distances_map_pool[thread_id].begin(),get(boost::vertex_index, g),distances_map_pool[thread_id][0]),
+                //make_iterator_property_map(distances_map_pool[thread_id].begin(), boost::vertex_index_map(get(boost::vertex_index, g)),distances_map_pool[thread_id][0]),
+                //boost::distance_map(boost::make_iterator_property_map(distances_map_pool[thread_id].begin(), get(boost::vertex_index, g))),
                 get(&Edge_Property::length, g),
                 get(boost::vertex_index, g),
                 std::less<double>(), //DistanceCompare distance_compare,
@@ -247,16 +264,17 @@ private:
                 inf,
                 0,
                 driving_distance_visitor(
-                    delta, nodesInDistance, distances_map, examined_vertices
+                    delta, nodesInDistance, distances_map_pool[thread_id], examined_vertices_pool[thread_id],thread_id
                 )
             );
-        } catch (found_goals& goal) {
-            //std::cout << "Found goals" << '\n';
+        } catch (int e) {
+            // std::cout << "Found goals" << e << '\n';
         }
         // Get successors for each node reached
-        DEBUG (2) std::cout << "Find nodes in distance # "<< nodesInDistance.size() <<'\n';
+        // buf << "Find nodes in distance # "<< nodesInDistance.size() <<" thread id "<< thread_id <<'\n';
+        // std::cout<<buf.rdbuf();
         std::vector<vertex_descriptor> successors =
-            get_successors(nodesInDistance, predecessors_map);
+            get_successors(nodesInDistance, predecessors_map_pool[thread_id]);
         double cost;
         int edge_id;
         int k = 0;
@@ -265,33 +283,32 @@ private:
             node = nodesInDistance[k];
             if (source != node) {
                 // The cost is need to identify the edge ID
-                cost = distances_map[successors[k]] - distances_map[source];
+                cost = distances_map_pool[thread_id][successors[k]] - distances_map_pool[thread_id][source];
                 edge_id = get_edge_id(source, successors[k], cost);
-                stream << vertex_id_vec[source] << ";" << vertex_id_vec[node] << ";" << vertex_id_vec[successors[k]] << ";"
-                       << vertex_id_vec[predecessors_map[node]] << ";" << edge_id << ";" << distances_map[node]
+                stream_pool[thread_id] << vertex_id_vec[source] << ";" << vertex_id_vec[node] << ";" << vertex_id_vec[successors[k]] << ";"
+                       << vertex_id_vec[predecessors_map_pool[thread_id][node]] << ";" << edge_id << ";" << distances_map_pool[thread_id][node]
                        << "\n";
-                // stream << source << ";" << node << ";" << successors[k] << ";"
-                //        << predecessors_map[node] << ";" << edge_id << ";" << distances_map[node]
-                //        << "\n";
             }
             ++k;
         }
-        DEBUG (2) std::cout << "Clean examined vertices"<< examined_vertices.size() <<'\n';
-        clean_distances_predecessors();
+        #pragma omp critical
+        stream<<stream_pool[thread_id].rdbuf();
+        DEBUG (2) std::cout << "Clean examined vertices"<< examined_vertices_pool[thread_id].size() <<'\n';
+        clean_distances_predecessors(thread_id);
     };
-    void driving_distance_binary(const vertex_descriptor& source, double delta, boost::archive::binary_oarchive& oa) {
-        DEBUG (2) std::cout << "Debug progress source " << source << '\n';
+    void driving_distance_binary(const vertex_descriptor& source, double delta, boost::archive::binary_oarchive& oa,int thread_id) {
+        DEBUG (2) std::cout << "Debug progress source " << source << " thread id "<< thread_id <<'\n';
         std::deque<vertex_descriptor> nodesInDistance;
-        examined_vertices.push_back(source);
+        examined_vertices_pool[thread_id].push_back(source);
         double inf = std::numeric_limits<double>::max();
-        distances_map[source]=0;
+        distances_map_pool[thread_id][source]=0;
         try {
             // This part to be fixed
             dijkstra_shortest_paths_no_color_map_no_init(
                 g,
                 source,
-                make_iterator_property_map(predecessors_map.begin(),get(boost::vertex_index, g),predecessors_map[0]),
-                make_iterator_property_map(distances_map.begin(),get(boost::vertex_index, g),distances_map[0]),
+                make_iterator_property_map(predecessors_map_pool[thread_id].begin(),get(boost::vertex_index, g),predecessors_map_pool[thread_id][0]),
+                make_iterator_property_map(distances_map_pool[thread_id].begin(),get(boost::vertex_index, g),distances_map_pool[thread_id][0]),
                 get(&Edge_Property::length, g),
                 get(boost::vertex_index, g),
                 std::less<double>(), //DistanceCompare distance_compare,
@@ -299,15 +316,15 @@ private:
                 inf,
                 0,
                 driving_distance_visitor(
-                    delta, nodesInDistance, distances_map, examined_vertices
+                    delta, nodesInDistance, distances_map_pool[thread_id], examined_vertices_pool[thread_id],thread_id
                 )
             );
-        } catch (found_goals& goal) {
-            //std::cout << "Found goals" << '\n';
+        } catch (int e) {
+            std::cout << "Found goals" << e<<'\n';
         }
         // Get successors for each node reached
         DEBUG (2) std::cout << "Find nodes in distance # "<< nodesInDistance.size() <<'\n';
-        std::vector<vertex_descriptor> successors =get_successors(nodesInDistance, predecessors_map);
+        std::vector<vertex_descriptor> successors =get_successors(nodesInDistance, predecessors_map_pool[thread_id]);
         double cost;
         int edge_id;
         int k = 0;
@@ -316,52 +333,59 @@ private:
             node = nodesInDistance[k];
             if (source != node) {
                 // The cost is need to identify the edge ID
-                cost = distances_map[successors[k]] - distances_map[source];
+                cost = distances_map_pool[thread_id][successors[k]] - distances_map_pool[thread_id][source];
                 edge_id = get_edge_id(source, successors[k], cost);
                 oa << vertex_id_vec[source];
                 oa << vertex_id_vec[node];
                 oa << vertex_id_vec[successors[k]];
-                oa << vertex_id_vec[predecessors_map[node]];
+                oa << vertex_id_vec[predecessors_map_pool[thread_id][node]];
                 oa << edge_id;
-                oa << distances_map[node];
+                oa << distances_map_pool[thread_id][node];
             }
             ++k;
         }
-        DEBUG (2) std::cout << "Clean examined vertices"<< examined_vertices.size() <<'\n';
-        clean_distances_predecessors();
+        DEBUG (2) std::cout << "Clean examined vertices"<< examined_vertices_pool[thread_id].size() <<'\n';
+        clean_distances_predecessors(thread_id);
     };
     /*
        Clean the distance map and predecessor map 
      */
-    void initialize_distances_predecessors(){
-        // Need initialization 
-        predecessors_map= std::vector<vertex_descriptor>(num_vertices);
-        distances_map = std::vector<double>(num_vertices);
+    void initialize_distances_predecessors(int num_threads){
+        // Need initialization
+        std::vector<vertex_descriptor> predecessors_map(num_vertices);
+        std::vector<double> distances_map(num_vertices);
         for (int i = 0; i < num_vertices; ++i) {
             distances_map[i] = std::numeric_limits<double>::max();
             predecessors_map[i] = i;
         }
-        
+        for (int i=0;i<num_threads;++i){
+            predecessors_map_pool.push_back(predecessors_map);
+            distances_map_pool.push_back(distances_map);
+            examined_vertices_pool.push_back(std::vector<vertex_descriptor>());
+            stream_pool.push_back(std::stringstream());
+        };
     }
-    void clean_distances_predecessors(){
+    void clean_distances_predecessors(int thread_id){
         // Update the properties of examined nodes
-        int N = examined_vertices.size();
+        int N = examined_vertices_pool[thread_id].size();
         for (int i = 0; i < N; ++i) {
-            vertex_descriptor v = examined_vertices[i];
-            distances_map[v] = std::numeric_limits<double>::max();
-            predecessors_map[v] = v;
+            vertex_descriptor v = examined_vertices_pool[thread_id][i];
+            distances_map_pool[thread_id][v] = std::numeric_limits<double>::max();
+            predecessors_map_pool[thread_id][v] = v;
         }
-        examined_vertices.clear();
+        examined_vertices_pool[thread_id].clear();
         // Clear the examined vertices
     };
     static constexpr double DOUBLE_MIN = 1.e-6; // This is used for comparing double values
     // Two maps record the routing output
-    std::vector<vertex_descriptor> predecessors_map;
+    // The _pool variables are used by OpenMP 
+    std::vector<std::vector<vertex_descriptor>> predecessors_map_pool;
     // a list of costs stored for one node to all nodes in the graph
-    std::vector<double> distances_map;
+    std::vector<std::vector<double>> distances_map_pool;
     std::vector<int> vertex_id_vec; // stores the external ID of each vertex in G
-    std::vector<vertex_descriptor> examined_vertices; // Nodes whose distance in the dist_map is updated.
+    std::vector<std::vector<vertex_descriptor>> examined_vertices_pool; // Nodes whose distance in the dist_map is updated.
+    std::vector<std::stringstream> stream_pool; // Nodes whose distance in the dist_map is updated.
     int num_vertices=0;
-}; // NetworkGraphOpt
+}; // NetworkGraphOptOmp
 } // MM
-#endif /* MM_NETWORK_GRAPH_OPT_HPP */
+#endif /* MM_NETWORK_GRAPH_OPT_OMP_HPP */
