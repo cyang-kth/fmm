@@ -118,12 +118,9 @@ public:
         } else {
             myfile << "source;target;next_n;prev_n;next_e;distance\n";
             vertex_iterator vi, vend;
-            int K = 50000;
-            int i = 0;
-            for (boost::tie(vi, vend) = vertices(g); vi != vend && i<K ; ++vi) {
+            for (boost::tie(vi, vend) = vertices(g); vi != vend ; ++vi) {
                 if (*vi%step_size==0) std::cout<<"Progress "<<*vi<< " / " << num_vertices <<'\n';
                 driving_distance_csv(*vi, delta, myfile);
-                ++i;
             }
         }
         myfile.close();

@@ -17,11 +17,36 @@
 #include <boost/graph/detail/d_ary_heap.hpp>
 #include <boost/graph/dijkstra_shortest_paths.hpp>
 #include <boost/graph/iteration_macros.hpp>
+#include <boost/array.hpp>
 
 namespace boost {
+/*
+namespace detail{
+    //template <class Graph, class IndexMap, class Value>
+    //struct my_vertex_property_map_generator_helper {};
+    template <class Graph, class IndexMap, class Value>
+    struct my_vertex_property_map_generator_helper{
+        typedef boost::iterator_property_map<Value*, IndexMap> type;
+        static type build(const Graph& g, const IndexMap& index, boost::array<Value>& array_holder) {
+            // array_holder.reset(new Value[num_vertices(g)]);
+            std::fill(array_holder.get(), array_holder.get() + num_vertices(g), Value());
+            return make_iterator_property_map(array_holder.get(), index);
+        }
+    };    
+}*/
+
+// template <class Graph, class IndexMap, class Value>
+// static boost::iterator_property_map<Value*, IndexMap> build(const Graph& g, const IndexMap& index, boost::array<Value>& array_holder){
+//     array_holder.reset(new Value[num_vertices(g)]);
+//     std::fill(array_holder.get(), array_holder.get() + num_vertices(g), Value());
+//     // Vertex index to fetch the pointer address at array holder. 
+//     // It maps the indexmap (or index vector) to the values stored in the iteratior, which is the array holder. 
+//     return make_iterator_property_map(array_holder.get(), index);
+// };
+
 
 /**
- *  This is an optimized driving distance function based on dijkstra_shortest_paths_no_color_map_no_init 
+ *  This is an optimized driving distance function based on dijkstra_shortest_paths_no_color_map_no_init
  *  in BGL.
  *
  *  Input:
@@ -29,13 +54,13 @@ namespace boost {
  *      delta: upper bound distance for early stopping
  *      Note: the predecessor map must be initialized with the vertex at each position
  *      and the distance map initialized with infinity
- *      
- *  Returns: 
+ *
+ *  Returns:
  *      predecessor_map: similar to Dijkstra
  *      distance_map: similar to Dijkstra
- *      examined_vertex_map: examined vertexes, that will be used 
- *      to clean the predecessor_map and distance_map in repeated queries. 
- * 
+ *      examined_vertex_map: examined vertexes, that will be used
+ *      to clean the predecessor_map and distance_map in repeated queries.
+ *
  */
 template <typename Graph,
           typename PredecessorMap, typename DistanceMap,
@@ -52,7 +77,7 @@ void dijkstra_shortest_paths_upperbound
  DistanceCompare distance_compare,
  DistanceWeightCombine distance_weight_combine,
  DistanceInfinity distance_infinity,
- DistanceZero distance_zero, double distance_goal, 
+ DistanceZero distance_zero, double distance_goal,
  std::vector<typename Graph::vertex_descriptor> &nodes_within_goal,
  std::vector<typename Graph::vertex_descriptor> &examined_vertices)
 {
@@ -63,29 +88,29 @@ void dijkstra_shortest_paths_upperbound
     DistanceIndirectCompare
     distance_indirect_compare(distance_map, distance_compare);
 
-    // Choose vertex queue type
-#if BOOST_GRAPH_DIJKSTRA_USE_RELAXED_HEAP
-    typedef relaxed_heap<Vertex, DistanceIndirectCompare, VertexIndexMap>
-    VertexQueue;
-    VertexQueue vertex_queue(num_vertices(graph),
-                             distance_indirect_compare,
-                             index_map);
-#else
     // Default - use d-ary heap (d = 4)
-    typedef
-    detail::vertex_property_map_generator<Graph, VertexIndexMap, std::size_t>
-    IndexInHeapMapHelper;
-    typedef typename IndexInHeapMapHelper::type IndexInHeapMap;
+    // typedef
+    // detail::vertex_property_map_generator<Graph, VertexIndexMap, std::size_t>
+    // IndexInHeapMapHelper;
+    // typedef typename IndexInHeapMapHelper::type IndexInHeapMap;
+    typedef boost::iterator_property_map<std::size_t *,VertexIndexMap> IndexInHeapMap;
     typedef
     d_ary_heap_indirect<Vertex, 4, IndexInHeapMap, DistanceMap, DistanceCompare>
     VertexQueue;
+    // 80%
+    // boost::scoped_array<std::size_t> index_in_heap_map_holder;
+    // // IndexInHeapMap is actually a boost::iterator_property_map<Value*, IndexMap> 
+    // IndexInHeapMap index_in_heap =
+    //     IndexInHeapMapHelper::build(graph, index_map,
+    //                                 index_in_heap_map_holder);
+    // typedef boost::array<std::size_t, std::size_t num_vertices(g)> array;
+    // *dheap_on_stack = new boost::array(std::size_t,num_vertices(g));
+    std::size_t * dheap_on_stack = new std::size_t[num_vertices(graph)];
+    boost::iterator_property_map<std::size_t *,VertexIndexMap> index_in_heap_map = 
+        make_iterator_property_map(dheap_on_stack, index_map);
 
-    boost::scoped_array<std::size_t> index_in_heap_map_holder;
-    IndexInHeapMap index_in_heap =
-        IndexInHeapMapHelper::build(graph, index_map,
-                                    index_in_heap_map_holder);
-    VertexQueue vertex_queue(distance_map, index_in_heap, distance_compare);
-#endif
+    // The first two arguments in the template of VertexQueue are already defined
+    VertexQueue vertex_queue(distance_map, index_in_heap_map, distance_compare);
 
     double m_distance_goal; //Delta
 
@@ -102,6 +127,7 @@ void dijkstra_shortest_paths_upperbound
         nodes_within_goal.push_back(min_vertex);
         if (distance_map[min_vertex] > distance_goal) {
             nodes_within_goal.pop_back();
+            delete[] dheap_on_stack;
             return;
         }
 
@@ -110,6 +136,7 @@ void dijkstra_shortest_paths_upperbound
 
         if (!distance_compare(min_vertex_distance, distance_infinity)) {
             // This is the minimum vertex, so all other vertices are unreachable
+            delete[] dheap_on_stack;
             return;
         }
 
@@ -150,7 +177,8 @@ void dijkstra_shortest_paths_upperbound
 
         // visitor.finish_vertex(min_vertex, graph);
     } // end while queue not empty
-}
+    delete[] dheap_on_stack;
+} // dijkstra_shortest_paths_upperbound
 
 } // namespace boost
 
