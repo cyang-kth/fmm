@@ -28,7 +28,7 @@
 #include <boost/graph/graph_traits.hpp>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/dijkstra_shortest_paths.hpp>
-#include <boost/graph/dijkstra_shortest_paths_no_color_map.hpp>
+#include "bgl_driving_dist.hpp"
 #include <boost/property_map/property_map.hpp>
 #include <boost/graph/copy.hpp>
 #include "types.hpp"
@@ -139,14 +139,11 @@ public:
             // std::stringstream node_output_buf;
             #pragma omp for
             for (int source = 0; source < K; ++source) {
-                std::deque<vertex_descriptor> nodesInDistance;
+                std::vector<vertex_descriptor> nodesInDistance;
                 examined_vertices.push_back(source);
                 double inf = std::numeric_limits<double>::max();
                 distances_map[source] = 0;
-                try {
-                    // The reason for the slow may lies here
-                    dijkstra_shortest_paths_no_color_map_no_init(
-                        g,
+                boost::dijkstra_shortest_paths_upperbound(g,
                         source,
                         make_iterator_property_map(predecessors_map.begin(), get(boost::vertex_index, g), predecessors_map[0]),
                         make_iterator_property_map(distances_map.begin(), get(boost::vertex_index, g), distances_map[0]),
@@ -155,14 +152,24 @@ public:
                         std::less<double>(), //DistanceCompare distance_compare,
                         boost::closed_plus<double>(inf),
                         inf,
-                        0,
-                        driving_distance_visitor(
-                            delta, nodesInDistance, distances_map, examined_vertices
-                        )
-                    );
-                } catch (int e) {
-                    //std::cout << "Found goals" << '\n';
-                }
+                        0, delta, nodesInDistance,examined_vertices
+                );
+                    // The reason for the slow may lies here
+                    // dijkstra_shortest_paths_no_color_map_no_init(
+                    //     g,
+                    //     source,
+                    //     make_iterator_property_map(predecessors_map.begin(), get(boost::vertex_index, g), predecessors_map[0]),
+                    //     make_iterator_property_map(distances_map.begin(), get(boost::vertex_index, g), distances_map[0]),
+                    //     get(&Edge_Property::length, g),
+                    //     get(boost::vertex_index, g),
+                    //     std::less<double>(), //DistanceCompare distance_compare,
+                    //     boost::closed_plus<double>(inf),
+                    //     inf,
+                    //     0,
+                    //     driving_distance_visitor(
+                    //         delta, nodesInDistance, distances_map, examined_vertices
+                    //     )
+                    // );
                 std::vector<vertex_descriptor> successors = get_successors(nodesInDistance, predecessors_map);
                 double cost;
                 int edge_id;
@@ -183,18 +190,6 @@ public:
                         node_output_buf << vertex_id_vec[source]<< ";" << vertex_id_vec[node]
                          << ";" << vertex_id_vec[successors[k]] << ";" << vertex_id_vec[predecessors_map[node]] 
                          << ";" << edge_id << ";" << distances_map[node] << "\n";
-                        // node_output_buf << vertex_id_vec[source];
-                        // node_output_buf << ";";
-                        // node_output_buf << vertex_id_vec[node];
-                        // node_output_buf << ";";
-                        // node_output_buf << vertex_id_vec[successors[k]];
-                        // node_output_buf << ";";
-                        // node_output_buf << vertex_id_vec[predecessors_map[node]];
-                        // node_output_buf << ";";
-                        // node_output_buf << edge_id;
-                        // node_output_buf << ";";
-                        // node_output_buf << distances_map[node];
-                        // node_output_buf << "\n";
                         //printf('Stringstream size %d\n',node_output_buf.tellg()); 
                     }
                     ++k;
@@ -241,44 +236,6 @@ private:
     typedef Graph_T::edge_descriptor edge_descriptor;
     typedef boost::graph_traits<Graph_T>::vertex_iterator vertex_iterator;
     typedef boost::graph_traits<Graph_T>::out_edge_iterator out_edge_iterator;
-    struct found_goals {}; // Used for driving distances
-    /**
-     * The visitor is an inner class whose function examine_vertex()
-     * is called whenever a new node is found in conventional Dijkstra
-     * algorithm.
-     *
-     * It is called in the driving_distance function.
-     */
-    class driving_distance_visitor : public boost::default_dijkstra_visitor {
-    public:
-        // Create a visitor
-        explicit driving_distance_visitor(
-            double distance_goal,
-            std::deque< vertex_descriptor > &nodesInDistance,
-            std::vector< double > &distances,
-            std::vector< vertex_descriptor > &examined_vertices_ref
-        ) : m_distance_goal(distance_goal), m_nodes(nodesInDistance), m_dist(distances), 
-            m_examined_vertices(examined_vertices_ref) {};
-        //
-        template <class Graph>void examine_vertex(vertex_descriptor u, Graph &g) {
-            DEBUG (2) std::cout << "Examine node " << u << '\n';
-            m_nodes.push_back(u);
-            if (m_dist[u] > m_distance_goal) {
-                m_nodes.pop_back();
-                throw 1;
-            }
-        };
-        template <class Graph>void edge_relaxed(edge_descriptor e, Graph &g) {
-            // Add v to the examined vertices
-            DEBUG (2) std::cout << "Examine edge" << e << '\n';
-            m_examined_vertices.push_back(boost::target(e, g));
-        };
-    private:
-        double m_distance_goal; //Delta
-        std::deque< vertex_descriptor > &m_nodes; //node within distance
-        std::vector< double > &m_dist; // Distances
-        std::vector< vertex_descriptor > & m_examined_vertices; //Examined nodes
-    }; // driving_distance_visitor
 
     Graph_T mg; // The member storing a boost graph
     /**
@@ -303,7 +260,7 @@ private:
      *  Get the successors (next node visited) for each node in a
      *  shortest path tree defined by a deque and a predecessor vector
      */
-    std::vector<vertex_descriptor> get_successors(std::deque<vertex_descriptor> &nodesInDistance, std::vector<vertex_descriptor>& predecessors) {
+    std::vector<vertex_descriptor> get_successors(std::vector<vertex_descriptor> &nodesInDistance, std::vector<vertex_descriptor>& predecessors) {
         int N = nodesInDistance.size();
         std::vector<vertex_descriptor> successors = std::vector<vertex_descriptor>(N);
         int i;

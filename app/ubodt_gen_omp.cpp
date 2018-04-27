@@ -5,7 +5,7 @@
  * @author: Can Yang
  * @version: 2018.03.09
  */
-#include "../src/network_graph_opt_omp.hpp"
+#include "../src/network_graph_drive_dist.hpp"
 #include "config.hpp"
 #include <iostream>
 #include <ctime>
@@ -37,10 +37,12 @@ int main(int argc, char* argv[])
             config.network_id,
             config.network_source,
             config.network_target);
-        MM::NetworkGraphOptOmp graph(&network);
+        // std::ostream result_file(config.result_file);
+        std::ofstream ofs(config.result_file);
+        MM::NetworkGraphOptOmp graph(&network,ofs);
         std::cout<<"Upperbound config (delta): "<<config.delta<<'\n';
         bool binary = (config.binary_flag==1);
-        graph.precompute_ubodt(config.result_file,config.delta,binary);
+        graph.precompute_ubodt(config.delta,binary);
         std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
         // Unit is second
         // std::cout << "Time takes" <<  <<std::endl;
