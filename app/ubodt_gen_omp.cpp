@@ -42,17 +42,17 @@ int main(int argc, char* argv[])
         MM::NetworkGraphOptOmp graph(&network,ofs);
         std::cout<<"Upperbound config (delta): "<<config.delta<<'\n';
         bool binary = (config.binary_flag==1);
+        if (binary){
+            std::cout << "---- Error: parallel construction of binary UBODT is not implemented" << '\n';
+            return 0;
+        }
         graph.precompute_ubodt(config.delta,binary);
         std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
         // Unit is second
         // std::cout << "Time takes" <<  <<std::endl;
         double time_spent = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() / 1000.;
         //double time_spent = (double)(end_time - begin_time) / CLOCKS_PER_SEC;
-        std::cout << "Time takes " << time_spent << '\n';
-        // clock_t end_time = clock(); // program end time
-        // // Unit is second
-        // double time_spent = (double)(end_time - begin_time) / CLOCKS_PER_SEC;
-        // std::cout<<"Time takes "<<time_spent<<'\n';        
+        std::cout << "Time takes " << time_spent << '\n';       
     }
     std::cout<<"------------    Program finished     ------------"<<endl;
     return 0;
