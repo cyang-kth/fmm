@@ -46,6 +46,7 @@ Change to the project directory, open a terminal and run
 It will build executable files under the `dist` folder:
 
 - `ubodt_gen`: the Upper bounded origin destination table (UBODT) generator (precomputation) program
+- `ubodt_gen_omp`: the parallel Upper bounded origin destination table (UBODT) generator (precomputation) program (currently only csv format is supported)
 - `fmm`: the map matching program (single processor)
 - `fmm_omp`: parallel map matching implemented with OpenMP. 
 
