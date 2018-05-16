@@ -28,7 +28,7 @@
 #include <boost/graph/graph_traits.hpp>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/dijkstra_shortest_paths.hpp>
-#include <boost/graph/dijkstra_shortest_paths_no_color_map.hpp>
+#include "bgl_driving_dist.hpp"
 #include <boost/property_map/property_map.hpp>
 #include <boost/graph/copy.hpp>
 #include "types.hpp"
@@ -56,7 +56,7 @@ public:
         int current_idx = -1;
         edge_descriptor e;
         bool inserted;
-        mg = Graph_T(); //18
+        g = Graph_T(); //18
         int N = edges->size();
         int source_idx = 0;
         int target_idx = 0;
@@ -88,13 +88,13 @@ public:
                 vertex_id_vec.push_back(network_edge.target);
             };
             // boost::tie(e, inserted) = add_edge(network_edge.source, network_edge.target, g);
-            boost::tie(e, inserted) = add_edge(source_idx, target_idx, mg);
+            boost::tie(e, inserted) = add_edge(source_idx, target_idx, g);
             // id is the FID read, id_attr is the external property in SHP
-            mg[e].id = network_edge.id;
-            mg[e].length = network_edge.length;
+            g[e].id = network_edge.id;
+            g[e].length = network_edge.length;
             //// printf( "Edge read %d,%d,%d,%lf\n",network_edge.id,network_edge.source,network_edge.target,network_edge.length);
         }
-        num_vertices = boost::num_vertices(mg);
+        num_vertices = boost::num_vertices(g);
         std::cout << "Graph nodes " << num_vertices << '\n';
         int num_threads = omp_get_num_procs();
         std::cout << "Number of thread available is " << num_threads << '\n';
@@ -114,10 +114,9 @@ public:
         std::cout << "Output format " << (binary ? "binary" : "csv") << '\n';
         m_fstream << "source;target;next_n;prev_n;next_e;distance\n";
         int progress = 0;
-        int K =  num_vertices;
-        if (K>50000){
-            K =50000;
-        }
+        // if (K>50000){
+        //     K =50000;
+        // }
         // std::cout << "Start to generate UBODT with k " << K << '\n';
         #pragma omp parallel
         {
@@ -125,8 +124,8 @@ public:
             // The copy is not complete here 
             // boost::copy_graph(grid, graph, boost::vertex_copy(detail::grid_to_graph_vertex_copier(grid, graph))
             // .edge_copy(detail::grid_to_graph_edge_copier()));
-            Graph_T g;
-            boost::copy_graph(mg, g);
+            // Graph_T g;
+            // boost::copy_graph(mg, g);
             std::vector<vertex_descriptor> predecessors_map(num_vertices);
             std::vector<double> distances_map(num_vertices);
             for (int i = 0; i < num_vertices; ++i) {
@@ -134,19 +133,18 @@ public:
                 predecessors_map[i] = i;
             }
             std::vector<vertex_descriptor> examined_vertices; // Nodes whose distance in the dist_map is updated.
+            int thread_process_count=0;
             // If buf placed here, then the result almost doubles
             // Position 1
             // std::stringstream node_output_buf;
             #pragma omp for
-            for (int source = 0; source < K; ++source) {
-                std::deque<vertex_descriptor> nodesInDistance;
+            for (int source = 0; source < num_vertices; ++source) {
+                std::vector<vertex_descriptor> nodesInDistance;
                 examined_vertices.push_back(source);
                 double inf = std::numeric_limits<double>::max();
                 distances_map[source] = 0;
-                try {
-                    // The reason for the slow may lies here
-                    dijkstra_shortest_paths_no_color_map_no_init(
-                        g,
+                // make_iterator_property_map maps the vertex indices vector to predecessors. 
+                boost::dijkstra_shortest_paths_upperbound(g,
                         source,
                         make_iterator_property_map(predecessors_map.begin(), get(boost::vertex_index, g), predecessors_map[0]),
                         make_iterator_property_map(distances_map.begin(), get(boost::vertex_index, g), distances_map[0]),
@@ -155,14 +153,8 @@ public:
                         std::less<double>(), //DistanceCompare distance_compare,
                         boost::closed_plus<double>(inf),
                         inf,
-                        0,
-                        driving_distance_visitor(
-                            delta, nodesInDistance, distances_map, examined_vertices
-                        )
-                    );
-                } catch (int e) {
-                    //std::cout << "Found goals" << '\n';
-                }
+                        0, delta, nodesInDistance,examined_vertices
+                );
                 std::vector<vertex_descriptor> successors = get_successors(nodesInDistance, predecessors_map);
                 double cost;
                 int edge_id;
@@ -183,28 +175,14 @@ public:
                         node_output_buf << vertex_id_vec[source]<< ";" << vertex_id_vec[node]
                          << ";" << vertex_id_vec[successors[k]] << ";" << vertex_id_vec[predecessors_map[node]] 
                          << ";" << edge_id << ";" << distances_map[node] << "\n";
-                        // node_output_buf << vertex_id_vec[source];
-                        // node_output_buf << ";";
-                        // node_output_buf << vertex_id_vec[node];
-                        // node_output_buf << ";";
-                        // node_output_buf << vertex_id_vec[successors[k]];
-                        // node_output_buf << ";";
-                        // node_output_buf << vertex_id_vec[predecessors_map[node]];
-                        // node_output_buf << ";";
-                        // node_output_buf << edge_id;
-                        // node_output_buf << ";";
-                        // node_output_buf << distances_map[node];
-                        // node_output_buf << "\n";
                         //printf('Stringstream size %d\n',node_output_buf.tellg()); 
                     }
                     ++k;
                 }
-                // ++progress;
-                // if (progress % step_size == 0) {
-                //     std::stringstream buf;
-                //     buf << "Progress " << progress << " / " << num_vertices << '\n';
-                //     std::cout << buf.rdbuf();
-                // }
+                ++progress;
+                if (progress % step_size == 0) {
+                    printf("Progress %d / %d \n",progress, num_vertices); 
+                }
                 // Clean the result
                 int N = examined_vertices.size();
                 for (int i = 0; i < N; ++i) {
@@ -217,14 +195,15 @@ public:
                 // std::string s = node_output_buf.str();
                 #pragma omp critical
                 m_fstream << node_output_buf.str();
-                if (source%5000==0){
-                    printf( "Source %d taken by thread %d at %f\n", source, omp_get_thread_num(), omp_get_wtime()-thread_start_time);
-                }
+                // thread_process_count = thread_process_count+1;
+                // if (thread_process_count%5000==0){
+                //     printf( "Progress %d taken by thread %d at %f\n",thread_process_count, omp_get_thread_num(), omp_get_wtime()-thread_start_time);
+                // }
                 //;
             } // end of omp for
             // wtime = omp_get_wtime() - wtime;
-            double thread_end_time = omp_get_wtime();
-            printf( "Time taken by thread %d is %f\n", omp_get_thread_num(), thread_end_time- thread_start_time );
+            // double thread_end_time = omp_get_wtime();
+            // printf( "Time taken by thread %d is %f\n", omp_get_thread_num(), thread_end_time- thread_start_time );
         } // end of omp parallel
         m_fstream.close();
     };
@@ -241,57 +220,19 @@ private:
     typedef Graph_T::edge_descriptor edge_descriptor;
     typedef boost::graph_traits<Graph_T>::vertex_iterator vertex_iterator;
     typedef boost::graph_traits<Graph_T>::out_edge_iterator out_edge_iterator;
-    struct found_goals {}; // Used for driving distances
-    /**
-     * The visitor is an inner class whose function examine_vertex()
-     * is called whenever a new node is found in conventional Dijkstra
-     * algorithm.
-     *
-     * It is called in the driving_distance function.
-     */
-    class driving_distance_visitor : public boost::default_dijkstra_visitor {
-    public:
-        // Create a visitor
-        explicit driving_distance_visitor(
-            double distance_goal,
-            std::deque< vertex_descriptor > &nodesInDistance,
-            std::vector< double > &distances,
-            std::vector< vertex_descriptor > &examined_vertices_ref
-        ) : m_distance_goal(distance_goal), m_nodes(nodesInDistance), m_dist(distances), 
-            m_examined_vertices(examined_vertices_ref) {};
-        //
-        template <class Graph>void examine_vertex(vertex_descriptor u, Graph &g) {
-            DEBUG (2) std::cout << "Examine node " << u << '\n';
-            m_nodes.push_back(u);
-            if (m_dist[u] > m_distance_goal) {
-                m_nodes.pop_back();
-                throw 1;
-            }
-        };
-        template <class Graph>void edge_relaxed(edge_descriptor e, Graph &g) {
-            // Add v to the examined vertices
-            DEBUG (2) std::cout << "Examine edge" << e << '\n';
-            m_examined_vertices.push_back(boost::target(e, g));
-        };
-    private:
-        double m_distance_goal; //Delta
-        std::deque< vertex_descriptor > &m_nodes; //node within distance
-        std::vector< double > &m_dist; // Distances
-        std::vector< vertex_descriptor > & m_examined_vertices; //Examined nodes
-    }; // driving_distance_visitor
 
-    Graph_T mg; // The member storing a boost graph
+    Graph_T g; // The member storing a boost graph
     /**
      *  Find the edge ID given a pair of nodes and its cost
      */
     int get_edge_id(vertex_descriptor source, vertex_descriptor target, double cost) {
         edge_descriptor e;
         out_edge_iterator out_i, out_end;
-        for (boost::tie(out_i, out_end) = boost::out_edges(source, mg);
+        for (boost::tie(out_i, out_end) = boost::out_edges(source, g);
                 out_i != out_end; ++out_i) {
             e = *out_i; // Can we directly get edge id here or latter from the graph
-            if (target == boost::target(e, mg) && (mg[e].length - cost <= DOUBLE_MIN)) {
-                return  mg[e].id;
+            if (target == boost::target(e, g) && (g[e].length - cost <= DOUBLE_MIN)) {
+                return  g[e].id;
             }
         }
         std::cout << "Edge not found for source " << source << " target " << target
@@ -303,7 +244,7 @@ private:
      *  Get the successors (next node visited) for each node in a
      *  shortest path tree defined by a deque and a predecessor vector
      */
-    std::vector<vertex_descriptor> get_successors(std::deque<vertex_descriptor> &nodesInDistance, std::vector<vertex_descriptor>& predecessors) {
+    std::vector<vertex_descriptor> get_successors(std::vector<vertex_descriptor> &nodesInDistance, std::vector<vertex_descriptor>& predecessors) {
         int N = nodesInDistance.size();
         std::vector<vertex_descriptor> successors = std::vector<vertex_descriptor>(N);
         int i;

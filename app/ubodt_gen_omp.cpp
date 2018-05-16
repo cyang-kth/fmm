@@ -5,7 +5,7 @@
  * @author: Can Yang
  * @version: 2018.03.09
  */
-#include "../src/network_graph_drive_dist.hpp"
+#include "../src/network_graph_opt_omp.hpp"
 #include "config.hpp"
 #include <iostream>
 #include <ctime>
