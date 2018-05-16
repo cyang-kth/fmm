@@ -66,6 +66,7 @@ int main (int argc, char **argv)
         int num_trajectories = tr_reader.get_num_trajectories();
         int step_size = num_trajectories/10;
         if (step_size<10) step_size=10;
+        std::chrono::steady_clock::time_point corrected_begin = std::chrono::steady_clock::now();
         std::cout<<"Start to map match trajectories with total number "<< num_trajectories <<'\n';
         if (config.mode == 0)
         {
@@ -190,11 +191,14 @@ int main (int argc, char **argv)
         // Unit is second
         // double time_spent = (double)(end_time - begin_time) / CLOCKS_PER_SEC;
         double time_spent = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()/1000.;
+        double time_spent_exclude_input = std::chrono::duration_cast<std::chrono::milliseconds>(end - corrected_begin).count()/1000.;
         std::cout<<"Time takes "<<time_spent<<'\n';
+        std::cout<<"Time takes excluding input "<<time_spent_exclude_input<<'\n';
         std::cout<<"Finish map match total points "<<total_points
                  <<" and points matched "<<points_matched<<'\n';
         std::cout<<"Matched percentage: "<<points_matched/(double)total_points<<'\n';
         std::cout<<"Point match speed:"<<points_matched/time_spent<<"pt/s"<<'\n';
+        std::cout<<"Point match speed (excluding input): "<<points_matched/time_spent_exclude_input<<"pt/s"<<'\n';
     }
     std::cout<<"------------    Program finished     ------------"<<endl;
     return 0;
