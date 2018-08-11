@@ -35,7 +35,7 @@ This project is an implementation of the fast map matching (FMM) algorithm intro
 
 The required libraries can be installed with 
 
-    sudo apt-get install gdal-bin libgdal-dev libboost-dev
+    sudo apt-get install gdal-bin libgdal-dev libboost-dev libboost-serialization-dev
 
 ### Installation
 
