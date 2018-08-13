@@ -64,7 +64,7 @@ public:
         ubodt_file = tree.get<std::string>("fmm_config.input.ubodt.file");
         multiplier = tree.get("fmm_config.input.ubodt.multiplier", 37); // multiplier=30000
         nhash = tree.get("fmm_config.input.ubodt.nhash", 127); // 5178049
-        delta = tree.get("fmm_config.input.ubodt.delta", 5000);
+        delta = tree.get("fmm_config.input.ubodt.delta", 5000.0);
         binary_flag = get_file_extension(ubodt_file);
 
         // Network
@@ -217,7 +217,7 @@ public:
         // If the path cannot be resolved, an exception is thrown.
 
         // UBODT configuration
-        delta = tree.get("ubodt_config.parameters.delta", 5000);
+        delta = tree.get("ubodt_config.parameters.delta", 5000.0);
 
         // Network
         network_file = tree.get<std::string>("ubodt_config.input.network.file");
