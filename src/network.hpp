@@ -103,25 +103,34 @@ public:
 #endif // GDAL_VERSION_MAJOR
             std::exit(EXIT_FAILURE);
         }
+
         if (wkbFlatten(ogrFDefn->GetGeomType()) != wkbLineString)
         {
-            std::cout<<std::setw(12)<<""<< "Geometry type is not LineString"<< '\n';
+			std::cout<<std::setw(12)<<""<< "Geometry type is " <<OGRGeometryTypeToName(ogrFDefn->GetGeomType())<<'\n';
+            std::cout<<std::setw(12)<<""<< "It should be LineString"<< '\n';
 #if GDAL_VERSION_MAJOR < 2
             OGRDataSource::DestroyDataSource( poDS );
 #else
             GDALClose( poDS );
 #endif // GDAL_VERSION_MAJOR
             std::exit(EXIT_FAILURE);
+        } else {
+			std::cout<< "\tGeometry type is " <<OGRGeometryTypeToName(ogrFDefn->GetGeomType())<<'\n';
         }
         OGRSpatialReference *ogrsr = ogrFDefn->GetGeomFieldDefn(0)->GetSpatialRef();
-        srid = ogrsr->GetEPSGGeogCS();
-        if (srid==-1)
-        {
-            srid= 4326;
-            std::cout<< "\tWarning: srid is not found, set to 4326 for default"<< '\n';
+        if (ogrsr != nullptr) {
+			srid = ogrsr->GetEPSGGeogCS();
+			if (srid==-1)
+			{
+				srid= 4326;
+				std::cout<< "\t---- Warning: srid is not found, set to 4326 for default"<< '\n';
+			} else {
+				std::cout<< "\tSRID is "<<srid<< '\n';
+			}
+        } else {
+			srid= 4326;
+            std::cout<< "\t---- Warning: srid is not found, set to 4326 for default"<< '\n';
         }
-        std::cout<< "\tSRID is "<<srid<< '\n';
-        // Bug here
         while( (ogrFeature = ogrlayer->GetNextFeature()) != NULL)
         {
             int id = ogrFeature->GetFID();
@@ -353,19 +362,19 @@ public:
     /**
      * Added in 2018.01.17, by Diao
      * Modified in 2018.01.19 by Can
-     * 
+     *
      * a modified version of geometry path construction,
-     * which the offset is taken into consideration, and the 
+     * which the offset is taken into consideration, and the
      * final path with a correct start point and end point corresponding
-     * to the original trajectory. Namely at both the first and last edge 
-     * in the complete path, only the part traversed is exported. 
-     * 
+     * to the original trajectory. Namely at both the first and last edge
+     * in the complete path, only the part traversed is exported.
+     *
      * Construct the geometry of a complete path,
-     * @param o_path_ptr: a pointer to the o_path_ptr, where each element 
-     * is a Candidate object. This input is needed because the offset is used to 
+     * @param o_path_ptr: a pointer to the o_path_ptr, where each element
+     * is a Candidate object. This input is needed because the offset is used to
      * split the first and last edge in the complete path.
      * @param  complete_path: a pointer to a complete path, where each element
-     * is an integer representing spatial contiguous edge index 
+     * is an integer representing spatial contiguous edge index
      * @return  a pointer to the geometry of the complete path, The
      * caller should take care of freeing its memory.
      */
@@ -395,7 +404,7 @@ public:
             double lastoffset = (*o_path_ptr)[NOsegs-1]->offset;
             OGRLineString * firstseg = network_edges[(*complete_path)[0]].geom;
             OGRLineString * lastseg = network_edges[(*complete_path)[NCsegs-1]].geom;
-            OGRLineString * firstlineseg= ALGORITHM::cutoffseg(firstoffset, firstseg, 0); 
+            OGRLineString * firstlineseg= ALGORITHM::cutoffseg(firstoffset, firstseg, 0);
             OGRLineString * lastlineseg= ALGORITHM::cutoffseg(lastoffset, lastseg, 1);
             GC_DEBUG(2) std::cout<< "First offset " << firstoffset <<'\n';
             GC_DEBUG(2) std::cout<< "First line " <<'\n';
