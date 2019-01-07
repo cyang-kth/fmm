@@ -13,9 +13,31 @@ Download the road network of a city to shapefile using osmnx:
 
 The process may take several mintues. 
 
+It will generate two shapefiles `edges` and `nodes`. The `edges` shapefile already contains the topology of the road network (the attribute from,to node). 
+
+The configuration for generating ubodt can be 
+
+    <?xml version="1.0" encoding="utf-8"?>
+    <ubodt_config>
+        <input>
+            <network>
+                <file>edges.shp</file>
+                <id>osmid</id>
+                <source>from</source>
+                <target>to</target>
+            </network>
+        </input>
+        <parameters>
+            <delta>0.01</delta>
+        </parameters>
+        <output>
+            <file>ubodt.txt</file>        
+        </output>
+    </ubodt_config>
+
 ### Creating topology for a shapefile
 
-If you already have a road network file in GDAL supported formats, e.g., ESRI shp, GeoJSON and CSV, you may encounter a problem of creating topology of the network, namely, defining id, source and target fields. Spatial database [PostGIS](http://postgis.net/) and its extension [pgRouting](http://pgrouting.org/) can solve the problem:
+If you already have a road network file in GDAL supported formats, e.g., ESRI shp, GeoJSON or CSV without topology information (id, source and target fields). Spatial database [PostGIS](http://postgis.net/) and its extension [pgRouting](http://pgrouting.org/) can solve the problem:
 
 1. [Add shapefiles to PostGIS database](https://gis.stackexchange.com/questions/41799/adding-shapefiles-to-postgis-database)
 2. [Create topology of road network with the function pgr_createTopology in pgrouting](http://docs.pgrouting.org/2.2/en/src/topology/doc/pgr_createTopology.html)
