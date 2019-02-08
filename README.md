@@ -219,13 +219,13 @@ Homepage: https://people.kth.se/~cyang/
 
 Please cite fmm in your publications if it helps your research:
 
-    Can Yang & Győző Gidófalvi (2018) Fast map matching, an algorithm
+    Can Yang & Gyozo Gidofalvi (2018) Fast map matching, an algorithm
     integrating hidden Markov model with precomputation, International Journal of Geographical Information Science, 32:3, 547-570, DOI: 10.1080/13658816.2017.1400548
 
 Bibtex file
 
     @article{doi:10.1080/13658816.2017.1400548,
-    author = {Can Yang and Győző Gidófalvi},
+    author = {Can Yang and Gyozo Gidofalvi},
     title = {Fast map matching, an algorithm integrating hidden Markov model with precomputation},
     journal = {International Journal of Geographical Information Science},
     volume = {32},
