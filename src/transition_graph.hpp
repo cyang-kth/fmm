@@ -63,19 +63,23 @@ public:
         /* Updating the cumu probabilities of subsequent layers */
         Traj_Candidates::iterator csb = m_traj_candidates->begin();
         ++csb;
+        OPI_DEBUG(2) std::cout<<"Start to update cost in transition graph"<<'\n';
         OPI_DEBUG(2) std::cout<<"step;from;to;sp;eu;tran_prob;e_prob;cumu_prob"<<'\n';
         while (csb != m_traj_candidates->end())
         {
             Point_Candidates::iterator ca = csa->begin();
             double eu_dist=eu_distances[std::distance(m_traj_candidates->begin(),csa)];
+            OPI_DEBUG(2) std::cout<<"eu_dist calculated"<<'\n';
             while (ca != csa->end())
             {
                 Point_Candidates::iterator cb = csb->begin();
                 while (cb != csb->end())
                 {
+                    // OPI_DEBUG(3) std::cout<<"Iterating cb start"<<'\n';
                     int step =std::distance(m_traj_candidates->begin(),csa); // The problem seems to be here
                     // Calculate transition probability
                     double sp_dist = get_sp_dist_penalized(ca,cb,pf);
+                    // OPI_DEBUG(3) std::cout<<"sp_dist calculated"<<'\n';
                     /*
                         A degenerate case is that the same point
                         is reported multiple times where both eu_dist and sp_dist = 0
@@ -86,13 +90,15 @@ public:
                     } else {
                         tran_prob =eu_dist>sp_dist?sp_dist/eu_dist:eu_dist/sp_dist;
                     }
+                    // OPI_DEBUG(3) std::cout<<"tran_prob calculated"<<'\n';
                     if (ca->cumu_prob + tran_prob * cb -> obs_prob >= cb->cumu_prob)
                     {
                         cb->cumu_prob = ca->cumu_prob + tran_prob * cb->obs_prob;
                         cb->prev = &(*ca);
                     }
-                    OPI_DEBUG(2) std::cout<<step <<";"<<ca->edge->id_attr<<";"<<cb->edge->id_attr<<";"<<sp_dist<<";"<<eu_dist<<";"<<tran_prob<<";"<<cb->obs_prob<<";"<<ca->cumu_prob + tran_prob * cb->obs_prob<<'\n';
+                    // OPI_DEBUG(3) std::cout<<step <<";"<<ca->edge->id_attr<<";"<<cb->edge->id_attr<<";"<<sp_dist<<";"<<eu_dist<<";"<<tran_prob<<";"<<cb->obs_prob<<";"<<ca->cumu_prob + tran_prob * cb->obs_prob<<'\n';
                     ++cb;
+                    // OPI_DEBUG(3) std::cout<<"Iterating cb end"<<'\n';
                 }
                 ++ca;
             }
@@ -177,6 +183,10 @@ public:
         }
         else
         {
+            OPI_DEBUG(3) std::cout<<"Query long distance routing started"<<'\n';
+            OPI_DEBUG(3) std::cout<<"Looking for path for edges "<<ca->edge->id <<" to "<<cb->edge->id <<'\n';
+            OPI_DEBUG(3) std::cout<<"Looking for path for edges id attr "<<ca->edge->id_attr <<" to "<<cb->edge->id_attr <<'\n';
+            OPI_DEBUG(3) std::cout<<"Looking for path  from "<<ca->edge->target<<" to "<<cb->edge->source<<'\n';
             record *r = m_ubodt->look_up(ca->edge->target,cb->edge->source);
             // No sp path exist from O to D.
             if (r==NULL) return DISTANCE_NOT_FOUND;
@@ -191,6 +201,7 @@ public:
             {
                 sp_dist+=pf*ca->edge->length;
             }
+            OPI_DEBUG(3) std::cout<<"Query long distance routing finished"<<'\n';
         }
         return sp_dist;
     };

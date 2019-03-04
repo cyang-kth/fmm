@@ -5,11 +5,14 @@ output/
 dist/
 test/bin/
 test/log/
+test/
 
 # Projects
 *.cbp
 *.depend
 *.layout
+.kdev4/
+*.kdev4
 
 # Prerequisites
 *.d

@@ -27,7 +27,7 @@ build_ubodt_gen_omp:initial
 	@echo ----- ubodt_gen build success ----- 
 build_install_fmm_debug:initial
 	@echo ----- Start to build fmm_debug -----
-	g++ -std=gnu++11 -DCPC_DEBUG_LEVEL='1' -O3 app/fmm.cpp -o dist/fmm_debug -lgdal -lboost_serialization
+	g++ -std=gnu++11 -DCPC_DEBUG_LEVEL='1' -DOPI_DEBUG_LEVEL='2' -O3 app/fmm.cpp -o dist/fmm_debug -lgdal -lboost_serialization
 	@echo ----- fmm_debug build success ----- 
 	@echo ----- Copy debug executables to home/bin ----- 
 	cp dist/fmm_debug $(HOME)/bin

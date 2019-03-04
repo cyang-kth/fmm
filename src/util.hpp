@@ -45,15 +45,25 @@ bool fileExists(std::string &filename)
  *  step;offset;distance;edge_id
  */
 void print_traj_candidates(Traj_Candidates &tr_cs) {
-    std::cout << "step;offset;distance;edge_id" << '\n';
+    std::cout << "step;offset;distance;id;edge_id_attr" << '\n';
     Traj_Candidates::iterator tr_cs_iter;
     Point_Candidates::iterator p_cs_iter;
     for (tr_cs_iter = tr_cs.begin(); tr_cs_iter != tr_cs.end(); ++tr_cs_iter) {
         for (p_cs_iter = tr_cs_iter->begin(); p_cs_iter != tr_cs_iter->end(); ++p_cs_iter) {
-            std::cout << std::distance(tr_cs.begin(), tr_cs_iter) << ";" << p_cs_iter->offset << ";" << p_cs_iter->dist << ";" << p_cs_iter->edge->id_attr<< '\n';
+            std::cout << std::distance(tr_cs.begin(), tr_cs_iter) << ";" << p_cs_iter->offset << ";" << p_cs_iter->dist << ";" <<  p_cs_iter->edge->id << ";" << p_cs_iter->edge->id_attr<< '\n';
         }
     }
 }
+
+void print_traj_candidates_summary(Traj_Candidates &tr_cs) {
+    std::cout << "point_idx;candidate_count" << '\n';
+    Traj_Candidates::iterator tr_cs_iter;
+    Point_Candidates::iterator p_cs_iter;
+    for (tr_cs_iter = tr_cs.begin(); tr_cs_iter != tr_cs.end(); ++tr_cs_iter) {
+        std::cout << std::distance(tr_cs.begin(), tr_cs_iter) << ";" << tr_cs_iter->size() << '\n';
+    }
+}
+
 // Print a complete path
 void print_c_path(C_Path *c_path_ptr) {
     std::cout<<"Complete path elements:";

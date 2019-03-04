@@ -175,8 +175,8 @@ public:
                 auto segs = look_sp_path(a->edge->target,b->edge->source);
                 // No transition exist in UBODT
                 if (segs.empty() &&  a->edge->target!=b->edge->source){
-                CPC_DEBUG(1) std::cout<<"Large gap from "<< a->edge->target <<" to "<< b->edge->source <<'\n';
-                CPC_DEBUG(1) std::cout<<"Construct complete path skipped"<<'\n';
+                CPC_DEBUG(1) std::cout<<"----- Warning: Large gap detected from "<< a->edge->target <<" to "<< b->edge->source <<'\n';
+                CPC_DEBUG(1) std::cout<<"----- Construct complete path skipped"<<'\n';
                     delete edges; // free the memory of edges
                     return nullptr;
                 }
@@ -222,6 +222,7 @@ public:
         std::cout<< "Clean UBODT" << '\n';
         int i;
         for (i=0;i<NHASH;++i){
+            DEBUG(2) std::cout<<"Clean i "<< i <<'\n';
             record* head = hashtable[i];
             record* curr;
             while ((curr = head) != NULL) { // set curr to head, stop if list empty.

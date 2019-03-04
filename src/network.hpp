@@ -272,6 +272,8 @@ public:
                     candidate_compare);
             }
         }
+        CS_DEBUG(1) UTIL::print_traj_candidates_summary(tr_cs);
+        CS_DEBUG(2) UTIL::print_traj_candidates(tr_cs);
         return tr_cs;
     };
 
