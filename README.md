@@ -132,7 +132,7 @@ Two example configuration files are given in the [example](example) folder.
             - source: column name storing source
             - target: column name storing target
     + parameters
-        * delta: Upper bound of shortest path distance
+        * delta: Upper bound of shortest path distance (**the same spatial unit as the network file**)
     + output
         * file: output file in CSV format or Binary format, detected from the file extension (`csv` or `bin`) automatically.
 
@@ -156,9 +156,9 @@ Two example configuration files are given in the [example](example) folder.
             + id: column name storing id
     * parameters
         - k: number of candidates in MM
-        - r: search radius r
-        - pf: penalty factor for reversed movement
-        - gps_error: gps error used in emission probability calculation
+        - r: search radius r, (**the same spatial unit as the network file**)
+        - pf: penalty factor for reversed movement (default:0)
+        - gps_error: gps error used in emission probability calculation (**the same spatial unit as the network file**)
     * output
         - mode: output mode
             + 0: id + o_path + c_path (Default mode)
@@ -167,7 +167,6 @@ Two example configuration files are given in the [example](example) folder.
             + 3: id + o_path + (L-offset) + c_path
         - file: the matched file
 
-**Note that search radius and gps error should be specified in the same unit as the network file.** 
 
 ## Example
 
