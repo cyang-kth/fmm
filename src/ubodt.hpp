@@ -66,6 +66,7 @@ public:
                    &r->cost
             );
             r->next=NULL;
+            if (r->cost > delta) delta = r->cost;
             if (NUM_ROWS%1000000==0) printf("Read rows: %d\n",NUM_ROWS);
             /* Insert into the hash table */
             insert(r);
@@ -106,6 +107,7 @@ public:
             ia >> r->next_e;
             ia >> r->cost;
             r->next=NULL;
+            if (r->cost > delta) delta = r->cost;
             if (NUM_ROWS%1000000==0) printf("Read rows: %d\n",NUM_ROWS);
             /* Insert into the hash table */
             insert(r);
@@ -217,6 +219,9 @@ public:
         }
         else std::cout << "Unable to write statistics to file"<<'\n';
     };
+    double get_delta(){
+        return delta;
+    };
     ~UBODT(){
         /* Clean hashtable */
         std::cout<< "Clean UBODT" << '\n';
@@ -245,6 +250,7 @@ private:
     static const int BUFFER_LINE = 1024;
     const long long MULTIPLIER; // multipler to get a unique ID
     const int NHASH; // number of buckets
+    double delta = 0.0;
     //int maxnode=0;
     record** hashtable;
 };

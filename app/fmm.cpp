@@ -58,6 +58,10 @@ int main (int argc, char **argv)
         } else {
             ubodt.read_csv(config.ubodt_file);            
         }
+        if (!config.delta_defined){
+            config.delta = ubodt.get_delta();
+            std::cout<<"    Delta inferred from ubodt as "<< config.delta <<'\n';
+        }
         TrajectoryReader tr_reader(config.gps_file,config.gps_id);
         ResultWriter rw(config.result_file,&network);
         int progress=0;
@@ -79,7 +83,7 @@ int main (int argc, char **argv)
                 DEBUG(1) std::cout<<"\n============================="<<'\n';
                 DEBUG(1) std::cout<<"Process trips with id : "<<trajectory.id<<'\n';
                 Traj_Candidates traj_candidates = network.search_tr_cs_knn(trajectory,config.k,config.radius);
-                TransitionGraph tg = TransitionGraph(&traj_candidates,trajectory.geom,&ubodt);
+                TransitionGraph tg = TransitionGraph(&traj_candidates,trajectory.geom,&ubodt,config.delta);
                 // Optimal path inference
                 O_Path *o_path_ptr = tg.viterbi(config.penalty_factor);
                 // Complete path construction as an array of indices of edges vector
@@ -106,7 +110,7 @@ int main (int argc, char **argv)
                 DEBUG(1) std::cout<<"Process trips with id : "<<trajectory.id<<'\n';
                 // Candidate search
                 Traj_Candidates traj_candidates = network.search_tr_cs_knn(trajectory,config.k,config.radius);
-                TransitionGraph tg = TransitionGraph(&traj_candidates,trajectory.geom,&ubodt);
+                TransitionGraph tg = TransitionGraph(&traj_candidates,trajectory.geom,&ubodt,config.delta);
                 // Optimal path inference
                 O_Path *o_path_ptr = tg.viterbi(config.penalty_factor);
                 // Complete path construction as an array of indices of edges vector
@@ -137,7 +141,7 @@ int main (int argc, char **argv)
                 DEBUG(1) std::cout<<"Process trips with id : "<<trajectory.id<<'\n';
                 // Candidate search
                 Traj_Candidates traj_candidates = network.search_tr_cs_knn(trajectory,config.k,config.radius);
-                TransitionGraph tg = TransitionGraph(&traj_candidates,trajectory.geom,&ubodt);
+                TransitionGraph tg = TransitionGraph(&traj_candidates,trajectory.geom,&ubodt,config.delta);
                 // Optimal path inference
                 O_Path *o_path_ptr = tg.viterbi(config.penalty_factor);
                 // Complete path construction as an array of indices of edges vector
@@ -166,7 +170,7 @@ int main (int argc, char **argv)
                 DEBUG(1) std::cout<<"\n============================="<<'\n';
                 DEBUG(1) std::cout<<"Process trips with id : "<<trajectory.id<<'\n';
                 Traj_Candidates traj_candidates = network.search_tr_cs_knn(trajectory,config.k,config.radius);
-                TransitionGraph tg = TransitionGraph(&traj_candidates,trajectory.geom,&ubodt);
+                TransitionGraph tg = TransitionGraph(&traj_candidates,trajectory.geom,&ubodt,config.delta);
                 // Optimal path inference
                 O_Path *o_path_ptr = tg.viterbi(config.penalty_factor);
                 // Complete path construction as an array of indices of edges vector

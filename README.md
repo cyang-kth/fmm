@@ -146,6 +146,7 @@ Two example configuration files are given in the [example](example) folder.
             + file: ubodt file path, CSV or Binary format detected from the file extension (`csv` or `bin`) automatically.
             + nhash: hashtable bucket size, recommended to be a prime number
             + multipler: used to get a unique key as `n_o*multiplier+n_d` in hash table, recommended to be the number of nodes in network file
+            + delta: optional, the distance used as an estimation if the query is not found in UBODT. (**the same spatial unit as the network file**). It unspecified, the largest distance in UBODT file will be used. 
         - network
             + file: network file path, in ESRI shapefile format
             + id: column name storing id

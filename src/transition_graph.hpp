@@ -21,7 +21,7 @@ namespace MM
 class TransitionGraph
 {
 public:
-    static constexpr float DISTANCE_NOT_FOUND= 5000; // This is the value returned as the SP distance if it is not found in UBODT
+    // static constexpr float DISTANCE_NOT_FOUND= 5000; // This is the value returned as the SP distance if it is not found in UBODT
     /**
      *  Constructor of a TransitionGraph
      *  @param traj_candidates: a variational 2D vector 
@@ -29,11 +29,12 @@ public:
      *  @param traj: a pointer to raw trajectory
      *  @param ubodt: a pointer to UBODT table
      */
-    TransitionGraph(Traj_Candidates *traj_candidates,OGRLineString *traj,UBODT *ubodt):
+    TransitionGraph(Traj_Candidates *traj_candidates,OGRLineString *traj,UBODT *ubodt, double delta = 5000):
         m_traj_candidates(traj_candidates),
         m_traj(traj),
         m_ubodt(ubodt),
-        eu_distances(cal_eu_dist(traj))
+        eu_distances(cal_eu_dist(traj)),
+        DISTANCE_NOT_FOUND(delta)
     {};
     /**
      * Viterbi algorithm, infer an optimal path in the transition 
@@ -76,7 +77,7 @@ public:
                 while (cb != csb->end())
                 {
                     // OPI_DEBUG(3) std::cout<<"Iterating cb start"<<'\n';
-                    int step =std::distance(m_traj_candidates->begin(),csa); // The problem seems to be here
+                    // int step =std::distance(m_traj_candidates->begin(),csa); // The problem seems to be here
                     // Calculate transition probability
                     double sp_dist = get_sp_dist_penalized(ca,cb,pf);
                     // OPI_DEBUG(3) std::cout<<"sp_dist calculated"<<'\n';
@@ -232,6 +233,7 @@ private:
     OGRLineString *m_traj; // a pointer to GPS trajectory 
     UBODT *m_ubodt; // UBODT 
     std::vector<double> eu_distances; // Euclidean distances of segments in the trajectory
+    float DISTANCE_NOT_FOUND; // This is the value returned as the SP distance if it is not found in UBODT
 };
 }
 #endif /* MM_TRANSITION_GRAPH_ROUTING_HPP */
