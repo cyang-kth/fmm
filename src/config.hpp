@@ -3,7 +3,7 @@
  * Configuration Class defined for the two application
  *
  * @author: Can Yang
- * @version: 2017.11.11
+ * @version: 2019.03.27
  */
 #ifndef MM_CONFIG_HPP
 #define MM_CONFIG_HPP
@@ -52,7 +52,7 @@ public:
      */
     FMM_Config(const std::string &file)
     {
-
+        std::cout << "Start reading FMM configuration";
         // Create empty property tree object
         boost::property_tree::ptree tree;
         boost::property_tree::read_xml(file, tree);
@@ -95,6 +95,31 @@ public:
         // Output
         result_file = tree.get<std::string>("fmm_config.output.file");
         mode = tree.get("fmm_config.output.mode", 0);
+        
+        // Read fields to be exported, Default is id, cpath, mgeom
+        if (tree.get_optional<bool>("fmm_config.output.opath").is_initialized()){
+            result_config.write_opath = true;
+        }
+        if (tree.get_optional<bool>("fmm_config.output.cpath").is_initialized()){
+            result_config.write_cpath = true;
+        }
+        if (tree.get_optional<bool>("fmm_config.output.mgeom").is_initialized()){
+            result_config.write_mgeom = true;
+        }
+        if (tree.get_optional<bool>("fmm_config.output.pgeom").is_initialized()){
+            result_config.write_pgeom = true;
+        }
+        if (tree.get_optional<bool>("fmm_config.output.offset").is_initialized()){
+            result_config.write_offset = true;
+        }
+        if (tree.get_optional<bool>("fmm_config.output.error").is_initialized()){
+            result_config.write_error = true;
+        }
+        std::cout << "Finish with reading FMM configuration";   
+    };
+    
+    ResultConfig get_result_config(){
+        return result_config;
     };
     void print()
     {
@@ -168,6 +193,7 @@ public:
         std::cout << "Validating success." << '\n';
         return true;
     };
+    
     /* Input files */
     // Network file
     std::string network_file;
@@ -205,6 +231,9 @@ public:
 
     // PF for reversed movement
     double penalty_factor;
+    
+    // Configuration of output format
+    ResultConfig result_config;
 }; // FMM_Config
 
 
@@ -288,6 +317,20 @@ public:
     double delta;
     std::string result_file;
 }; // UBODT_Config
+
+/**
+ *  The configuration defined for output of the program
+ */
+class ResultConfig{
+    bool write_opath = false; // Optimal path, the edge matched to each point
+    bool write_offset = false; // The distance from the source node of an edge 
+    bool write_error = false; // The distance from a raw GPS point to a matched GPS point
+    bool write_cpath = true; // Complete path, a path traversed by the trajectory
+    bool write_mgeom = true; // The geometry of the complete path 
+    bool write_wkt = true; // mgeom in WKT or WKB format
+    bool write_distance = false; // The distance travelled between two GPS observations
+    bool write_pgeom = false; // A linestring connecting the point matched for each edge. 
+};
 
 } // MM
 #endif //MM_CONFIG_HPP

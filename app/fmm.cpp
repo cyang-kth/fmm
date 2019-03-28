@@ -21,7 +21,7 @@
 #include "../src/reader.hpp"
 #include "../src/writer.hpp"
 #include "../src/multilevel_debug.h"
-#include "config.hpp"
+#include "../src/config.hpp"
 using namespace std;
 using namespace MM;
 using namespace MM::IO;
@@ -63,7 +63,8 @@ int main (int argc, char **argv)
             std::cout<<"    Delta inferred from ubodt as "<< config.delta <<'\n';
         }
         TrajectoryReader tr_reader(config.gps_file,config.gps_id);
-        ResultWriter rw(config.result_file,&network);
+        ResultConfig result_config = config.get_result_config();
+        ResultWriter rw(config.result_file,&network,&result_config);
         int progress=0;
         int points_matched=0;
         int total_points=0;
@@ -72,122 +73,38 @@ int main (int argc, char **argv)
         if (step_size<10) step_size=10;
         std::chrono::steady_clock::time_point corrected_begin = std::chrono::steady_clock::now();
         std::cout<<"Start to map match trajectories with total number "<< num_trajectories <<'\n';
-        if (config.mode == 0)
+        rw.write_header();
+        while (tr_reader.has_next_feature())
         {
-            rw.write_header("id;o_path;c_path");
-            while (tr_reader.has_next_feature())
-            {
-                Trajectory trajectory = tr_reader.read_next_trajectory();
-                int points_in_tr = trajectory.geom->getNumPoints();
-                if (progress%step_size==0) std::cout<<"Progress "<<progress << " / " << num_trajectories <<'\n';
-                DEBUG(1) std::cout<<"\n============================="<<'\n';
-                DEBUG(1) std::cout<<"Process trips with id : "<<trajectory.id<<'\n';
-                Traj_Candidates traj_candidates = network.search_tr_cs_knn(trajectory,config.k,config.radius);
-                TransitionGraph tg = TransitionGraph(&traj_candidates,trajectory.geom,&ubodt,config.delta);
-                // Optimal path inference
-                O_Path *o_path_ptr = tg.viterbi(config.penalty_factor);
-                // Complete path construction as an array of indices of edges vector
-                C_Path *c_path_ptr = ubodt.construct_complete_path(o_path_ptr);
-                // Write result
-                rw.write_opath_cpath(trajectory.id,o_path_ptr,c_path_ptr);
-                // update statistics
-                total_points+=points_in_tr;
-                if (c_path_ptr!=nullptr) points_matched+=points_in_tr;
-                DEBUG(1) std::cout<<"============================="<<'\n';
-                ++progress;
-                delete o_path_ptr;
-                delete c_path_ptr;
-            }
-        } else if (config.mode == 1){
-            // WKB
-            rw.write_header("id;o_path;c_path;m_geom");
-            while (tr_reader.has_next_feature())
-            {
-                Trajectory trajectory = tr_reader.read_next_trajectory();
-                int points_in_tr = trajectory.geom->getNumPoints();
-                if (progress%step_size==0) std::cout<<"Progress "<<progress << " / " << num_trajectories <<'\n';
-                DEBUG(1) std::cout<<"\n============================="<<'\n';
-                DEBUG(1) std::cout<<"Process trips with id : "<<trajectory.id<<'\n';
-                // Candidate search
-                Traj_Candidates traj_candidates = network.search_tr_cs_knn(trajectory,config.k,config.radius);
-                TransitionGraph tg = TransitionGraph(&traj_candidates,trajectory.geom,&ubodt,config.delta);
-                // Optimal path inference
-                O_Path *o_path_ptr = tg.viterbi(config.penalty_factor);
-                // Complete path construction as an array of indices of edges vector
-                C_Path *c_path_ptr = ubodt.construct_complete_path(o_path_ptr);
-                // Write result
+            DEBUG(2) std::cout<<"Start of the loop"<<'\n';
+            Trajectory trajectory = tr_reader.read_next_trajectory();
+            int points_in_tr = trajectory.geom->getNumPoints();
+            if (progress%step_size==0) std::cout<<"Progress "<<progress << " / " << num_trajectories <<'\n';
+            DEBUG(1) std::cout<<"\n============================="<<'\n';
+            DEBUG(1) std::cout<<"Process trips with id : "<<trajectory.id<<'\n';
+            // Candidate search
+            Traj_Candidates traj_candidates = network.search_tr_cs_knn(trajectory,config.k,config.radius);
+            TransitionGraph tg = TransitionGraph(&traj_candidates,trajectory.geom,&ubodt,config.delta);
+            // Optimal path inference
+            O_Path *o_path_ptr = tg.viterbi(config.penalty_factor);
+            // Complete path construction as an array of indices of edges vector
+            C_Path *c_path_ptr = ubodt.construct_complete_path(o_path_ptr);
+            if (result_config.write_mgeom) {
                 OGRLineString *m_geom = network.complete_path_to_geometry(o_path_ptr,c_path_ptr);
-                rw.write_map_matched_result_wkb(trajectory.id,o_path_ptr,c_path_ptr,m_geom);
-                // update statistics
-                total_points+=points_in_tr;
-                if (c_path_ptr!=nullptr) points_matched+=points_in_tr;
-                DEBUG(1) std::cout<<"============================="<<'\n';
-                ++progress;
-                delete o_path_ptr;
-                delete c_path_ptr;
+                rw.write_result(trajectory.id,o_path_ptr,c_path_ptr,m_geom);
                 delete m_geom;
-                //}
+            } else {
+                rw.write_result(trajectory.id,o_path_ptr,c_path_ptr,nullptr);
             }
-        } else if (config.mode == 2){
-            // WKT
-            rw.write_header("id;o_path;c_path;m_geom");
-            while (tr_reader.has_next_feature())
-            {
-                DEBUG(2) std::cout<<"Start of the loop"<<'\n';
-                Trajectory trajectory = tr_reader.read_next_trajectory();
-                int points_in_tr = trajectory.geom->getNumPoints();
-                if (progress%step_size==0) std::cout<<"Progress "<<progress << " / " << num_trajectories <<'\n';
-                DEBUG(1) std::cout<<"\n============================="<<'\n';
-                DEBUG(1) std::cout<<"Process trips with id : "<<trajectory.id<<'\n';
-                // Candidate search
-                Traj_Candidates traj_candidates = network.search_tr_cs_knn(trajectory,config.k,config.radius);
-                TransitionGraph tg = TransitionGraph(&traj_candidates,trajectory.geom,&ubodt,config.delta);
-                // Optimal path inference
-                O_Path *o_path_ptr = tg.viterbi(config.penalty_factor);
-                // Complete path construction as an array of indices of edges vector
-                C_Path *c_path_ptr = ubodt.construct_complete_path(o_path_ptr);
-                // Write result
-                OGRLineString *m_geom = network.complete_path_to_geometry(o_path_ptr,c_path_ptr);
-                rw.write_map_matched_result_wkt(trajectory.id,o_path_ptr,c_path_ptr,m_geom);
-                // update statistics
-                total_points+=points_in_tr;
-                if (c_path_ptr!=nullptr) points_matched+=points_in_tr;
-                DEBUG(1) std::cout<<"Free memory of o_path and c_path"<<'\n';
-                ++progress;
-                delete o_path_ptr;
-                delete c_path_ptr;
-                delete m_geom;
-                DEBUG(1) std::cout<<"============================="<<'\n';
-            }
-        } else if (config.mode == 3){
-            // Offset
-            rw.write_header("id;o_path;offset;c_path");
-            while (tr_reader.has_next_feature())
-            {
-                Trajectory trajectory = tr_reader.read_next_trajectory();
-                int points_in_tr = trajectory.geom->getNumPoints();
-                if (progress%step_size==0) std::cout<<"Progress "<<progress << " / " << num_trajectories <<'\n';
-                DEBUG(1) std::cout<<"\n============================="<<'\n';
-                DEBUG(1) std::cout<<"Process trips with id : "<<trajectory.id<<'\n';
-                Traj_Candidates traj_candidates = network.search_tr_cs_knn(trajectory,config.k,config.radius);
-                TransitionGraph tg = TransitionGraph(&traj_candidates,trajectory.geom,&ubodt,config.delta);
-                // Optimal path inference
-                O_Path *o_path_ptr = tg.viterbi(config.penalty_factor);
-                // Complete path construction as an array of indices of edges vector
-                C_Path *c_path_ptr = ubodt.construct_complete_path(o_path_ptr);
-                // Write result
-                rw.write_opath_cpath_offset(trajectory.id,o_path_ptr,c_path_ptr);
-                // update statistics
-                total_points+=points_in_tr;
-                if (c_path_ptr!=nullptr) points_matched+=points_in_tr;
-                DEBUG(1) std::cout<<"============================="<<'\n';
-                ++progress;
-                delete o_path_ptr;
-                delete c_path_ptr;
-            }
-        } else {
-            return 0;
-        };
+            // update statistics
+            total_points+=points_in_tr;
+            if (c_path_ptr!=nullptr) points_matched+=points_in_tr;
+            DEBUG(1) std::cout<<"Free memory of o_path and c_path"<<'\n';
+            ++progress;
+            delete o_path_ptr;
+            delete c_path_ptr;
+            DEBUG(1) std::cout<<"============================="<<'\n';
+        }
         std::cout<<"\n============================="<<'\n';
         std::cout<<"MM process finished"<<'\n';
         std::chrono::steady_clock::time_point end= std::chrono::steady_clock::now();
