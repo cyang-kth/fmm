@@ -64,7 +64,7 @@ int main (int argc, char **argv)
         }
         TrajectoryReader tr_reader(config.gps_file,config.gps_id);
         ResultConfig result_config = config.get_result_config();
-        ResultWriter rw(config.result_file,&network,&result_config);
+        ResultWriter rw(config.result_file,&network,result_config);
         int progress=0;
         int points_matched=0;
         int total_points=0;

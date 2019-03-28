@@ -47,14 +47,14 @@ public:
     };
     
     void write_header() {
-        const std::string &header = "id";
+        std::string header = "id";
         if (config.write_opath) header+=";opath";
         //if (config.write_distance) header+=";distance";
-        if (config.write_offset) header+=";offset";
         if (config.write_error) header+=";error";
+        if (config.write_offset) header+=";offset";
+        if (config.write_pgeom) header+=";pgeom";
         if (config.write_cpath) header+=";cpath";
         if (config.write_mgeom) header+=";mgeom";
-        if (config.write_pgeom) header+=";pgeom";
         m_fstream << header << '\n';
     };
     
@@ -88,12 +88,11 @@ public:
             if (m_geom != nullptr) {
                 char *wkt;
                 m_geom->exportToWkt(&wkt);
-                buf << wkt << '\n';
+                buf << wkt;
                 CPLFree(wkt);
-            } else {
-                buf << '\n';
-            }
+            } 
         }
+        buf << '\n';
         // It seems that the one below is important to ensure the buffer control flow works
         // as expected. 
         #pragma omp critical
@@ -216,7 +215,7 @@ private:
         {
             buf << (*o_path_ptr)[i]->offset<< ",";
         }
-        buf << (*o_path_ptr)[N - 1]->edge->offset;
+        buf << (*o_path_ptr)[N - 1]->offset;
         DEBUG(3) std::cout << "Finish writing Optimal path" << '\n';
     };
     
@@ -232,7 +231,7 @@ private:
         {
             buf << (*o_path_ptr)[i]->dist<< ",";
         }
-        buf << (*o_path_ptr)[N - 1]->edge->dist;
+        buf << (*o_path_ptr)[N - 1]->dist;
         DEBUG(3) std::cout << "Finish writing Optimal path" << '\n';
     };
     
@@ -248,7 +247,7 @@ private:
         {
             buf << Network::emission_prob_to_dist((*o_path_ptr)[i]->obs_prob)<< ",";
         }
-        buf << Network::emission_prob_to_dist((*o_path_ptr)[N - 1]->edge->obs_prob);
+        buf << Network::emission_prob_to_dist((*o_path_ptr)[N - 1]->obs_prob);
         DEBUG(3) std::cout << "Finish writing Optimal path" << '\n';
     };
     
@@ -271,14 +270,12 @@ private:
             ALGORITHM::locate_point_by_offset(edge_geom,(*o_path_ptr)[i]->offset,&px,&py);
             pline.addPoint(px,py);
         }
-        if (!pline.empty()) {
+        if (!pline.IsEmpty()) {
             char *wkt;
             pline.exportToWkt(&wkt);
-            buf << wkt << '\n';
+            buf << wkt;
             CPLFree(wkt);
-        } else {
-            buf << '\n';
-        }
+        } 
         DEBUG(3) std::cout << "Finish writing Optimal path" << '\n';
     };
     

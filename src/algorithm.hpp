@@ -198,7 +198,6 @@ void locate_point_by_offset(OGRLineString * linestring, double offset, double *x
     int Npoints = linestring->getNumPoints();
     double L_processed=0; // length parsed
     int i = 0; 
-    int p_idx = 0;
     double px=0;
     double py=0;
     // Find the idx of the point to be exported close to p 

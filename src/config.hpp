@@ -41,6 +41,21 @@ int get_file_extension(std::string &fn) {
     return 2;
 };
 
+
+/**
+ *  The configuration defined for output of the program
+ */
+struct ResultConfig {
+    bool write_opath = false; // Optimal path, the edge matched to each point
+    bool write_offset = false; // The distance from the source node of an edge 
+    bool write_error = false; // The distance from a raw GPS point to a matched GPS point
+    bool write_cpath = true; // Complete path, a path traversed by the trajectory
+    bool write_mgeom = true; // The geometry of the complete path 
+    bool write_wkt = true; // mgeom in WKT or WKB format
+    bool write_distance = false; // The distance travelled between two GPS observations
+    bool write_pgeom = false; // A linestring connecting the point matched for each edge. 
+};
+
 /**
  * Configuration class for map matching
  */
@@ -52,7 +67,7 @@ public:
      */
     FMM_Config(const std::string &file)
     {
-        std::cout << "Start reading FMM configuration";
+        std::cout << "Start reading FMM configuration \n";
         // Create empty property tree object
         boost::property_tree::ptree tree;
         boost::property_tree::read_xml(file, tree);
@@ -96,26 +111,26 @@ public:
         result_file = tree.get<std::string>("fmm_config.output.file");
         mode = tree.get("fmm_config.output.mode", 0);
         
-        // Read fields to be exported, Default is id, cpath, mgeom
-        if (tree.get_optional<bool>("fmm_config.output.opath").is_initialized()){
+        if (tree.get_child_optional("fmm_config.output.opath")){
+            std::cout << "Find opath" << '\n';
             result_config.write_opath = true;
         }
-        if (tree.get_optional<bool>("fmm_config.output.cpath").is_initialized()){
+        if (tree.get_child_optional("fmm_config.output.cpath")){
             result_config.write_cpath = true;
         }
-        if (tree.get_optional<bool>("fmm_config.output.mgeom").is_initialized()){
+        if (tree.get_child_optional("fmm_config.output.mgeom")){
             result_config.write_mgeom = true;
         }
-        if (tree.get_optional<bool>("fmm_config.output.pgeom").is_initialized()){
+        if (tree.get_child_optional("fmm_config.output.pgeom")){
             result_config.write_pgeom = true;
         }
-        if (tree.get_optional<bool>("fmm_config.output.offset").is_initialized()){
+        if (tree.get_child_optional("fmm_config.output.offset")){
             result_config.write_offset = true;
         }
-        if (tree.get_optional<bool>("fmm_config.output.error").is_initialized()){
+        if (tree.get_child_optional("fmm_config.output.error")){
             result_config.write_error = true;
         }
-        std::cout << "Finish with reading FMM configuration";   
+        std::cout << "Finish with reading FMM configuration \n";   
     };
     
     ResultConfig get_result_config(){
@@ -145,7 +160,16 @@ public:
         std::cout << std::left << std::setw(4) << "" << std::setw(20) << "gps_error: " << gps_error << '\n';
         std::cout << std::left << std::setw(4) << "" << std::setw(20) << "penalty_factor: " << penalty_factor << '\n';
         std::cout << std::left << std::setw(4) << "" << std::setw(20) << "result_file:" << result_file << '\n';
-        std::cout << std::left << std::setw(4) << "" << std::setw(20) << "geometry mode: " << mode << "(0 no geometry, 1 wkb, 2 wkt)" << '\n';
+        // std::cout << std::left << std::setw(4) << "" << std::setw(20) << "geometry mode: " << mode << "(0 no geometry, 1 wkb, 2 wkt)" << '\n';
+        
+        std::cout << std::left << std::setw(4) << "" << std::setw(20) << "Output fields"<<'\n';
+        if (result_config.write_opath) std::cout << std::left << std::setw(8) << ""  << "opath"<<'\n';
+        if (result_config.write_cpath) std::cout << std::left << std::setw(8) << "" << "cpath"<<'\n';
+        if (result_config.write_pgeom) std::cout << std::left << std::setw(8) << "" << "pgeom"<<'\n';
+        if (result_config.write_mgeom) std::cout << std::left << std::setw(8) << "" << "mgeom"<<'\n';
+        if (result_config.write_offset) std::cout << std::left << std::setw(8) << "" << "offset"<<'\n';
+        if (result_config.write_error) std::cout << std::left << std::setw(8) << "" << "gps_error"<<'\n';
+
         std::cout << "------------------------------------------" << '\n';
     };
     bool validate_mm()
@@ -317,20 +341,6 @@ public:
     double delta;
     std::string result_file;
 }; // UBODT_Config
-
-/**
- *  The configuration defined for output of the program
- */
-class ResultConfig{
-    bool write_opath = false; // Optimal path, the edge matched to each point
-    bool write_offset = false; // The distance from the source node of an edge 
-    bool write_error = false; // The distance from a raw GPS point to a matched GPS point
-    bool write_cpath = true; // Complete path, a path traversed by the trajectory
-    bool write_mgeom = true; // The geometry of the complete path 
-    bool write_wkt = true; // mgeom in WKT or WKB format
-    bool write_distance = false; // The distance travelled between two GPS observations
-    bool write_pgeom = false; // A linestring connecting the point matched for each edge. 
-};
 
 } // MM
 #endif //MM_CONFIG_HPP
