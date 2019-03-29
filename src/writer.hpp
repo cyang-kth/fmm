@@ -48,8 +48,8 @@ public:
     
     void write_header() {
         std::string header = "id";
+        if (config.write_ogeom) header+=";ogeom";
         if (config.write_opath) header+=";opath";
-        //if (config.write_distance) header+=";distance";
         if (config.write_error) header+=";error";
         if (config.write_offset) header+=";offset";
         if (config.write_spdist) header+=";spdist";
@@ -59,10 +59,27 @@ public:
         m_fstream << header << '\n';
     };
     
-    void write_result(int tr_id, O_Path *o_path_ptr, C_Path *c_path_ptr, OGRLineString *m_geom){
+    /**
+     *  Write map matching result for a trajectory
+     * @param tr_id: id of trajectory
+     * @param ogeom: original geometry of the trajectory OGRLineString*
+     * @param o_path_ptr: pointer to the optimal path (sequence of candidates)
+     * @param c_path_ptr: pointer to the complete path (sequence of edge ids)
+     * @param mgeom: the geometry of the matched path (untraversed path removed in complete path)
+     */
+    void write_result(int tr_id, OGRLineString *ogeom, O_Path *o_path_ptr, C_Path *c_path_ptr, OGRLineString *mgeom){
         DEBUG(2) std::cout << __FILE__ << "    Line" << __LINE__ << ":    " << __FUNCTION__ << '\n';
         std::stringstream buf;
         buf << tr_id;
+        if (config.write_ogeom){
+            buf << ";";
+            if (ogeom != nullptr) {
+                char *wkt;
+                ogeom->exportToWkt(&wkt);
+                buf << wkt;
+                CPLFree(wkt);
+            }
+        }
         if (config.write_opath) {
             buf << ";";
             write_o_path(buf,o_path_ptr);
@@ -91,9 +108,9 @@ public:
         }
         if (config.write_mgeom) {
             buf << ";";
-            if (m_geom != nullptr) {
+            if (mgeom != nullptr) {
                 char *wkt;
-                m_geom->exportToWkt(&wkt);
+                mgeom->exportToWkt(&wkt);
                 buf << wkt;
                 CPLFree(wkt);
             } 

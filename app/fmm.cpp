@@ -91,10 +91,10 @@ int main (int argc, char **argv)
             C_Path *c_path_ptr = ubodt.construct_complete_path(o_path_ptr);
             if (result_config.write_mgeom) {
                 OGRLineString *m_geom = network.complete_path_to_geometry(o_path_ptr,c_path_ptr);
-                rw.write_result(trajectory.id,o_path_ptr,c_path_ptr,m_geom);
+                rw.write_result(trajectory.id,trajectory.geom,o_path_ptr,c_path_ptr,m_geom);
                 delete m_geom;
             } else {
-                rw.write_result(trajectory.id,o_path_ptr,c_path_ptr,nullptr);
+                rw.write_result(trajectory.id,trajectory.geom,o_path_ptr,c_path_ptr,nullptr);
             }
             // update statistics
             total_points+=points_in_tr;

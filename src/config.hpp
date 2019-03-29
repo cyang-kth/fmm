@@ -46,6 +46,7 @@ int get_file_extension(std::string &fn) {
  *  The configuration defined for output of the program
  */
 struct ResultConfig {
+    bool write_ogeom = false; // Optimal path, the edge matched to each point
     bool write_opath = false; // Optimal path, the edge matched to each point
     bool write_offset = false; // The distance from the source node of an edge 
     bool write_error = false; // The distance from a raw GPS point to a matched GPS point
@@ -116,6 +117,9 @@ public:
             // close the default output fields (cpath,mgeom are true by default)
             result_config.write_cpath = false;
             result_config.write_mgeom = false;
+            if (tree.get_child_optional("fmm_config.output.fields.ogeom")){
+                result_config.write_ogeom = true;
+            }
             if (tree.get_child_optional("fmm_config.output.fields.opath")){
                 result_config.write_opath = true;
             }
@@ -138,6 +142,7 @@ public:
                 result_config.write_spdist = true;
             }
             if (tree.get_child_optional("fmm_config.output.fields.all")){
+                result_config.write_ogeom= true;
                 result_config.write_opath = true;
                 result_config.write_pgeom = true;
                 result_config.write_offset = true;
@@ -182,6 +187,7 @@ public:
         // std::cout << std::left << std::setw(4) << "" << std::setw(20) << "geometry mode: " << mode << "(0 no geometry, 1 wkb, 2 wkt)" << '\n';
         
         std::cout << std::left << std::setw(4) << "" << std::setw(20) << "Output fields:"<<'\n';
+        if (result_config.write_ogeom) std::cout << std::left << std::setw(8) << ""  << "ogeom"<<'\n';
         if (result_config.write_opath) std::cout << std::left << std::setw(8) << ""  << "opath"<<'\n';
         if (result_config.write_pgeom) std::cout << std::left << std::setw(8) << "" << "pgeom"<<'\n';
         if (result_config.write_offset) std::cout << std::left << std::setw(8) << "" << "offset"<<'\n';

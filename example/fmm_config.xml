@@ -24,6 +24,12 @@
     <output>
         <fields>
             <all/>
+            <!--        
+			<ogeom/>
+            <error/>
+            <cpath/>
+            <cpath/> 
+        	-->
         </fields>
         <file>mr.txt</file>
     </output>
