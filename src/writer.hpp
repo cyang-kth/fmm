@@ -15,6 +15,7 @@
 #include "multilevel_debug.h"
 #include "config.hpp"
 #include "network.hpp"
+
 namespace MM
 {
 namespace IO {
@@ -40,25 +41,13 @@ public:
         m_fstream(*m_fstream_ptr), m_network_ptr(network_ptr),config(config_arg)
     {
         std::cout << "Write result to file: " << result_file << '\n';
+        write_header();
     };
     // Destructor
     ~ResultWriter() {
         delete m_fstream_ptr;
     };
-    
-    void write_header() {
-        std::string header = "id";
-        if (config.write_ogeom) header+=";ogeom";
-        if (config.write_opath) header+=";opath";
-        if (config.write_error) header+=";error";
-        if (config.write_offset) header+=";offset";
-        if (config.write_spdist) header+=";spdist";
-        if (config.write_pgeom) header+=";pgeom";
-        if (config.write_cpath) header+=";cpath";
-        if (config.write_mgeom) header+=";mgeom";
-        m_fstream << header << '\n';
-    };
-    
+
     /**
      *  Write map matching result for a trajectory
      * @param tr_id: id of trajectory
@@ -121,94 +110,22 @@ public:
         #pragma omp critical
         m_fstream << buf.rdbuf();
     };
-    /**
-     * Write the results to a CSV file storing:
-     *     trajectory id;optimal path;complete path;geometry(WKT)
-     */
-    void write_map_matched_result_wkt(int tr_id, O_Path *o_path_ptr, C_Path *c_path_ptr, OGRLineString *m_geom) {
-        DEBUG(2) std::cout << __FILE__ << "    Line" << __LINE__ << ":    " << __FUNCTION__ << '\n';
-        std::stringstream buf;
-        buf << tr_id;
-        buf << ";";
-        write_o_path(buf,o_path_ptr);
-        buf << ";";
-        write_complete_path(buf,c_path_ptr);
-        buf << ";";
-        if (m_geom != nullptr) {
-            char *wkt;
-            m_geom->exportToWkt(&wkt);
-            buf << wkt << '\n';
-            CPLFree(wkt);
-        } else {
-            buf << '\n';
-        }
-        // It seems that the one below is important to ensure the buffer control flow works
-        // as expected. 
-        #pragma omp critical
-        m_fstream << buf.rdbuf();
-    };
-    /**
-     * Write the results to a CSV file storing:
-     *     trajectory id;optimal path;complete path;geometry(WKB)
-     */
-    void write_map_matched_result_wkb(int tr_id, O_Path *o_path_ptr, C_Path *c_path_ptr, OGRLineString *m_geom) {
-        DEBUG(2) std::cout << __FILE__ << "    Line" << __LINE__ << ":    " << __FUNCTION__ << '\n';
-        std::stringstream buf;
-        buf << tr_id;
-        buf << ";";
-        write_o_path(buf,o_path_ptr);
-        buf << ";";
-        write_complete_path(buf,c_path_ptr);
-        buf << ";";
-        if (m_geom != nullptr) {
-            int binary_size = m_geom->WkbSize();
-            unsigned char wkb[binary_size];
-            // http://www.gdal.org/ogr__core_8h.html#a36cc1f4d807ba8f6fb8951f3adf251e2
-            m_geom->exportToWkb(wkbNDR, wkb);
-            // http://www.gdal.org/cpl__string_8h.html
-            char *hex_wkb = CPLBinaryToHex(binary_size, wkb);
-            buf << hex_wkb << '\n';
-            CPLFree(hex_wkb);
-            // CPLBinaryToHex()
-        } else {
-            buf << '\n';
-        }
-        #pragma omp critical
-        m_fstream << buf.rdbuf();
-    };
-    
-//     // write a header text to the csv file
-//     void write_header(const std::string &header = "id;m_path;geom") {
-//         m_fstream << header << '\n';
-//     };
-    // write opitmal path and complete path to the csv file
-    void write_opath_cpath(int tr_id, O_Path *o_path_ptr, C_Path *c_path_ptr) {
-        DEBUG(2) std::cout << __FILE__ << "    Line" << __LINE__ << ":    " << __FUNCTION__ << '\n';
-        std::stringstream buf;
-        buf << tr_id;
-        buf << ";";
-        write_o_path(buf,o_path_ptr);
-        buf << ";";
-        write_complete_path(buf,c_path_ptr);
-        buf << '\n';
-        #pragma omp critical
-        m_fstream << buf.rdbuf();
-    };
-    void write_opath_cpath_offset(int tr_id, O_Path *o_path_ptr, C_Path *c_path_ptr) {
-        DEBUG(2) std::cout << __FILE__ << "    Line" << __LINE__ << ":    " << __FUNCTION__ << '\n';
-        std::stringstream buf;
-        buf << tr_id;
-        buf << ";";
-        write_o_path(buf,o_path_ptr);
-        buf << ";";
-        write_offset(buf,o_path_ptr);
-        buf << ";";
-        write_complete_path(buf,c_path_ptr);
-        buf << '\n';
-        #pragma omp critical
-        m_fstream << buf.rdbuf();
-    };
+
 private:
+
+    void write_header() {
+        std::string header = "id";
+        if (config.write_ogeom) header+=";ogeom";
+        if (config.write_opath) header+=";opath";
+        if (config.write_error) header+=";error";
+        if (config.write_offset) header+=";offset";
+        if (config.write_spdist) header+=";spdist";
+        if (config.write_pgeom) header+=";pgeom";
+        if (config.write_cpath) header+=";cpath";
+        if (config.write_mgeom) header+=";mgeom";
+        m_fstream << header << '\n';
+    };    
+    
     // Write the optimal path
     void write_o_path(std::stringstream &buf,O_Path *o_path_ptr)
     {
@@ -312,11 +229,12 @@ private:
         }
         buf << m_network_ptr->get_edge_id_attr((*c_path_ptr)[N - 1]);
     };
+    
     std::ostream *m_fstream_ptr;
     std::ostream &m_fstream;
     Network *m_network_ptr;
     ResultConfig config;
 }; // ResultWriter
-} //IO
+}; //IO
 } //MM
 #endif // MM_WRITER_HPP

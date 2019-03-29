@@ -73,7 +73,9 @@ int main (int argc, char **argv)
         if (step_size<10) step_size=10;
         std::chrono::steady_clock::time_point corrected_begin = std::chrono::steady_clock::now();
         std::cout<<"Start to map match trajectories with total number "<< num_trajectories <<'\n';
-        rw.write_header();
+        // The header is moved to constructor of result writer
+        // rw.write_header(); 
+        
         while (tr_reader.has_next_feature())
         {
             DEBUG(2) std::cout<<"Start of the loop"<<'\n';
