@@ -27,11 +27,12 @@ double GPS_ERROR = 50;
 struct Candidate
 {
     float offset; // offset distance from the start of polyline to p'
-    double dist; // distance from p to p'
+    double dist; // distance from original point p to map matched point p'
     double obs_prob; // this is the emission probability
     Edge *edge; // candidate edge
     Candidate* prev; // optimal previous candidate used in Viterbi algorithm 
-    float cumu_prob; // used in Viterbi, initially to be 0
+    float cumu_prob; // used in Viterbi, initialized to be 0
+    float sp_dist; // sp distance to previous point, initialized to be 0
 };
 
 /* Record type in UBODT */

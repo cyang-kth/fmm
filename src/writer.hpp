@@ -52,6 +52,7 @@ public:
         //if (config.write_distance) header+=";distance";
         if (config.write_error) header+=";error";
         if (config.write_offset) header+=";offset";
+        if (config.write_spdist) header+=";spdist";
         if (config.write_pgeom) header+=";pgeom";
         if (config.write_cpath) header+=";cpath";
         if (config.write_mgeom) header+=";mgeom";
@@ -73,6 +74,11 @@ public:
         if (config.write_offset) {
             buf << ";";
             write_offset(buf,o_path_ptr);
+        }
+        // Distance traversed which could be more complicated.
+        if (config.write_spdist) {
+            buf << ";";
+            write_spdist(buf,o_path_ptr);
         }
         if (config.write_pgeom){
             buf << ";";
@@ -219,7 +225,7 @@ private:
         DEBUG(3) std::cout << "Finish writing Optimal path" << '\n';
     };
     
-    void write_tdist(std::stringstream &buf,O_Path *o_path_ptr)
+    void write_spdist(std::stringstream &buf,O_Path *o_path_ptr)
     {
         DEBUG(2) std::cout << __FILE__ << "    Line" << __LINE__ << ":    " << __FUNCTION__ << '\n';
         if (o_path_ptr == nullptr) {
@@ -229,9 +235,9 @@ private:
         int N = o_path_ptr->size();
         for (int i = 0; i < N - 1; ++i)
         {
-            buf << (*o_path_ptr)[i]->dist<< ",";
+            buf << (*o_path_ptr)[i]->sp_dist<< ",";
         }
-        buf << (*o_path_ptr)[N - 1]->dist;
+        buf << (*o_path_ptr)[N - 1]->sp_dist;
         DEBUG(3) std::cout << "Finish writing Optimal path" << '\n';
     };
     
@@ -245,9 +251,9 @@ private:
         int N = o_path_ptr->size();
         for (int i = 0; i < N - 1; ++i)
         {
-            buf << Network::emission_prob_to_dist((*o_path_ptr)[i]->obs_prob)<< ",";
+            buf << (*o_path_ptr)[i]->dist<< ",";
         }
-        buf << Network::emission_prob_to_dist((*o_path_ptr)[N - 1]->obs_prob);
+        buf << (*o_path_ptr)[N - 1]->dist;
         DEBUG(3) std::cout << "Finish writing Optimal path" << '\n';
     };
     
