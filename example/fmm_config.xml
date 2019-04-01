@@ -24,11 +24,11 @@
     <output>
         <fields>
             <all/>
-            <!--        
-			<ogeom/>
-            <error/>
-            <cpath/>
-            <cpath/> 
+            <!--
+			        <ogeom/>
+              <error/>
+              <opath/>
+              <cpath/>
         	-->
         </fields>
         <file>mr.txt</file>
