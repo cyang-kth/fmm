@@ -9,7 +9,7 @@ This project is an implementation of the fast map matching (FMM) algorithm intro
 - Customized output fields (matched point,matched line, gps error, etc)
 - Tested on city level road network and **millions of GPS records**
 
-![demo](demo_v2.png)
+![demo](demo.png)
 
 ## Table of Contents
 
