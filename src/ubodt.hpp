@@ -191,6 +191,51 @@ public:
         CPC_DEBUG(2) std::cout<<"Construct complete path finished "<<'\n';
         return edges;
     };
+    
+    /**
+     * Construct a traversed path from the optimal path.
+     * It is different with cpath in that the edges traversed between consecutive GPS observations are recorded.
+     * It returns a traversed path including the cpath and the index of matched edge for each point in the GPS trajectory. 
+     */
+    T_Path *construct_traversed_path(O_Path *path){
+        CPC_DEBUG(2) std::cout<<"-----------------------"<<'\n';
+        CPC_DEBUG(2) std::cout<<"Construct traversed path begin"<<'\n';
+        if (path==nullptr) return nullptr;
+        int N = path->size();
+        // T_Path *edges= new T_Path();
+        T_Path *t_path = new T_Path();
+        t_path->cpath.push_back((*path)[0]->edge->id);
+        int current_idx = 0;
+        t_path->indices.push_back(current_idx);
+        for(int i=0;i<N-1;++i){
+            Candidate* a = (*path)[i];
+            Candidate* b = (*path)[i+1];
+            if ((a->edge->id!=b->edge->id) || (a->offset>b->offset)) {
+                auto segs = look_sp_path(a->edge->target,b->edge->source);
+                // No transition exist in UBODT
+                if (segs.empty() &&  a->edge->target!=b->edge->source){
+                    CPC_DEBUG(1) std::cout<<"----- Warning: Large gap detected from "<< a->edge->target <<" to "<< b->edge->source <<'\n';
+                    CPC_DEBUG(1) std::cout<<"----- Construct complete path skipped"<<'\n';
+                    delete t_path; // free the memory of edges
+                    return nullptr;
+                }
+                for (int e:segs){
+                    t_path->cpath.push_back(e);
+                    ++current_idx;
+                }
+                t_path->cpath.push_back(b->edge->id);
+                ++current_idx;
+                t_path->indices.push_back(current_idx);
+            } else {
+                // b stays on the same edge
+                t_path->indices.push_back(current_idx);
+            }
+        }
+        CPC_DEBUG(2) std::cout<<"Construct traversed path finish"<<'\n';
+        return t_path;
+    };
+    
+    
     /**
      *  Print statistics of the hashtable to a file
      */

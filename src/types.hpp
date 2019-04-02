@@ -58,7 +58,14 @@ typedef std::vector<Point_Candidates> Traj_Candidates; // candidates of a trajec
 typedef std::vector<Candidate*> O_Path; 
 
 // Complete path, a contiguous sequence of edges traversed
-typedef std::vector<int> C_Path; 
+typedef std::vector<int> C_Path;
+
+// The traversed path stores also the location of GPS point inside the C_Path, thus 
+// edges traversed between two GPS observations can be found.
+struct T_Path{
+    C_Path cpath;
+    std::vector<int> indices;
+};
 
 }
 #endif /* MM_TYPES_HPP */
