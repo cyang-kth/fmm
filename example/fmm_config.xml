@@ -22,7 +22,15 @@
         <gps_error>0.5</gps_error>
     </parameters>
     <output>
-        <mode>2</mode>
+        <fields>
+            <all/>
+            <!--
+			        <ogeom/>
+              <error/>
+              <opath/>
+              <cpath/>
+        	-->
+        </fields>
         <file>mr.txt</file>
     </output>
 </fmm_config>

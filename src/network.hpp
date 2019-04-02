@@ -248,7 +248,7 @@ public:
                 CS_DEBUG(2) std::cout<<"Offset: "<<offset<< '\n';
                 if (dist<=radius)
                 {
-                    Candidate c = {offset,dist,Network::emission_prob(dist),edge,NULL,0};
+                    Candidate c = {offset,dist,Network::emission_prob(dist),edge,NULL,0,0};
                     pcs.push_back(c);
                 }
             }
@@ -469,6 +469,10 @@ public:
     {
         double a = dist / GPS_ERROR;
         return exp(-0.5 * a * a); // The unit should be in range of 0,1
+    };
+    
+    static double emission_prob_to_dist(double eprob){
+        return sqrt(-2 * log(eprob))*GPS_ERROR;
     };
 private:
     /**

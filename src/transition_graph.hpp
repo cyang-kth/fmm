@@ -96,6 +96,7 @@ public:
                     {
                         cb->cumu_prob = ca->cumu_prob + tran_prob * cb->obs_prob;
                         cb->prev = &(*ca);
+                        cb->sp_dist = sp_dist; // update the SP distance to previous point
                     }
                     // OPI_DEBUG(3) std::cout<<step <<";"<<ca->edge->id_attr<<";"<<cb->edge->id_attr<<";"<<sp_dist<<";"<<eu_dist<<";"<<tran_prob<<";"<<cb->obs_prob<<";"<<ca->cumu_prob + tran_prob * cb->obs_prob<<'\n';
                     ++cb;
