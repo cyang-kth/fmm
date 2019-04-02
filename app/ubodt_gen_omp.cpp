@@ -6,7 +6,7 @@
  * @version: 2018.03.09
  */
 #include "../src/network_graph_opt_omp.hpp"
-#include "config.hpp"
+#include "../src/config.hpp"
 #include <iostream>
 #include <ctime>
 using namespace std;
