@@ -90,21 +90,22 @@ int main (int argc, char **argv)
             // Optimal path inference
             O_Path *o_path_ptr = tg.viterbi(config.penalty_factor);
             // Complete path construction as an array of indices of edges vector
-            C_Path *c_path_ptr = ubodt.construct_complete_path(o_path_ptr);
+            T_Path *t_path_ptr = ubodt.construct_traversed_path(o_path_ptr); 
+            // C_Path *c_path_ptr = ubodt.construct_complete_path(o_path_ptr);
             if (result_config.write_mgeom) {
-                OGRLineString *m_geom = network.complete_path_to_geometry(o_path_ptr,c_path_ptr);
-                rw.write_result(trajectory.id,trajectory.geom,o_path_ptr,c_path_ptr,m_geom);
+                OGRLineString *m_geom = network.complete_path_to_geometry(o_path_ptr,&(t_path_ptr->cpath));
+                rw.write_result(trajectory.id,trajectory.geom,o_path_ptr,t_path_ptr,m_geom);
                 delete m_geom;
             } else {
-                rw.write_result(trajectory.id,trajectory.geom,o_path_ptr,c_path_ptr,nullptr);
+                rw.write_result(trajectory.id,trajectory.geom,o_path_ptr,t_path_ptr,nullptr);
             }
             // update statistics
             total_points+=points_in_tr;
-            if (c_path_ptr!=nullptr) points_matched+=points_in_tr;
+            if (t_path_ptr!=nullptr) points_matched+=points_in_tr;
             DEBUG(1) std::cout<<"Free memory of o_path and c_path"<<'\n';
             ++progress;
             delete o_path_ptr;
-            delete c_path_ptr;
+            delete t_path_ptr;
             DEBUG(1) std::cout<<"============================="<<'\n';
         }
         std::cout<<"\n============================="<<'\n';

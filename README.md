@@ -9,7 +9,7 @@ This project is an implementation of the fast map matching (FMM) algorithm intro
 - Customized output fields (matched point,matched line, gps error, etc)
 - Tested on city level road network and **millions of GPS records**
 
-![demo](demo.png)
+<img src="demo1.png" width="400"/> <img src="demo2.png" width="410"/>
 
 ## Table of Contents
 
@@ -115,6 +115,7 @@ The output of program `fmm` is a CSV file containing the following information b
 - spdist： sequence of floats, shortest path distances traversed between consecutive points
 - pgeom： WKT Linestring, a line connecting the matched points
 - cpath： sequence of ids, the path traversed by the trajectory
+- tpath： sequence of ids, edges traversed between consecutive points, separated by `|`
 - mgeom： WKT Linestring, the geometry of the cpath
 
 By default, only `cpath` and `mgeom` are exported.
@@ -169,7 +170,7 @@ Two example configuration files are given in the [example](example) folder.
         - gps_error: gps error used in emission probability calculation (**the same spatial unit as the network file**)
     * output
         - fields: fields to be exported (if the `<fields>` is not specified, default fields will be cpath, mgeom)
-            + One or more elements in: ogeom, opath, error, offset, spdist, pgeom, cpath, mgeom. See [fmm_config.xml](https://github.com/cyang-kth/fmm/blob/master/example/fmm_config.xml) for an example
+            + One or more elements in: ogeom, opath, error, offset, spdist, pgeom, cpath, tpath, mgeom. See [fmm_config.xml](https://github.com/cyang-kth/fmm/blob/master/example/fmm_config.xml) for an example
             + all: all the above fields will be exported
         - file: the matched file
 

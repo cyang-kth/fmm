@@ -56,7 +56,7 @@ public:
      * @param c_path_ptr: pointer to the complete path (sequence of edge ids)
      * @param mgeom: the geometry of the matched path (untraversed path removed in complete path)
      */
-    void write_result(int tr_id, OGRLineString *ogeom, O_Path *o_path_ptr, C_Path *c_path_ptr, OGRLineString *mgeom){
+    void write_result(int tr_id, OGRLineString *ogeom, O_Path *o_path_ptr, T_Path *t_path_ptr, OGRLineString *mgeom){
         DEBUG(2) std::cout << __FILE__ << "    Line" << __LINE__ << ":    " << __FUNCTION__ << '\n';
         std::stringstream buf;
         buf << tr_id;
@@ -93,7 +93,11 @@ public:
         // Write fields related with cpath
         if (config.write_cpath) {
             buf << ";";
-            write_complete_path(buf,c_path_ptr);
+            write_cpath(buf,t_path_ptr);
+        }
+        if (config.write_tpath) {
+            buf << ";";
+            write_tpath(buf,t_path_ptr);
         }
         if (config.write_mgeom) {
             buf << ";";
@@ -122,6 +126,7 @@ private:
         if (config.write_spdist) header+=";spdist";
         if (config.write_pgeom) header+=";pgeom";
         if (config.write_cpath) header+=";cpath";
+        if (config.write_tpath) header+=";tpath";
         if (config.write_mgeom) header+=";mgeom";
         m_fstream << header << '\n';
     };    
@@ -220,14 +225,35 @@ private:
     };
     
     // Write the complete path
-    void write_complete_path(std::stringstream &buf,C_Path *c_path_ptr) {
-        if (c_path_ptr == nullptr) return;
+    void write_cpath(std::stringstream &buf,T_Path *t_path_ptr) {
+        if (t_path_ptr == nullptr) return;
+        C_Path *c_path_ptr = &(t_path_ptr->cpath);
         int N = c_path_ptr->size();
         for (int i = 0; i < N - 1; ++i)
         {
             buf << m_network_ptr->get_edge_id_attr((*c_path_ptr)[i]) << ",";
         }
         buf << m_network_ptr->get_edge_id_attr((*c_path_ptr)[N - 1]);
+    };
+        
+    // Write the traversed path separated by vertical bar
+    void write_tpath(std::stringstream &buf,T_Path *t_path_ptr) {
+        if (t_path_ptr == nullptr) return;
+        // Iterate through consecutive indexes and write the traversed path
+        int J = t_path_ptr->indices.size(); 
+        for (int j=0;j<J-1;++j){
+            int a = t_path_ptr->indices[j];
+            int b = t_path_ptr->indices[j+1];
+            for (int i=a;i<b;++i){
+                buf << m_network_ptr->get_edge_id_attr(t_path_ptr->cpath[i]);
+                buf << ",";
+            }
+            buf << m_network_ptr->get_edge_id_attr(t_path_ptr->cpath[b]);
+            if (j<J-2){
+                // Last element should not have a bar
+                buf << "|";
+            }
+        }
     };
     
     std::ostream *m_fstream_ptr;
