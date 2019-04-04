@@ -51,6 +51,7 @@ struct ResultConfig {
     bool write_offset = false; // The distance from the source node of an edge 
     bool write_error = false; // The distance from a raw GPS point to a matched GPS point
     bool write_cpath = true; // Complete path, a path traversed by the trajectory
+    bool write_tpath = false; // Complete path, a path traversed by the trajectory
     bool write_mgeom = true; // The geometry of the complete path 
     bool write_wkt = true; // mgeom in WKT or WKB format
     bool write_spdist = false; // The distance travelled between two GPS observations
@@ -126,6 +127,9 @@ public:
             if (tree.get_child_optional("fmm_config.output.fields.cpath")){
                 result_config.write_cpath = true;
             }
+            if (tree.get_child_optional("fmm_config.output.fields.tpath")){
+                result_config.write_tpath = true;
+            }
             if (tree.get_child_optional("fmm_config.output.fields.mgeom")){
                 result_config.write_mgeom = true;
             }
@@ -150,6 +154,7 @@ public:
                 result_config.write_spdist = true;
                 result_config.write_cpath = true;
                 result_config.write_mgeom = true;
+                result_config.write_tpath = true;
             }
         } else {
             std::cout << "    Default output fields used.\n";
@@ -194,6 +199,7 @@ public:
         if (result_config.write_error) std::cout << std::left << std::setw(8) << "" << "error"<<'\n';
         if (result_config.write_spdist) std::cout << std::left << std::setw(8) << "" << "spdist"<<'\n';
         if (result_config.write_cpath) std::cout << std::left << std::setw(8) << "" << "cpath"<<'\n';
+        if (result_config.write_tpath) std::cout << std::left << std::setw(8) << "" << "tpath"<<'\n';
         if (result_config.write_mgeom) std::cout << std::left << std::setw(8) << "" << "mgeom"<<'\n';
 
         std::cout << "------------------------------------------" << '\n';
