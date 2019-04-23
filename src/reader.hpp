@@ -78,6 +78,20 @@ public:
 #endif // GDAL_VERSION_MAJOR
             std::exit(EXIT_FAILURE);
         }
+        if (wkbFlatten(ogrFDefn->GetGeomType()) != wkbLineString)
+        {
+            std::cout<<std::setw(12)<<""<< "Geometry type of trajectory is " <<OGRGeometryTypeToName(ogrFDefn->GetGeomType())<<'\n';
+            std::cout<<std::setw(12)<<""<< "It should be LineString"<< '\n';
+#if GDAL_VERSION_MAJOR < 2
+            OGRDataSource::DestroyDataSource( poDS );
+#else
+            GDALClose( poDS );
+#endif // GDAL_VERSION_MAJOR
+            std::cout<<"Program stop"<< '\n';
+            std::exit(EXIT_FAILURE);
+        } else {
+            std::cout<< "\tGeometry type is " <<OGRGeometryTypeToName(ogrFDefn->GetGeomType())<<'\n';
+        }
         std::cout<<"    Index of ID column: " << id_idx<< '\n';
         std::cout<<"    Total number of trajectories: " << NUM_FEATURES << '\n';
         std::cout<<"Finish reading meta data" << '\n';
