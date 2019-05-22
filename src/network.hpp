@@ -106,13 +106,14 @@ public:
 
         if (wkbFlatten(ogrFDefn->GetGeomType()) != wkbLineString)
         {
-			std::cout<<std::setw(12)<<""<< "Geometry type is " <<OGRGeometryTypeToName(ogrFDefn->GetGeomType())<<'\n';
+			std::cout<<std::setw(12)<<""<< "Geometry type of network is " <<OGRGeometryTypeToName(ogrFDefn->GetGeomType())<<'\n';
             std::cout<<std::setw(12)<<""<< "It should be LineString"<< '\n';
 #if GDAL_VERSION_MAJOR < 2
             OGRDataSource::DestroyDataSource( poDS );
 #else
             GDALClose( poDS );
 #endif // GDAL_VERSION_MAJOR
+            std::cout<<"Program stop"<< '\n';
             std::exit(EXIT_FAILURE);
         } else {
 			std::cout<< "\tGeometry type is " <<OGRGeometryTypeToName(ogrFDefn->GetGeomType())<<'\n';
