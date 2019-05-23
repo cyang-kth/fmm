@@ -39,5 +39,7 @@ If an error pops as missing libpcre.so.1, we can copy from anaconda
 sudo mv ~/anaconda2/lib/libpcre.so.* /usr/lib
 ```
 
-
 ### Reference
+
+- Swig and Python documentation: http://www.swig.org/Doc1.3/Python.html#Python_nn13
+- Swig and C++: http://www.swig.org/Doc4.0/SWIGPlus.html

@@ -115,6 +115,34 @@ public:
         m_fstream << buf.rdbuf();
     };
 
+    static std::string mkString(O_Path *o_path_ptr, T_Path *t_path_ptr, OGRLineString *mgeom, bool return_details = false){
+        std::stringstream buf;
+        if (return_details){
+            write_o_path(buf,o_path_ptr);
+            buf << ";";
+            write_gps_error(buf,o_path_ptr);
+            buf << ";";
+            write_offset(buf,o_path_ptr);
+            buf << ";";
+            write_spdist(buf,o_path_ptr);        
+            // Distance traversed which could be more complicated.
+            buf << ";";
+            write_pgeom(buf,o_path_ptr);
+            buf << ";";
+            write_cpath(buf,t_path_ptr);
+            buf << ";";
+            write_tpath(buf,t_path_ptr);
+            buf << ";";
+        }
+        if (mgeom != nullptr) {
+            char *wkt;
+            mgeom->exportToWkt(&wkt);
+            buf << wkt;
+            CPLFree(wkt);
+        }
+        return buf.str();
+    };
+    
 private:
 
     void write_header() {
