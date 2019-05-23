@@ -196,7 +196,6 @@ public:
         for (std::size_t i = 0 ; i < network_edges.size(); ++i)
         {
             // create a boost_box
-            CS_DEBUG(3) std::cout<<"iteration "<<i<<'\n';
             Edge *edge = &network_edges[i];
             // boundary is returned is a multipoint geometry, but not the envelop
             // instead, it is only the first and last point
@@ -438,6 +437,7 @@ public:
         return line;
     };
 
+
     /**
      * Detect if a complete path contains reverse movement
      *
@@ -471,7 +471,7 @@ public:
         double a = dist / GPS_ERROR;
         return exp(-0.5 * a * a); // The unit should be in range of 0,1
     };
-    
+
     static double emission_prob_to_dist(double eprob){
         return sqrt(-2 * log(eprob))*GPS_ERROR;
     };

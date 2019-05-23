@@ -19,6 +19,7 @@ pcre
 #   https://github.com/github/gitignore/blob/master/C%2B%2B.gitignore
 *.slo
 *.lo
+*.gch
 
 # C/C++ dynamic libraries, based on:
 #   https://github.com/github/gitignore/blob/master/C.gitignore

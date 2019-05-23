@@ -11,6 +11,8 @@
 #define MM_ALGORITHM_HPP
 #include <cmath>
 #include "gdal/ogrsf_frmts.h" // C++ API for GDAL
+#include "multilevel_debug.h"
+#include "util.hpp"
 namespace MM
 {
 namespace ALGORITHM {
@@ -25,7 +27,10 @@ namespace ALGORITHM {
  */
 void boundingbox_geometry(OGRLineString *linestring,double *x1,double *y1,double *x2,double *y2)
 {
+    CS_DEBUG(3) std::cout<<"EXECUTE "<<__LINE__<<'\n';
+    CS_DEBUG(3) MM::UTIL::print_geometry(linestring);
     int Npoints = linestring->getNumPoints();
+    CS_DEBUG(3) std::cout<<"Number points "<<Npoints <<'\n';
     *x1 = DBL_MAX;
     *y1 = DBL_MAX;
     *x2 = DBL_MIN;
