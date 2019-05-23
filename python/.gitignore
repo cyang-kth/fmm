@@ -56,3 +56,5 @@ pcre
 
 # Out of source tree build directories
 *build*/
+lib/
+extensions/
