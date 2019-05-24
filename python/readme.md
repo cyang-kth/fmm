@@ -9,6 +9,24 @@ gcc -fpic -c example.c example_wrap.c -I/usr/include/python2.7
 gcc -shared example.o example_wrap.o -o _example.so
 ```
 
+#### Verify the result
+
+```
+python -c "import example;print example.fact(5)"
+python -c "import mygdal;mygdal.test()"
+```
+
+#### Debug
+
+```
+valgrind --log-file="debug.log" python demo.py
+```
+
+To figure out the reason, we need to read this links
+- https://github.com/OSGeo/gdal/blob/master/gdal/swig/include/python/ogr_python.i
+- https://github.com/OSGeo/gdal/blob/master/gdal/swig/python/GNUmakefile
+
+
 #### Swig installation
 
 Install SWIG, download the swig file as swig-4.0.0.tar.gz
