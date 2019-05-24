@@ -1,6 +1,8 @@
 PY_DIR = .
 SWIG_OUTPUT_DIR = extensions
 
+build_boost_example:
+	g++ -O3 linestring_example.cpp -o bin/linestring_example
 build_mygdal:
 	# g++ -O3 -std=c++11 gdal.cpp -o gdal.exe -lgdal
 	swig -python -c++ mygdal.i

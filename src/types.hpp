@@ -8,10 +8,12 @@
 
 #ifndef MM_TYPES_HPP
 #define MM_TYPES_HPP
+
 #include <vector>
 #include <string>
-#include "gdal/ogrsf_frmts.h" // C++ API for GDAL
+
 namespace MM {
+
 struct Edge
 {
     int id; // This is the id, which is continuous distributed 
