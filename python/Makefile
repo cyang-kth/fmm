@@ -6,8 +6,8 @@ build_boost_example:
 build_mygdal:
 	# g++ -O3 -std=c++11 gdal.cpp -o gdal.exe -lgdal
 	swig -python -c++ mygdal.i
-	g++ -O2 -fpic -std=c++11 -c mygdal.hpp mygdal_wrap.cxx -I/usr/include/python2.7 -lgdal
-	g++ -shared mygdal_wrap.o -o _mygdal.so -lgdal
+	g++ -O2 -pthread -fPIC -std=c++11 -c mygdal.hpp mygdal_wrap.cxx -I/usr/include/python2.7 -lgdal
+	g++ -pthread -shared -L/home/cyang/anaconda2/lib -Wl,-rpath=/home/cyang/anaconda2/lib -shared mygdal_wrap.o -lgdal -L/home/cyang/anaconda2/lib -lpython2.7 -o _mygdal.so
 build_fmm:
 	swig -python -c++ -outdir . -o extensions/fmm_wrap.cxx fmm.i
 	g++ -DCS_DEBUG_LEVEL='3' -O2 -fpic -std=c++11 -c fmm.hpp extensions/fmm_wrap.cxx -I. -I/usr/include/python2.7 -lgdal -lboost_serialization

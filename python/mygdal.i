@@ -5,4 +5,4 @@
 #include "mygdal.hpp"
 %}
 
-%include "mygdal.hpp"
+void test();
