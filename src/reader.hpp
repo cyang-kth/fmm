@@ -108,7 +108,11 @@ public:
         int trid = ogrFeature->GetFieldAsInteger(id_idx);
         DEBUG(2) std::cout<<"Read trajectory id : "<<trid<<'\n';
         OGRGeometry *rawgeometry = ogrFeature->GetGeometryRef();
+#ifdef USE_BG_GEOMETRY
+        BGLineString *linestring = ogr2bg((OGRLineString*) rawgeometry);
+#else
         OGRLineString *linestring = (OGRLineString*) rawgeometry->clone();
+#endif  
         OGRFeature::DestroyFeature(ogrFeature);
         ++_cursor;
         return Trajectory(trid,linestring);
@@ -125,7 +129,11 @@ public:
             OGRFeature *ogrFeature =ogrlayer->GetNextFeature();
             int trid = ogrFeature->GetFieldAsInteger(id_idx);
             OGRGeometry *rawgeometry = ogrFeature->GetGeometryRef();
+#ifdef USE_BG_GEOMETRY
+            BGLineString *linestring = ogr2bg((OGRLineString*) rawgeometry);
+#else
             OGRLineString *linestring = (OGRLineString*) rawgeometry->clone();
+#endif  
             OGRFeature::DestroyFeature(ogrFeature);
             trajectories[i].id = trid;
             trajectories[i].geom = linestring;
@@ -146,7 +154,11 @@ public:
             OGRFeature *ogrFeature =ogrlayer->GetNextFeature();
             int trid = ogrFeature->GetFieldAsInteger(id_idx);
             OGRGeometry *rawgeometry = ogrFeature->GetGeometryRef();
+#ifdef USE_BG_GEOMETRY
+            BGLineString *linestring = ogr2bg((OGRLineString*) rawgeometry);
+#else
             OGRLineString *linestring = (OGRLineString*) rawgeometry->clone();
+#endif  
             OGRFeature::DestroyFeature(ogrFeature);
             trajectories[i].id = trid;
             trajectories[i].geom = linestring;

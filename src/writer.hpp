@@ -56,18 +56,13 @@ public:
      * @param c_path_ptr: pointer to the complete path (sequence of edge ids)
      * @param mgeom: the geometry of the matched path (untraversed path removed in complete path)
      */
-    void write_result(int tr_id, OGRLineString *ogeom, O_Path *o_path_ptr, T_Path *t_path_ptr, OGRLineString *mgeom){
-        DEBUG(2) std::cout << __FILE__ << "    Line" << __LINE__ << ":    " << __FUNCTION__ << '\n';
+    void write_result(int tr_id, LineString *ogeom, O_Path *o_path_ptr, T_Path *t_path_ptr, LineString *mgeom){
+        // DEBUG(2) std::cout << __FILE__ << "    Line" << __LINE__ << ":    " << __FUNCTION__ << '\n';
         std::stringstream buf;
         buf << tr_id;
         if (config.write_ogeom){
             buf << ";";
-            if (ogeom != nullptr) {
-                char *wkt;
-                ogeom->exportToWkt(&wkt);
-                buf << wkt;
-                CPLFree(wkt);
-            }
+            write_geometry(buf,ogeom);
         }
         if (config.write_opath) {
             buf << ";";
@@ -101,12 +96,7 @@ public:
         }
         if (config.write_mgeom) {
             buf << ";";
-            if (mgeom != nullptr) {
-                char *wkt;
-                mgeom->exportToWkt(&wkt);
-                buf << wkt;
-                CPLFree(wkt);
-            } 
+            write_geometry(buf,mgeom);
         }
         buf << '\n';
         // It seems that the one below is important to ensure the buffer control flow works
@@ -144,7 +134,6 @@ public:
     };
     
 private:
-
      void write_header() {
         std::string header = "id";
         if (config.write_ogeom) header+=";ogeom";
@@ -158,7 +147,18 @@ private:
         if (config.write_mgeom) header+=";mgeom";
         m_fstream << header << '\n';
     };    
-    
+    static void write_geometry(std::stringstream &buf, LineString *line){
+        if (line != nullptr) {
+#ifdef USE_BG_GEOMETRY
+            buf << line->exportToWkt();
+#else
+            char *wkt;
+            line->exportToWkt(&wkt);
+            buf << wkt;
+            CPLFree(wkt);
+#endif  
+        }
+    }; 
     // Write the optimal path
     static void write_o_path(std::stringstream &buf,O_Path *o_path_ptr)
     {

@@ -135,7 +135,6 @@ public:
         while( (ogrFeature = ogrlayer->GetNextFeature()) != NULL)
         {
             int id = ogrFeature->GetFID();
-            CS_DEBUG(3) std::cout<<"ID "<< id <<"\n";
             Edge *e = &network_edges[id];
             e->id = id;
             e->id_attr = std::string(ogrFeature->GetFieldAsString(id_idx));
@@ -147,15 +146,11 @@ public:
             // The cloned geometry has to be freed by OGRGeometryFactory
             // https://github.com/OSGeo/gdal/blob/93fb17379bccba28a43a03bb2c19b868f264ebe1/gdal/ogr/ogrlinestring.cpp#L141
 #ifdef USE_BG_GEOMETRY
-            
-            e->geom = 
+            e->geom = ogr2bg((OGRLineString*) rawgeometry);
 #else
             e->geom = (OGRLineString*) rawgeometry->clone();
 #endif             
-            CS_DEBUG(3) std::cout<<"Line "<< __LINE__<<" ID "<< e->id <<" Points "<<e->geom->getNumPoints()<<"\n";
             e->length = e->geom->get_Length();
-            CS_DEBUG(3) std::cout<<"Line "<< __LINE__<<" ID "<< e->id <<" Points "<<e->geom->getNumPoints()<<"\n";
-            
             if (e->source>max_node_id)
             {
                 max_node_id = e->source;
@@ -167,10 +162,8 @@ public:
             // CS_DEBUG(3) std::cout<<"ID "<< e->id <<" Length "<<e->geom->get_Length()<<"\n";
             // https://github.com/OSGeo/gdal/blob/d5f6bb89b0e0db0a06489419050d432e8f58ff47/gdal/ogr/ogrsf_frmts/ntf/ogrntflayer.cpp#L88
             OGRFeature::DestroyFeature(ogrFeature);
-            CS_DEBUG(3) std::cout<<"ID "<< e->id <<" Length "<<e->geom->get_Length()<<"\n";
             // CS_DEBUG(3) std::cout<<"Line "<< __LINE__<< " Length "<<network_edges[0].geom->get_Length()<<"\n";
         }
-        CS_DEBUG(3) std::cout<<"Line "<< __LINE__<< " id "<<network_edges[0].id<<"\n";
 #if GDAL_VERSION_MAJOR < 2
         OGRDataSource::DestroyDataSource( poDS );
 #else
@@ -186,7 +179,11 @@ public:
         std::cout<< "Cleaning network" << '\n';
         for (auto &item:network_edges)
         {
+#ifdef USE_BG_GEOMETRY
+            delete item.geom;
+#else
             OGRGeometryFactory::destroyGeometry(item.geom);
+#endif               
         }
         std::cout<< "Cleaning network finished" << '\n';
     }
@@ -399,11 +396,11 @@ public:
      * @return  a pointer to the geometry of the complete path, The
      * caller should take care of freeing its memory.
      */
-    OGRLineString *complete_path_to_geometry(O_Path *o_path_ptr, C_Path *complete_path)
+    LineString *complete_path_to_geometry(O_Path *o_path_ptr, C_Path *complete_path)
     {
         if (complete_path==nullptr || complete_path->empty()) return nullptr;
         // if (complete_path->empty()) return nullptr;
-        OGRLineString *line = new OGRLineString();
+        LineString *line = new LineString();
         int NOsegs = o_path_ptr->size();
         int NCsegs = complete_path->size();
         GC_DEBUG(2) std::cout<< __FILE__ << __LINE__ <<" Optimal path size "<<NOsegs <<'\n';
@@ -414,8 +411,8 @@ public:
             double lastoffset = (*o_path_ptr)[NOsegs-1]->offset;
             GC_DEBUG(2) std::cout<< "first offset " << firstoffset <<'\n';
             GC_DEBUG(2) std::cout<< "last offset " << lastoffset <<'\n';
-            OGRLineString * firstseg = network_edges[(*complete_path)[0]].geom;
-            OGRLineString * firstlineseg= ALGORITHM::cutoffseg_unique(firstoffset,lastoffset,firstseg);
+            LineString * firstseg = network_edges[(*complete_path)[0]].geom;
+            LineString * firstlineseg= ALGORITHM::cutoffseg_unique(firstoffset,lastoffset,firstseg);
             append_segs_to_line(line,firstlineseg,0);
             GC_DEBUG(2) UTIL::print_geometry(firstlineseg);
             // Free the memory
@@ -423,10 +420,10 @@ public:
         } else {
             double firstoffset = (*o_path_ptr)[0]->offset;
             double lastoffset = (*o_path_ptr)[NOsegs-1]->offset;
-            OGRLineString * firstseg = network_edges[(*complete_path)[0]].geom;
-            OGRLineString * lastseg = network_edges[(*complete_path)[NCsegs-1]].geom;
-            OGRLineString * firstlineseg= ALGORITHM::cutoffseg(firstoffset, firstseg, 0);
-            OGRLineString * lastlineseg= ALGORITHM::cutoffseg(lastoffset, lastseg, 1);
+            LineString * firstseg = network_edges[(*complete_path)[0]].geom;
+            LineString * lastseg = network_edges[(*complete_path)[NCsegs-1]].geom;
+            LineString * firstlineseg= ALGORITHM::cutoffseg(firstoffset, firstseg, 0);
+            LineString * lastlineseg= ALGORITHM::cutoffseg(lastoffset, lastseg, 1);
             GC_DEBUG(2) std::cout<< "First offset " << firstoffset <<'\n';
             GC_DEBUG(2) std::cout<< "First line " <<'\n';
             GC_DEBUG(2) UTIL::print_geometry(firstseg);
@@ -503,7 +500,7 @@ private:
      * @param segs: pointer to a linestring
      * @param offset: the number of points skipped in segs.
      */
-    static void append_segs_to_line(OGRLineString *line,OGRLineString *segs,int offset=0)
+    static void append_segs_to_line(LineString *line,LineString *segs,int offset=0)
     {
         int Npoints = segs->getNumPoints();
         DEBUG(2) std::cout<< "Number of points "<< Npoints <<'\n';

@@ -95,10 +95,14 @@ void print_geometry(OGRLineString *geom){
         std::cout<<"Geometry in WKT: NULL"<<'\n';
         return;
     }
+#ifdef USE_BG_GEOMETRY
+    std::cout<< geom->exportToWkt()<<'\n';
+#else
     char *wkt;
     geom->exportToWkt(&wkt);
     std::cout<<"Geometry in WKT: "<<wkt<<'\n';
     CPLFree(wkt);
+#endif  
 };
 
 

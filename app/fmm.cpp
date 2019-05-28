@@ -93,7 +93,7 @@ int main (int argc, char **argv)
             T_Path *t_path_ptr = ubodt.construct_traversed_path(o_path_ptr); 
             // C_Path *c_path_ptr = ubodt.construct_complete_path(o_path_ptr);
             if (result_config.write_mgeom) {
-                OGRLineString *m_geom = network.complete_path_to_geometry(o_path_ptr,&(t_path_ptr->cpath));
+                LineString *m_geom = network.complete_path_to_geometry(o_path_ptr,&(t_path_ptr->cpath));
                 rw.write_result(trajectory.id,trajectory.geom,o_path_ptr,t_path_ptr,m_geom);
                 delete m_geom;
             } else {
