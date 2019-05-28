@@ -2,9 +2,9 @@
  * Content
  * Definition of a TransitionGraph, which is a wrapper of trajectory
  * candidates, raw trajectory and UBODT.
- * This class is designed for optimal path inference where 
+ * This class is designed for optimal path inference where
  * Viterbi algorithm is implemented.
- *      
+ *
  * @author: Can Yang
  * @version: 2017.11.11
  */
@@ -24,12 +24,12 @@ public:
     // static constexpr float DISTANCE_NOT_FOUND= 5000; // This is the value returned as the SP distance if it is not found in UBODT
     /**
      *  Constructor of a TransitionGraph
-     *  @param traj_candidates: a variational 2D vector 
+     *  @param traj_candidates: a variational 2D vector
      *  of candidates
      *  @param traj: a pointer to raw trajectory
      *  @param ubodt: a pointer to UBODT table
      */
-    TransitionGraph(Traj_Candidates *traj_candidates,OGRLineString *traj,UBODT *ubodt, double delta = 5000):
+    TransitionGraph(Traj_Candidates *traj_candidates,LineString *traj,UBODT *ubodt, double delta = 5000):
         m_traj_candidates(traj_candidates),
         m_traj(traj),
         m_ubodt(ubodt),
@@ -37,12 +37,12 @@ public:
         DISTANCE_NOT_FOUND(delta)
     {};
     /**
-     * Viterbi algorithm, infer an optimal path in the transition 
+     * Viterbi algorithm, infer an optimal path in the transition
      * graph
-     * 
-     * @param  pf, penalty factor 
-     * @return  O_Path, a optimal path containing candidates 
-     * matched for each point in a trajectory. In case that no 
+     *
+     * @param  pf, penalty factor
+     * @return  O_Path, a optimal path containing candidates
+     * matched for each point in a trajectory. In case that no
      * path is found, nullptr is returned.
      */
     O_Path *viterbi(double pf=0)
@@ -142,8 +142,8 @@ public:
     };
     /**
      * Get the shortest path (SP) distance from Candidate ca to cb
-     * @param  ca 
-     * @param  cb 
+     * @param  ca
+     * @param  cb
      * @return  the SP from ca to cb
      */
     double get_sp_dist(Point_Candidates::iterator& ca,Point_Candidates::iterator& cb)
@@ -210,7 +210,7 @@ public:
     /**
      *  Calculate the Euclidean distances of all segments in a linestring
      */
-    static std::vector<double> cal_eu_dist(OGRLineString *trajectory)
+    static std::vector<double> cal_eu_dist(LineString *trajectory)
     {
         OPI_DEBUG(2) std::cout<<"Calculating lengths of segments"<<'\n';
         int N = trajectory->getNumPoints();
@@ -231,8 +231,8 @@ public:
     };
 private:
     Traj_Candidates *m_traj_candidates; // a pointer trajectory candidates
-    OGRLineString *m_traj; // a pointer to GPS trajectory 
-    UBODT *m_ubodt; // UBODT 
+    LineString *m_traj; // a pointer to GPS trajectory
+    UBODT *m_ubodt; // UBODT
     std::vector<double> eu_distances; // Euclidean distances of segments in the trajectory
     float DISTANCE_NOT_FOUND; // This is the value returned as the SP distance if it is not found in UBODT
 };

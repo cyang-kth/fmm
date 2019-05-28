@@ -90,7 +90,7 @@ void print_traj_candidates_count(Traj_Candidates &tr_cs) {
 /**
  * Print the OGRLineString in WKT format
  */
-void print_geometry(OGRLineString *geom){
+void print_geometry(LineString *geom){
     if (geom==nullptr) {
         std::cout<<"Geometry in WKT: NULL"<<'\n';
         return;

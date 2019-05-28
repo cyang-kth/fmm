@@ -86,20 +86,18 @@ void closest_point_on_segment(double x,double y,double x1,double y1,double x2,do
  * Given a point and a polyline, return the projected distance (p to p')
  * and offset distance (the distance along the polyline from its start
  * to the projected point p') in the passed variables
- * @param point         input point
+ * @param x,y         Coordinates of the point to be queried
  * @param linestring    input linestring
  * @param result_dist   output projected distance
  * @param result_offset output offset distance from the start of the
  * polyline
  */
-void linear_referencing(OGRPoint *point,LineString *linestring,double *result_dist,float *result_offset)
+void linear_referencing(double px, double py, LineString *linestring,double *result_dist,float *result_offset)
 {
     int Npoints = linestring->getNumPoints();
     double min_dist=DBL_MAX;
     double final_offset=DBL_MAX;
     double length_parsed=0;
-    double x = point->getX();
-    double y = point->getY();
     int i=0;
     // Iterating to check p(i) == p(i+2)
     // int seg_idx=0;
@@ -112,7 +110,7 @@ void linear_referencing(OGRPoint *point,LineString *linestring,double *result_di
         double temp_min_dist;
         double temp_min_offset;
         CS_DEBUG(3) std::cout<<"\nProcess segment "<<i<<'\n';
-        closest_point_on_segment(x,y,x1,y1,x2,y2,&temp_min_dist,&temp_min_offset);
+        closest_point_on_segment(px,py,x1,y1,x2,y2,&temp_min_dist,&temp_min_offset);
         if (temp_min_dist<min_dist)
         {
             min_dist=temp_min_dist;

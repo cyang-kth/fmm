@@ -14,6 +14,10 @@ test/
 .kdev4/
 *.kdev4
 
+# log file
+*.log
+
+
 # Prerequisites
 *.d
 

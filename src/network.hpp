@@ -149,7 +149,7 @@ public:
             e->geom = ogr2bg((OGRLineString*) rawgeometry);
 #else
             e->geom = (OGRLineString*) rawgeometry->clone();
-#endif             
+#endif
             e->length = e->geom->get_Length();
             if (e->source>max_node_id)
             {
@@ -183,11 +183,11 @@ public:
             delete item.geom;
 #else
             OGRGeometryFactory::destroyGeometry(item.geom);
-#endif               
+#endif
         }
         std::cout<< "Cleaning network finished" << '\n';
     }
-    
+
     // Get the edge vector
     std::vector<Edge> *get_edges()
     {
@@ -237,15 +237,15 @@ public:
      */
     Traj_Candidates search_tr_cs_knn(Trajectory &trajectory,std::size_t k,double radius)
     {
-        OGRLineString *geom = trajectory.geom;
+        LineString *geom = trajectory.geom;
         int NumberPoints = geom->getNumPoints();
         Traj_Candidates tr_cs(NumberPoints);
         for (int i=0; i<NumberPoints; ++i)
         {
             CS_DEBUG(2) std::cout<<"Search candidates for point index "<<i<< '\n';
             // Construct a bounding boost_box
-            OGRPoint point;
-            geom->getPoint(i,&point);
+            double px = geom->getX(i);
+            double py = geom->getY(i);
             Point_Candidates pcs;
             boost_box b(boost_point(geom->getX(i)-radius,geom->getY(i)-radius),boost_point(geom->getX(i)+radius,geom->getY(i)+radius));
             std::vector<Item> temp;
@@ -258,7 +258,7 @@ public:
                 Edge *edge = i.second;
                 float offset;
                 double dist;
-                ALGORITHM::linear_referencing(&point,edge->geom,&dist,&offset);
+                ALGORITHM::linear_referencing(px,py,edge->geom,&dist,&offset);
                 CS_DEBUG(2) std::cout<<"Edge id: "<<edge->id<< '\n';
                 CS_DEBUG(2) std::cout<<"Dist: "<<dist<< '\n';
                 CS_DEBUG(2) std::cout<<"Offset: "<<offset<< '\n';
@@ -290,90 +290,6 @@ public:
         }
         CS_DEBUG(1) UTIL::print_traj_candidates_summary(tr_cs);
         CS_DEBUG(2) UTIL::print_traj_candidates(tr_cs);
-        return tr_cs;
-    };
-
-    /* Only Rtree intersection, for test */
-    Traj_Candidates search_tr_cs_ri(Trajectory &trajectory,std::size_t k,double radius)
-    {
-        OGRLineString *geom = trajectory.geom;
-        int NumberPoints = geom->getNumPoints();
-        Traj_Candidates tr_cs(NumberPoints);
-        for (int i=0; i<NumberPoints; ++i)
-        {
-            CS_DEBUG(2) std::cout<<"Search candidates for point index "<<i<< '\n';
-            // Construct a bounding boost_box
-            OGRPoint point;
-            geom->getPoint(i,&point);
-            Point_Candidates pcs;
-            boost_box b(boost_point(geom->getX(i)-radius,geom->getY(i)-radius),boost_point(geom->getX(i)+radius,geom->getY(i)+radius));
-            std::vector<Item> temp;
-            // Rtree can only detect intersect with a the bounding box of the geometry stored.
-            rtree.query(boost::geometry::index::intersects(b),std::back_inserter(temp));
-            for (Item &i:temp)
-            {
-                Edge *edge = i.second;
-                Candidate c = {0,0,Network::emission_prob(0),edge,NULL,0};
-                pcs.push_back(c);
-            }
-            if (pcs.empty())
-            {
-                return Traj_Candidates();
-            };
-            if (pcs.size()<=k)
-            {
-                tr_cs[i]=pcs;
-            }
-            else
-            {
-                // Find the KNN neighbors
-                tr_cs[i]=Point_Candidates(k);
-            }
-        }
-        return tr_cs;
-    };
-    /**
-     *  Only for test of Rtree search
-     */
-    Traj_Candidates search_tr_cs_ri_cc(Trajectory &trajectory,int k,double radius)
-    {
-        OGRLineString *geom = trajectory.geom;
-        int NumberPoints = geom->getNumPoints();
-        Traj_Candidates tr_cs(NumberPoints);
-        for (int i=0; i<NumberPoints; ++i)
-        {
-            CS_DEBUG(2) std::cout<<"Search candidates for point index "<<i<< '\n';
-            // Construct a bounding boost_box
-            OGRPoint point;
-            geom->getPoint(i,&point);
-            Point_Candidates pcs;
-            boost_box b(boost_point(geom->getX(i)-radius,geom->getY(i)-radius),boost_point(geom->getX(i)+radius,geom->getY(i)+radius));
-            std::vector<Item> temp;
-            // Rtree can only detect intersect with a the bounding box of the geometry stored.
-            rtree.query(boost::geometry::index::intersects(b),std::back_inserter(temp));
-            for (Item &i:temp)
-            {
-                // Check for detailed intersection
-                // The two edges are all in OGR_linestring
-                Edge *edge = i.second;
-                float offset;
-                double dist;
-                ALGORITHM::linear_referencing(&point,edge->geom,&dist,&offset);
-                CS_DEBUG(2) std::cout<<"Edge id: "<<edge->id<< '\n';
-                CS_DEBUG(2) std::cout<<"Dist: "<<dist<< '\n';
-                CS_DEBUG(2) std::cout<<"Offset: "<<offset<< '\n';
-                if (dist<=radius)
-                {
-                    Candidate c = {offset,dist,Network::emission_prob(dist),edge,NULL,0};
-                    pcs.push_back(c);
-                }
-            }
-            if (pcs.empty())
-            {
-                return Traj_Candidates();
-            };
-            tr_cs[i]=pcs;
-        }
         return tr_cs;
     };
 
@@ -439,7 +355,7 @@ public:
             {
                 for(int i=1;i<NCsegs-1;++i)
                 {
-                    OGRLineString * middleseg = network_edges[(*complete_path)[i]].geom;
+                    LineString * middleseg = network_edges[(*complete_path)[i]].geom;
                     append_segs_to_line(line,middleseg,1);
                 }
             };

@@ -13,11 +13,11 @@
 #endif
 
 namespace MM {
-    
+
 #ifdef USE_BG_GEOMETRY
 
 namespace bg = boost::geometry;
-typedef bg::model::point<double, 2, bg::cs::cartesian> point_t;
+typedef bg::model::point<double, 2, bg::cs::cartesian> bg_point_t;
 typedef bg::model::linestring<bg_point_t> linestring_t;
 /**
  *  Boost Geometry Linestring, compatible with OGRGeometry
@@ -31,16 +31,22 @@ inline double getY(int i){
     return bg::get<1>(line.at(i));
 };
 inline void addPoint(double x,double y){
-    bg::append(line, point_t(x,y));
+    bg::append(line, bg_point_t(x,y));
 };
-int getNumPoints(){
+inline int getNumPoints(){
     return bg::num_points(line);
 };
-std::string exportToWkt(){
-    return bg::wkt(*line);
+inline bool IsEmpty(){
+    return bg::num_points(line)==0;
+};
+bg::wkt_manipulator<linestring_t> exportToWkt(){
+    return bg::wkt(line);
 };
 linestring_t *get_geometry(){
     return &line;
+};
+inline double get_Length(){
+    return bg::length(line);
 };
 private:
 linestring_t line;
@@ -49,9 +55,9 @@ linestring_t line;
 typedef BGLineString LineString;
 
 /**
- *  Convert an OGRLineString to Boost geometry, the caller is responsible to 
- *  freeing the memory. 
- * 
+ *  Convert an OGRLineString to Boost geometry, the caller is responsible to
+ *  freeing the memory.
+ *
  */
 BGLineString *ogr2bg(OGRLineString *line){
     int binary_size = line->WkbSize();

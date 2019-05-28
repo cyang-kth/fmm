@@ -32,15 +32,15 @@ namespace detail{
             std::fill(array_holder.get(), array_holder.get() + num_vertices(g), Value());
             return make_iterator_property_map(array_holder.get(), index);
         }
-    };    
+    };
 }*/
 
 // template <class Graph, class IndexMap, class Value>
 // static boost::iterator_property_map<Value*, IndexMap> build(const Graph& g, const IndexMap& index, boost::array<Value>& array_holder){
 //     array_holder.reset(new Value[num_vertices(g)]);
 //     std::fill(array_holder.get(), array_holder.get() + num_vertices(g), Value());
-//     // Vertex index to fetch the pointer address at array holder. 
-//     // It maps the indexmap (or index vector) to the values stored in the iteratior, which is the array holder. 
+//     // Vertex index to fetch the pointer address at array holder.
+//     // It maps the indexmap (or index vector) to the values stored in the iteratior, which is the array holder.
 //     return make_iterator_property_map(array_holder.get(), index);
 // };
 
@@ -99,14 +99,14 @@ void dijkstra_shortest_paths_upperbound
     VertexQueue;
     // 80%
     // boost::scoped_array<std::size_t> index_in_heap_map_holder;
-    // // IndexInHeapMap is actually a boost::iterator_property_map<Value*, IndexMap> 
+    // // IndexInHeapMap is actually a boost::iterator_property_map<Value*, IndexMap>
     // IndexInHeapMap index_in_heap =
     //     IndexInHeapMapHelper::build(graph, index_map,
     //                                 index_in_heap_map_holder);
     // typedef boost::array<std::size_t, std::size_t num_vertices(g)> array;
     // *dheap_on_stack = new boost::array(std::size_t,num_vertices(g));
     std::size_t * dheap_on_stack = new std::size_t[num_vertices(graph)];
-    boost::iterator_property_map<std::size_t *,VertexIndexMap> index_in_heap_map = 
+    boost::iterator_property_map<std::size_t *,VertexIndexMap> index_in_heap_map =
         make_iterator_property_map(dheap_on_stack, index_map);
 
     // The first two arguments in the template of VertexQueue are already defined
