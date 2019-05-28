@@ -1,0 +1,65 @@
+# swig gitignore based on https://github.com/swig/swig/blob/master/.gitignore
+
+# Compiled Source
+*.o
+*.class
+
+# Editor files and various other junk
+.*.sw?
+*.bak
+*.log
+.DS_Store
+
+# Local PCRE
+pcre
+*.gz
+
+# C/C++ object files, based on:
+#   https://github.com/github/gitignore/blob/master/C.gitignore
+#   https://github.com/github/gitignore/blob/master/C%2B%2B.gitignore
+*.slo
+*.lo
+*.gch
+
+# C/C++ dynamic libraries, based on:
+#   https://github.com/github/gitignore/blob/master/C.gitignore
+#   https://github.com/github/gitignore/blob/master/C%2B%2B.gitignore
+*.dll
+*.so
+*.so.*
+*.dylib
+*.bundle
+
+# C/C++ static libraries, based on:
+#   https://github.com/github/gitignore/blob/master/C.gitignore
+#   https://github.com/github/gitignore/blob/master/C%2B%2B.gitignore
+*.lib
+*.lai
+*.la
+*.a
+
+# C/C++ executables, based on:
+#   https://github.com/github/gitignore/blob/master/C.gitignore
+#   https://github.com/github/gitignore/blob/master/C%2B%2B.gitignore
+*.exe
+*.out
+*.app
+
+# SWIG common generated files
+*_wrap.c
+*_wrap.cpp
+*_wrap.cxx
+*_wrap.h
+*-gypcopy.cxx
+
+*.pyc
+
+# Out of source tree build directories
+*build*/
+lib/
+extensions/
+
+
+# Jupyternotebook
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*

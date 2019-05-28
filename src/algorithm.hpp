@@ -1,8 +1,8 @@
 /**
  * Content
- * Functions for linear referencing whch finds the closest point on a 
+ * Functions for linear referencing whch finds the closest point on a
  * a polyline given an input point.
- *      
+ *
  * @author: Can Yang
  * @version: 2017.11.11
  */
@@ -10,22 +10,27 @@
 #ifndef MM_ALGORITHM_HPP
 #define MM_ALGORITHM_HPP
 #include <cmath>
-#include "gdal/ogrsf_frmts.h" // C++ API for GDAL
+#include "types.hpp"
+#include "multilevel_debug.h"
+#include "util.hpp"
 namespace MM
 {
 namespace ALGORITHM {
 
 /**
- * Compute the boundary of an OGRLineString and returns the result in 
+ * Compute the boundary of an LineString and returns the result in 
  * the passed x1,y1,x2,y2 variables.
- * 
- * @param linestring: input, which is a pointer to a 
+ *
+ * @param linestring: input, which is a pointer to a
  * linestring object
- * @param x1,y1,x2,y2: the coordinates of the boundary 
+ * @param x1,y1,x2,y2: the coordinates of the boundary
  */
-void boundingbox_geometry(OGRLineString *linestring,double *x1,double *y1,double *x2,double *y2)
+void boundingbox_geometry(LineString *linestring,double *x1,double *y1,double *x2,double *y2)
 {
+    CS_DEBUG(3) std::cout<<"EXECUTE "<<__LINE__<<'\n';
+    CS_DEBUG(3) MM::UTIL::print_geometry(linestring);
     int Npoints = linestring->getNumPoints();
+    CS_DEBUG(3) std::cout<<"Number points "<<Npoints <<'\n';
     *x1 = DBL_MAX;
     *y1 = DBL_MAX;
     *x2 = DBL_MIN;
@@ -44,9 +49,9 @@ void boundingbox_geometry(OGRLineString *linestring,double *x1,double *y1,double
 
 /**
  * Project a point p=(x,y) to a directed segment of (x1,y1)->(x2,y2)
- * Let p' denote the projected point, the following 
+ * Let p' denote the projected point, the following
  * information is stored in the passed variables
- * 
+ *
  * @param dist   the distance from p to p'
  * @param offset the distance from the start of the segement (x1,y1)
  *  to p'
@@ -81,20 +86,18 @@ void closest_point_on_segment(double x,double y,double x1,double y1,double x2,do
  * Given a point and a polyline, return the projected distance (p to p')
  * and offset distance (the distance along the polyline from its start
  * to the projected point p') in the passed variables
- * @param point         input point
- * @param linestring    input linestring 
- * @param result_dist   output projected distance 
- * @param result_offset output offset distance from the start of the 
+ * @param x,y         Coordinates of the point to be queried
+ * @param linestring    input linestring
+ * @param result_dist   output projected distance
+ * @param result_offset output offset distance from the start of the
  * polyline
  */
-void linear_referencing(OGRPoint *point,OGRLineString *linestring,double *result_dist,float *result_offset)
+void linear_referencing(double px, double py, LineString *linestring,double *result_dist,float *result_offset)
 {
     int Npoints = linestring->getNumPoints();
     double min_dist=DBL_MAX;
     double final_offset=DBL_MAX;
     double length_parsed=0;
-    double x = point->getX();
-    double y = point->getY();
     int i=0;
     // Iterating to check p(i) == p(i+2)
     // int seg_idx=0;
@@ -107,7 +110,7 @@ void linear_referencing(OGRPoint *point,OGRLineString *linestring,double *result
         double temp_min_dist;
         double temp_min_offset;
         CS_DEBUG(3) std::cout<<"\nProcess segment "<<i<<'\n';
-        closest_point_on_segment(x,y,x1,y1,x2,y2,&temp_min_dist,&temp_min_offset);
+        closest_point_on_segment(px,py,x1,y1,x2,y2,&temp_min_dist,&temp_min_offset);
         if (temp_min_dist<min_dist)
         {
             min_dist=temp_min_dist;
@@ -123,17 +126,17 @@ void linear_referencing(OGRPoint *point,OGRLineString *linestring,double *result
 
 /**
  * added by Diao 18.01.17
- * modified by Can 18.01.19 
+ * modified by Can 18.01.19
  * @param   offset        input offset(from start node)
- * @param   linestring    input linestring 
+ * @param   linestring    input linestring
  * @param   mode          input mode, 0 represent cutoff from start node, 1 from endnode
  * @return  cutoffline    output cutoff linstring, the caller should take care of freeing the memory
  */
-OGRLineString * cutoffseg_unique(double offset1, double offset2, OGRLineString * linestring)
+LineString * cutoffseg_unique(double offset1, double offset2, LineString * linestring)
 {
-    OGRLineString* cutoffline = new OGRLineString();
+    LineString* cutoffline = new LineString();
     int Npoints = linestring->getNumPoints();
-    // Geometry construction debug 
+    // Geometry construction debug
     GC_DEBUG(2) std::cout<< "offset_1: "<<offset1 <<'\n';
     GC_DEBUG(2) std::cout<< "offset_2: "<<offset2 <<'\n';
     GC_DEBUG(2) std::cout<< "matching edge point Num: "<<Npoints <<'\n';
@@ -143,7 +146,7 @@ OGRLineString * cutoffseg_unique(double offset1, double offset2, OGRLineString *
         double y1 = linestring->getY(0);
         double x2 = linestring->getX(1);
         double y2 = linestring->getY(1);
-        double L = std::sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1)); 
+        double L = std::sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
         double ratio1 = offset1/L;
         double new_x1 = x1+ratio1*(x2-x1);
         double new_y1 = y1+ratio1*(y2-y1);
@@ -155,7 +158,7 @@ OGRLineString * cutoffseg_unique(double offset1, double offset2, OGRLineString *
     }
     else // Multiple segments
     {
-        double L = 0; // current length parsed 
+        double L = 0; // current length parsed
         int i = 0;
         while(i<Npoints-1)
         {
@@ -169,8 +172,8 @@ OGRLineString * cutoffseg_unique(double offset1, double offset2, OGRLineString *
                 double ratio1 = (offset1-L)/deltaL;
                 double new_x1 = x1+ratio1*(x2-x1);
                 double new_y1 = y1+ratio1*(y2-y1);
-                cutoffline->addPoint(new_x1, new_y1);               
-            } 
+                cutoffline->addPoint(new_x1, new_y1);
+            }
             // If offset1 < L < offset2
             if (offset1<L && L< offset2){
                 cutoffline->addPoint(x1,y1);
@@ -181,7 +184,7 @@ OGRLineString * cutoffseg_unique(double offset1, double offset2, OGRLineString *
                 double new_x2 = x1+ratio2*(x2-x1);
                 double new_y2 = y1+ratio2*(y2-y1);
                 cutoffline->addPoint(new_x2, new_y2);
-            }  
+            }
             L = L + deltaL;
             ++i;
         };
@@ -192,17 +195,17 @@ OGRLineString * cutoffseg_unique(double offset1, double offset2, OGRLineString *
 
 /**
  * Locate the point on a linestring according to the input of offset
- * The two pointer's target value will be updated. 
+ * The two pointer's target value will be updated.
  */
-void locate_point_by_offset(OGRLineString * linestring, double offset, double *x, double *y){
+void locate_point_by_offset(LineString * linestring, double offset, double *x, double *y){
     int Npoints = linestring->getNumPoints();
     double L_processed=0; // length parsed
-    int i = 0; 
+    int i = 0;
     double px=0;
     double py=0;
-    // Find the idx of the point to be exported close to p 
+    // Find the idx of the point to be exported close to p
     while(i<Npoints-1)
-    {       
+    {
         double x1 = linestring->getX(i);
         double y1 = linestring->getY(i);
         double x2 = linestring->getX(i+1);
@@ -217,19 +220,19 @@ void locate_point_by_offset(OGRLineString * linestring, double offset, double *x
         if(offset>=L_processed && offset<=L_processed+deltaL)
         {
             // double ratio = (offset-L)/deltaL;
-            // Think 
+            // Think
             px = x1+ratio*(x2-x1);
             py = y1+ratio*(y2-y1);
             // cutoffline->addPoint(new_x, new_y);
             break;
         }
         ++i;
-        L_processed += deltaL; 
+        L_processed += deltaL;
     };
     *x = px;
     *y = py;
 //     if (offset>L_processed) {
-//         // The offset value is slightly bigger than the length because 
+//         // The offset value is slightly bigger than the length because
 //         // of precision
 //         // implies that px and py are still 0
 //         px = linestring->getX(i);
@@ -241,32 +244,32 @@ void locate_point_by_offset(OGRLineString * linestring, double offset, double *x
  * added by Diao 18.01.17
  * modified by Can 18.01.19
  * modified by Can 18.03.14
- * 
+ *
  * @param   offset        input offset(from start node)
- * @param   linestring    input linestring 
+ * @param   linestring    input linestring
  * @param   mode          input mode, 0 represent cutoff from start node, namely export the part p->end , 1 from endnode
  *                        export the part of start-> p
  * @return  cutoffline    output cutoff linstring, the caller should take care of freeing the memory
  */
-OGRLineString * cutoffseg(double offset, OGRLineString * linestring, int mode)
+LineString * cutoffseg(double offset, LineString * linestring, int mode)
 {
-    OGRLineString* cutoffline = new OGRLineString();
+    LineString* cutoffline = new LineString();
     int Npoints = linestring->getNumPoints();
     GC_DEBUG(3) std::cout<< " Npoints " << Npoints <<'\n';
-    if (Npoints==2) 
+    if (Npoints==2)
     {
         double x1 = linestring->getX(0);
         double y1 = linestring->getY(0);
         double x2 = linestring->getX(1);
         double y2 = linestring->getY(1);
-        double deltaL = std::sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));    
+        double deltaL = std::sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
         double ratio = offset/deltaL;
         double new_x = x1+ratio*(x2-x1);
         double new_y = y1+ratio*(y2-y1);
         if (mode==0){
             // export p -> end
             if (1-ratio>0.0001) cutoffline->addPoint(new_x, new_y);
-            cutoffline->addPoint(x2, y2);    
+            cutoffline->addPoint(x2, y2);
         } else {
             // export start -> p
             cutoffline->addPoint(x1, y1);
@@ -274,13 +277,13 @@ OGRLineString * cutoffseg(double offset, OGRLineString * linestring, int mode)
         }
     } else {
         double L_processed=0; // length parsed
-        int i = 0; 
+        int i = 0;
         int p_idx = 0;
         double px=0;
         double py=0;
-        // Find the idx of the point to be exported close to p 
+        // Find the idx of the point to be exported close to p
         while(i<Npoints-1)
-        {       
+        {
             double x1 = linestring->getX(i);
             double y1 = linestring->getY(i);
             double x2 = linestring->getX(i+1);
@@ -295,17 +298,17 @@ OGRLineString * cutoffseg(double offset, OGRLineString * linestring, int mode)
             if(offset>=L_processed && offset<=L_processed+deltaL)
             {
                 // double ratio = (offset-L)/deltaL;
-                // Think 
+                // Think
                 px= x1+ratio*(x2-x1);
                 py = y1+ratio*(y2-y1);
                 // cutoffline->addPoint(new_x, new_y);
                 break;
             }
             ++i;
-            L_processed += deltaL; 
+            L_processed += deltaL;
         };
         if (offset>L_processed) {
-            // The offset value is slightly bigger than the length because 
+            // The offset value is slightly bigger than the length because
             // of precision
             // implies that px and py are still 0
             px = linestring->getX(i);
@@ -318,16 +321,16 @@ OGRLineString * cutoffseg(double offset, OGRLineString * linestring, int mode)
         if (mode==0){ // export p -> end
             cutoffline->addPoint(px,py);
             for(int j=p_idx+1; j<Npoints; ++j)
-            {   
+            {
                 cutoffline->addPoint(linestring->getX(j), linestring->getY(j));
             }
         } else { // export start -> p
             for(int j=0; j<p_idx+1; ++j)
-            {   
+            {
                 cutoffline->addPoint(linestring->getX(j), linestring->getY(j));
             }
             cutoffline->addPoint(px,py);
-        }   
+        }
     }
     return cutoffline;
 };//cutoffseg

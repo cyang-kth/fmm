@@ -8,7 +8,7 @@
 
 #ifndef MM_GPS_HPP
 #define MM_GPS_HPP
-#include "gdal/ogrsf_frmts.h" // C++ API for GDAL
+#include "geometry_type.hpp"
 #include <vector>
 #include <utility>
 namespace MM {
@@ -24,12 +24,16 @@ namespace MM {
 class Trajectory{
 public:
     Trajectory():id(0),geom(NULL){}; // Default constructor for vector of trajectories
-    Trajectory(int e_id,OGRLineString *e_geom):id(e_id),geom(e_geom){};
+    Trajectory(int e_id,LineString *e_geom):id(e_id),geom(e_geom){};
     ~Trajectory(){
+#ifdef USE_BG_GEOMETRY
+        delete geom;
+#else
         if (geom!=NULL) OGRGeometryFactory::destroyGeometry(geom);
+#endif           
     };
     int id; // Trip id
-    OGRLineString *geom; // It will be freed by the destructor of the trajectory
+    LineString *geom; // It will be freed by the destructor of the trajectory
 }; // Trajectory
 } // MM
 #endif /* MM_GPS_HPP */

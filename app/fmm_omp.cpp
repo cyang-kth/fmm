@@ -95,7 +95,7 @@ int main (int argc, char **argv)
                 O_Path *o_path_ptr = tg.viterbi(config.penalty_factor);
                 T_Path *t_path_ptr = ubodt.construct_traversed_path(o_path_ptr);
                 if (result_config.write_mgeom) {
-                    OGRLineString *m_geom = network.complete_path_to_geometry(o_path_ptr,&(t_path_ptr->cpath));
+                    LineString *m_geom = network.complete_path_to_geometry(o_path_ptr,&(t_path_ptr->cpath));
                     rw.write_result(trajectory.id,trajectory.geom,o_path_ptr,t_path_ptr,m_geom);
                     delete m_geom;
                 } else {

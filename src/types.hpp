@@ -8,10 +8,13 @@
 
 #ifndef MM_TYPES_HPP
 #define MM_TYPES_HPP
+
 #include <vector>
 #include <string>
-#include "gdal/ogrsf_frmts.h" // C++ API for GDAL
+#include "geometry_type.hpp"
+
 namespace MM {
+
 struct Edge
 {
     int id; // This is the id, which is continuous distributed 
@@ -19,7 +22,7 @@ struct Edge
     int source; // source node ID
     int target; // target node ID
     double length; // length of the edge polyline
-    OGRLineString *geom; // a pointer to the edge geometry
+    LineString *geom; // a pointer to the edge geometry
 };
 
 double GPS_ERROR = 50;

@@ -1,4 +1,12 @@
+NORMAL_FLAGS = -std=gnu++11 -O3 -Wno-unknown-pragmas
+OMP_FLAGS = -fopenmp
+LIBS = -lgdal -lboost_serialization
+BG_FLAGS = -I./include -DUSE_BG_GEOMETRY
+
 build: build_fmm build_ubodt_gen build_fmm_omp build_ubodt_gen_omp
+build_bg_geometry:open_bg_flag build
+open_bg_flag:
+	$(eval NORMAL_FLAGS += $(BG_FLAGS))
 install:
 	@echo ----- Copy executables to home/bin -----
 	cp dist/fmm $(HOME)/bin
@@ -11,20 +19,20 @@ initial:
 	mkdir -p $(HOME)/bin
 build_fmm:initial
 	@echo ----- Start to build fmm -----
-	g++ -Wall -Wno-unknown-pragmas -std=gnu++11  -O3 app/fmm.cpp -o dist/fmm -lgdal -lboost_serialization
+	g++ $(NORMAL_FLAGS) app/fmm.cpp -o dist/fmm $(LIBS)
 	@echo ----- fmm build success -----
 build_fmm_omp:initial
 	@echo ----- Start to build fmm_omp -----
-	g++ -std=gnu++11 -fopenmp -O3 app/fmm_omp.cpp -o dist/fmm_omp -lgdal -lboost_serialization
+	g++ $(NORMAL_FLAGS) $(OMP_FLAGS) app/fmm_omp.cpp -o dist/fmm_omp  $(LIBS)
 	@echo ----- fmm_omp build success -----
 build_ubodt_gen:initial
 	@echo ----- Start to build ubodt_gen -----
-	g++ -std=gnu++11  -O3 app/ubodt_gen.cpp -o dist/ubodt_gen -lgdal -lboost_serialization
+	g++ $(NORMAL_FLAGS) app/ubodt_gen.cpp -o dist/ubodt_gen $(LIBS)
 	@echo ----- ubodt_gen build success -----
 build_ubodt_gen_omp:initial
 	@echo ----- Start to build ubodt_gen_omp -----
-	g++ -std=gnu++11 -fopenmp -O3 app/ubodt_gen_omp.cpp -o dist/ubodt_gen_omp -lgdal -lboost_serialization
-	@echo ----- ubodt_gen_omp build success ----- 
+	g++  $(NORMAL_FLAGS) $(OMP_FLAGS) app/ubodt_gen_omp.cpp -o dist/ubodt_gen_omp $(LIBS)
+	@echo ----- ubodt_gen_omp build success -----
 build_install_fmm_debug:initial
 	@echo ----- Start to build fmm_debug -----
 	g++ -std=gnu++11 -DCPC_DEBUG_LEVEL='1' -DDEBUG_LEVEL='2' -O3 app/fmm.cpp -o dist/fmm_debug -lgdal -lboost_serialization
