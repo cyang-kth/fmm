@@ -1,30 +1,19 @@
 ### Python interface for fmm designed with SWIG
 
-#### Build a python example
+To install the python extension, run
 
 ```
-# swig -python example.i
-swig -python example.i
-gcc -fpic -c example.c example_wrap.c -I/usr/include/python2.7
-gcc -shared example.o example_wrap.o -o _example.so
+    cd python
+    make
 ```
 
-#### Verify the result
+Add the `dist` folder to the environment variable `PYTHONPATH`:
 
 ```
-python -c "import example;print example.fact(5)"
-python -c "import mygdal;mygdal.test()"
+    echo 'export PYTHONPATH=${PYTHONPATH}:PATH_TO_DIST_FOLDER"' >> ~/.bashrc
+    source ~/.bashrc
 ```
 
-#### Debug
-
-```
-valgrind --log-file="debug.log" python demo.py
-```
-
-To figure out the reason, we need to read this links
-- https://github.com/OSGeo/gdal/blob/master/gdal/swig/include/python/ogr_python.i
-- https://github.com/OSGeo/gdal/blob/master/gdal/swig/python/GNUmakefile
 
 
 #### Swig installation
