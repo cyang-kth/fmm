@@ -105,7 +105,7 @@ public:
         m_fstream << buf.rdbuf();
     };
 
-    static std::string mkString(Network *network_ptr,O_Path *o_path_ptr, T_Path *t_path_ptr, OGRLineString *mgeom, bool return_details = false){
+    static std::string mkString(Network *network_ptr,O_Path *o_path_ptr, T_Path *t_path_ptr, LineString *mgeom, bool return_details = false){
         std::stringstream buf;
         if (return_details){
             write_o_path(buf,o_path_ptr);
@@ -125,10 +125,7 @@ public:
             buf << ";";
         }
         if (mgeom != nullptr) {
-            char *wkt;
-            mgeom->exportToWkt(&wkt);
-            buf << wkt;
-            CPLFree(wkt);
+            write_geometry(buf,mgeom);
         }
         return buf.str();
     };

@@ -127,7 +127,7 @@ private:
         MM::O_Path *o_path_ptr = tg.viterbi();
         // Complete path construction as an array of indices of edges vector
         MM::T_Path *t_path_ptr = ubodt->construct_traversed_path(o_path_ptr);
-        OGRLineString *m_geom = network->complete_path_to_geometry(o_path_ptr,&(t_path_ptr->cpath));
+        MM::LineString *m_geom = network->complete_path_to_geometry(o_path_ptr,&(t_path_ptr->cpath));
         std::string result = MM::IO::ResultWriter::mkString(
             network,o_path_ptr,t_path_ptr,m_geom
         );
