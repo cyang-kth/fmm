@@ -11,6 +11,7 @@
 
 #include <vector>
 #include <string>
+#include "geometry_type.hpp"
 
 namespace MM {
 
@@ -21,7 +22,7 @@ struct Edge
     int source; // source node ID
     int target; // target node ID
     double length; // length of the edge polyline
-    OGRLineString *geom; // a pointer to the edge geometry
+    LineString *geom; // a pointer to the edge geometry
 };
 
 double GPS_ERROR = 50;

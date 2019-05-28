@@ -27,6 +27,6 @@ int main()
     std::cout << boost::geometry::wkt(ls1) << std::endl;
     double l = bg::length(ls1);
     std::cout << l << std::endl;
-
+    
     return 0;
 }

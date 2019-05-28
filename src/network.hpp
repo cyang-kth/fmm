@@ -135,16 +135,27 @@ public:
         while( (ogrFeature = ogrlayer->GetNextFeature()) != NULL)
         {
             int id = ogrFeature->GetFID();
+            CS_DEBUG(3) std::cout<<"ID "<< id <<"\n";
             Edge *e = &network_edges[id];
             e->id = id;
             e->id_attr = std::string(ogrFeature->GetFieldAsString(id_idx));
             e->source = ogrFeature->GetFieldAsInteger(source_idx);
             e->target = ogrFeature->GetFieldAsInteger(target_idx);
             OGRGeometry *rawgeometry = ogrFeature->GetGeometryRef();
+//             CS_DEBUG(3) std::cout<<"Line "<< __LINE__<<" ID "<< e->id <<" Length "<<((OGRLineString*) rawgeometry)->get_Length()<<"\n";
+//             CS_DEBUG(3) std::cout<<"Line "<< __LINE__<<" ID "<< e->id <<" Points "<<((OGRLineString*) rawgeometry)->getNumPoints()<<"\n";
+            // The cloned geometry has to be freed by OGRGeometryFactory
+            // https://github.com/OSGeo/gdal/blob/93fb17379bccba28a43a03bb2c19b868f264ebe1/gdal/ogr/ogrlinestring.cpp#L141
+#ifdef USE_BG_GEOMETRY
+            
+            e->geom = 
+#else
             e->geom = (OGRLineString*) rawgeometry->clone();
+#endif             
+            CS_DEBUG(3) std::cout<<"Line "<< __LINE__<<" ID "<< e->id <<" Points "<<e->geom->getNumPoints()<<"\n";
             e->length = e->geom->get_Length();
-            DEBUG(2) std::cout<<"Id "<<id<<" ";
-            DEBUG(2) UTIL::print_geometry(network_edges[id].geom);
+            CS_DEBUG(3) std::cout<<"Line "<< __LINE__<<" ID "<< e->id <<" Points "<<e->geom->getNumPoints()<<"\n";
+            
             if (e->source>max_node_id)
             {
                 max_node_id = e->source;
@@ -153,13 +164,19 @@ public:
             {
                 max_node_id = e->target;
             }
+            // CS_DEBUG(3) std::cout<<"ID "<< e->id <<" Length "<<e->geom->get_Length()<<"\n";
+            // https://github.com/OSGeo/gdal/blob/d5f6bb89b0e0db0a06489419050d432e8f58ff47/gdal/ogr/ogrsf_frmts/ntf/ogrntflayer.cpp#L88
             OGRFeature::DestroyFeature(ogrFeature);
+            CS_DEBUG(3) std::cout<<"ID "<< e->id <<" Length "<<e->geom->get_Length()<<"\n";
+            // CS_DEBUG(3) std::cout<<"Line "<< __LINE__<< " Length "<<network_edges[0].geom->get_Length()<<"\n";
         }
+        CS_DEBUG(3) std::cout<<"Line "<< __LINE__<< " id "<<network_edges[0].id<<"\n";
 #if GDAL_VERSION_MAJOR < 2
         OGRDataSource::DestroyDataSource( poDS );
 #else
         GDALClose( poDS );
 #endif // GDAL_VERSION_MAJOR
+        CS_DEBUG(3) std::cout<<"Line "<< __LINE__<< " Length "<<network_edges[0].geom->get_Length()<<"\n";
         std::cout<<"Read network finish."<< '\n';
         std::cout<<"\tThe maximum node ID is "<< max_node_id << '\n';
         std::cout<<"\tTotal number of edges read "<< network_edges.size()<< '\n';
@@ -173,6 +190,7 @@ public:
         }
         std::cout<< "Cleaning network finished" << '\n';
     }
+    
     // Get the edge vector
     std::vector<Edge> *get_edges()
     {
@@ -197,6 +215,7 @@ public:
         {
             // create a boost_box
             Edge *edge = &network_edges[i];
+            CS_DEBUG(3) std::cout<<"Number of points is "<<edge->geom->getNumPoints()<<"\n";
             // boundary is returned is a multipoint geometry, but not the envelop
             // instead, it is only the first and last point
             double x1,y1,x2,y2;

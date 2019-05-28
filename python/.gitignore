@@ -58,3 +58,8 @@ pcre
 *build*/
 lib/
 extensions/
+
+
+# Jupyternotebook
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
