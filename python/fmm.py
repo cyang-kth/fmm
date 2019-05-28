@@ -120,6 +120,9 @@ class MapMatcher(object):
 
     def __init__(self, config_file):
         _fmm.MapMatcher_swiginit(self, _fmm.new_MapMatcher(config_file))
+
+    def match_geometry(self, wkt):
+        return _fmm.MapMatcher_match_geometry(self, wkt)
     __swig_destroy__ = _fmm.delete_MapMatcher
 
 # Register MapMatcher in _fmm:

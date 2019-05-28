@@ -235,9 +235,16 @@ public:
      *  the candidates selected for each point in a trajectory
      *
      */
-    Traj_Candidates search_tr_cs_knn(Trajectory &trajectory,std::size_t k,double radius)
+    Traj_Candidates search_tr_cs_knn(Trajectory &trajectory,std::size_t k,double radius){
+        return search_tr_cs_knn(trajectory.geom,k,radius);
+    }
+    
+    /**
+     *  Search for k nearest neighboring (KNN) candidates of a
+     *  linestring within a search radius
+     */
+    Traj_Candidates search_tr_cs_knn(LineString *geom,std::size_t k,double radius)
     {
-        LineString *geom = trajectory.geom;
         int NumberPoints = geom->getNumPoints();
         Traj_Candidates tr_cs(NumberPoints);
         for (int i=0; i<NumberPoints; ++i)

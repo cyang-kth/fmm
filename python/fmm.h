@@ -8,11 +8,15 @@
 
 #ifndef MM_MAPMATCHER_HPP
 #define MM_MAPMATCHER_HPP
+
+#include "../src/geometry_type.hpp"
 #include "../src/network.hpp"
 #include "../src/ubodt.hpp"
 #include "../src/transition_graph.hpp"
 #include "../src/config.hpp"
 #include "../src/writer.hpp"
+
+namespace MM{
 
 class MapMatcherConfig{
 public:
@@ -68,6 +72,7 @@ public:
         std::cout << "radius: " << radius << '\n';
         std::cout << "gps_error: " << gps_error << '\n';
         std::cout << "------------------------------------------" << '\n';
+
     };
     std::string network_file;
     std::string network_id;
@@ -94,6 +99,7 @@ public:
 class MapMatcher {
 public:
     MapMatcher(const std::string &config_file):config(MapMatcherConfig(config_file)){
+        std::cout << "Loading model from file" << config_file <<'\n';
         network = new MM::Network(config.network_file,config.network_id,
                                   config.network_source,config.network_target);
         network->build_rtree_index();
@@ -109,6 +115,28 @@ public:
             config.delta = ubodt->get_delta();
             std::cout<<"    Delta inferred from ubodt as "<< config.delta <<'\n';
         }
+        std::cout << "Loading model finished" << '\n';
+    };
+    std::string match_geometry(const std::string &wkt){
+        std::cout << "Perform map matching" << '\n';
+        LineString line;
+        bg::read_wkt(wkt,*(line.get_geometry()));
+        int points_in_tr = line.getNumPoints();
+        // Candidate search
+        MM::Traj_Candidates traj_candidates = network->search_tr_cs_knn(&line,config.k,config.radius);
+        MM::TransitionGraph tg = MM::TransitionGraph(&traj_candidates,&line,ubodt,config.delta);
+        // Optimal path inference
+        MM::O_Path *o_path_ptr = tg.viterbi();
+        // Complete path construction as an array of indices of edges vector
+        MM::T_Path *t_path_ptr = ubodt->construct_traversed_path(o_path_ptr);
+        MM::LineString *m_geom = network->complete_path_to_geometry(o_path_ptr,&(t_path_ptr->cpath));
+        std::string result = MM::IO::ResultWriter::mkString(
+            network,o_path_ptr,t_path_ptr,m_geom
+        );
+        delete o_path_ptr;
+        delete t_path_ptr;
+        std::cout << "Perform map matching success" << '\n';
+        return result;
     };
     ~MapMatcher(){
         delete network;
@@ -136,4 +164,6 @@ private:
         return result;
     };
 };
+
+} // MM
 #endif
