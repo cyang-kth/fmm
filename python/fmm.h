@@ -96,6 +96,16 @@ public:
     double radius;
 };
 
+/**
+ *  MatchResult class is used for communicating with Python
+ */
+struct MatchResult{
+    std::vector<int> opath; // optimal path
+    std::vector<int> cpath;
+    std::string mgeom;
+    std::string pgeom;
+};
+
 class MapMatcher {
 public:
     MapMatcher(const std::string &config_file):config(MapMatcherConfig(config_file)){
@@ -117,7 +127,7 @@ public:
         }
         std::cout << "Loading model finished" << '\n';
     };
-    std::string match_geometry(const std::string &wkt){
+    MatchResult match_wkt(const std::string &wkt){
         std::cout << "Perform map matching" << '\n';
         LineString line;
         bg::read_wkt(wkt,*(line.get_geometry()));
@@ -130,39 +140,70 @@ public:
         // Complete path construction as an array of indices of edges vector
         MM::T_Path *t_path_ptr = ubodt->construct_traversed_path(o_path_ptr);
         MM::LineString *m_geom = network->complete_path_to_geometry(o_path_ptr,&(t_path_ptr->cpath));
-        std::string result = MM::IO::ResultWriter::mkString(
-            network,o_path_ptr,t_path_ptr,m_geom
-        );
+        MatchResult result = generate_result(network,o_path_ptr,t_path_ptr,m_geom);
         delete o_path_ptr;
         delete t_path_ptr;
         std::cout << "Perform map matching success" << '\n';
         return result;
     };
+    // std::string match_geometry(const std::string &wkt){
+    //     std::cout << "Perform map matching" << '\n';
+    //     LineString line;
+    //     bg::read_wkt(wkt,*(line.get_geometry()));
+    //     int points_in_tr = line.getNumPoints();
+    //     // Candidate search
+    //     MM::Traj_Candidates traj_candidates = network->search_tr_cs_knn(&line,config.k,config.radius);
+    //     MM::TransitionGraph tg = MM::TransitionGraph(&traj_candidates,&line,ubodt,config.delta);
+    //     // Optimal path inference
+    //     MM::O_Path *o_path_ptr = tg.viterbi();
+    //     // Complete path construction as an array of indices of edges vector
+    //     MM::T_Path *t_path_ptr = ubodt->construct_traversed_path(o_path_ptr);
+    //     MM::LineString *m_geom = network->complete_path_to_geometry(o_path_ptr,&(t_path_ptr->cpath));
+    //     std::string result = MM::IO::ResultWriter::mkString(
+    //         network,o_path_ptr,t_path_ptr,m_geom
+    //     );
+    //     delete o_path_ptr;
+    //     delete t_path_ptr;
+    //     std::cout << "Perform map matching success" << '\n';
+    //     return result;
+    // };
     ~MapMatcher(){
         delete network;
         delete ubodt;
     };
 private:
+    static MatchResult generate_result(Network *network_ptr,O_Path *o_path_ptr, T_Path *t_path_ptr, LineString *mgeom){
+        MatchResult result;
+        // Opath
+        if (o_path_ptr != nullptr) {
+            int N = o_path_ptr->size();
+            for (int i = 0; i < N; ++i)
+            {
+                result.opath.push_back(std::stoi((*o_path_ptr)[i]->edge->id_attr));
+            }
+        };
+        // Cpath
+        if (t_path_ptr != nullptr) {
+            C_Path *c_path_ptr = &(t_path_ptr->cpath);
+            int N = c_path_ptr->size();
+            for (int i = 0; i < N; ++i)
+            {
+                result.cpath.push_back(std::stoi(network_ptr->get_edge_id_attr((*c_path_ptr)[i])));
+            }
+        };
+        if (mgeom!=nullptr){
+            std::stringstream buf;
+            MM::IO::ResultWriter::write_geometry(buf,mgeom);
+            result.mgeom = buf.str();
+        }
+        std::stringstream pgeom_buf;
+        MM::IO::ResultWriter::write_pgeom(pgeom_buf,o_path_ptr);
+        result.pgeom = pgeom_buf.str();
+        return result;
+    };
     MM::UBODT *ubodt;
     MM::Network *network;
     MapMatcherConfig config;
-    std::string match_trajectory(MM::Trajectory &trajectory){
-        int points_in_tr = trajectory.geom->getNumPoints();
-        // Candidate search
-        MM::Traj_Candidates traj_candidates = network->search_tr_cs_knn(trajectory,config.k,config.radius);
-        MM::TransitionGraph tg = MM::TransitionGraph(&traj_candidates,trajectory.geom,ubodt,config.delta);
-        // Optimal path inference
-        MM::O_Path *o_path_ptr = tg.viterbi();
-        // Complete path construction as an array of indices of edges vector
-        MM::T_Path *t_path_ptr = ubodt->construct_traversed_path(o_path_ptr);
-        MM::LineString *m_geom = network->complete_path_to_geometry(o_path_ptr,&(t_path_ptr->cpath));
-        std::string result = MM::IO::ResultWriter::mkString(
-            network,o_path_ptr,t_path_ptr,m_geom
-        );
-        delete o_path_ptr;
-        delete t_path_ptr;
-        return result;
-    };
 };
 
 } // MM

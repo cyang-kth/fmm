@@ -129,9 +129,7 @@ public:
         }
         return buf.str();
     };
-
-private:
-     void write_header() {
+    void write_header() {
         std::string header = "id";
         if (config.write_ogeom) header+=";ogeom";
         if (config.write_opath) header+=";opath";
@@ -308,7 +306,7 @@ private:
             }
         }
     };
-
+private:
     std::ostream *m_fstream_ptr;
     std::ostream &m_fstream;
     Network *m_network_ptr;

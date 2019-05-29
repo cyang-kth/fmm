@@ -17,3 +17,4 @@ clean:
 	rm -r build
 	rm -r extensions
 	rm -r dist
+	rm -f *.pyc
