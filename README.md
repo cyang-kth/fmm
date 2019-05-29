@@ -108,7 +108,7 @@ print "Matched path edges",list(result.cpath)
 
 ```
 
-Check the folder [python](python) for more information.
+A demo is provided as [fmm_demo.ipynb](https://github.com/cyang-kth/fmm/blob/master/python/fmm_demo.ipynb). Check the folder [python](python) for more information.
 
 ## Input and output
 
