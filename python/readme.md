@@ -1,5 +1,15 @@
 ### Python interface for fmm designed with SWIG
 
+Check the jupyter notebook file [fmm_demo.ipynb](fmm_demo.ipynb) for a demo. 
+
+#### Requirements
+
+- Linux/Unix environment (tested on Ubuntu 14.04)
+- swig 4.0.0
+- Python 2.7
+
+#### Install
+
 To install the python extension, run
 
 ```
@@ -10,11 +20,15 @@ To install the python extension, run
 Add the `dist` folder to the environment variable `PYTHONPATH`:
 
 ```
-    echo 'export PYTHONPATH=${PYTHONPATH}:PATH_TO_DIST_FOLDER"' >> ~/.bashrc
+    echo 'export PYTHONPATH=${PYTHONPATH}:PATH_TO_DIST_FOLDER' >> ~/.bashrc
     source ~/.bashrc
 ```
 
+Verification of installation
 
+```
+    python -c "import fmm"
+```
 
 #### Swig installation
 
