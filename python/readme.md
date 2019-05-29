@@ -1,6 +1,6 @@
 ### Python interface for fmm designed with SWIG
 
-Check the jupyter notebook file [fmm_demo.ipynb](fmm_demo.ipynb) for a demo. 
+Check the jupyter notebook file [fmm_demo.ipynb](fmm_demo.ipynb) for a demo.
 
 #### Requirements
 
@@ -8,7 +8,7 @@ Check the jupyter notebook file [fmm_demo.ipynb](fmm_demo.ipynb) for a demo.
 - swig 4.0.0
 - Python 2.7
 
-#### Install
+#### Installation
 
 To install the python extension, run
 

@@ -8,6 +8,7 @@ This project is an implementation of the fast map matching (FMM) algorithm intro
 - Map matching speed of **25,000-45,000 points/second** (single processor), **200,000 points/second** (parallel matching with 8 processor)
 - Customized output fields (matched point,matched line, gps error, etc)
 - Tested on city level road network and **millions of GPS records**
+- :tada: A preliminary version of Python API is designed (2019.05.29)
 
 <img src="demo1.png" width="400"/> <img src="demo2.png" width="410"/>
 
@@ -15,6 +16,7 @@ This project is an implementation of the fast map matching (FMM) algorithm intro
 
 - [Install](#install)
 - [Run map matching](#run-map-matching)
+- [Run fmm in python](#run-fmm-in-python)
 - [Input and output](#input-and-output)
 - [Configuration](#configuration)
 - [Example](#example)
@@ -81,6 +83,32 @@ The programs take configuration in xml format as input
     fmm_omp fmm_config.xml
 
 Check the [example](example) for configuration file format.
+
+## Run fmm in python
+
+Run fmm in python can be as simple as:
+
+```
+import fmm
+# Load model from configuration file
+model = fmm.MapMatcher("fmm_config.xml")
+
+# Run map matching with wkt geometry as input
+
+wkt = "LINESTRING (0.200812146892656 2.14088983050848,1.44262005649717 2.14879943502825,3.06408898305084 2.16066384180791,3.06408898305084 2.7103813559322,3.70872175141242 2.97930790960452,4.11606638418078 2.62337570621469)"
+
+result = model.match_wkt(wkt)
+
+# Print the result
+
+print "Matched path geometry",result.mgeom
+print "Matched points geometry",result.pgeom
+print "Matched edge id",list(result.opath)
+print "Matched path edges",list(result.cpath)
+
+```
+
+Check the folder [python](python) for more information.
 
 ## Input and output
 
