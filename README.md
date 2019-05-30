@@ -14,7 +14,9 @@ This project is an implementation of the fast map matching (FMM) algorithm intro
 
 <img src="demo1.png" width="400"/> <img src="demo2.png" width="410"/>
 
-Check the [wiki](https://github.com/cyang-kth/fmm/wiki) for installation, examples and documentation. 
+### Installation, examples and documentation.
+
+Check the [wiki](https://github.com/cyang-kth/fmm/wiki) for details. 
 
 ### Contact and citation
 
