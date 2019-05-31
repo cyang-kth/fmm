@@ -9,9 +9,9 @@ This project is an implementation of the fast map matching (FMM) algorithm intro
    - **25,000-45,000 points/sec** (single processor)
    - **200,000 points/sec** (parallel matching with 8 processor)
 - [Customized output fields](https://github.com/cyang-kth/fmm/wiki/Input-and-output) (matched point,traversed path, gps error, etc)
-- Support **city level** road network (50,000 edges tested) and **millions of GPS records**
+- Support **city level** road network (100,000 edges tested) and **millions of GPS records**
 - C++ and Python API (preliminary)
-- A web demo is designed for fmm, for more information see [osm map matching](https://github.com/cyang-kth/osm_mapmatching) 
+- A web application is designed for fmm to support [OSM map matching](https://github.com/cyang-kth/osm_mapmatching), demos shown below.
 
 <img src="img/demo1.gif" width="400"/> <img src="img/demo2.gif" width="400"/>
 
