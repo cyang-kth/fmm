@@ -1,3 +1,8 @@
+'''
+    FMM web application
+    Author: Can Yang 
+'''
+
 import os
 import tornado.wsgi
 import tornado.httpserver
@@ -47,6 +52,7 @@ def start_tornado(app, port=5000):
         tornado.wsgi.WSGIContainer(app))
     http_server.listen(port)
     print("Tornado server starting on port {}".format(port))
+    print("Visit http://localhost:{}/demo to check the demo".format(port))
     tornado.ioloop.IOLoop.instance().start()
 def start_from_terminal(app):
     """

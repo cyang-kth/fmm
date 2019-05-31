@@ -1,3 +1,7 @@
+/**
+ *   FMM web application
+ *   Author: Can Yang 
+ */
 var center = [59.3293, 18.0686];
 var zoom_level = 11;
 map = new L.Map('map', {
