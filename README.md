@@ -11,8 +11,12 @@ This project is an implementation of the fast map matching (FMM) algorithm intro
 - [Customized output fields](https://github.com/cyang-kth/fmm/wiki/Input-and-output) (matched point,traversed path, gps error, etc)
 - Support **city level** road network (50,000 edges tested) and **millions of GPS records**
 - C++ and Python API (preliminary)
+- A web demo is designed for fmm, for more information see [osm map matching](https://github.com/cyang-kth/osm_mapmatching) 
 
-<img src="demo1.png" width="400"/> <img src="demo2.png" width="410"/>
+<img src="img/demo1.gif" width="400"/> <img src="img/demo2.gif" width="400"/>
+
+<img src="img/demo3.gif" width="400"/> <img src="img/demo4.gif" width="400"/>
+
 
 ### Installation, examples and documentation.
 
