@@ -18,7 +18,7 @@ namespace MM
 namespace ALGORITHM {
 
 /**
- * Compute the boundary of an LineString and returns the result in 
+ * Compute the boundary of an LineString and returns the result in
  * the passed x1,y1,x2,y2 variables.
  *
  * @param linestring: input, which is a pointer to a
@@ -127,10 +127,10 @@ void linear_referencing(double px, double py, LineString *linestring,double *res
 /**
  * added by Diao 18.01.17
  * modified by Can 18.01.19
- * @param   offset        input offset(from start node)
+ * @param   offset1        start offset(from start node)
+ * @param   offset2        end offset(from start node)
  * @param   linestring    input linestring
- * @param   mode          input mode, 0 represent cutoff from start node, 1 from endnode
- * @return  cutoffline    output cutoff linstring, the caller should take care of freeing the memory
+ * @return  cutoffline    output cut linstring, the caller should take care of freeing the memory
  */
 LineString * cutoffseg_unique(double offset1, double offset2, LineString * linestring)
 {
