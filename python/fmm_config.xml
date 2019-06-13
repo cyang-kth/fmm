@@ -3,8 +3,6 @@
     <input>
         <ubodt>
             <file>../example/ubodt.txt</file>
-            <nhash>231</nhash>
-            <multiplier>30</multiplier>
         </ubodt>
         <network>
             <file>../example/data/edges.shp</file>
