@@ -18,6 +18,7 @@
 #include "gps.hpp"
 #include <iomanip>
 #include <algorithm> // Partial sort copy
+#include <unordered_set> // Partial sort copy
 // Data structures for Rtree
 #include <boost/geometry/geometries/box.hpp>
 #include <boost/geometry/index/rtree.hpp>
@@ -132,6 +133,7 @@ public:
 			srid= 4326;
             std::cout<< "\t---- Warning: srid is not found, set to 4326 for default"<< '\n';
         }
+        std::unordered_set<int> nodeSet;
         while( (ogrFeature = ogrlayer->GetNextFeature()) != NULL)
         {
             int id = ogrFeature->GetFID();
@@ -159,10 +161,13 @@ public:
             {
                 max_node_id = e->target;
             }
-            // CS_DEBUG(3) std::cout<<"ID "<< e->id <<" Length "<<e->geom->get_Length()<<"\n";
-            // https://github.com/OSGeo/gdal/blob/d5f6bb89b0e0db0a06489419050d432e8f58ff47/gdal/ogr/ogrsf_frmts/ntf/ogrntflayer.cpp#L88
+            if (nodeSet.find(e->source)==nodeSet.end()){
+                nodeSet.insert(e->source);
+            }
+            if (nodeSet.find(e->target)==nodeSet.end()){
+                nodeSet.insert(e->target);
+            }
             OGRFeature::DestroyFeature(ogrFeature);
-            // CS_DEBUG(3) std::cout<<"Line "<< __LINE__<< " Length "<<network_edges[0].geom->get_Length()<<"\n";
         }
 #if GDAL_VERSION_MAJOR < 2
         OGRDataSource::DestroyDataSource( poDS );
@@ -171,7 +176,9 @@ public:
 #endif // GDAL_VERSION_MAJOR
         CS_DEBUG(3) std::cout<<"Line "<< __LINE__<< " Length "<<network_edges[0].geom->get_Length()<<"\n";
         std::cout<<"Read network finish."<< '\n';
+        node_count = nodeSet.size();
         std::cout<<"\tThe maximum node ID is "<< max_node_id << '\n';
+        std::cout<<"Node count is "<< node_count << '\n';
         std::cout<<"\tTotal number of edges read "<< network_edges.size()<< '\n';
     }; // Network constructor
     ~Network()
@@ -188,6 +195,9 @@ public:
         std::cout<< "Cleaning network finished" << '\n';
     }
 
+    int get_node_count(){
+        return node_count;
+    };
     // Get the edge vector
     std::vector<Edge> *get_edges()
     {
@@ -238,7 +248,7 @@ public:
     Traj_Candidates search_tr_cs_knn(Trajectory &trajectory,std::size_t k,double radius){
         return search_tr_cs_knn(trajectory.geom,k,radius);
     }
-    
+
     /**
      *  Search for k nearest neighboring (KNN) candidates of a
      *  linestring within a search radius
@@ -439,6 +449,7 @@ private:
     Rtree rtree; // Network rtree structure
     std::vector<Edge> network_edges; // all edges in the network
     int max_node_id = 0; // a variable to record the maximum node ID
+    int node_count = 0;
 }; // Network
 } // MM
 #endif /* MM_NETWORK_HPP */

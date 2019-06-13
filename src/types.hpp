@@ -1,7 +1,7 @@
 /**
  * Content
  * Definition of Data types used in the FMM algorithm
- *      
+ *
  * @author: Can Yang
  * @version: 2017.11.11
  */
@@ -17,7 +17,7 @@ namespace MM {
 
 struct Edge
 {
-    int id; // This is the id, which is continuous distributed 
+    int id; // This is the id, which is continuous distributed
     std::string id_attr; // This is the external ID attribute, which does not have to be continuous
     int source; // source node ID
     int target; // target node ID
@@ -33,37 +33,25 @@ struct Candidate
     double dist; // distance from original point p to map matched point p'
     double obs_prob; // this is the emission probability
     Edge *edge; // candidate edge
-    Candidate* prev; // optimal previous candidate used in Viterbi algorithm 
+    Candidate* prev; // optimal previous candidate used in Viterbi algorithm
     float cumu_prob; // used in Viterbi, initialized to be 0
     float sp_dist; // sp distance to previous point, initialized to be 0
-};
-
-/* Record type in UBODT */
-struct record
-{
-    int source;
-    int target;
-    int first_n; // next_n in the paper
-    int prev_n;
-    int next_e;
-    double cost;
-    record *next; // the next record used in Hashtable
 };
 
 /* Transitiong graph*/
 
 typedef std::vector<Candidate> Point_Candidates; // candidates of a point
-typedef std::vector<Point_Candidates> Traj_Candidates; // candidates of a trajectory 
+typedef std::vector<Point_Candidates> Traj_Candidates; // candidates of a trajectory
 
 /* Result of map matching  */
 
-// Optimal path containing candidates matched to each point in a trajectory 
-typedef std::vector<Candidate*> O_Path; 
+// Optimal path containing candidates matched to each point in a trajectory
+typedef std::vector<Candidate*> O_Path;
 
 // Complete path, a contiguous sequence of edges traversed
 typedef std::vector<int> C_Path;
 
-// The traversed path stores also the location of GPS point inside the C_Path, thus 
+// The traversed path stores also the location of GPS point inside the C_Path, thus
 // edges traversed between two GPS observations can be found.
 struct T_Path{
     C_Path cpath;

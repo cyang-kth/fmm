@@ -48,14 +48,14 @@ int get_file_extension(std::string &fn) {
 struct ResultConfig {
     bool write_ogeom = false; // Optimal path, the edge matched to each point
     bool write_opath = false; // Optimal path, the edge matched to each point
-    bool write_offset = false; // The distance from the source node of an edge 
+    bool write_offset = false; // The distance from the source node of an edge
     bool write_error = false; // The distance from a raw GPS point to a matched GPS point
     bool write_cpath = true; // Complete path, a path traversed by the trajectory
     bool write_tpath = false; // Complete path, a path traversed by the trajectory
-    bool write_mgeom = true; // The geometry of the complete path 
+    bool write_mgeom = true; // The geometry of the complete path
     bool write_wkt = true; // mgeom in WKT or WKB format
     bool write_spdist = false; // The distance travelled between two GPS observations
-    bool write_pgeom = false; // A linestring connecting the point matched for each edge. 
+    bool write_pgeom = false; // A linestring connecting the point matched for each edge.
 };
 
 /**
@@ -79,14 +79,12 @@ public:
 
         // UBODT
         ubodt_file = tree.get<std::string>("fmm_config.input.ubodt.file");
-        multiplier = tree.get("fmm_config.input.ubodt.multiplier", 37); // multiplier=30000
-        nhash = tree.get("fmm_config.input.ubodt.nhash", 127); // 5178049
         // Check if delta is specified or not
         if (!tree.get_optional<bool>("fmm_config.input.ubodt.delta").is_initialized()){
             delta_defined = false;
             delta = 0.0;
         } else {
-            delta = tree.get("fmm_config.input.ubodt.delta",5000.0); // 
+            delta = tree.get("fmm_config.input.ubodt.delta",5000.0); //
             delta_defined = true;
         }
         binary_flag = get_file_extension(ubodt_file);
@@ -112,7 +110,7 @@ public:
         // Output
         result_file = tree.get<std::string>("fmm_config.output.file");
         mode = tree.get("fmm_config.output.mode", 0);
-        
+
         if (tree.get_child_optional("fmm_config.output.fields")){
             // Fields specified
             // close the default output fields (cpath,mgeom are true by default)
@@ -159,9 +157,9 @@ public:
         } else {
             std::cout << "    Default output fields used.\n";
         }
-        std::cout << "Finish with reading FMM configuration \n";   
+        std::cout << "Finish with reading FMM configuration \n";
     };
-    
+
     ResultConfig get_result_config(){
         return result_config;
     };
@@ -174,8 +172,6 @@ public:
         std::cout << std::left << std::setw(4) << "" << std::setw(20) << "Network source: " << network_source << '\n';
         std::cout << std::left << std::setw(4) << "" << std::setw(20) << "Network target: " << network_target << '\n';
         std::cout << std::left << std::setw(4) << "" << std::setw(20) << "ubodt_file: " << ubodt_file << '\n';
-        std::cout << std::left << std::setw(4) << "" << std::setw(20) << "multiplier: " << multiplier << '\n';
-        std::cout << std::left << std::setw(4) << "" << std::setw(20) << "nhash: " << nhash << '\n';
         if (delta_defined) {
             std::cout << std::left << std::setw(4) << "" << std::setw(20) << "delta: " << delta << '\n';
         } else {
@@ -190,7 +186,7 @@ public:
         std::cout << std::left << std::setw(4) << "" << std::setw(20) << "penalty_factor: " << penalty_factor << '\n';
         std::cout << std::left << std::setw(4) << "" << std::setw(20) << "result_file:" << result_file << '\n';
         // std::cout << std::left << std::setw(4) << "" << std::setw(20) << "geometry mode: " << mode << "(0 no geometry, 1 wkb, 2 wkt)" << '\n';
-        
+
         std::cout << std::left << std::setw(4) << "" << std::setw(20) << "Output fields:"<<'\n';
         if (result_config.write_ogeom) std::cout << std::left << std::setw(8) << ""  << "ogeom"<<'\n';
         if (result_config.write_opath) std::cout << std::left << std::setw(8) << ""  << "opath"<<'\n';
@@ -230,15 +226,11 @@ public:
         {
             std::cout << std::setw(4) << "" << "Warning, overwrite existing result file." << result_file << '\n';
         };
-        if (gps_error <= 0 || multiplier <= 0 || nhash <= 0 || radius <= 0 || k <= 0)
+        if (gps_error <= 0 || radius <= 0 || k <= 0)
         {
             std::cout << std::setw(12) << "" << "Error, Algorithm parameters invalid." << '\n';
             return false;
         }
-        if (mode > 3) {
-            std::cout << std::setw(12) << "" << "Error, Unrecognized map matching mode: "<< mode << '\n';
-            return false; 
-        } 
         // Check the definition of parameters search radius and gps error
         if (radius / gps_error > 10) {
             std::cout << std::setw(12) << "" << "Error, the gps error " << gps_error
@@ -249,7 +241,7 @@ public:
         std::cout << "Validating success." << '\n';
         return true;
     };
-    
+
     /* Input files */
     // Network file
     std::string network_file;
@@ -259,8 +251,6 @@ public:
 
     // UBODT configurations
     std::string ubodt_file;
-    int multiplier;
-    int nhash;
     double delta;
     bool delta_defined = true;
     int binary_flag;
@@ -287,7 +277,7 @@ public:
 
     // PF for reversed movement
     double penalty_factor;
-    
+
     // Configuration of output format
     ResultConfig result_config;
 }; // FMM_Config

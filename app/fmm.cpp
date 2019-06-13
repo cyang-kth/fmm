@@ -1,7 +1,7 @@
 /**
  * Content
  * FMM application (by stream)
- *      
+ *
  * @author: Can Yang
  * @version: 2017.11.11
  */
@@ -50,16 +50,16 @@ int main (int argc, char **argv)
         GPS_ERROR = config.gps_error; // Default value is 50 meter
         Network network(config.network_file,config.network_id,config.network_source,config.network_target);
         network.build_rtree_index();
-        int multiplier = config.multiplier;
-        int NHASH = config.nhash;
-        UBODT ubodt(multiplier,NHASH);
+        int multiplier = network.get_node_count();
+        if (multiplier==0) multiplier = 50000;
+        UBODT *ubodt=nullptr;
         if (config.binary_flag==1){
-            ubodt.read_binary(config.ubodt_file);
+            ubodt = read_ubodt_binary(config.ubodt_file,multiplier);
         } else {
-            ubodt.read_csv(config.ubodt_file);            
+            ubodt = read_ubodt_csv(config.ubodt_file,multiplier);
         }
         if (!config.delta_defined){
-            config.delta = ubodt.get_delta();
+            config.delta = ubodt->get_delta();
             std::cout<<"    Delta inferred from ubodt as "<< config.delta <<'\n';
         }
         TrajectoryReader tr_reader(config.gps_file,config.gps_id);
@@ -74,8 +74,8 @@ int main (int argc, char **argv)
         std::chrono::steady_clock::time_point corrected_begin = std::chrono::steady_clock::now();
         std::cout<<"Start to map match trajectories with total number "<< num_trajectories <<'\n';
         // The header is moved to constructor of result writer
-        // rw.write_header(); 
-        
+        // rw.write_header();
+
         while (tr_reader.has_next_feature())
         {
             DEBUG(2) std::cout<<"Start of the loop"<<'\n';
@@ -86,12 +86,12 @@ int main (int argc, char **argv)
             DEBUG(1) std::cout<<"Process trips with id : "<<trajectory.id<<'\n';
             // Candidate search
             Traj_Candidates traj_candidates = network.search_tr_cs_knn(trajectory,config.k,config.radius);
-            TransitionGraph tg = TransitionGraph(&traj_candidates,trajectory.geom,&ubodt,config.delta);
+            TransitionGraph tg = TransitionGraph(&traj_candidates,trajectory.geom,ubodt,config.delta);
             // Optimal path inference
             O_Path *o_path_ptr = tg.viterbi(config.penalty_factor);
             // Complete path construction as an array of indices of edges vector
-            T_Path *t_path_ptr = ubodt.construct_traversed_path(o_path_ptr); 
-            // C_Path *c_path_ptr = ubodt.construct_complete_path(o_path_ptr);
+            T_Path *t_path_ptr = ubodt->construct_traversed_path(o_path_ptr);
+            // C_Path *c_path_ptr = ubodt->construct_complete_path(o_path_ptr);
             if (result_config.write_mgeom) {
                 LineString *m_geom = network.complete_path_to_geometry(o_path_ptr,&(t_path_ptr->cpath));
                 rw.write_result(trajectory.id,trajectory.geom,o_path_ptr,t_path_ptr,m_geom);
@@ -123,6 +123,7 @@ int main (int argc, char **argv)
         std::cout<<"Matched percentage: "<<points_matched/(double)total_points<<'\n';
         std::cout<<"Point match speed:"<<points_matched/time_spent<<"pt/s"<<'\n';
         std::cout<<"Point match speed (excluding input): "<<points_matched/time_spent_exclude_input<<"pt/s"<<'\n';
+        delete ubodt;
     }
     std::cout<<"------------    Program finished     ------------"<<endl;
     return 0;

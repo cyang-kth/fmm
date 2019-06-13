@@ -162,7 +162,7 @@ public:
         else
         {
             // No sp path exist from O to D.
-            record *r = m_ubodt->look_up(ca->edge->target,cb->edge->source);
+            Record *r = m_ubodt->look_up(ca->edge->target,cb->edge->source);
             sp_dist = r==NULL? DISTANCE_NOT_FOUND:r->cost + ca->edge->length - ca->offset + cb->offset;
         }
         return sp_dist;
@@ -189,7 +189,7 @@ public:
             OPI_DEBUG(3) std::cout<<"Looking for path for edges "<<ca->edge->id <<" to "<<cb->edge->id <<'\n';
             OPI_DEBUG(3) std::cout<<"Looking for path for edges id attr "<<ca->edge->id_attr <<" to "<<cb->edge->id_attr <<'\n';
             OPI_DEBUG(3) std::cout<<"Looking for path  from "<<ca->edge->target<<" to "<<cb->edge->source<<'\n';
-            record *r = m_ubodt->look_up(ca->edge->target,cb->edge->source);
+            Record *r = m_ubodt->look_up(ca->edge->target,cb->edge->source);
             // No sp path exist from O to D.
             if (r==NULL) return DISTANCE_NOT_FOUND;
             // calculate original SP distance

@@ -30,8 +30,8 @@ public:
         // If the path cannot be resolved, an exception is thrown.
         // UBODT
         ubodt_file = tree.get<std::string>("fmm_config.input.ubodt.file");
-        multiplier = tree.get("fmm_config.input.ubodt.multiplier", 37); // multiplier=30000
-        nhash = tree.get("fmm_config.input.ubodt.nhash", 127); // 5178049
+        // multiplier = tree.get("fmm_config.input.ubodt.multiplier", 37); // multiplier=30000
+        // nhash = tree.get("fmm_config.input.ubodt.nhash", 127); // 5178049
         // Check if delta is specified or not
         if (!tree.get_optional<bool>("fmm_config.input.ubodt.delta").is_initialized()){
             delta_defined = false;
@@ -60,8 +60,8 @@ public:
         std::cout << "Network source: " << network_source << '\n';
         std::cout << "Network target: " << network_target << '\n';
         std::cout << "ubodt_file: " << ubodt_file << '\n';
-        std::cout << "multiplier: " << multiplier << '\n';
-        std::cout << "nhash: " << nhash << '\n';
+        // std::cout << "multiplier: " << multiplier << '\n';
+        // std::cout << "nhash: " << nhash << '\n';
         if (delta_defined) {
             std::cout << "delta: " << delta << '\n';
         } else {
@@ -81,8 +81,8 @@ public:
 
     // UBODT configurations
     std::string ubodt_file;
-    int multiplier;
-    int nhash;
+    // int multiplier;
+    // int nhash;
     double delta;
     bool delta_defined = true;
     int binary_flag;
@@ -113,13 +113,11 @@ public:
         network = new MM::Network(config.network_file,config.network_id,
                                   config.network_source,config.network_target);
         network->build_rtree_index();
-        int multiplier = config.multiplier;
-        int NHASH = config.nhash;
-        ubodt = new MM::UBODT(multiplier,NHASH);
+        int multipler = network->get_node_count();
         if (config.binary_flag==1){
-            ubodt->read_binary(config.ubodt_file);
+            ubodt = MM::read_ubodt_binary(config.ubodt_file,multipler);
         } else {
-            ubodt->read_csv(config.ubodt_file);
+            ubodt = MM::read_ubodt_csv(config.ubodt_file,multipler);
         }
         if (!config.delta_defined){
             config.delta = ubodt->get_delta();
@@ -146,27 +144,7 @@ public:
         std::cout << "Perform map matching success" << '\n';
         return result;
     };
-    // std::string match_geometry(const std::string &wkt){
-    //     std::cout << "Perform map matching" << '\n';
-    //     LineString line;
-    //     bg::read_wkt(wkt,*(line.get_geometry()));
-    //     int points_in_tr = line.getNumPoints();
-    //     // Candidate search
-    //     MM::Traj_Candidates traj_candidates = network->search_tr_cs_knn(&line,config.k,config.radius);
-    //     MM::TransitionGraph tg = MM::TransitionGraph(&traj_candidates,&line,ubodt,config.delta);
-    //     // Optimal path inference
-    //     MM::O_Path *o_path_ptr = tg.viterbi();
-    //     // Complete path construction as an array of indices of edges vector
-    //     MM::T_Path *t_path_ptr = ubodt->construct_traversed_path(o_path_ptr);
-    //     MM::LineString *m_geom = network->complete_path_to_geometry(o_path_ptr,&(t_path_ptr->cpath));
-    //     std::string result = MM::IO::ResultWriter::mkString(
-    //         network,o_path_ptr,t_path_ptr,m_geom
-    //     );
-    //     delete o_path_ptr;
-    //     delete t_path_ptr;
-    //     std::cout << "Perform map matching success" << '\n';
-    //     return result;
-    // };
+
     ~MapMatcher(){
         delete network;
         delete ubodt;
