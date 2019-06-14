@@ -20,20 +20,7 @@ struct Record
     int next_e;
     double cost;
 };
-namespace boost{
-    namespace serialization{
-        template<class Archive>
-        void serialize(Archive & ar, Record &r, const unsigned int version)
-        {
-            ar & r.source;
-            ar & r.target;
-            ar & r.next_n;
-            ar & r.prev_n;
-            ar & r.next_e;
-            ar & r.cost;
-        };
-    }
-}
+
 int main(int argc, char *argv[])
 {
     std::string inputfile(argv[1]);
@@ -46,7 +33,7 @@ int main(int argc, char *argv[])
     int source,target,next_n,prev_n,next_e;
     double cost;
     int NUM_ROWS = 0;
-    std::streampos archiveOffset = ifs.tellg(); 
+    std::streampos archiveOffset = ifs.tellg();
     std::streampos streamEnd = ifs.seekg(0, std::ios_base::end).tellg();
     ifs.seekg(archiveOffset);
     boost::archive::binary_iarchive ia(ifs);
@@ -54,7 +41,12 @@ int main(int argc, char *argv[])
     while (ifs.tellg() < streamEnd)
     {
         ++NUM_ROWS;
-        ia >> r;
+        ia >> r.source;
+        ia >> r.target;
+        ia >> r.next_n;
+        ia >> r.prev_n;
+        ia >> r.next_e;
+        ia >> r.cost;
         ofs << r.source << ";" << r.target << ";" << r.next_n << ";"
                        << r.prev_n << ";" << r.next_e << ";" << r.cost
                        << "\n";
@@ -64,4 +56,3 @@ int main(int argc, char *argv[])
     printf("Number of rows exported %d.\n",NUM_ROWS);
     printf("Program finish.\n");
 };
-

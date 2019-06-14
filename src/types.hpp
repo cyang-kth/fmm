@@ -36,6 +36,18 @@ struct Candidate
     float sp_dist; // sp distance to previous point, initialized to be 0
 };
 
+/* Record type in UBODT */
+struct Record
+{
+    int source;
+    int target;
+    int first_n; // next_n in the paper
+    int prev_n;
+    int next_e;
+    double cost;
+    Record *next; // the next Record used in Hashtable
+};
+
 /* Transitiong graph*/
 
 typedef std::vector<Candidate> Point_Candidates; // candidates of a point

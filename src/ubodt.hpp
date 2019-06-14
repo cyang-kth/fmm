@@ -22,17 +22,6 @@
 // #include <boost/functional/hash.hpp>
 namespace MM
 {
-/* Record type in UBODT */
-struct Record
-{
-    int source;
-    int target;
-    int first_n; // next_n in the paper
-    int prev_n;
-    int next_e;
-    double cost;
-    Record *next; // the next Record used in Hashtable
-};
 
 class UBODT
 {

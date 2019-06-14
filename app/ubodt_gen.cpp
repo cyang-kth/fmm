@@ -1,11 +1,11 @@
 /**
  * Content
  * Precomputation of UBODT (Optimized)
- *      
+ *
  * @author: Can Yang
  * @version: 2018.03.09
  */
-#include "../src/network_graph_opt.hpp"
+#include "../src/network_graph.hpp"
 #include "../src/config.hpp"
 #include <iostream>
 #include <ctime>
@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
             config.network_id,
             config.network_source,
             config.network_target);
-        MM::NetworkGraphOpt graph(&network);
+        MM::NetworkGraph graph(&network);
         std::cout<<"Upperbound config (delta): "<<config.delta<<'\n';
         bool binary = (config.binary_flag==1);
         graph.precompute_ubodt(config.result_file,config.delta,binary);
@@ -48,7 +48,7 @@ int main(int argc, char* argv[])
         // clock_t end_time = clock(); // program end time
         // // Unit is second
         // double time_spent = (double)(end_time - begin_time) / CLOCKS_PER_SEC;
-        // std::cout<<"Time takes "<<time_spent<<'\n';        
+        // std::cout<<"Time takes "<<time_spent<<'\n';
     }
     std::cout<<"------------    Program finished     ------------"<<endl;
     return 0;

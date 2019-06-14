@@ -23,23 +23,6 @@ struct Record
     double cost;
 };
 
-// serialize a record object
-
-namespace boost{
-    namespace serialization{
-        template<class Archive>
-        void serialize(Archive & ar, Record &r, const unsigned int version)
-        {
-            ar & r.source;
-            ar & r.target;
-            ar & r.next_n;
-            ar & r.prev_n;
-            ar & r.next_e;
-            ar & r.cost;
-        };
-    }
-}
-
 int main(int argc, char *argv[])
 {
     std::string inputfile(argv[1]);
@@ -73,12 +56,15 @@ int main(int argc, char *argv[])
                &next_e,
                &cost
         );
-        Record r={source,target,next_n,prev_n,next_e,cost};
-        oa << r;
+        oa << source;
+        oa << target;
+        oa << next_n;
+        oa << prev_n;
+        oa << next_e;
+        oa << cost;
     };
     ifs.close();
     ofs.close();
     printf("Number of rows read %d.\n",NUM_ROWS);
     printf("Program finish.\n");
 };
-
