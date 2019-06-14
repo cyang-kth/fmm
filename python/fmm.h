@@ -122,7 +122,7 @@ public:
         bg::read_wkt(wkt,*(line.get_geometry()));
         int points_in_tr = line.getNumPoints();
         // Candidate search
-        MM::Traj_Candidates traj_candidates = network->search_tr_cs_knn(&line,config.k,config.radius);
+        MM::Traj_Candidates traj_candidates = network->search_tr_cs_knn(&line,config.k,config.radius,config.gps_error);
         MM::TransitionGraph tg = MM::TransitionGraph(&traj_candidates,&line,ubodt,config.delta);
         // Optimal path inference
         MM::O_Path *o_path_ptr = tg.viterbi();
@@ -142,13 +142,15 @@ public:
         LineString line;
         bg::read_wkt(wkt,*(line.get_geometry()));
         int points_in_tr = line.getNumPoints();
-        Traj_Candidates traj_candidates = network->search_tr_cs_knn(&line,config.k,config.radius);
+        Traj_Candidates traj_candidates = network->search_tr_cs_knn(&line,config.k,config.radius,config.gps_error);
         CandidateSet result;
         for (int i = 0;i < traj_candidates.size();++i){
             Point_Candidates & point_candidates = traj_candidates[i];
             for (int j = 0;j < point_candidates.size();++j){
                 Candidate c = point_candidates[j];
-                result.push_back({i,std::stoi(c.edge->id_attr.c_str()),c.dist,c.obs_prob});
+                result.push_back({i,
+                    std::stoi(c.edge->id_attr.c_str()),c.edge->source,c.edge->target,c.dist,
+                    c.edge->length,c.offset,c.obs_prob});
             };
         };
         return result;
@@ -163,7 +165,7 @@ public:
         bg::read_wkt(wkt,*(line.get_geometry()));
         int points_in_tr = line.getNumPoints();
         // Candidate search
-        MM::Traj_Candidates traj_candidates = network->search_tr_cs_knn(&line,config.k,config.radius);
+        MM::Traj_Candidates traj_candidates = network->search_tr_cs_knn(&line,config.k,config.radius,config.gps_error);
         MM::TransitionGraph tg = MM::TransitionGraph(&traj_candidates,&line,ubodt,config.delta);
         return tg.generate_transition_lattice();
     };

@@ -31,7 +31,11 @@ namespace MM {
     struct CandidateElement {
         int index; // point index in trajectory
         int edge_id; // edge id
+        int source;
+        int target;
         double distance; // distance to that edge
+        double length;
+        double offset;
         double ep; // emission probability
     };
 
@@ -47,7 +51,7 @@ namespace MM {
         double e_prob; // emission probability
         double cumu_prob; // cumulative emission probability
     };
-    
+
     typedef std::vector<TLElement> TransitionLattice;
 }
 #endif /* MM_PYTHON_TYPES_HPP */

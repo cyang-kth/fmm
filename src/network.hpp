@@ -245,15 +245,15 @@ public:
      *  the candidates selected for each point in a trajectory
      *
      */
-    Traj_Candidates search_tr_cs_knn(Trajectory &trajectory,std::size_t k,double radius){
-        return search_tr_cs_knn(trajectory.geom,k,radius);
+    Traj_Candidates search_tr_cs_knn(Trajectory &trajectory,std::size_t k,double radius, double gps_error = 50){
+        return search_tr_cs_knn(trajectory.geom,k,radius,gps_error);
     }
 
     /**
      *  Search for k nearest neighboring (KNN) candidates of a
      *  linestring within a search radius
      */
-    Traj_Candidates search_tr_cs_knn(LineString *geom,std::size_t k,double radius)
+    Traj_Candidates search_tr_cs_knn(LineString *geom,std::size_t k,double radius,double gps_error)
     {
         int NumberPoints = geom->getNumPoints();
         Traj_Candidates tr_cs(NumberPoints);
@@ -281,7 +281,7 @@ public:
                 CS_DEBUG(2) std::cout<<"Offset: "<<offset<< '\n';
                 if (dist<=radius)
                 {
-                    Candidate c = {offset,dist,Network::emission_prob(dist),edge,NULL,0,0};
+                    Candidate c = {offset,dist,Network::emission_prob(dist,gps_error),edge,NULL,0,0};
                     pcs.push_back(c);
                 }
             }
@@ -415,14 +415,14 @@ public:
      * @param  dist:the distance a GPS point to a candidate point
      * @return  the emission probability
      */
-    static double emission_prob(double dist)
+    static double emission_prob(double dist,double gps_error)
     {
-        double a = dist / GPS_ERROR;
+        double a = dist / gps_error;
         return exp(-0.5 * a * a); // The unit should be in range of 0,1
     };
 
-    static double emission_prob_to_dist(double eprob){
-        return sqrt(-2 * log(eprob))*GPS_ERROR;
+    static double emission_prob_to_dist(double eprob,double gps_error){
+        return sqrt(-2 * log(eprob))*gps_error;
     };
 private:
     /**

@@ -25,8 +25,6 @@ struct Edge
     LineString *geom; // a pointer to the edge geometry
 };
 
-double GPS_ERROR = 50;
-
 struct Candidate
 {
     float offset; // offset distance from the start of polyline to p'
