@@ -16,6 +16,8 @@
 #include "ubodt.hpp"
 #include "float.h"
 #include "multilevel_debug.h"
+#include "python_types.hpp"
+
 namespace MM
 {
 class TransitionGraph
@@ -140,6 +142,71 @@ public:
         OPI_DEBUG(2) std::cout<<"Viterbi ends"<<'\n';
         return opt_path;
     };
+
+    /**
+     *  Generate transition lattice for the transition graph, used in Python extension
+     *  for verification of the result
+     */
+    TransitionLattice generate_transition_lattice(){
+        TransitionLattice tl;
+        if (m_traj_candidates->empty()) return tl;
+        int N = m_traj_candidates->size();
+        /* Update transition probabilities */
+        Traj_Candidates::iterator csa = m_traj_candidates->begin();
+        /* Initialize the cumu probabilities of the first layer */
+        Point_Candidates::iterator ca = csa->begin();
+        while (ca != csa->end())
+        {
+            ca->cumu_prob = ca->obs_prob;
+            ++ca;
+        }
+        /* Updating the cumu probabilities of subsequent layers */
+        Traj_Candidates::iterator csb = m_traj_candidates->begin();
+        ++csb;
+        while (csb != m_traj_candidates->end())
+        {
+            Point_Candidates::iterator ca = csa->begin();
+            double eu_dist=eu_distances[std::distance(m_traj_candidates->begin(),csa)];
+            while (ca != csa->end())
+            {
+                Point_Candidates::iterator cb = csb->begin();
+                while (cb != csb->end())
+                {
+                    // OPI_DEBUG(3) std::cout<<"Iterating cb start"<<'\n';
+                    int step =std::distance(m_traj_candidates->begin(),csa); // The problem seems to be here
+                    // Calculate transition probability
+                    double sp_dist = get_sp_dist_penalized(ca,cb,0);
+                    // OPI_DEBUG(3) std::cout<<"sp_dist calculated"<<'\n';
+                    /*
+                     A degenerate case is that the *same point
+                     is reported multiple times where both eu_dist and sp_dist = 0
+                     */
+                    double tran_prob = 1.0;
+                    if (eu_dist<0.00001) {
+                        tran_prob =sp_dist>0.00001?0:1.0;
+                    } else {
+                        tran_prob =eu_dist>sp_dist?sp_dist/eu_dist:eu_dist/sp_dist;
+                    }
+                    // OPI_DEBUG(3) std::cout<<"tran_prob calculated"<<'\n';
+                    if (ca->cumu_prob + tran_prob * cb -> obs_prob >= cb->cumu_prob)
+                    {
+                        cb->cumu_prob = ca->cumu_prob + tran_prob * cb->obs_prob;
+                        cb->prev = &(*ca);
+                        cb->sp_dist = sp_dist; // update the SP distance to previous point
+                    }
+                    tl.push_back(
+                        {step,std::atoi(ca->edge->id_attr.c_str()),std::atoi(cb->edge->id_attr.c_str()),
+                            sp_dist,eu_dist,tran_prob,cb->obs_prob,ca->cumu_prob + tran_prob * cb->obs_prob});
+                    ++cb;
+                }
+                ++ca;
+            }
+            ++csa;
+            ++csb;
+        } // End of calculating transition probability
+        return tl;
+    };
+
     /**
      * Get the shortest path (SP) distance from Candidate ca to cb
      * @param  ca

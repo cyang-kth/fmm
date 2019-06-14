@@ -15,5 +15,23 @@ namespace std {
    // %template(IntSet) set<int>;
 }
 
+%include "../src/python_types.hpp"
 
-%include "fmm.h"
+%template (CandidateVector) std::vector<MM::CandidateElement>;
+%template (TransitionLattice) std::vector<MM::TLElement>;
+
+namespace MM {
+class MapMatcher {
+public:
+    MapMatcher(const std::string &config_file);
+    MatchResult match_wkt(const std::string &wkt);
+    CandidateSet search_candidate(const std::string &wkt);
+    TransitionLattice build_transition_lattice(const std::string &wkt);
+    ~MapMatcher();
+private:
+    static MatchResult generate_result(Network *network_ptr,O_Path *o_path_ptr, T_Path *t_path_ptr, LineString *mgeom);
+    MM::UBODT *ubodt;
+    MM::Network *network;
+    MapMatcherConfig config;
+};
+};

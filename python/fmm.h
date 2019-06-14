@@ -15,6 +15,7 @@
 #include "../src/transition_graph.hpp"
 #include "../src/config.hpp"
 #include "../src/writer.hpp"
+#include "../src/python_types.hpp"
 
 namespace MM{
 
@@ -96,16 +97,6 @@ public:
     double radius;
 };
 
-/**
- *  MatchResult class is used for communicating with Python
- */
-struct MatchResult{
-    std::vector<int> opath; // optimal path
-    std::vector<int> cpath;
-    std::string mgeom;
-    std::string pgeom;
-};
-
 class MapMatcher {
 public:
     MapMatcher(const std::string &config_file):config(MapMatcherConfig(config_file)){
@@ -144,7 +135,38 @@ public:
         std::cout << "Perform map matching success" << '\n';
         return result;
     };
-
+    /**
+     *  Search the network for candidates matched to a trajectory
+     */
+    CandidateSet search_candidate(const std::string &wkt){
+        LineString line;
+        bg::read_wkt(wkt,*(line.get_geometry()));
+        int points_in_tr = line.getNumPoints();
+        Traj_Candidates traj_candidates = network->search_tr_cs_knn(&line,config.k,config.radius);
+        CandidateSet result;
+        for (int i = 0;i < traj_candidates.size();++i){
+            Point_Candidates & point_candidates = traj_candidates[i];
+            for (int j = 0;j < point_candidates.size();++j){
+                Candidate c = point_candidates[j];
+                result.push_back({i,std::stoi(c.edge->id_attr.c_str()),c.dist,c.obs_prob});
+            };
+        };
+        return result;
+    };
+    /**
+     *  Build a transition lattice for the trajectory containing
+     *  index,from,to,tp,ep,cp
+     */
+    TransitionLattice build_transition_lattice(const std::string &wkt){
+        std::cout << "Perform map matching" << '\n';
+        LineString line;
+        bg::read_wkt(wkt,*(line.get_geometry()));
+        int points_in_tr = line.getNumPoints();
+        // Candidate search
+        MM::Traj_Candidates traj_candidates = network->search_tr_cs_knn(&line,config.k,config.radius);
+        MM::TransitionGraph tg = MM::TransitionGraph(&traj_candidates,&line,ubodt,config.delta);
+        return tg.generate_transition_lattice();
+    };
     ~MapMatcher(){
         delete network;
         delete ubodt;
