@@ -281,6 +281,8 @@ UBODT *read_ubodt_csv(const std::string &filename, int multiplier=50000)
     std::cout<<"Reading UBODT file (CSV format) from: " << filename << '\n';
     int rows = estimate_ubodt_rows(filename);
     std::cout<<"Estimated rows is : " << rows << '\n';
+    int progress_step = rows/10;
+    if (progress_step < 1) progress_step = 1;
     int buckets = find_prime_number(rows/LOAD_FACTOR);
     UBODT *table = new UBODT(buckets, multiplier);
     FILE* stream = fopen(filename.c_str(), "r");
@@ -304,7 +306,7 @@ UBODT *read_ubodt_csv(const std::string &filename, int multiplier=50000)
                &r->cost
         );
         r->next=NULL;
-        if (NUM_ROWS%1000000==0) printf("Read rows: %d\n",NUM_ROWS);
+        if (NUM_ROWS%progress_step==0) printf("Read rows: %d\n",NUM_ROWS);
         /* Insert into the hash table */
         table->insert(r);
     };
@@ -324,6 +326,8 @@ UBODT *read_ubodt_binary(const std::string &filename, int multiplier=50000)
 {
     std::cout<<"Reading UBODT file (binary format) from: " << filename << '\n';
     int rows = estimate_ubodt_rows(filename);
+    int progress_step = rows/10;
+    if (progress_step < 1) progress_step = 1;
     std::cout<<"Estimated rows is : " << rows << '\n';
     int buckets = find_prime_number(rows/LOAD_FACTOR);
     UBODT *table = new UBODT(buckets,multiplier);
@@ -345,7 +349,7 @@ UBODT *read_ubodt_binary(const std::string &filename, int multiplier=50000)
         ia >> r->next_e;
         ia >> r->cost;
         r->next=NULL;
-        if (NUM_ROWS%1000000==0) printf("Read rows: %d\n",NUM_ROWS);
+        if (NUM_ROWS%progress_step==0) printf("Read rows: %d\n",NUM_ROWS);
         /* Insert into the hash table */
         table->insert(r);
     }
