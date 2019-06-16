@@ -169,6 +169,25 @@ public:
         MM::TransitionGraph tg = MM::TransitionGraph(&traj_candidates,&line,ubodt,config.delta);
         return tg.generate_transition_lattice();
     };
+    // Getter and setter to change the configuration in Python interactively. 
+    void set_gps_error(double error){
+        config.gps_error = error;
+    };
+    double get_gps_error(){
+        return config.gps_error;
+    };
+    void set_k(int k){
+        config.k = k;
+    };
+    int get_k(){
+        return config.k;
+    };
+    double get_radius(){
+        return config.radius;
+    };
+    void set_radius(double r){
+        config.radius = r;
+    };   
     ~MapMatcher(){
         delete network;
         delete ubodt;
