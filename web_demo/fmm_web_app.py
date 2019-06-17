@@ -1,6 +1,6 @@
 '''
     FMM web application
-    Author: Can Yang 
+    Author: Can Yang
 '''
 
 import os
@@ -37,8 +37,8 @@ def match_url():
     endtime = time.time()
     # logging.info('%s', result)
     # logging.info('Time cost: %s', result[2])
-    print "Result is ",result
-    print "Result geom is ",result.mgeom
+    # print "Result is ",result
+    # print "Result geom is ",result.mgeom
     if (result.mgeom!=""):
         print "Matched"
         response_json = {"wkt":str(result.mgeom),"state":1}
