@@ -8,7 +8,7 @@
     + ubodt.txt: an upper bounded origin-destination table in CSV format
     + mr.txt: the map matching result in CSV format
 
-## Road network and GPS trajectories 
+## Road network and GPS trajectories
 
 ![input](input.png)
 
@@ -24,17 +24,17 @@ Run UBODT generator with the provided configuration file:
 
     ubodt_gen ubodt_config.xml
 
-A new UBODT file `ubodt.txt` will be generated. 
+A new UBODT file `ubodt.txt` will be generated.
 
-### Step 2. Run map matching with UBODT 
+### Step 2. Run map matching with UBODT
 
-Add `ubodt.txt` to the map matching configuration file `fmm_config.xml`. 
+Add `ubodt.txt` to the map matching configuration file `fmm_config.xml`.
 
 Run the `fmm` application with:
 
     fmm fmm_config.xml
 
-A matched result file will be generated as `mr.txt`, which is a CSV file and the `c_path` column contains the matched path information, for details see the [output section](../README.md#output). 
+A matched result file will be generated as `mr.txt`, which is a CSV file and the `c_path` column contains the matched path information, for details see the [output section](https://github.com/cyang-kth/fmm/wiki/Input-and-output#output-of-fmm). 
 
 ## Matching result
 
