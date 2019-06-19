@@ -132,6 +132,7 @@ public:
         MatchResult result = generate_result(network,o_path_ptr,t_path_ptr,m_geom);
         delete o_path_ptr;
         delete t_path_ptr;
+        delete m_geom;
         std::cout << "Perform map matching success" << '\n';
         return result;
     };
