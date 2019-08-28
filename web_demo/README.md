@@ -1,6 +1,6 @@
 ### Web demo of FMM
 
-To run this demo, you need to first [install the Python extension](https://github.com/cyang-kth/fmm/wiki/Installation-python) of fmm,
+To run this demo, you need to first [install the python api](https://github.com/cyang-kth/fmm/wiki/Installation-of-fmm-(Python) of fmm,
 then run the demo with
 
 ```
