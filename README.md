@@ -10,7 +10,7 @@ This project is an implementation of the fast map matching (FMM) algorithm intro
    - **200,000 points/sec** (parallel matching with 8 processor)
 - [Customized output fields](https://github.com/cyang-kth/fmm/wiki/Input-and-output) (matched point,traversed path, gps error, etc)
 - Support **city level** road network (100,000 edges tested) and **millions of GPS records**
-- :tada: C++ (tested on Ubuntu, Windows and Mac platform).
+- Tested on Ubuntu, :tada: Windows and :tada: Mac platform (C++ program).
 - Python API (preliminary tested on Ubuntu system)
 - :tada: A web application under the `web_demo` folder is designed for map matching on OpenStreetMap. A tutorial is provided at [OSM map matching](https://github.com/cyang-kth/osm_mapmatching) and screenshots are shown below.
 
