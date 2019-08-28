@@ -2,14 +2,14 @@
 #define MM_GEOMTYPES_HPP
 
 #ifdef USE_BG_GEOMETRY
-#include "gdal/ogrsf_frmts.h" // C++ API for GDAL
+#include <ogrsf_frmts.h> // C++ API for GDAL
 #include <boost/geometry.hpp>
 #include <boost/geometry/geometries/geometries.hpp>
 #include <boost/geometry/extensions/gis/io/wkb/read_wkb.hpp>
 #include <iterator>
 #include <vector>
 #else
-#include "gdal/ogrsf_frmts.h" // C++ API for GDAL
+#include <ogrsf_frmts.h> // C++ API for GDAL
 #endif
 
 namespace MM {

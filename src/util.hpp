@@ -1,23 +1,26 @@
 /**
  * Content
- * Utility functions 
- *      
+ * Utility functions
+ *
  * @author: Can Yang
  * @version: 2017.11.11
  */
 
 #ifndef MM_UTIL_HPP
 #define MM_UTIL_HPP
-#include "types.hpp"
-#include "gdal/ogrsf_frmts.h" // C++ API for GDAL
+
+#include <ogrsf_frmts.h> // C++ API for GDAL
 #include <iostream>
 #include <string>
 #include <sys/stat.h>
 #include <cmath>
+#include <cfloat>
 #include <chrono>
 #include <ctime>
+
+#include "types.hpp"
 #include "multilevel_debug.h"
-#include "float.h"
+
 namespace MM
 {
 namespace UTIL
@@ -75,7 +78,7 @@ void print_c_path(C_Path *c_path_ptr) {
     std::cout<<'\n';
 }
 
-/** 
+/**
  * Print the number of candidates for each point of trajectory
  */
 void print_traj_candidates_count(Traj_Candidates &tr_cs) {
@@ -102,7 +105,7 @@ void print_geometry(LineString *geom){
     geom->exportToWkt(&wkt);
     std::cout<<"Geometry in WKT: "<<wkt<<'\n';
     CPLFree(wkt);
-#endif  
+#endif
 };
 
 

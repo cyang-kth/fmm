@@ -1,7 +1,7 @@
 /**
  * Content
  * Debug information used in development
- *      
+ *
  * @author: Can Yang
  * @version: 2017.11.11
  */
@@ -9,6 +9,9 @@
 #ifndef MM_DEBUG_HPP
 #define MM_DEBUG_HPP
 #include <stdio.h>
+
+#include "spdlog/spdlog.h"
+#include "spdlog/fmt/ostr.h" // must be included for custom operator 
 
 /**
  *  Debug level from 1 to 3
@@ -57,6 +60,6 @@
 /* Geometry construction debug*/
 #define UTIL_DEBUG(level) if(level <=UTIL_DEBUG_LEVEL)
 
-// #define ROUTING_RECORD_DEBUG 
+// #define ROUTING_RECORD_DEBUG
 
 #endif // MM_DEBUG_HPP

@@ -19,7 +19,7 @@ initial:
 	mkdir -p $(HOME)/bin
 build_fmm:initial
 	@echo ----- Start to build fmm -----
-	g++ $(NORMAL_FLAGS) app/fmm.cpp -o dist/fmm $(LIBS)
+	g++ $(NORMAL_FLAGS) -I/usr/include/gdal app/fmm.cpp -o dist/fmm $(LIBS)
 	@echo ----- fmm build success -----
 build_fmm_omp:initial
 	@echo ----- Start to build fmm_omp -----
