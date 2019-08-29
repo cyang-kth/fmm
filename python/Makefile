@@ -1,6 +1,6 @@
 NORMAL_FLAGS = -std=gnu++11 -O3 -Wno-unknown-pragmas
-LIBS = -lgdal -lboost_serialization
-PYTHON_BG_FLAGS = -I../include -DUSE_BG_GEOMETRY
+LIBS = -L/usr/lib -lgdal -lboost_serialization 
+PYTHON_BG_FLAGS = -I../include -I/usr/include/gdal -DUSE_BG_GEOMETRY
 build:initialize open_python_bg_flag
 	swig -python -c++ -outdir dist -o extensions/fmm_wrap.cxx fmm.i
 	g++ $(NORMAL_FLAGS) -fPIC -c extensions/fmm_wrap.cxx -o build/fmm_wrap.o -I. -I/usr/include/python2.7 $(LIBS)
