@@ -10,24 +10,29 @@ Check the jupyter notebook file [fmm_demo.ipynb](fmm_demo.ipynb) for a demo.
 
 #### Installation
 
-To install the python extension, run
+To install the python extension, under the project folder run
 
 ```
     cd python
+    mkdir build
+    cd build
+    cmake ..
     make
 ```
 
-Add the `dist` folder to the environment variable `PYTHONPATH`:
+Add the `build` folder to the environment variable `PYTHONPATH`:
 
 ```
-    echo 'export PYTHONPATH=${PYTHONPATH}:PATH_TO_DIST_FOLDER' >> ~/.bashrc
+    echo 'export PYTHONPATH=${PYTHONPATH}:PATH_TO_BUILD_FOLDER' >> ~/.bashrc
     source ~/.bashrc
 ```
 
-Verification of installation
+#### Verification of installation
+
+Under the `python` folder in the project run
 
 ```
-    python -c "import fmm"
+    python fmm_test.py
 ```
 
 #### Swig installation
