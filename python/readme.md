@@ -59,10 +59,25 @@ Please see http://www.swig.org for reporting bugs and further information
 
 #### Common error with installation
 
-If an error pops as missing libpcre.so.1, we can copy from anaconda
+1. If an error pops as missing libpcre.so.1, we can copy from anaconda
 
 ```
 sudo mv ~/anaconda2/lib/libpcre.so.* /usr/lib
+```
+
+2. Run `python fmm_test.py` failure
+
+The problem could be multiple version of Python installed. Make sure that the
+default python version
+
+```
+which python
+```
+
+is the same as the Python library used in cmake build.
+
+```
+cmake ..  
 ```
 
 ### Reference
