@@ -23,6 +23,10 @@ This project is an implementation of the fast map matching (FMM) algorithm intro
 
 Check the [wiki](https://github.com/cyang-kth/fmm/wiki) for details.
 
+### Acknowledgement
+
+Great Acknowledgement is given to [Edi Buslovich](https://github.com/edibusl) for improving the installation instructions.
+
 ### Contact and citation
 
 Can Yang, Ph.D. student at KTH, Royal Institute of Technology in Sweden

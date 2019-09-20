@@ -4,11 +4,37 @@ Check the jupyter notebook file [fmm_demo.ipynb](fmm_demo.ipynb) for a demo.
 
 #### Requirements
 
-- Linux/Unix environment (tested on Ubuntu 14.04)
+- Linux/Unix environment (tested on Ubuntu 16.04)
 - swig 4.0.0
 - Python 2.7
 
-#### Installation
+In addition to the requirements of fmm, install `python-dev` with
+
+```
+sudo apt-get install python-dev
+```
+
+#### Swig installation
+
+To install SWIG, download the swig file `swig-4.0.0.tar.gz` from http://www.swig.org/download.html.
+
+```
+# Install dependency
+sudo apt-get install build-essential libpcre3-dev libpcre3
+
+# Build swig
+wget http://prdownloads.sourceforge.net/swig/swig-4.0.1.tar.gz
+tar -xf swig-4.0.0.tar.gz
+cd swig-4.0.0/
+./configure
+sudo make
+sudo make install
+
+# Verify your installation
+swig -version
+```
+
+#### Installation of fmm Python API
 
 To install the python extension, under the project folder run
 
@@ -35,40 +61,17 @@ Under the `python` folder in the project run
     python fmm_test.py
 ```
 
-#### Swig installation
+#### Run fmm as a web demo.
 
-Install SWIG, download the swig file as swig-4.0.0.tar.gz
+Check [OSM map matching](https://github.com/cyang-kth/osm_mapmatching).
 
-```
-tar -xf swig-4.0.0.tar.gz
-cd swig-4.0.0/
-./configure
-sudo make
-sudo make install
-```
-
-Verification of installation
-
-```
-$ swig -version
-SWIG Version 4.0.0
-Compiled with g++ [x86_64-pc-linux-gnu]
-Configured options: +pcre
-Please see http://www.swig.org for reporting bugs and further information
-```
 
 #### Common error with installation
 
-1. If an error pops as missing libpcre.so.1, we can copy from anaconda
+1. Run `python fmm_test.py` failure
 
-```
-sudo mv ~/anaconda2/lib/libpcre.so.* /usr/lib
-```
-
-2. Run `python fmm_test.py` failure
-
-The problem could be multiple version of Python installed. Make sure that the
-default python version
+The problem could be multiple version of Python cannot be recognized correctly in
+cmake. Make sure that the default python version
 
 ```
 which python
@@ -79,6 +82,22 @@ is the same as the Python library used in cmake build.
 ```
 cmake ..  
 ```
+
+To manually specify the Python version used in CMake,
+following this answer: https://stackoverflow.com/a/16045924/1484942.
+
+Edit the file `fmm/python/build/CMakeCache.txt` to replace python3.5 with python2.7.
+
+```
+PYTHON_INCLUDE_DIR:PATH=/usr/include/python2.7
+PYTHON_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libpython2.7.so
+_fmm_LIB_DEPENDS:STATIC=general;/usr/lib/x86_64-linux-gnu/libpython2.7.so;general;/usr/lib/libgdal.so;general;/usr/lib/x86_64-linux-gnu/libboost_serialization.so;
+FIND_PACKAGE_MESSAGE_DETAILS_PythonLibs:INTERNAL=[/usr/lib/x86_64-linux-gnu/libpython2.7.so][/usr/include/python2.7][v2.7.12()]
+```
+
+### Acknowledgement
+
+Great Acknowledgement is given to [Edi Buslovich](https://github.com/edibusl) for improving the installation instructions.
 
 ### Reference
 
