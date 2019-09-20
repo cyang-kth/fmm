@@ -25,7 +25,7 @@ Check the [wiki](https://github.com/cyang-kth/fmm/wiki) for details.
 
 ### Acknowledgement
 
-Great Acknowledgement is given to [Edi Buslovich](https://github.com/edibusl) for improving the installation instructions.
+Great acknowledgement is given to [Edi Buslovich](https://github.com/edibusl) for improving the installation instructions.
 
 ### Contact and citation
 
