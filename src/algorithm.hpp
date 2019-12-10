@@ -199,10 +199,16 @@ LineString * cutoffseg_unique(double offset1, double offset2, LineString * lines
  */
 void locate_point_by_offset(LineString * linestring, double offset, double *x, double *y){
     int Npoints = linestring->getNumPoints();
+    if (offset<=0.0) {
+      *x = linestring->getX(0);
+      *y = linestring->getY(0);
+      return;
+    }
     double L_processed=0; // length parsed
     int i = 0;
     double px=0;
     double py=0;
+    bool found = false;
     // Find the idx of the point to be exported close to p
     while(i<Npoints-1)
     {
@@ -212,11 +218,6 @@ void locate_point_by_offset(LineString * linestring, double offset, double *x, d
         double y2 = linestring->getY(i+1);
         double deltaL = std::sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1)); // length of current segment
         double ratio = (offset-L_processed)/deltaL;
-        GC_DEBUG(3) std::cout<< " deltaL " << deltaL <<'\n';
-        GC_DEBUG(3) std::cout<< " Offset " << offset <<'\n';
-        GC_DEBUG(3) std::cout<< " L_processed " << L_processed <<'\n';
-        GC_DEBUG(3) std::cout<< " Ratio " << ratio <<'\n';
-        //if
         if(offset>=L_processed && offset<=L_processed+deltaL)
         {
             // double ratio = (offset-L)/deltaL;
@@ -224,20 +225,20 @@ void locate_point_by_offset(LineString * linestring, double offset, double *x, d
             px = x1+ratio*(x2-x1);
             py = y1+ratio*(y2-y1);
             // cutoffline->addPoint(new_x, new_y);
+            found = true;
             break;
         }
         ++i;
         L_processed += deltaL;
     };
-    *x = px;
-    *y = py;
-//     if (offset>L_processed) {
-//         // The offset value is slightly bigger than the length because
-//         // of precision
-//         // implies that px and py are still 0
-//         px = linestring->getX(i);
-//         py = linestring->getY(i);
-//     }
+    if (found) {
+      *x = px;
+      *y = py;
+    } else {
+      // Assign the last value, offset is slightly bigger than length
+      *x = linestring->getX(Npoints-1);
+      *y = linestring->getY(Npoints-1);
+    }
 }; // calculate_offset_point
 
 /**
