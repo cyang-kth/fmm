@@ -39,9 +39,11 @@ int main (int argc, char **argv)
         std::cout << "No configuration file supplied" << endl;
         std::cout << "A configuration file is given in the example folder" << endl;
         std::cout << "Run `fmm config.xml`" << endl;
+        MM::FMM_Config::print_help();
     } else {
-        std::string configfile(argv[1]);
-        FMM_Config config(configfile);
+        // std::string configfile(argv[1]);
+        // FMM_Config config(configfile);
+        FMM_Config config(argc,argv);
         if (!config.validate_mm())
         {
             std::cout << "Invalid configuration file, program stop" << endl;

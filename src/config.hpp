@@ -18,6 +18,8 @@
 #include <exception>
 #include <iomanip>
 
+#include "cxxopts/cxxopts.hpp"
+
 namespace MM
 {
 
@@ -64,10 +66,15 @@ struct ResultConfig {
 class FMM_Config
 {
 public:
-    /**
-     * FILETYPE 0 for ini and 1 for XML
-     */
-    FMM_Config(const std::string &file)
+    FMM_Config(int argc, char **argv){
+      if (argc==2){
+        std::string configfile(argv[1]);
+        initialize_xml(configfile);
+      } else {
+        initialize_arg(argc,argv);
+      }
+    }
+    void initialize_xml(const std::string &file)
     {
         std::cout << "Start reading FMM configuration \n";
         // Create empty property tree object
@@ -109,7 +116,7 @@ public:
 
         // Output
         result_file = tree.get<std::string>("fmm_config.output.file");
-        mode = tree.get("fmm_config.output.mode", 0);
+        // mode = tree.get("fmm_config.output.mode", 0);
 
         if (tree.get_child_optional("fmm_config.output.fields")){
             // Fields specified
@@ -158,6 +165,143 @@ public:
             std::cout << "    Default output fields used.\n";
         }
         std::cout << "Finish with reading FMM configuration \n";
+    };
+
+    void initialize_arg(int argc, char **argv){
+      std::cout << "Start reading FMM configuration from arguments\n";
+      cxxopts::Options options("fmm_config", "Configuration parser of fmm");
+      options.add_options()
+      ("u,ubodt","Ubodt file name", cxxopts::value<std::string>())
+      ("a,network","Network file name", cxxopts::value<std::string>())
+      ("b,network_id","Network id name",
+        cxxopts::value<std::string>()->default_value("id"))
+      ("c,source","Network source name",
+        cxxopts::value<std::string>()->default_value("source"))
+      ("d,target","Network target name",
+        cxxopts::value<std::string>()->default_value("target"))
+      ("g,gps",   "GPS file name", cxxopts::value<std::string>())
+      ("f,gps_id",   "GPS file id",
+        cxxopts::value<std::string>()->default_value("id"))
+      ("n,gps_geom",   "GPS file geom column name",
+        cxxopts::value<std::string>()->default_value("geom"))
+      ("k,candidates",   "Number of candidates",
+        cxxopts::value<int>()->default_value("8"))
+      ("r,radius",   "Search radius",
+        cxxopts::value<double>()->default_value("300.0"))
+      ("e,error",   "GPS error",
+        cxxopts::value<double>()->default_value("50.0"))
+      ("p,pf",   "penalty_factor",
+        cxxopts::value<double>()->default_value("0.0"))
+      ("o,output",   "Output file name", cxxopts::value<std::string>())
+      ("m,output_fields",   "Output fields", cxxopts::value<std::string>());
+
+      auto result = options.parse(argc, argv);
+      ubodt_file = result["ubodt"].as<std::string>();
+      binary_flag = get_file_extension(ubodt_file);
+      delta_defined = false;
+      delta = 0.0;
+
+      network_file = result["network"].as<std::string>();
+      network_id = result["network_id"].as<std::string>();
+      network_source = result["source"].as<std::string>();
+      network_target = result["target"].as<std::string>();
+
+      // GPS
+      gps_file = result["gps"].as<std::string>();
+      gps_id = result["gps_id"].as<std::string>();
+      gps_geom = result["gps_geom"].as<std::string>();
+
+      // Other parameters
+      k = result["candidates"].as<int>();
+      radius = result["radius"].as<double>();;
+
+      // HMM
+      gps_error = result["error"].as<double>();
+      penalty_factor = result["pf"].as<double>();
+
+      // Output
+      result_file = result["output"].as<std::string>();
+
+      if (result.count("output_fields")>0){
+        result_config.write_cpath = false;
+        result_config.write_mgeom = false;
+        std::string fields = result["output_fields"].as<std::string>();
+        std::set<std::string> dict = string2set(fields);
+        if (dict.find("opath")!=dict.end()) {
+          result_config.write_opath = true;
+        }
+        if (dict.find("cpath")!=dict.end()) {
+          result_config.write_cpath = true;
+        }
+        if (dict.find("mgeom")!=dict.end()) {
+          result_config.write_mgeom = true;
+        }
+        if (dict.find("ogeom")!=dict.end()){
+            result_config.write_ogeom = true;
+        }
+        if (dict.find("tpath")!=dict.end()){
+            result_config.write_tpath = true;
+        }
+        if (dict.find("pgeom")!=dict.end()){
+            result_config.write_pgeom = true;
+        }
+        if (dict.find("offset")!=dict.end()){
+            result_config.write_offset = true;
+        }
+        if (dict.find("error")!=dict.end()){
+            result_config.write_error = true;
+        }
+        if (dict.find("spdist")!=dict.end()){
+            result_config.write_spdist = true;
+        }
+        if (dict.find("all")!=dict.end()){
+            result_config.write_ogeom= true;
+            result_config.write_opath = true;
+            result_config.write_pgeom = true;
+            result_config.write_offset = true;
+            result_config.write_error = true;
+            result_config.write_spdist = true;
+            result_config.write_cpath = true;
+            result_config.write_mgeom = true;
+            result_config.write_tpath = true;
+        }
+      }
+      std::cout << "Finish with reading FMM configuration \n";
+    }
+
+    static void print_help(){
+      std::cout<<"fmm argument lists:\n";
+      std::cout<<"--ubodt (required) <string>: Ubodt file name\n";
+      std::cout<<"--network (required) <string>: Network file name\n";
+      std::cout<<"--gps (required) <string>: GPS file name\n";
+      std::cout<<"--output (required) <string>: Output file name\n";
+      std::cout<<"--network_id (optional) <string>: Network id name (id)\n";
+      std::cout<<"--source (optional) <string>: Network source name (source)\n";
+      std::cout<<"--target (optional) <string>: Network target name (target)\n";
+      std::cout<<"--gps_id (optional) <string>: GPS id name (id)\n";
+      std::cout<<"--gps_geom (optional) <string>: GPS geometry name (geom)\n";
+      std::cout<<"--k (optional) <int>: number of candidates (8)\n";
+      std::cout<<"--radius (optional) <double>: search radius (300)\n";
+      std::cout<<"--error (optional) <double>: GPS error (50)\n";
+      std::cout<<"--pf (optional) <double>: penalty factor (0)\n";
+      std::cout<<"--output_fields (optional) <string>: Output fields (cpath,mgeom)\n";
+      std::cout<<"For xml configuration, check example folder\n";
+    };
+
+    static std::set<std::string> string2set(const std::string &s,char delim=','){
+      std::set<std::string> result;
+      // stringstream class check1
+      std::stringstream check1(s);
+
+      std::string intermediate;
+
+      // Tokenizing w.r.t. space ' '
+      while(getline(check1, intermediate, delim))
+      {
+          result.insert(intermediate);
+      }
+
+      return result;
     };
 
     ResultConfig get_result_config(){
@@ -258,6 +402,7 @@ public:
     // GPS file
     std::string gps_file;
     std::string gps_id;
+    std::string gps_geom;
     // Result file
     std::string result_file;
     /*
