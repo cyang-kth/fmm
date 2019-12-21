@@ -76,8 +76,8 @@ BGLineString *ogr2bg(OGRLineString *line){
 
 OGRLineString *read_wkt(const std::string& wkt){
   OGRGeometry *poGeometry;
-	char* pszWKT = const_cast<char*>(wkt.c_str());
-	OGRErr tag = OGRGeometryFactory::createFromWkt(&pszWKT, NULL, &poGeometry);
+	//char* pszWKT = const_cast<char*>(wkt.c_str());
+	OGRErr tag = OGRGeometryFactory::createFromWkt(wkt.c_str(), NULL, &poGeometry);
   return (OGRLineString*) poGeometry;
 };
 

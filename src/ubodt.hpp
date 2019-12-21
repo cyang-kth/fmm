@@ -255,9 +255,8 @@ int estimate_ubodt_rows(const std::string &filename){
             int row_size = 28;
             return file_bytes/row_size;
         }
-    } else {
-        return -1;
     }
+    return -1;
 };
 
 int find_prime_number(double value){
