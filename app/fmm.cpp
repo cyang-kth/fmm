@@ -62,13 +62,24 @@ int main (int argc, char **argv)
             config.delta = ubodt->get_delta();
             std::cout<<"    Delta inferred from ubodt as "<< config.delta <<'\n';
         }
-        TrajectoryReader tr_reader(config.gps_file,config.gps_id);
+        //TrajectoryReader tr_reader(config.gps_file,config.gps_id);
+        std::shared_ptr<MM::IO::AbstractTrajReader> tr_reader;
+        if (config.GetInputFormat()==0){
+          SPDLOG_INFO("Input CSV format");
+          tr_reader = std::make_shared<MM::IO::TrajectoryCSVReader>(
+            config.gps_file,config.gps_id,config.gps_geom);
+        } else {
+          SPDLOG_INFO("Input GDAL format");
+          tr_reader = std::make_shared<MM::IO::TrajectoryReader>(
+            config.gps_file,config.gps_id);
+        }
+
         ResultConfig result_config = config.get_result_config();
         ResultWriter rw(config.result_file,&network,result_config);
         int progress=0;
         int points_matched=0;
         int total_points=0;
-        int num_trajectories = tr_reader.get_num_trajectories();
+        int num_trajectories = tr_reader->get_num_trajectories();
         int step_size = num_trajectories/10;
         if (step_size<10) step_size=10;
         std::chrono::steady_clock::time_point corrected_begin = std::chrono::steady_clock::now();
@@ -76,10 +87,10 @@ int main (int argc, char **argv)
         // The header is moved to constructor of result writer
         // rw.write_header();
 
-        while (tr_reader.has_next_feature())
+        while (tr_reader->has_next_feature())
         {
             DEBUG(2) std::cout<<"Start of the loop"<<'\n';
-            Trajectory trajectory = tr_reader.read_next_trajectory();
+            Trajectory trajectory = tr_reader->read_next_trajectory();
             int points_in_tr = trajectory.geom->getNumPoints();
             if (progress%step_size==0) std::cout<<"Progress "<<progress << " / " << num_trajectories <<'\n';
             DEBUG(1) std::cout<<"\n============================="<<'\n';

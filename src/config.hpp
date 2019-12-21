@@ -304,6 +304,18 @@ public:
       return result;
     };
 
+    int GetInputFormat(){
+      std::string fn_extension = gps_file.substr(
+        gps_file.find_last_of(".") + 1);
+      if (fn_extension == "csv" || fn_extension == "txt") {
+        return 0;
+      } else if (fn_extension == "db" || fn_extension == "shp") {
+        return 1;
+      }
+      SPDLOG_CRITICAL("Program stops as the output format is unknown");
+      std::exit(EXIT_FAILURE);
+    };
+
     ResultConfig get_result_config(){
         return result_config;
     };

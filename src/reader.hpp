@@ -28,6 +28,13 @@ namespace MM
 {
 namespace IO
 {
+
+class AbstractTrajReader{
+public:
+  virtual Trajectory read_next_trajectory()=0;
+  virtual bool has_next_feature()=0;
+  virtual int get_num_trajectories()=0;
+};
 /**
  *  According to the documentation at http://gdal.org/1.11/ogr/ogr_apitut.html
  *
@@ -39,7 +46,7 @@ namespace IO
  *      OGRGeometryFactory::destroyGeometry(geometry_pointer);
  *
  */
-class TrajectoryReader
+class TrajectoryReader: public AbstractTrajReader
 {
 public:
     /**
@@ -112,7 +119,7 @@ public:
         BGLineString *linestring = ogr2bg((OGRLineString*) rawgeometry);
 #else
         OGRLineString *linestring = (OGRLineString*) rawgeometry->clone();
-#endif  
+#endif
         OGRFeature::DestroyFeature(ogrFeature);
         ++_cursor;
         return Trajectory(trid,linestring);
@@ -133,7 +140,7 @@ public:
             BGLineString *linestring = ogr2bg((OGRLineString*) rawgeometry);
 #else
             OGRLineString *linestring = (OGRLineString*) rawgeometry->clone();
-#endif  
+#endif
             OGRFeature::DestroyFeature(ogrFeature);
             trajectories[i].id = trid;
             trajectories[i].geom = linestring;
@@ -158,7 +165,7 @@ public:
             BGLineString *linestring = ogr2bg((OGRLineString*) rawgeometry);
 #else
             OGRLineString *linestring = (OGRLineString*) rawgeometry->clone();
-#endif  
+#endif
             OGRFeature::DestroyFeature(ogrFeature);
             trajectories[i].id = trid;
             trajectories[i].geom = linestring;
@@ -191,6 +198,89 @@ private:
 #endif // GDAL_VERSION_MAJOR
     OGRLayer  *ogrlayer;
 }; // TrajectoryReader
+
+class TrajectoryCSVReader: public AbstractTrajReader{
+public:
+    TrajectoryCSVReader(const std::string &e_filename,
+                        const std::string &id_name,
+                        const std::string &geom_name):
+    ifs(e_filename){
+      std::string line;
+      std::getline(ifs, line);
+      std::stringstream check1(line);
+      std::string intermediate;
+      // Tokenizing w.r.t. space ' '
+      int i = 0;
+      while(getline(check1, intermediate, delim))
+      {
+        if (intermediate.compare(id_name) == 0) {
+          id_idx = i;
+        }
+        if (intermediate.compare(geom_name) == 0) {
+          geom_idx = i;
+        }
+        ++i;
+      }
+      if (id_idx<0 ||geom_idx<0){
+        SPDLOG_CRITICAL("Id {} or Geometry column {} not found",
+                        id_name,geom_name);
+        std::exit(EXIT_FAILURE);
+      }
+      SPDLOG_INFO("Id index {} Geometry index {}",id_idx,geom_idx);
+    };
+    Trajectory read_next_trajectory(){
+      // Read the geom idx column into a trajectory
+      std::string line;
+      std::getline(ifs, line);
+      std::stringstream ss(line);
+      int trid;
+      int index=0;
+      std::string intermediate;
+#ifdef USE_BG_GEOMETRY
+      LineString *linestring = new LineString();
+#else
+      OGRLineString *linestring;
+#endif
+      while (std::getline(ss,intermediate,delim)){
+        if (index == id_idx){
+          trid = std::stoi(intermediate);
+        }
+        if (index == geom_idx){
+          // intermediate
+#ifdef USE_BG_GEOMETRY
+          boost::geometry::read_wkt(intermediate,*(linestring->get_geometry()));
+          // BGLineString *linestring = ogr2bg((OGRLineString*) rawgeometry);
+#else
+          linestring = read_wkt(intermediate);
+#endif
+        }
+        ++index;
+      }
+      return Trajectory{trid,linestring};
+    };
+    int get_num_trajectories()
+    {
+      return 100;
+    };
+    bool has_next_feature() {
+        return ifs.peek() != EOF;
+    };
+    void reset_cursor(){
+      ifs.clear();
+      ifs.seekg(0, std::ios::beg);
+      std::string line;
+      std::getline(ifs, line);
+    };
+    void close(){
+      ifs.close();
+    }
+private:
+    std::fstream ifs;
+    int id_idx=-1;
+    int geom_idx=-1;
+    char delim = ';';
+}; // TrajectoryCSVReader
+
 } // IO
 } // MM
 #endif // MM_READER_HPP

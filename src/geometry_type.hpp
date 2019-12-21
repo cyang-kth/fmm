@@ -71,6 +71,16 @@ BGLineString *ogr2bg(OGRLineString *line){
 
 #else
 
+// Read WKT into a OGRLineString, the caller should take care of
+// freeing the memory.
+
+OGRLineString *read_wkt(const std::string& wkt){
+  OGRGeometry *poGeometry;
+	char* pszWKT = const_cast<char*>(wkt.c_str());
+	OGRErr tag = OGRGeometryFactory::createFromWkt(&pszWKT, NULL, &poGeometry);
+  return (OGRLineString*) poGeometry;
+};
+
 typedef OGRLineString LineString;
 
 #endif //USE_BG_GEOMETRY
