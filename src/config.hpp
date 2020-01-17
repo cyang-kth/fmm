@@ -56,6 +56,8 @@ struct ResultConfig {
     bool write_wkt = true; // mgeom in WKT or WKB format
     bool write_spdist = false; // The distance travelled between two GPS observations
     bool write_pgeom = false; // A linestring connecting the point matched for each edge.
+    bool write_ep = false; // The emission probability of each matched point.
+    bool write_tp = false; // The transition probability of each matched point.
 };
 
 /**
@@ -143,6 +145,12 @@ public:
             if (tree.get_child_optional("fmm_config.output.fields.spdist")){
                 result_config.write_spdist = true;
             }
+            if (tree.get_child_optional("fmm_config.output.fields.ep")){
+                result_config.write_ep = true;
+            }
+            if (tree.get_child_optional("fmm_config.output.fields.tp")){
+                result_config.write_tp = true;
+            }
             if (tree.get_child_optional("fmm_config.output.fields.all")){
                 result_config.write_ogeom= true;
                 result_config.write_opath = true;
@@ -153,6 +161,8 @@ public:
                 result_config.write_cpath = true;
                 result_config.write_mgeom = true;
                 result_config.write_tpath = true;
+                result_config.write_ep = true;
+                result_config.write_tp = true;
             }
         } else {
             std::cout << "    Default output fields used.\n";

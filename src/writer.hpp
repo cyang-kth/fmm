@@ -57,7 +57,6 @@ public:
      * @param mgeom: the geometry of the matched path (untraversed path removed in complete path)
      */
     void write_result(int tr_id, LineString *ogeom, O_Path *o_path_ptr, T_Path *t_path_ptr, LineString *mgeom){
-        // DEBUG(2) std::cout << __FILE__ << "    Line" << __LINE__ << ":    " << __FUNCTION__ << '\n';
         std::stringstream buf;
         buf << tr_id;
         if (config.write_ogeom){
@@ -97,6 +96,14 @@ public:
         if (config.write_mgeom) {
             buf << ";";
             write_geometry(buf,mgeom);
+        }
+        if (config.write_ep) {
+            buf << ";";
+            write_ep(buf,o_path_ptr);
+        }
+        if (config.write_tp) {
+            buf << ";";
+            write_tp(buf,o_path_ptr);
         }
         buf << '\n';
         // It seems that the one below is important to ensure the buffer control flow works
@@ -140,6 +147,8 @@ public:
         if (config.write_cpath) header+=";cpath";
         if (config.write_tpath) header+=";tpath";
         if (config.write_mgeom) header+=";mgeom";
+        if (config.write_ep) header+=";ep";
+        if (config.write_tp) header+=";tp";
         m_fstream << header << '\n';
     };
     static void write_geometry(std::stringstream &buf, LineString *line){
@@ -157,9 +166,7 @@ public:
     // Write the optimal path
     static void write_o_path(std::stringstream &buf,O_Path *o_path_ptr)
     {
-        DEBUG(2) std::cout << __FILE__ << "    Line" << __LINE__ << ":    " << __FUNCTION__ << '\n';
         if (o_path_ptr == nullptr) {
-            DEBUG(2) std::cout << "Matched path NULL" << '\n';
             return;
         };
         int N = o_path_ptr->size();
@@ -168,14 +175,11 @@ public:
             buf << (*o_path_ptr)[i]->edge->id_attr << ",";
         }
         buf << (*o_path_ptr)[N - 1]->edge->id_attr;
-        DEBUG(3) std::cout << "Finish writing Optimal path" << '\n';
     };
 
     static void write_offset(std::stringstream &buf,O_Path *o_path_ptr)
     {
-        DEBUG(2) std::cout << __FILE__ << "    Line" << __LINE__ << ":    " << __FUNCTION__ << '\n';
         if (o_path_ptr == nullptr) {
-            DEBUG(2) std::cout << "Matched path NULL" << '\n';
             return;
         };
         int N = o_path_ptr->size();
@@ -184,14 +188,11 @@ public:
             buf << (*o_path_ptr)[i]->offset<< ",";
         }
         buf << (*o_path_ptr)[N - 1]->offset;
-        DEBUG(3) std::cout << "Finish writing Optimal path" << '\n';
     };
 
     static void write_spdist(std::stringstream &buf,O_Path *o_path_ptr)
     {
-        DEBUG(2) std::cout << __FILE__ << "    Line" << __LINE__ << ":    " << __FUNCTION__ << '\n';
         if (o_path_ptr == nullptr) {
-            DEBUG(2) std::cout << "Matched path NULL" << '\n';
             return;
         };
         int N = o_path_ptr->size();
@@ -200,14 +201,41 @@ public:
             buf << (*o_path_ptr)[i]->sp_dist<< ",";
         }
         buf << (*o_path_ptr)[N - 1]->sp_dist;
-        DEBUG(3) std::cout << "Finish writing Optimal path" << '\n';
+    };
+
+    static void write_ep(std::stringstream &buf,O_Path *o_path_ptr)
+    {
+        if (o_path_ptr == nullptr) {
+            return;
+        };
+        int N = o_path_ptr->size();
+        for (int i = 0; i < N - 1; ++i)
+        {
+            buf << (*o_path_ptr)[i]->obs_prob<< ",";
+        }
+        buf << (*o_path_ptr)[N - 1]->obs_prob;
+    };
+
+    static void write_tp(std::stringstream &buf,O_Path *o_path_ptr)
+    {
+        if (o_path_ptr == nullptr) return;
+        int N = o_path_ptr->size();
+        for (int i = 0; i < N - 1; ++i)
+        {
+            float ca = (*o_path_ptr)[i]->cumu_prob;
+            float cb = (*o_path_ptr)[i+1]->cumu_prob;
+            float tp = (cb - ca)/((*o_path_ptr)[i+1]->obs_prob+1e-7);
+            if (i==N-2) {
+              buf << tp;
+            } else {
+              buf << tp <<",";
+            }
+        }
     };
 
     static void write_gps_error(std::stringstream &buf,O_Path *o_path_ptr)
     {
-        DEBUG(2) std::cout << __FILE__ << "    Line" << __LINE__ << ":    " << __FUNCTION__ << '\n';
         if (o_path_ptr == nullptr) {
-            DEBUG(2) std::cout << "Matched path NULL" << '\n';
             return;
         };
         int N = o_path_ptr->size();
@@ -216,15 +244,12 @@ public:
             buf << (*o_path_ptr)[i]->dist<< ",";
         }
         buf << (*o_path_ptr)[N - 1]->dist;
-        DEBUG(3) std::cout << "Finish writing Optimal path" << '\n';
     };
 
     // Write the optimal path
     static void write_pgeom(std::stringstream &buf,O_Path *o_path_ptr)
     {
-        DEBUG(2) std::cout << __FILE__ << "    Line" << __LINE__ << ":    " << __FUNCTION__ << '\n';
         if (o_path_ptr == nullptr) {
-            DEBUG(2) std::cout << "Matched path NULL" << '\n';
             return;
         };
         int N = o_path_ptr->size();
@@ -241,7 +266,6 @@ public:
         if (!pline.IsEmpty()) {
             write_geometry(buf,&pline);
         }
-        DEBUG(3) std::cout << "Finish writing Optimal path" << '\n';
     };
 
     // Write the complete path
@@ -255,6 +279,8 @@ public:
         }
         buf << m_network_ptr->get_edge_id_attr((*c_path_ptr)[N - 1]);
     };
+
+
 
     // Write the traversed path separated by vertical bar
     void write_tpath(std::stringstream &buf,T_Path *t_path_ptr) {
