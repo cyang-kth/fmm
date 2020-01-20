@@ -12,7 +12,12 @@ This project is an implementation of the fast map matching (FMM) algorithm intro
 - Support **city level** road network (100,000 edges tested) and **millions of GPS records**
 - Tested on Ubuntu, :tada: Windows and :tada: Mac platform (C++ program).
 - Python API (a preliminary version tested on Ubuntu and Windows system)
-- :tada: A web application under the `web_demo` folder is designed for map matching on OpenStreetMap. A tutorial is provided at [OSM map matching](https://github.com/cyang-kth/osm_mapmatching) and screenshots are shown below.
+
+### Get started with fmm
+
+- Map matching with Shapefile: check the [example](https://github.com/cyang-kth/fmm/tree/master/example)
+- Map matching with OpenStreetMap: check the tutorial at [OSM map matching](https://github.com/cyang-kth/osm_mapmatching)
+- Interactive exploration of Map matching: a web application under the `web_demo` folder is designed for map matching on OpenStreetMap and screenshots are shown below.
 
 <img src="img/demo1.gif" width="400"/> <img src="img/demo2.gif" width="400"/>
 
