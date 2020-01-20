@@ -137,15 +137,7 @@ public:
       e->source = ogrFeature->GetFieldAsInteger(source_idx);
       e->target = ogrFeature->GetFieldAsInteger(target_idx);
       OGRGeometry *rawgeometry = ogrFeature->GetGeometryRef();
-//             CS_DEBUG(3) std::cout<<"Line "<< __LINE__<<" ID "<< e->id <<" Length "<<((OGRLineString*) rawgeometry)->get_Length()<<"\n";
-//             CS_DEBUG(3) std::cout<<"Line "<< __LINE__<<" ID "<< e->id <<" Points "<<((OGRLineString*) rawgeometry)->getNumPoints()<<"\n";
-      // The cloned geometry has to be freed by OGRGeometryFactory
-      // https://github.com/OSGeo/gdal/blob/93fb17379bccba28a43a03bb2c19b868f264ebe1/gdal/ogr/ogrlinestring.cpp#L141
-#ifdef USE_BG_GEOMETRY
-      e->geom = ogr2bg((OGRLineString*) rawgeometry);
-#else
-      e->geom = (OGRLineString*) rawgeometry->clone();
-#endif
+      e->geom = ogr2linestring((OGRLineString*) rawgeometry);
       e->length = e->geom->get_Length();
       if (e->source>max_node_id)
       {

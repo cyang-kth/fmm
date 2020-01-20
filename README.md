@@ -17,7 +17,7 @@ This project is an implementation of the fast map matching (FMM) algorithm intro
 
 - Map matching with Shapefile: check the [example](https://github.com/cyang-kth/fmm/tree/master/example)
 - Map matching with OpenStreetMap: check the tutorial at [OSM map matching](https://github.com/cyang-kth/osm_mapmatching)
-- Interactive exploration of Map matching: a web application under the `web_demo` folder is designed for map matching on OpenStreetMap and screenshots are shown below.
+- Interactive exploration of map matching: a web application under the `web_demo` folder is designed for map matching on OpenStreetMap and screenshots are shown below.
 
 <img src="img/demo1.gif" width="400"/> <img src="img/demo2.gif" width="400"/>
 

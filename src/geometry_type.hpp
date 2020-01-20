@@ -2,14 +2,18 @@
 #define MM_GEOMTYPES_HPP
 
 #ifdef USE_BG_GEOMETRY
+
 #include <ogrsf_frmts.h> // C++ API for GDAL
 #include <boost/geometry.hpp>
 #include <boost/geometry/geometries/geometries.hpp>
 #include <boost/geometry/extensions/gis/io/wkb/read_wkb.hpp>
 #include <iterator>
 #include <vector>
-#else
+
+#else  // USE_BG_GEOMETRY not defined
+
 #include <ogrsf_frmts.h> // C++ API for GDAL
+
 #endif
 
 namespace MM {
@@ -59,7 +63,7 @@ typedef BGLineString LineString;
  *  freeing the memory.
  *
  */
-BGLineString *ogr2bg(OGRLineString *line){
+LineString *ogr2linestring(OGRLineString *line){
     int binary_size = line->WkbSize();
     std::vector<unsigned char> wkb(binary_size);
     // http://www.gdal.org/ogr__core_8h.html#a36cc1f4d807ba8f6fb8951f3adf251e2
@@ -69,9 +73,15 @@ BGLineString *ogr2bg(OGRLineString *line){
     return l;
 };
 
-#else
+#else // USE_BG_GEOMETRY not defined
 
 typedef OGRLineString LineString;
+
+LineString *ogr2linestring(OGRLineString *line){
+    LineString *linestring = (OGRLineString*) line->clone();
+    return linestring;
+};
+
 
 #endif //USE_BG_GEOMETRY
 
