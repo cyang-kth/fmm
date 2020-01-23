@@ -15,37 +15,44 @@
 
 namespace MM {
 
+typedef int NodeID;
+typedef int EdgeID;
+typedef unsigned int NodeIndex;
+typedef unsigned int EdgeIndex;
+
 struct Edge
 {
-    int id; // This is the id, which is continuous distributed
-    std::string id_attr; // This is the external ID attribute, which does not have to be continuous
-    int source; // source node ID
-    int target; // target node ID
-    double length; // length of the edge polyline
-    LineString *geom; // a pointer to the edge geometry
+  // This is the index of an edge, which is continuous [0,N-1]
+  EdgeIndex index;
+  // Edge ID, can be discontinuous integers
+  EdgeID id;
+  NodeIndex source;   // source node ID
+  NodeIndex target;   // target node ID
+  double length;   // length of the edge polyline
+  LineString *geom;   // a pointer to the edge geometry
 };
 
 struct Candidate
 {
-    float offset; // offset distance from the start of polyline to p'
-    double dist; // distance from original point p to map matched point p'
-    double obs_prob; // this is the emission probability
-    Edge *edge; // candidate edge
-    Candidate* prev; // optimal previous candidate used in Viterbi algorithm
-    float cumu_prob; // used in Viterbi, initialized to be 0
-    float sp_dist; // sp distance to previous point, initialized to be 0
+  float offset;   // offset distance from the start of polyline to p'
+  double dist;   // distance from original point p to map matched point p'
+  double obs_prob;   // this is the emission probability
+  Edge *edge;   // candidate edge
+  Candidate* prev;   // optimal previous candidate used in Viterbi algorithm
+  float cumu_prob;   // used in Viterbi, initialized to be 0
+  float sp_dist;   // sp distance to previous point, initialized to be 0
 };
 
 /* Record type in UBODT */
 struct Record
 {
-    int source;
-    int target;
-    int first_n; // next_n in the paper
-    int prev_n;
-    int next_e;
-    double cost;
-    Record *next; // the next Record used in Hashtable
+  int source;
+  int target;
+  int first_n;   // next_n in the paper
+  int prev_n;
+  int next_e;
+  double cost;
+  Record *next;   // the next Record used in Hashtable
 };
 
 /* Transitiong graph*/
@@ -63,9 +70,9 @@ typedef std::vector<int> C_Path;
 
 // The traversed path stores also the location of GPS point inside the C_Path, thus
 // edges traversed between two GPS observations can be found.
-struct T_Path{
-    C_Path cpath;
-    std::vector<int> indices;
+struct T_Path {
+  C_Path cpath;
+  std::vector<int> indices;
 };
 
 }
