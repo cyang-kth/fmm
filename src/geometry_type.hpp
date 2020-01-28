@@ -19,7 +19,7 @@ typedef bg::model::linestring<boost_point> linestring_t;
 /**
  *  Boost Geometry Linestring, compatible with OGRGeometry
  */
-class BGLineString {
+class LineString {
 public:
   inline double getX(int i) const {
     return bg::get<0>(line.at(i));
@@ -62,16 +62,15 @@ public:
   };
 private:
   linestring_t line;
-}; // BGLineString
+}; // LineString
 
-typedef BGLineString LineString;
 
 /**
  *  Convert an OGRLineString to Boost geometry, the caller is responsible to
  *  freeing the memory.
  *
  */
-LineString ogr2bg(OGRLineString *line){
+LineString ogr2linestring(OGRLineString *line){
   int binary_size = line->WkbSize();
   std::vector<unsigned char> wkb(binary_size);
   // http://www.gdal.org/ogr__core_8h.html#a36cc1f4d807ba8f6fb8951f3adf251e2
@@ -81,7 +80,7 @@ LineString ogr2bg(OGRLineString *line){
   return l;
 };
 
-OGRLineString *bg2ogr(BGLineString &line, int srid=4326){
+OGRLineString *linestring2ogr(BGLineString &line, int srid=4326){
   std::vector<unsigned char> wkb;
   bg::write_wkb(line.get_geometry(),std::back_inserter(wkb));
   OGRGeometry *poGeometry;

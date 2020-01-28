@@ -26,10 +26,10 @@ struct Edge
   EdgeIndex index;
   // Edge ID, can be discontinuous integers
   EdgeID id;
-  NodeIndex source;   // source node ID
-  NodeIndex target;   // target node ID
+  NodeIndex source;   // source node index
+  NodeIndex target;   // target node index
   double length;   // length of the edge polyline
-  LineString *geom;   // a pointer to the edge geometry
+  LineString geom;   // edge geometry
 };
 
 struct Candidate
@@ -46,11 +46,11 @@ struct Candidate
 /* Record type in UBODT */
 struct Record
 {
-  int source;
-  int target;
-  int first_n;   // next_n in the paper
-  int prev_n;
-  int next_e;
+  NodeIndex source;
+  NodeIndex target;
+  NodeIndex first_n;   // next_n in the paper
+  NodeIndex prev_n;
+  EdgeIndex next_e;
   double cost;
   Record *next;   // the next Record used in Hashtable
 };
@@ -65,8 +65,8 @@ typedef std::vector<Point_Candidates> Traj_Candidates; // candidates of a trajec
 // Optimal path containing candidates matched to each point in a trajectory
 typedef std::vector<Candidate*> O_Path;
 
-// Complete path, a contiguous sequence of edges traversed
-typedef std::vector<int> C_Path;
+// Complete path, a sequence of spatially contiguous edges traversed
+typedef std::vector<EdgeID> C_Path;
 
 // The traversed path stores also the location of GPS point inside the C_Path, thus
 // edges traversed between two GPS observations can be found.

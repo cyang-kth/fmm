@@ -30,76 +30,93 @@
 #include <deque>
 #include <algorithm> // std::reverse
 #include <unordered_map>
+
 #include <boost/archive/binary_oarchive.hpp> // Binary output of UBODT
-#include <boost/config.hpp>
-#include <boost/graph/graph_traits.hpp>
-#include <boost/graph/adjacency_list.hpp>
+
 #include <boost/graph/dijkstra_shortest_paths.hpp>
 #include <boost/graph/dijkstra_shortest_paths_no_color_map.hpp>
-#include <boost/property_map/property_map.hpp>
 
-
-#include "types.hpp"
-#include "reader.hpp"
+#include "graph_type.hpp"
 #include "network.hpp"
 
 namespace MM {
+
 class NetworkGraph
 {
 public:
-  // A infinity value used in the routing algorithm
-  static constexpr double DIST_NOT_FOUND = DBL_MAX;
   /**
    *  Construct a network graph from a network object
    */
-  NetworkGraph(Network *network) {
+  NetworkGraph(Network *network_arg) : network(network_arg) {
     std::vector<Edge> *edges = network->get_edges();
     std::cout << "Construct graph from network edges start" << '\n';
     // Key is the external ID and value is the index of vertice
-    std::unordered_map<int,int> vertex_map;
-    int current_idx=-1;
-    edge_descriptor e;
+    NodeIndex current_idx = 0;
+    EdgeDescriptor e;
     bool inserted;
     g = Graph_T();     //18
     int N = edges->size();
-    int source_idx = 0;
-    int target_idx = 0;
-    printf("Network edges :%d \n", N);
+    // std::cout<< "Network edges : " << N <<"\n";
     for (int i = 0; i < N; ++i) {
-      Edge &network_edge = (*edges)[i];
-      auto search = vertex_map.find(network_edge.source);
-      // Search for source node idx
-      if(search != vertex_map.end()) {
-        // A node exists already
-        source_idx = search->second;
-      } else {
-        // A new node is found
-        ++current_idx;
-        vertex_map.insert({network_edge.source,current_idx});
-        source_idx = current_idx;
-        vertex_id_vec.push_back(network_edge.source);
-      };
-      // Search for target node idx
-      search = vertex_map.find(network_edge.target);
-      if(search != vertex_map.end()) {
-        // A node exists already
-        target_idx = search->second;
-      } else {
-        // A new node is found
-        ++current_idx;
-        vertex_map.insert({network_edge.target,current_idx});
-        target_idx = current_idx;
-        vertex_id_vec.push_back(network_edge.target);
-      };
-      boost::tie(e, inserted) = add_edge(source_idx,target_idx, g);
-      g[e].id = network_edge.id;
-      g[e].length = network_edge.length;
+      Edge &edge = (*edges)[i];
+      boost::tie(e, inserted) = boost::add_edge(edge.source,edge.target,g);
+      // id is the FID read, id_attr is the external property in SHP
+      g[e].index = edge.index;
+      g[e].length = edge.length;
     }
     num_vertices = boost::num_vertices(g);
     std::cout << "Graph nodes " << num_vertices << '\n';
-    initialize_distances_predecessors();
+    std::cout << "Graph edges " << boost::num_edges(g) << '\n';
     std::cout << "Construct graph from network edges end" << '\n';
   };
+
+  Graph_T &get_boost_graph(){
+    return g;
+  };
+  Network *get_network(){
+    return network;
+  };
+  unsigned int get_num_vertices(){
+    return num_vertices;
+  };
+
+  /**
+   *  Get the successors (next node visited) for each node in a
+   *  shortest path tree defined by a deque and a predecessor vector
+   */
+  std::vector<vertex_descriptor> get_successors(
+    std::deque<vertex_descriptor> &nodesInDistance,
+    std::vector<vertex_descriptor> &predecessors) {
+    int N = nodesInDistance.size();
+    std::vector<vertex_descriptor> successors =
+      std::vector<vertex_descriptor>(N);
+    int i;
+    vertex_descriptor u, v;
+    vertex_descriptor source = nodesInDistance[0];    // source node
+    for (i = 0; i < N; ++i) {
+      v = nodesInDistance[i];
+      while ((u = predecessors[v]) != source) {
+        v = u;
+      }
+      successors[i] = v;
+    }
+    return successors;
+  };
+
+  // Routing from a single source s to all nodes within an upperbound of
+  // delta.
+  void single_source_upperbound_routing(NodeIndex s,
+                                        double delta,
+                                        PredecessorMap *pmap,
+                                        DistanceMap *dmap){
+
+  };
+
+  void write_result(std::ostream& stream,PredecessorMap &pmap,
+                    DistanceMap &dmap){
+    
+  };
+
   /**
    * Precompute an UBODT with delta and save it to the file
    * @param filename [description]
@@ -131,103 +148,8 @@ public:
     }
     myfile.close();
   };
-private:
-  /* Type definition for the property stored at each edge */
-  struct Edge_Property
-  {
-    int id;
-    double length;
-  };
-  // Boost graph type definition
-  typedef boost::adjacency_list<boost::vecS, boost::vecS,
-                                boost::directedS, boost::no_property,
-                                Edge_Property> Graph_T;
-  typedef Graph_T::vertex_descriptor vertex_descriptor;
-  typedef Graph_T::edge_descriptor edge_descriptor;
-  typedef boost::graph_traits<Graph_T>::vertex_iterator vertex_iterator;
-  typedef boost::graph_traits<Graph_T>::out_edge_iterator out_edge_iterator;
-  struct found_goals {};   // Used for driving distances
-  /**
-   * The visitor is an inner class whose function examine_vertex()
-   * is called whenever a new node is found in conventional Dijkstra
-   * algorithm.
-   *
-   * It is called in the driving_distance function.
-   */
-  class driving_distance_visitor : public boost::default_dijkstra_visitor {
-public:
-    // Create a visitor
-    explicit driving_distance_visitor(
-      double distance_goal,
-      std::deque< vertex_descriptor > &nodesInDistance,
-      std::vector< double > &distances,
-      std::vector< vertex_descriptor > &examined_vertices_ref
-      ) : m_distance_goal(distance_goal),
-      m_nodes(nodesInDistance), m_dist(distances),
-      m_examined_vertices(examined_vertices_ref) {
-    };
-    template <class Graph>void examine_vertex(vertex_descriptor u, Graph &g) {
-      DEBUG (2) std::cout << "Examine node " << u << '\n';
-      m_nodes.push_back(u);
-      if (m_dist[u] > m_distance_goal) {
-        m_nodes.pop_back();
-        throw found_goals();
-      }
-    };
-    template <class Graph>void edge_relaxed(edge_descriptor e, Graph &g) {
-      // Add v to the examined vertices
-      DEBUG (2) std::cout << "Examine edge" << e << '\n';
-      m_examined_vertices.push_back(boost::target(e, g));
-    };
-private:
-    double m_distance_goal; //Delta
-    std::deque< vertex_descriptor > &m_nodes; //Precedessors
-    std::vector< double > &m_dist;  // Distances
-    std::vector< vertex_descriptor > & m_examined_vertices; //Examined nodes
-  };   // driving_distance_visitor
 
-  Graph_T g;   // The member storing a boost graph
-  /**
-   *  Find the edge ID given a pair of nodes and its cost
-   */
-  int get_edge_id(vertex_descriptor source, vertex_descriptor target,
-                  double cost) {
-    edge_descriptor e;
-    out_edge_iterator out_i, out_end;
-    for (boost::tie(out_i, out_end) = boost::out_edges(source, g);
-         out_i != out_end; ++out_i) {
-      e = *out_i;
-      if (target == boost::target(e, g) && (g[e].length - cost <= DOUBLE_MIN)) {
-        return g[e].id;
-      }
-    }
-    std::cout << "Edge not found for source " << source << " target " << target
-              << " cost " << cost << '\n';
-    return -1;
-  };
 
-  /**
-   *  Get the successors (next node visited) for each node in a
-   *  shortest path tree defined by a deque and a predecessor vector
-   */
-  std::vector<vertex_descriptor> get_successors(
-    std::deque<vertex_descriptor> &nodesInDistance,
-    std::vector<vertex_descriptor>& predecessors) {
-    int N = nodesInDistance.size();
-    std::vector<vertex_descriptor> successors =
-      std::vector<vertex_descriptor>(N);
-    int i;
-    vertex_descriptor u, v;
-    vertex_descriptor source = nodesInDistance[0];    // source node
-    for (i = 0; i < N; ++i) {
-      v = nodesInDistance[i];
-      while ((u = predecessors[v]) != source) {
-        v = u;
-      }
-      successors[i] = v;
-    }
-    return successors;
-  };
   /**
    * Given a source node and an upper bound distance delta
    * write the UBODT rows to a file
@@ -382,7 +304,11 @@ private:
   std::vector<int> vertex_id_vec;
   // Nodes whose distance in the dist_map is updated.
   std::vector<vertex_descriptor> examined_vertices;
-  int num_vertices=0;
+private:
+  Graph_T g;
+  static constexpr double DOUBLE_MIN = 1.e-6;
+  Network *network;
+  unsigned int num_vertices=0;
 }; // NetworkGraph
 } // MM
 #endif /* MM_NETWORK_GRAPH_HPP */
