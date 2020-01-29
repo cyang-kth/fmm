@@ -12,9 +12,8 @@ struct HeapNode
   }
 };
 
-
-typedef FibHeap<HeapNode>::FibNode *HeapNodeHandle;
-
+// This class is a wrapper of the fiboheap to facilitate calling of
+// insert, pop and update functions.
 class Heap {
 public:
   inline void push(NodeIndex index, double cost){
@@ -42,6 +41,7 @@ public:
   }
 
 private:
+  typedef FibHeap<HeapNode>::FibNode *HeapNodeHandle;
   FibHeap<HeapNode> heap;
   std::unordered_map<NodeIndex,HeapNodeHandle> handle_data;
 };
