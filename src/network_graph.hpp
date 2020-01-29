@@ -38,6 +38,7 @@
 
 #include "graph_type.hpp"
 #include "network.hpp"
+#include "heap.hpp"
 
 namespace MM {
 
@@ -103,19 +104,84 @@ public:
     return successors;
   };
 
-  // Routing from a single source s to all nodes within an upperbound of
-  // delta.
+  /**
+   *  Routing from a single source to all nodes within an upperbound
+   *  Results are returned in pmap and dmap.
+   */
   void single_source_upperbound_routing(NodeIndex s,
                                         double delta,
                                         PredecessorMap *pmap,
                                         DistanceMap *dmap){
+    Heap Q;
+    // Initialization
+    Q.push({s,0});
+    pmap->insert({s,s});
+    dmap->insert({s,0});
 
-  };
+    OutEdgeIterator out_i, out_end;
+    double temp_dist = 0;
 
-  void write_result(std::ostream& stream,PredecessorMap &pmap,
-                    DistanceMap &dmap){
-    
-  };
+    // Search Astar
+    while (!Q.empty()) {
+      HeapNode &node = Q.top();
+      Q.pop();
+      NodeIndex u = node.index;
+      if (node.dist>delta) break;
+      for (boost::tie(out_i, out_end) = boost::out_edges(u,g);
+           out_i != out_end; ++out_i) {
+        EdgeDescriptor e = *out_i;
+        NodeIndex v = boost::target(e,g);
+        temp_dist = node.dist + g[e].length;
+        // HeapNode node_v{v,temp_dist,temp_tentative_dist};
+        auto iter = dmap->find(v);
+        if (iter!=dmap->end()) {
+          if (iter->second.dist>temp_dist) {
+            // There is still need to update the tentative distance
+            // because dist is updated.
+            (*pmap)[v] = u;
+            (*dmap)[v] = temp_dist;
+            Q.decrease_key(v,temp_dist);
+          };
+        } else {
+          Q.push({v,temp_dist});
+          pmap->insert({v,u});
+          dmap->insert({v,temp_dist});
+        }
+      }
+    } // end of while
+  }
+
+  void write_result_csv(std::ostream& stream, NodeIndex s,
+                        PredecessorMap &pmap, DistanceMap &dmap){
+    std::vector<vertex_descriptor> successors =
+      get_successors(nodesInDistance, predecessors_map);
+    double cost;
+    int edge_id;
+    int k = 0;
+    vertex_descriptor node;
+    std::stringstream node_output_buf;
+    while (k < nodesInDistance.size()) {
+      node = nodesInDistance[k];
+      if (source != node) {
+        // The cost is need to identify the edge ID
+        cost = distances_map[successors[k]] - distances_map[source];
+        edge_id = get_edge_id(source, successors[k], cost);
+        stream << vertex_id_vec[source] << ";"
+               << vertex_id_vec[node] << ";"
+               << vertex_id_vec[successors[k]] << ";"
+               << vertex_id_vec[predecessors_map[node]] << ";"
+               << edge_id << ";" << distances_map[node]
+               << "\n";
+      }
+      ++k;
+    }
+  }
+
+  void write_result_binary(std::ostream& stream, NodeIndex s,
+                           PredecessorMap &pmap, DistanceMap &dmap){
+
+  }
+
 
   /**
    * Precompute an UBODT with delta and save it to the file
@@ -147,7 +213,7 @@ public:
       }
     }
     myfile.close();
-  };
+  }
 
 
   /**
@@ -213,7 +279,8 @@ public:
       ++k;
     }
     clean_distances_predecessors();
-  };
+  }
+
   void driving_distance_binary(
     const vertex_descriptor& source, double delta,
     boost::archive::binary_oarchive& oa) {
@@ -269,7 +336,7 @@ public:
       ++k;
     }
     clean_distances_predecessors();
-  };
+  }
   /*
      Clean the distance map and predecessor map
    */
@@ -293,7 +360,7 @@ public:
     }
     examined_vertices.clear();
     // Clear the examined vertices
-  };
+  }
   // This is used for comparing double values
   static constexpr double DOUBLE_MIN = 1.e-6;
   // Two maps record the routing output
@@ -309,6 +376,6 @@ private:
   static constexpr double DOUBLE_MIN = 1.e-6;
   Network *network;
   unsigned int num_vertices=0;
-}; // NetworkGraph
+};   // NetworkGraph
 } // MM
 #endif /* MM_NETWORK_GRAPH_HPP */
