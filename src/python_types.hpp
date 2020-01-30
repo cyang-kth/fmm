@@ -15,43 +15,43 @@
 
 namespace MM {
 
-    /**
-     *  MatchResult used for communicating with Python
-     */
-    struct MatchResult{
-        std::vector<int> opath; // optimal path
-        std::vector<int> cpath;
-        std::string mgeom;
-        std::string pgeom;
-    };
+/**
+ *  MatchResult used for communicating with Python
+ */
+struct MatchResult {
+  std::vector<int> opath;       // optimal path
+  std::vector<int> cpath;
+  std::string mgeom;
+  std::string pgeom;
+};
 
-    /**
-     *  Candidate class, used for verifying the result in Python
-     */
-    struct CandidateElement {
-        int index; // point index in trajectory
-        int edge_id; // edge id
-        int source;
-        int target;
-        double distance; // distance to that edge
-        double length;
-        double offset;
-        double ep; // emission probability
-    };
+/**
+ *  Candidate class, used for verifying the result in Python
+ */
+struct CandidateElement {
+  int index;       // point index in trajectory
+  int edge_id;       // edge id
+  int source;
+  int target;
+  double distance;       // distance to that edge
+  double length;
+  double offset;
+  double ep;       // emission probability
+};
 
-    typedef std::vector<CandidateElement> CandidateSet;
+typedef std::vector<CandidateElement> CandidateSet;
 
-    struct TLElement {
-        int index; // point index in trajectory
-        int from_edge;
-        int to_edge;
-        double sp_dist;
-        double eu_dist;
-        double tp; // transition probability
-        double e_prob; // emission probability
-        double cumu_prob; // cumulative emission probability
-    };
+struct TLElement {
+  int index;       // point index in trajectory
+  int from_edge;
+  int to_edge;
+  double sp_dist;
+  double eu_dist;
+  double tp;       // transition probability
+  double e_prob;       // emission probability
+  double cumu_prob;       // cumulative emission probability
+};
 
-    typedef std::vector<TLElement> TransitionLattice;
+typedef std::vector<TLElement> TransitionLattice;
 }
 #endif /* MM_PYTHON_TYPES_HPP */

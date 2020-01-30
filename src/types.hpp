@@ -10,7 +10,7 @@
 #define MM_TYPES_HPP
 
 #include <vector>
-#include <string>
+#include <unordered_map>
 #include "geometry_type.hpp"
 
 namespace MM {
@@ -19,6 +19,10 @@ typedef int NodeID;
 typedef int EdgeID;
 typedef unsigned int NodeIndex;
 typedef unsigned int EdgeIndex;
+
+typedef std::vector<NodeID> NodeIDVec;
+typedef std::unordered_map<NodeID,NodeIndex> NodeIndexMap;
+typedef std::unordered_map<EdgeID,EdgeIndex> EdgeIndexMap;
 
 struct Edge
 {
@@ -34,13 +38,13 @@ struct Edge
 
 struct Candidate
 {
-  float offset;   // offset distance from the start of polyline to p'
+  double offset;   // offset distance from the start of polyline to p'
   double dist;   // distance from original point p to map matched point p'
   double obs_prob;   // this is the emission probability
   Edge *edge;   // candidate edge
   Candidate* prev;   // optimal previous candidate used in Viterbi algorithm
-  float cumu_prob;   // used in Viterbi, initialized to be 0
-  float sp_dist;   // sp distance to previous point, initialized to be 0
+  double cumu_prob;   // used in Viterbi, initialized to be 0
+  double sp_dist;   // sp distance to previous point, initialized to be 0
 };
 
 /* Record type in UBODT */
@@ -53,6 +57,18 @@ struct Record
   EdgeIndex next_e;
   double cost;
   Record *next;   // the next Record used in Hashtable
+};
+
+// This is the type used in writing the UBODT result
+struct IDRecord
+{
+  NodeID source;
+  NodeID target;
+  NodeID first_n;   // next_n in the paper
+  NodeID prev_n;
+  EdgeID next_e;
+  double cost;
+  IDRecord *next;   // the next Record used in Hashtable
 };
 
 /* Transitiong graph*/

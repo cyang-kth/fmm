@@ -13,7 +13,7 @@
 #include <fstream>
 #include <string>
 #include <sstream>
-#include "multilevel_debug.h"
+#include "debug.h"
 #include "types.hpp"
 #include "gps.hpp"
 #include "util.hpp"
@@ -48,7 +48,7 @@ public:
    */
   TrajectoryReader(const std::string & filename,const std::string & id_name)
   {
-    std::cout<<"Reading meta data of GPS trajectories from: " << filename << '\n';
+    std::cout<<"Reading meta data of GPS trajectories from: "<<filename<< '\n';
     OGRRegisterAll();
     poDS = (GDALDataset*) GDALOpenEx(filename.c_str(),
         GDAL_OF_VECTOR, NULL, NULL, NULL );
@@ -96,28 +96,28 @@ public:
   {
     OGRFeature *ogrFeature =ogrlayer->GetNextFeature();
     int trid = ogrFeature->GetFieldAsInteger(id_idx);
-    DEBUG(2) std::cout<<"Read trajectory id : "<<trid<<'\n';
     OGRGeometry *rawgeometry = ogrFeature->GetGeometryRef();
-    LineString *linestring = ogr2linestring((OGRLineString*) rawgeometry);
+    LineString linestring = ogr2linestring((OGRLineString*) rawgeometry);
     OGRFeature::DestroyFeature(ogrFeature);
     ++_cursor;
-    return Trajectory(trid,linestring);
+    return Trajectory{trid,linestring};
   };
   // Read the next N trajectories in the shapefile
   std::vector<Trajectory> read_next_N_trajectories(int N=30000)
   {
     int trajectories_size = NUM_FEATURES-_cursor<N ? NUM_FEATURES-_cursor : N;
-    std::vector<Trajectory> trajectories(trajectories_size);
+    std::vector<Trajectory> trajectories;
     int i=0;
     while(i<trajectories_size)
     {
       OGRFeature *ogrFeature =ogrlayer->GetNextFeature();
       int trid = ogrFeature->GetFieldAsInteger(id_idx);
       OGRGeometry *rawgeometry = ogrFeature->GetGeometryRef();
-      LineString *linestring = ogr2linestring((OGRLineString*) rawgeometry);
+      LineString linestring = ogr2linestring((OGRLineString*) rawgeometry);
       OGRFeature::DestroyFeature(ogrFeature);
-      trajectories[i].id = trid;
-      trajectories[i].geom = linestring;
+      trajectories.push_back({trid,linestring});
+      // trajectories[i].id = trid;
+      // trajectories[i].geom = linestring;
       ++i;
     }
     _cursor+=trajectories_size;
@@ -128,17 +128,18 @@ public:
   std::vector<Trajectory> read_all_trajectories()
   {
     std::cout<<"\t Read all trajectoires" << '\n';
-    std::vector<Trajectory> trajectories(NUM_FEATURES);
+    std::vector<Trajectory> trajectories;
     int i=0;
     while(i<NUM_FEATURES)
     {
       OGRFeature *ogrFeature =ogrlayer->GetNextFeature();
       int trid = ogrFeature->GetFieldAsInteger(id_idx);
       OGRGeometry *rawgeometry = ogrFeature->GetGeometryRef();
-      LineString *linestring = ogr2linestring((OGRLineString*) rawgeometry);
+      LineString linestring = ogr2linestring((OGRLineString*) rawgeometry);
       OGRFeature::DestroyFeature(ogrFeature);
-      trajectories[i].id = trid;
-      trajectories[i].geom = linestring;
+      // trajectories[i].id = trid;
+      // trajectories[i].geom = linestring;
+      trajectories.push_back({trid,linestring});
       ++i;
     }
     std::cout<<"\t Read trajectory set size : "<< i <<'\n';

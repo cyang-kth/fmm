@@ -30,6 +30,7 @@
 #include <deque>
 #include <algorithm> // std::reverse
 #include <unordered_map>
+#include <omp.h> // OpenMP
 
 #include <boost/archive/binary_oarchive.hpp> // Binary output of UBODT
 
@@ -71,39 +72,6 @@ public:
     std::cout << "Construct graph from network edges end" << '\n';
   }
 
-  Graph_T &get_boost_graph(){
-    return g;
-  }
-
-  Network *get_network(){
-    return network;
-  }
-
-  unsigned int get_num_vertices(){
-    return num_vertices;
-  }
-
-  /**
-   *  Get the successors (next node visited) for each node in a
-   *  shortest path tree defined by a predecessor map
-   */
-  std::unordered_map<NodeIndex,NodeIndex> get_successor_map(
-    std::vector<vertex_descriptor> &predecessors) {
-    int N = predecessors.size();
-    std::vector<vertex_descriptor> successors(N);
-    int i;
-    vertex_descriptor u, v;
-    vertex_descriptor source = nodesInDistance[0];    // source node
-    for (i = 0; i < N; ++i) {
-      v = nodesInDistance[i];
-      while ((u = predecessors[v]) != source) {
-        v = u;
-      }
-      successors[i] = v;
-    }
-    return successors;
-  };
-
   /**
    *  Routing from a single source to all nodes within an upperbound
    *  Results are returned in pmap and dmap.
@@ -114,7 +82,7 @@ public:
                                          DistanceMap *dmap){
     Heap Q;
     // Initialization
-    Q.push({s,0});
+    Q.push(s,0);
     pmap->insert({s,s});
     dmap->insert({s,0});
     OutEdgeIterator out_i, out_end;
@@ -133,7 +101,7 @@ public:
         // HeapNode node_v{v,temp_dist,temp_tentative_dist};
         auto iter = dmap->find(v);
         if (iter!=dmap->end()) {
-          if (iter->second.dist>temp_dist) {
+          if (iter->second>temp_dist) {
             // There is still need to update the tentative distance
             // because dist is updated.
             (*pmap)[v] = u;
@@ -141,7 +109,7 @@ public:
             Q.decrease_key(v,temp_dist);
           };
         } else {
-          Q.push({v,temp_dist});
+          Q.push(v,temp_dist);
           pmap->insert({v,u});
           dmap->insert({v,temp_dist});
         }
@@ -163,69 +131,185 @@ public:
     std::cout << "Output format " << (binary ? "binary" : "csv") << '\n';
     if (binary) {
       boost::archive::binary_oarchive oa(myfile);
-      vertex_iterator vi, vend;
-      for (boost::tie(vi, vend) = vertices(g); vi != vend; ++vi) {
-        if (*vi%step_size==0)
-          std::cout<<"Progress "<<*vi<< " / " << num_vertices <<'\n';
-        driving_distance_binary(*vi, delta, oa);
+      for(NodeIndex source = 0; source < num_vertices; ++source)  {
+        if (source%step_size==0)
+          std::cout<<"Progress "<< source << " / " << num_vertices <<'\n';
+        PredecessorMap pmap;
+        DistanceMap dmap;
+        single_source_upperbound_dijkstra(source,delta,&pmap,&dmap);
+        write_result_binary(oa,source,pmap,dmap);
       }
     } else {
       myfile << "source;target;next_n;prev_n;next_e;distance\n";
-      vertex_iterator vi, vend;
-      for (boost::tie(vi, vend) = vertices(g); vi != vend; ++vi) {
-        if (*vi%step_size==0)
-          std::cout<<"Progress "<<*vi<< " / " << num_vertices <<'\n';
-        driving_distance_csv(*vi, delta, myfile);
+      for(NodeIndex source = 0; source < num_vertices; ++source)  {
+        if (source%step_size==0)
+          std::cout<<"Progress "<<source<< " / " << num_vertices <<'\n';
+        PredecessorMap pmap;
+        DistanceMap dmap;
+        single_source_upperbound_dijkstra(source,delta,&pmap,&dmap);
+        write_result_csv(myfile,source,pmap,dmap);
+      }
+    }
+    myfile.close();
+  }
+  // Parallelly generate ubodt using OpenMP
+  void precompute_ubodt_omp(const std::string &filename, double delta,
+                            bool binary=true) {
+    int step_size = num_vertices/10;
+    if (step_size<10) step_size=10;
+    std::ofstream myfile(filename);
+    std::cout << "Start to generate UBODT with delta " << delta << '\n';
+    std::cout << "Output format " << (binary ? "binary" : "csv") << '\n';
+    if (binary) {
+      boost::archive::binary_oarchive oa(myfile);
+      int progress = 0;
+      #pragma omp parallel
+      {
+        #pragma omp for
+        for(int source = 0; source < num_vertices; ++source) {
+          ++progress;
+          if (progress % step_size == 0) {
+              printf("Progress %d / %d \n",progress, num_vertices);
+          }
+          PredecessorMap pmap;
+          DistanceMap dmap;
+          std::stringstream node_output_buf;
+          single_source_upperbound_dijkstra(source,delta,&pmap,&dmap);
+          write_result_binary(oa,source,pmap,dmap);
+        }
+      }
+    } else {
+      myfile << "source;target;next_n;prev_n;next_e;distance\n";
+      int progress = 0;
+      #pragma omp parallel
+      {
+        #pragma omp for
+        for(int source = 0; source < num_vertices; ++source) {
+          ++progress;
+          if (progress % step_size == 0) {
+              printf("Progress %d / %d \n",progress, num_vertices);
+          }
+          PredecessorMap pmap;
+          DistanceMap dmap;
+          std::stringstream node_output_buf;
+          single_source_upperbound_dijkstra(source,delta,&pmap,&dmap);
+          write_result_csv(myfile,source,pmap,dmap);
+        }
       }
     }
     myfile.close();
   }
 
-private:
+
   void write_result_csv(std::ostream& stream, NodeIndex s,
                         PredecessorMap &pmap, DistanceMap &dmap){
+    NodeIDVec &node_id_vec = network->get_node_id_vec();
+    std::vector<IDRecord> source_map;
     for (auto iter = pmap.begin(); iter!=pmap.end(); ++iter) {
-      NodeIndex v = iter->first;
-      NodeIndex u = iter->second;
-      NodeIndex successor = u;
-      if (u!=s) {
-        while (successor != source) {
-          successor = pmap[successor];
+      NodeIndex cur_node = iter->first;
+      if (cur_node!=s) {
+        NodeIndex prev_node = iter->second;
+        NodeIndex v = cur_node;
+        NodeIndex u;
+        // When u=s, v is the next node visited
+        while ((u = pmap[v]) != s) {
+          v = u;
         }
+        NodeIndex successor = v;
         // Write the result
         double cost = dmap[successor];
         EdgeID edge_id = get_edge_id(s, successor, cost);
-        stream << vertex_id_vec[s] << ";"
-               << vertex_id_vec[v] << ";"
-               << vertex_id_vec[successor] << ";"
-               << vertex_id_vec[u] << ";"
-               << edge_id << ";" << dmap[v]<< "\n";
+        source_map.push_back(
+          {node_id_vec[s],
+           node_id_vec[cur_node],
+           node_id_vec[successor],
+           node_id_vec[prev_node],
+           edge_id,
+           dmap[cur_node],
+           nullptr});
       }
+    }
+    #pragma omp critical
+    for (IDRecord &r:source_map) {
+      stream << r.source<<";"
+             << r.target<<";"
+             << r.first_n<<";"
+             << r.prev_n<<";"
+             << r.next_e<<";"
+             << r.cost<<"\n";
     }
   }
 
-  void write_result_binary(std::ostream& stream, NodeIndex s,
+  void write_result_binary(boost::archive::binary_oarchive& stream, NodeIndex s,
                            PredecessorMap &pmap, DistanceMap &dmap){
+    NodeIDVec &node_id_vec = network->get_node_id_vec();
+    std::vector<IDRecord> source_map;
     for (auto iter = pmap.begin(); iter!=pmap.end(); ++iter) {
-      NodeIndex v = iter->first;
-      NodeIndex u = iter->second;
-      NodeIndex successor = u;
-      if (u!=s) {
-        while (successor != source) {
-          successor = pmap[successor];
+      NodeIndex cur_node = iter->first;
+      if (cur_node!=s) {
+        NodeIndex prev_node = iter->second;
+        NodeIndex v = cur_node;
+        NodeIndex u;
+        // When u=s, v is the next node visited
+        while ((u = pmap[v]) != s) {
+          v = u;
         }
+        NodeIndex successor = v;
         // Write the result
         double cost = dmap[successor];
         EdgeID edge_id = get_edge_id(s, successor, cost);
-        stream << vertex_id_vec[s] << ";"
-               << vertex_id_vec[v] << ";"
-               << vertex_id_vec[successor] << ";"
-               << vertex_id_vec[u] << ";"
-               << edge_id << ";" << dmap[v]<< "\n";
+        source_map.push_back(
+          {node_id_vec[s],
+           node_id_vec[cur_node],
+           node_id_vec[successor],
+           node_id_vec[prev_node],
+           edge_id,
+           dmap[cur_node],
+           nullptr});
       }
+    }
+    #pragma omp critical
+    for (IDRecord &r:source_map) {
+      stream << r.source << r.target
+             << r.first_n << r.prev_n <<r.next_e << r.cost;
     }
   }
 
+  Graph_T &get_boost_graph(){
+    return g;
+  }
+
+  Network *get_network(){
+    return network;
+  }
+
+  unsigned int get_num_vertices(){
+    return num_vertices;
+  }
+
+  EdgeID get_edge_id(NodeIndex source, NodeIndex target,
+                     double dist) {
+    EdgeDescriptor e;
+    OutEdgeIterator out_i, out_end;
+    bool found =false;
+    for (boost::tie(out_i, out_end) = boost::out_edges(source, g);
+         out_i != out_end; ++out_i) {
+      e = *out_i;
+      if (target == boost::target(e, g)) {
+        found = true;
+        if (abs(g[e].length - dist)<=1e-5) {
+          break;
+        }
+      }
+    }
+    if (found) return network->get_edge_id(g[e].index);
+    SPDLOG_ERROR(
+      "Edge not found from source {} to target {} dist {}",
+      network->get_node_id(source),
+      network->get_node_id(target), dist);
+    return -1;
+  }
+private:
   Graph_T g;
   static constexpr double DOUBLE_MIN = 1.e-6;
   Network *network;

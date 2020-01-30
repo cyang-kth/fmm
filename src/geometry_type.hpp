@@ -75,12 +75,12 @@ LineString ogr2linestring(OGRLineString *line){
   std::vector<unsigned char> wkb(binary_size);
   // http://www.gdal.org/ogr__core_8h.html#a36cc1f4d807ba8f6fb8951f3adf251e2
   line->exportToWkb(wkbNDR,&wkb[0]);
-  BGLineString l;
+  LineString l;
   bg::read_wkb(wkb.begin(),wkb.end(),l.get_geometry());
   return l;
 };
 
-OGRLineString *linestring2ogr(BGLineString &line, int srid=4326){
+OGRLineString *linestring2ogr(LineString &line, int srid=4326){
   std::vector<unsigned char> wkb;
   bg::write_wkb(line.get_geometry(),std::back_inserter(wkb));
   OGRGeometry *poGeometry;

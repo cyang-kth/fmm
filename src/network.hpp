@@ -33,8 +33,6 @@ namespace MM
 
 // Define a type alias for the rtree used in map matching
 /* Edge format in the network */
-typedef boost::geometry::model::point
-  <float, 2, boost::geometry::cs::cartesian> boost_point;
 
 typedef boost::geometry::model::box<boost_point> boost_box;
 // Item stored in rtree
@@ -170,12 +168,12 @@ public:
   };    // Network constructor
 
   int get_node_count(){
-    return node_count;
+    return node_id_vec.size();;
   };
   // Get the edge vector
   std::vector<Edge> *get_edges()
   {
-    return &network_edges;
+    return &edges;
   };
   // Get the ID attribute of an edge according to its index
   EdgeID get_edge_id(EdgeIndex index)
@@ -199,10 +197,14 @@ public:
     return vertex_points[index];
   };
 
-  int get_max_node_id()
-  {
-    return max_node_id;
+  NodeIDVec &get_node_id_vec(){
+    return node_id_vec;
   };
+
+  inline LineString &get_edge_geom(EdgeID eid){
+    return edges[edge_map[eid]].geom;
+  };
+
   // Construct a Rtree using the vector of edges
   void build_rtree_index()
   {
@@ -240,19 +242,19 @@ public:
    *  Search for k nearest neighboring (KNN) candidates of a
    *  linestring within a search radius
    */
-  Traj_Candidates search_tr_cs_knn(LineString *geom, std::size_t k,
+  Traj_Candidates search_tr_cs_knn(const LineString &geom, std::size_t k,
                                    double radius, double gps_error)
   {
-    int NumberPoints = geom->getNumPoints();
+    int NumberPoints = geom.getNumPoints();
     Traj_Candidates tr_cs(NumberPoints);
     for (int i=0; i<NumberPoints; ++i)
     {
       // Construct a bounding boost_box
-      double px = geom->getX(i);
-      double py = geom->getY(i);
+      double px = geom.getX(i);
+      double py = geom.getY(i);
       Point_Candidates pcs;
-      boost_box b(boost_point(geom->getX(i)-radius,geom->getY(i)-radius),
-                  boost_point(geom->getX(i)+radius,geom->getY(i)+radius));
+      boost_box b(boost_point(geom.getX(i)-radius,geom.getY(i)-radius),
+                  boost_point(geom.getX(i)+radius,geom.getY(i)+radius));
       std::vector<Item> temp;
       rtree.query(boost::geometry::index::intersects(b),
                   std::back_inserter(temp));
@@ -261,7 +263,7 @@ public:
         // Check for detailed intersection
         // The two edges are all in OGR_linestring
         Edge *edge = i.second;
-        float offset;
+        double offset;
         double dist;
         ALGORITHM::linear_referencing(px,py,edge->geom,&dist,&offset);
         if (dist<=radius)

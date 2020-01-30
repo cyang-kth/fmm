@@ -5,7 +5,7 @@
  * @author: Can Yang
  * @version: 2018.03.09
  */
-#include "../src/network_graph_omp.hpp"
+#include "../src/network_graph.hpp"
 #include "../src/config.hpp"
 #include <iostream>
 #include <ctime>
@@ -39,14 +39,10 @@ int main(int argc, char* argv[])
             config.network_target);
         // std::ostream result_file(config.result_file);
         // std::ofstream ofs(config.result_file);
-        MM::NetworkGraphOmp graph(&network);
+        MM::NetworkGraph graph(&network);
         std::cout<<"Upperbound config (delta): "<<config.delta<<'\n';
         bool binary = (config.binary_flag==1);
-//         if (binary){
-//             std::cout << "---- Error: parallel construction of binary UBODT is not implemented" << '\n';
-//             return 0;
-//         }
-        graph.precompute_ubodt(config.result_file, config.delta, binary);
+        graph.precompute_ubodt_omp(config.result_file, config.delta, binary);
         std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
         // Unit is second
         // std::cout << "Time takes" <<  <<std::endl;

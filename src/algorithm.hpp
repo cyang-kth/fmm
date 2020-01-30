@@ -28,7 +28,7 @@ namespace ALGORITHM {
 void boundingbox_geometry(const LineString &linestring,
                           double *x1,double *y1,double *x2,double *y2)
 {
-  int Npoints = linestring->getNumPoints();
+  int Npoints = linestring.getNumPoints();
   *x1 = DBL_MAX;
   *y1 = DBL_MAX;
   *x2 = DBL_MIN;
