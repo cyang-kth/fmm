@@ -47,19 +47,34 @@ int get_file_extension(std::string &fn) {
  *  The configuration defined for output of the program
  */
 struct ResultConfig {
-  bool write_ogeom = false;   // Optimal path, the edge matched to each point
-  bool write_opath = false;   // Optimal path, the edge matched to each point
-  bool write_offset = false;   // The distance from the source node of an edge
-  bool write_error = false;   // The distance from a raw GPS point to a matched GPS point
-  bool write_cpath = true;   // Complete path, a path traversed by the trajectory
-  bool write_tpath = false;   // Complete path, a path traversed by the trajectory
-  bool write_mgeom = true;   // The geometry of the complete path
-  bool write_wkt = true;   // mgeom in WKT or WKB format
-  bool write_spdist = false;   // The distance travelled between two GPS observations
-  bool write_pgeom = false;   // A linestring connecting the point matched for each edge.
-  bool write_ep = false;   // The emission probability of each matched point.
-  bool write_tp = false;   // The transition probability of each matched point.
+  // Original geometry
+  bool write_ogeom = false;
+  // Optimal path, the edge matched to each point
+  bool write_opath = false;
+  // The distance from the source node of an edge to the matched point
+  bool write_offset = false;
+  // The distance from a raw GPS point to a matched GPS point
+  bool write_error = false;
+  // Complete path, a path traversed by the trajectory
+  bool write_cpath = true;
+  // Traversed path, the path traversed between
+  // each two consecutive observations
+  bool write_tpath = false;
+  // The geometry of the complete path
+  bool write_mgeom = true;
+  // The distance travelled between two GPS observations
+  bool write_spdist = false;
+  // A linestring connecting the point matched for each edge.
+  bool write_pgeom = false;
+  // The emission probability of each matched point.
+  bool write_ep = false;
+  // The transition probability of each matched point.
+  bool write_tp = false;
 };
+
+static const std::vector<std::string>
+  LOG_LEVESLS {"0-trace","1-debug","2-info",
+               "3-warn","4-err","5-critical","6-off"};
 
 /**
  * Configuration class for map matching
@@ -72,7 +87,7 @@ public:
    */
   FMM_Config(const std::string &file)
   {
-    std::cout << "Start reading FMM configuration \n";
+    SPDLOG_INFO("Start reading FMM configuration");
     // Create empty property tree object
     boost::property_tree::ptree tree;
     boost::property_tree::read_xml(file, tree);
@@ -83,7 +98,8 @@ public:
     // UBODT
     ubodt_file = tree.get<std::string>("fmm_config.input.ubodt.file");
     // Check if delta is specified or not
-    if (!tree.get_optional<bool>("fmm_config.input.ubodt.delta").is_initialized()) {
+    if (!tree.get_optional<bool>("fmm_config.input.ubodt.delta")
+        .is_initialized()) {
       delta_defined = false;
       delta = 0.0;
     } else {
@@ -112,7 +128,7 @@ public:
 
     // Output
     result_file = tree.get<std::string>("fmm_config.output.file");
-    mode = tree.get("fmm_config.output.mode", 0);
+    log_level = tree.get("fmm_config.other.log_level",2);
 
     if (tree.get_child_optional("fmm_config.output.fields")) {
       // Fields specified
@@ -166,92 +182,119 @@ public:
         result_config.write_tp = true;
       }
     } else {
-      std::cout << "    Default output fields used.\n";
+      SPDLOG_INFO("Default output fields used.");
     }
-    std::cout << "Finish with reading FMM configuration \n";
+    SPDLOG_INFO("Finish with reading FMM configuration");
   };
 
   ResultConfig get_result_config(){
     return result_config;
   };
+
   void print()
   {
-    std::cout << "------------------------------------------" << '\n';
-    std::cout << "Configuration parameters for map matching application: " << '\n';
-    std::cout << std::left << std::setw(4) << "" << std::setw(20) << "Network_file: " << network_file << '\n';;
-    std::cout << std::left << std::setw(4) << "" << std::setw(20) << "Network id: " << network_id << '\n';
-    std::cout << std::left << std::setw(4) << "" << std::setw(20) << "Network source: " << network_source << '\n';
-    std::cout << std::left << std::setw(4) << "" << std::setw(20) << "Network target: " << network_target << '\n';
-    std::cout << std::left << std::setw(4) << "" << std::setw(20) << "ubodt_file: " << ubodt_file << '\n';
+    std::cout << "------------------------------------------\n";
+    std::cout << "Configuration parameters for map matching application: \n";
+    std::cout << "Network_file: " << network_file << '\n';;
+    std::cout << "Network id: " << network_id << '\n';
+    std::cout << "Network source: " << network_source << '\n';
+    std::cout << "Network target: " << network_target << '\n';
+    std::cout << "ubodt_file: " << ubodt_file << '\n';
     if (delta_defined) {
-      std::cout << std::left << std::setw(4) << "" << std::setw(20) << "delta: " << delta << '\n';
+      std::cout << "delta: " << delta << '\n';
     } else {
-      std::cout << std::left << std::setw(4) << "" << std::setw(20) << "delta: " << "undefined, to be inferred from ubodt file\n";
+      std::cout << "delta: " << "undefined, to be inferred from ubodt file\n";
     }
-    std::cout << std::left << std::setw(4) << "" << std::setw(20) << "ubodt format(1 binary, 0 csv): " << binary_flag << '\n';
-    std::cout << std::left << std::setw(4) << "" << std::setw(20) << "gps_file: " << gps_file << '\n';
-    std::cout << std::left << std::setw(4) << "" << std::setw(20) << "gps_id: " << gps_id << '\n';
-    std::cout << std::left << std::setw(4) << "" << std::setw(20) << "k: " << k << '\n';
-    std::cout << std::left << std::setw(4) << "" << std::setw(20) << "radius: " << radius << '\n';
-    std::cout << std::left << std::setw(4) << "" << std::setw(20) << "gps_error: " << gps_error << '\n';
-    std::cout << std::left << std::setw(4) << "" << std::setw(20) << "penalty_factor: " << penalty_factor << '\n';
-    std::cout << std::left << std::setw(4) << "" << std::setw(20) << "result_file:" << result_file << '\n';
-    // std::cout << std::left << std::setw(4) << "" << std::setw(20) << "geometry mode: " << mode << "(0 no geometry, 1 wkb, 2 wkt)" << '\n';
+    std::cout << "ubodt format(1 binary, 0 csv): " << binary_flag << '\n';
+    std::cout << "gps_file: " << gps_file << '\n';
+    std::cout << "gps_id: " << gps_id << '\n';
+    std::cout << "k: " << k << '\n';
+    std::cout << "radius: " << radius << '\n';
+    std::cout << "gps_error: " << gps_error << '\n';
+    std::cout << "penalty_factor: " << penalty_factor << '\n';
+    std::cout << "log_level:" << LOG_LEVESLS[log_level] << '\n';
+    std::cout << "result_file:" << result_file << '\n';
+    std::cout << "Output fields:"<<'\n';
+    if (result_config.write_ogeom)
+      std::cout << std::left << std::setw(8) << ""  << "ogeom"<<'\n';
+    if (result_config.write_opath)
+      std::cout << std::left << std::setw(8) << ""  << "opath"<<'\n';
+    if (result_config.write_pgeom)
+      std::cout << std::left << std::setw(8) << "" << "pgeom"<<'\n';
+    if (result_config.write_offset)
+      std::cout << std::left << std::setw(8) << "" << "offset"<<'\n';
+    if (result_config.write_error)
+      std::cout << std::left << std::setw(8) << "" << "error"<<'\n';
+    if (result_config.write_spdist)
+      std::cout << std::left << std::setw(8) << "" << "spdist"<<'\n';
+    if (result_config.write_cpath)
+      std::cout << std::left << std::setw(8) << "" << "cpath"<<'\n';
+    if (result_config.write_tpath)
+      std::cout << std::left << std::setw(8) << "" << "tpath"<<'\n';
+    if (result_config.write_mgeom)
+      std::cout << std::left << std::setw(8) << "" << "mgeom"<<'\n';
+    if (result_config.write_ep)
+      std::cout << std::left << std::setw(8) << "" << "ep"<<'\n';
+    if (result_config.write_tp)
+      std::cout << std::left << std::setw(8) << "" << "tp"<<'\n';
 
-    std::cout << std::left << std::setw(4) << "" << std::setw(20) << "Output fields:"<<'\n';
-    if (result_config.write_ogeom) std::cout << std::left << std::setw(8) << ""  << "ogeom"<<'\n';
-    if (result_config.write_opath) std::cout << std::left << std::setw(8) << ""  << "opath"<<'\n';
-    if (result_config.write_pgeom) std::cout << std::left << std::setw(8) << "" << "pgeom"<<'\n';
-    if (result_config.write_offset) std::cout << std::left << std::setw(8) << "" << "offset"<<'\n';
-    if (result_config.write_error) std::cout << std::left << std::setw(8) << "" << "error"<<'\n';
-    if (result_config.write_spdist) std::cout << std::left << std::setw(8) << "" << "spdist"<<'\n';
-    if (result_config.write_cpath) std::cout << std::left << std::setw(8) << "" << "cpath"<<'\n';
-    if (result_config.write_tpath) std::cout << std::left << std::setw(8) << "" << "tpath"<<'\n';
-    if (result_config.write_mgeom) std::cout << std::left << std::setw(8) << "" << "mgeom"<<'\n';
-    if (result_config.write_ep) std::cout << std::left << std::setw(8) << "" << "ep"<<'\n';
-    if (result_config.write_tp) std::cout << std::left << std::setw(8) << "" << "tp"<<'\n';
-
-    std::cout << "------------------------------------------" << '\n';
+    std::cout << "------------------------------------------\n";
   };
   bool validate_mm()
   {
-    std::cout << "Validating configuration for map match application:" << '\n';
+    std::cout << "Validating configuration for map match application:\n";
     if (!fileExists(gps_file))
     {
-      std::cout << std::setw(12) << "" << "Error, GPS_file not found. Program stop." << '\n';
+      std::cout << std::setw(12)
+                << "" << "Error, GPS_file not found. Program stop.\n";
       return false;
     };
     if (!fileExists(network_file))
     {
-      std::cout << std::setw(12) << "" << "Error, Network file not found. Program stop." << '\n';
+      std::cout << std::setw(12)
+                << "" << "Error, Network file not found. Program stop.\n";
       return false;
     };
     if (!fileExists(ubodt_file))
     {
-      std::cout << std::setw(12) << "" << "Error, UBODT file not found. Program stop." << '\n';
+      std::cout << std::setw(12)
+                << "" << "Error, UBODT file not found. Program stop.\n";
       return false;
     };
     if (binary_flag==2) {
-      std::cout << std::setw(12) << "" << "Error, UBODT file extension not recognized, which should be csv or binary.  Program stop." << '\n';
+      std::cout << std::setw(12)
+                << "" << "Error, UBODT file extension not recognized.\n";
+      return false;
+    }
+    if (log_level<0 || log_level>LOG_LEVESLS.size()){
+      std::cout << "Invalid log_level: should be 0 - 6\n";
+      std::cout << "0-trace,1-debug,2-info,3-warn,4-err,5-critical,6-off\n";
       return false;
     }
     if (fileExists(result_file))
     {
-      std::cout << std::setw(4) << "" << "Warning, overwrite existing result file." << result_file << '\n';
+      std::cout << std::setw(4)
+                << "" << "Warning, overwrite existing result file."
+                << result_file << '\n';
     };
     if (gps_error <= 0 || radius <= 0 || k <= 0)
     {
-      std::cout << std::setw(12) << "" << "Error, Algorithm parameters invalid." << '\n';
+      std::cout << std::setw(12)
+                << "" << "Error, mm parameters invalid.\n";
       return false;
     }
     // Check the definition of parameters search radius and gps error
     if (radius / gps_error > 10) {
-      std::cout << std::setw(12) << "" << "Error, the gps error " << gps_error
-                << " is too small compared with search radius " << radius << '\n';
-      std::cout << std::setw(12) << "It may cause underflow, try to increase gps error or descrease search radius" << '\n';
+      std::cout << std::setw(12)
+                << "" << "Error, the gps error " << gps_error
+                << "is too small compared with search radius"
+                << radius << '\n';
+      std::cout << std::setw(12)
+                << "It may cause underflow, "
+        "try to increase gps error or descrease search radius\n";
       return false;
     }
-    std::cout << "Validating success." << '\n';
+    std::cout << "Validating success.\n";
     return true;
   };
 
@@ -273,13 +316,6 @@ public:
   std::string gps_id;
   // Result file
   std::string result_file;
-  /*
-      0 for no geometry construction, only optimal path and complete
-      path will be outputed
-      1 for wkb geometry output
-      2 for wkt geometry output
-   */
-  int mode;
   // Parameters
   double gps_error;
   // Used by hashtable in UBODT
@@ -293,6 +329,8 @@ public:
 
   // Configuration of output format
   ResultConfig result_config;
+  // 0-trace,1-debug,2-info,3-warn,4-err,5-critical,6-off
+  int log_level;
 }; // FMM_Config
 
 
@@ -329,43 +367,55 @@ public:
     // Output
     result_file = tree.get<std::string>("ubodt_config.output.file");
     binary_flag = get_file_extension(result_file);
+    // 0-trace,1-debug,2-info,3-warn,4-err,5-critical,6-off
+    log_level = tree.get("ubodt_config.other.log_level",2);
     // binary_flag = tree.get("ubodt_config.output.binary", 1);
   };
   void print()
   {
-    std::cout << "------------------------------------------" << '\n';
-    std::cout << "Configuration parameters for UBODT construction: " << '\n';
-    std::cout << std::left << std::setw(4) << "" << std::setw(20) << "Network_file: " << network_file << '\n';;
-    std::cout << std::left << std::setw(4) << "" << std::setw(20) << "Network id: " << network_id << '\n';
-    std::cout << std::left << std::setw(4) << "" << std::setw(20) << "Network source: " << network_source << '\n';
-    std::cout << std::left << std::setw(4) << "" << std::setw(20) << "Network target: " << network_target << '\n';
-    std::cout << std::left << std::setw(4) << "" << std::setw(20) << "delta: " << delta << '\n';
-    std::cout << std::left << std::setw(4) << "" << std::setw(20) << "Output file:" << result_file << '\n';
-    std::cout << std::left << std::setw(4) << "" << std::setw(20) << "Output format(1 binary, 0 csv): " << binary_flag << '\n';
-    std::cout << "------------------------------------------" << '\n';
+    std::cout << "------------------------------------------\n";
+    std::cout << "Configuration parameters for UBODT construction: \n";
+    std::cout << "Network_file: " << network_file << '\n';;
+    std::cout << "Network id: " << network_id << '\n';
+    std::cout << "Network source: " << network_source << '\n';
+    std::cout << "Network target: " << network_target << '\n';
+    std::cout << "delta: " << delta << '\n';
+    std::cout << "Output file:" << result_file << '\n';
+    std::cout << "Output format(1 binary, 0 csv): " << binary_flag << '\n';
+    std::cout << "log_level:" << LOG_LEVESLS[log_level] << '\n';
+    std::cout << "------------------------------------------\n";
   };
   bool validate()
   {
-    std::cout << "Validating configuration for UBODT construction:" << '\n';
+    std::cout << "Validating configuration for UBODT construction:\n";
     if (!fileExists(network_file))
     {
-      std::cout << std::setw(12) << "" << "Error,Network file not found" << '\n';
+      std::cout << std::setw(12) << "" << "Error,Network file not found\n";
       return false;
     }
     if (fileExists(result_file))
     {
-      std::cout << std::setw(4) << "" << "Warning, overwrite existing result file." << result_file << '\n';
+      std::cout << std::setw(4)
+                << "" << "Warning, overwrite existing result file "
+                << result_file << '\n';
+    }
+    if (log_level<0 || log_level>LOG_LEVESLS.size()){
+      std::cout << "Invalid log_level: should be 0 - 6\n";
+      std::cout << "0-trace,1-debug,2-info,3-warn,4-err,5-critical,6-off\n";
+      return false;
     }
     if (binary_flag==2) {
-      std::cout << std::setw(12) << "" << "Error, UBODT file extension not recognized, which should be csv or binary.  Program stop." << '\n';
+      std::cout << std::setw(12)
+                << "" << "Error, UBODT file extension not recognized\n";
       return false;
     }
     if (delta <= 0)
     {
-      std::cout << std::setw(12) << "" << "Error,Delta value should be positive." << '\n';
+      std::cout << std::setw(12)
+                << "" << "Error,Delta value should be positive.\n";
       return false;
     }
-    std::cout << "Validating success." << '\n';
+    std::cout << "Validating success.\n";
     return true;
   };
   std::string network_file;
@@ -375,6 +425,8 @@ public:
   int binary_flag;
   double delta;
   std::string result_file;
+  // 0-trace,1-debug,2-info,3-warn,4-err,5-critical,6-off
+  int log_level;
 }; // UBODT_Config
 
 } // MM

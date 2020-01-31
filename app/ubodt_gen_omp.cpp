@@ -13,6 +13,7 @@ using namespace std;
 using namespace MM;
 int main(int argc, char* argv[])
 {
+  spdlog::set_pattern("[%s:%#] %v");
   std::cout<<"------------ Fast map matching (FMM) ------------"<<endl;
   std::cout<<"------------     Author: Can Yang    ------------"<<endl;
   std::cout<<"------------   Version: 2020.01.31   ------------"<<endl;
@@ -33,6 +34,8 @@ int main(int argc, char* argv[])
       return 0;
     };
     config.print();
+    spdlog::set_level((spdlog::level::level_enum) config.log_level);
+    spdlog::set_pattern("[%l][%s:%-3#] %v");
     std::cout<<"Write UBODT to file "<<config.result_file<<'\n';
     MM::Network network(config.network_file,
                         config.network_id,

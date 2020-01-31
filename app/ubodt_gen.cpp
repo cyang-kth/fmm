@@ -33,13 +33,14 @@ int main(int argc, char* argv[])
       return 0;
     };
     config.print();
+    spdlog::set_level((spdlog::level::level_enum) config.log_level);
+    spdlog::set_pattern("[%l][%s:%-3#] %v");
     std::cout<<"Write UBODT to file "<<config.result_file<<'\n';
     MM::Network network(config.network_file,
                         config.network_id,
                         config.network_source,
                         config.network_target);
     MM::NetworkGraph graph(&network);
-    std::cout<<"Upperbound config (delta): "<<config.delta<<'\n';
     bool binary = (config.binary_flag==1);
     graph.precompute_ubodt(config.result_file,config.delta,binary);
     std::chrono::steady_clock::time_point end =

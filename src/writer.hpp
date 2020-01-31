@@ -269,9 +269,9 @@ public:
     int N = c_path.size();
     for (int i = 0; i < N - 1; ++i)
     {
-      buf << network.get_edge_id(c_path[i]) << ",";
+      buf << c_path[i] << ",";
     }
-    buf << network.get_edge_id(c_path[N - 1]);
+    buf << c_path[N - 1];
   };
 
 
@@ -285,10 +285,10 @@ public:
       int a = t_path.indices[j];
       int b = t_path.indices[j+1];
       for (int i=a; i<b; ++i) {
-        buf << network.get_edge_id(t_path.cpath[i]);
+        buf << t_path.cpath[i];
         buf << ",";
       }
-      buf << network.get_edge_id(t_path.cpath[b]);
+      buf << t_path.cpath[b];
       if (j<J-2) {
         // Last element should not have a bar
         buf << "|";

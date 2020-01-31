@@ -27,6 +27,7 @@ using namespace MM;
 using namespace MM::IO;
 int main (int argc, char **argv)
 {
+  spdlog::set_pattern("[%s:%#] %v");
   std::cout<<"------------ Fast map matching (FMM) ------------"<<endl;
   std::cout<<"------------     Author: Can Yang    ------------"<<endl;
   std::cout<<"------------   Version: 2020.01.31   ------------"<<endl;
@@ -45,6 +46,7 @@ int main (int argc, char **argv)
       return 0;
     };
     config.print();
+    spdlog::set_level((spdlog::level::level_enum) config.log_level);
     // clock_t begin_time = clock(); // program start time
     std::chrono::steady_clock::time_point begin =
       std::chrono::steady_clock::now();

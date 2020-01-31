@@ -16,8 +16,8 @@ struct HeapNode
 // insert, pop and update functions.
 class Heap {
 public:
-  inline void push(NodeIndex index, double cost){
-    HeapNodeHandle handle = heap.push({index,cost});
+  inline void push(NodeIndex index, double dist){
+    HeapNodeHandle handle = heap.push({index,dist});
     handle_data.insert({index,handle});
   }
 
@@ -27,7 +27,7 @@ public:
     heap.pop();
   }
 
-  inline HeapNode &top(){
+  inline HeapNode top(){
     return heap.top();
   }
 
@@ -35,9 +35,13 @@ public:
     return heap.empty();
   }
 
-  inline void decrease_key(NodeIndex index,double cost){
+  inline unsigned int size(){
+    return heap.size();
+  }
+
+  inline void decrease_key(NodeIndex index,double dist){
     HeapNodeHandle handle = handle_data[index];
-    heap.decrease_key(handle,{index,cost});
+    heap.decrease_key(handle,{index,dist});
   }
 
 private:

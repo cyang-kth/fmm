@@ -51,7 +51,7 @@ public:
    */
   NetworkGraph(Network *network_arg) : network(network_arg) {
     std::vector<Edge> &edges = network->get_edges();
-    std::cout << "Construct graph from network edges start" << '\n';
+    SPDLOG_INFO("Construct graph from network edges start");
     // Key is the external ID and value is the index of vertice
     NodeIndex current_idx = 0;
     EdgeDescriptor e;
@@ -67,9 +67,9 @@ public:
       g[e].length = edge.length;
     }
     num_vertices = boost::num_vertices(g);
-    std::cout << "Graph nodes " << num_vertices << '\n';
-    std::cout << "Graph edges " << boost::num_edges(g) << '\n';
-    std::cout << "Construct graph from network edges end" << '\n';
+    SPDLOG_INFO("Graph nodes {}",num_vertices);
+    SPDLOG_INFO("Graph edges {}",boost::num_edges(g));
+    SPDLOG_INFO("Construct graph from network edges end");
   }
 
   /**
@@ -80,6 +80,7 @@ public:
                                          double delta,
                                          PredecessorMap *pmap,
                                          DistanceMap *dmap){
+    SPDLOG_TRACE("Routing start for source {}",network->get_node_id(s));
     Heap Q;
     // Initialization
     Q.push(s,0);
@@ -89,32 +90,42 @@ public:
     double temp_dist = 0;
     // Search Astar
     while (!Q.empty()) {
-      HeapNode &node = Q.top();
+      SPDLOG_TRACE("  Heap size {}",Q.size());
+      HeapNode node = Q.top();
       Q.pop();
       NodeIndex u = node.index;
+      SPDLOG_TRACE("  Examine u id {} cost {}",
+                   network->get_node_id(u), node.dist);
       if (node.dist>delta) break;
       for (boost::tie(out_i, out_end) = boost::out_edges(u,g);
            out_i != out_end; ++out_i) {
         EdgeDescriptor e = *out_i;
         NodeIndex v = boost::target(e,g);
         temp_dist = node.dist + g[e].length;
+        SPDLOG_TRACE("    Examine v {} cost {}",
+                     network->get_node_id(v), temp_dist);
         // HeapNode node_v{v,temp_dist,temp_tentative_dist};
         auto iter = dmap->find(v);
         if (iter!=dmap->end()) {
           if (iter->second>temp_dist) {
-            // There is still need to update the tentative distance
-            // because dist is updated.
             (*pmap)[v] = u;
             (*dmap)[v] = temp_dist;
+            SPDLOG_TRACE("    Heap push v id {} cost {}",
+                         network->get_node_id(v), temp_dist);
             Q.decrease_key(v,temp_dist);
           };
         } else {
-          Q.push(v,temp_dist);
-          pmap->insert({v,u});
-          dmap->insert({v,temp_dist});
+          SPDLOG_TRACE("    Heap push v id {} cost {}",
+                       network->get_node_id(v), temp_dist);
+          if (temp_dist<=delta){
+            Q.push(v,temp_dist);
+            pmap->insert({v,u});
+            dmap->insert({v,temp_dist});
+          }
         }
       }
     } // end of while
+    SPDLOG_TRACE("Routing end");
   }
 
   /**
@@ -127,13 +138,13 @@ public:
     int step_size = num_vertices/10;
     if (step_size<10) step_size=10;
     std::ofstream myfile(filename);
-    std::cout << "Start to generate UBODT with delta " << delta << '\n';
-    std::cout << "Output format " << (binary ? "binary" : "csv") << '\n';
+    SPDLOG_INFO("Start to generate UBODT with delta {}",delta);
+    SPDLOG_INFO("Output format {}", (binary ? "binary" : "csv"));
     if (binary) {
       boost::archive::binary_oarchive oa(myfile);
       for(NodeIndex source = 0; source < num_vertices; ++source)  {
         if (source%step_size==0)
-          std::cout<<"Progress "<< source << " / " << num_vertices <<'\n';
+          SPDLOG_INFO("Progress {} / {}", source, num_vertices);
         PredecessorMap pmap;
         DistanceMap dmap;
         single_source_upperbound_dijkstra(source,delta,&pmap,&dmap);
@@ -143,11 +154,15 @@ public:
       myfile << "source;target;next_n;prev_n;next_e;distance\n";
       for(NodeIndex source = 0; source < num_vertices; ++source)  {
         if (source%step_size==0)
-          std::cout<<"Progress "<<source<< " / " << num_vertices <<'\n';
+          SPDLOG_INFO("Progress {} / {}",source, num_vertices);
+        SPDLOG_TRACE("Iterate source {}",network->get_node_id(source));
         PredecessorMap pmap;
         DistanceMap dmap;
+        SPDLOG_TRACE("Call dijkstra");
         single_source_upperbound_dijkstra(source,delta,&pmap,&dmap);
+        SPDLOG_TRACE("Write result to file");
         write_result_csv(myfile,source,pmap,dmap);
+        SPDLOG_TRACE("Write result to file done");
       }
     }
     myfile.close();
@@ -158,8 +173,8 @@ public:
     int step_size = num_vertices/10;
     if (step_size<10) step_size=10;
     std::ofstream myfile(filename);
-    std::cout << "Start to generate UBODT with delta " << delta << '\n';
-    std::cout << "Output format " << (binary ? "binary" : "csv") << '\n';
+    SPDLOG_INFO("Start to generate UBODT with delta {}",delta);
+    SPDLOG_INFO("Output format {}", (binary ? "binary" : "csv"));
     if (binary) {
       boost::archive::binary_oarchive oa(myfile);
       int progress = 0;
@@ -169,7 +184,7 @@ public:
         for(int source = 0; source < num_vertices; ++source) {
           ++progress;
           if (progress % step_size == 0) {
-              printf("Progress %d / %d \n",progress, num_vertices);
+            SPDLOG_INFO("Progress {} / {}", progress, num_vertices);
           }
           PredecessorMap pmap;
           DistanceMap dmap;
@@ -187,7 +202,7 @@ public:
         for(int source = 0; source < num_vertices; ++source) {
           ++progress;
           if (progress % step_size == 0) {
-              printf("Progress %d / %d \n",progress, num_vertices);
+            SPDLOG_INFO("Progress {} / {}", progress, num_vertices);
           }
           PredecessorMap pmap;
           DistanceMap dmap;
@@ -203,6 +218,8 @@ public:
 
   void write_result_csv(std::ostream& stream, NodeIndex s,
                         PredecessorMap &pmap, DistanceMap &dmap){
+    SPDLOG_TRACE("Write result for source {}",network->get_node_id(s));
+    SPDLOG_TRACE("DistanceMap size {}",dmap.size());
     NodeIDVec &node_id_vec = network->get_node_id_vec();
     std::vector<Record> source_map;
     for (auto iter = pmap.begin(); iter!=pmap.end(); ++iter) {
@@ -238,10 +255,13 @@ public:
              << r.next_e<<";"
              << r.cost<<"\n";
     }
+    SPDLOG_TRACE("Write result done");
   }
 
-  void write_result_binary(boost::archive::binary_oarchive& stream, NodeIndex s,
-                           PredecessorMap &pmap, DistanceMap &dmap){
+  void write_result_binary(boost::archive::binary_oarchive& stream,
+                           NodeIndex s,
+                           PredecessorMap &pmap,
+                           DistanceMap &dmap){
     NodeIDVec &node_id_vec = network->get_node_id_vec();
     std::vector<Record> source_map;
     for (auto iter = pmap.begin(); iter!=pmap.end(); ++iter) {
@@ -288,7 +308,7 @@ public:
   }
 
   EdgeIndex get_edge_index(NodeIndex source, NodeIndex target,
-                     double dist) {
+                           double dist) {
     EdgeDescriptor e;
     OutEdgeIterator out_i, out_end;
     bool found =false;
