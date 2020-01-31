@@ -14,7 +14,7 @@ namespace MM {
 
 namespace bg = boost::geometry;
 typedef boost::geometry::model::point<double, 2,
-    boost::geometry::cs::cartesian> boost_point; // Point for rtree box
+                                      boost::geometry::cs::cartesian> boost_point; // Point for rtree box
 typedef bg::model::linestring<boost_point> linestring_t;
 /**
  *  Boost Geometry Linestring, compatible with OGRGeometry
@@ -39,13 +39,13 @@ public:
   inline void addPoint(const boost_point& point){
     bg::append(line, point);
   };
-  inline boost_point getPoint(int i) const{
+  inline boost_point getPoint(int i) const {
     return boost_point(bg::get<0>(line.at(i)),bg::get<1>(line.at(i)));
   };
   inline int getNumPoints() const {
     return bg::num_points(line);
   };
-  inline bool IsEmpty(){
+  inline bool IsEmpty() const {
     return bg::num_points(line)==0;
   };
   bg::wkt_manipulator<linestring_t> exportToWkt() const {

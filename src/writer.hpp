@@ -12,7 +12,7 @@
 #include <iostream>
 #include <fstream>
 #include "types.hpp"
-#include "multilevel_debug.h"
+#include "debug.h"
 #include "config.hpp"
 #include "network.hpp"
 
@@ -34,32 +34,29 @@ public:
   /**
    * Constructor
    * @param result_file, the path to an output file
-   * @param network_ptr, a pointer to the network
+   * @param network, a pointer to the network
    */
   ResultWriter(const std::string &result_file,
-               Network *network_ptr, ResultConfig &config_arg) :
-    m_fstream_ptr(new std::ofstream(result_file)),
-    m_fstream(*m_fstream_ptr), m_network_ptr(network_ptr),config(config_arg)
+               Network &network_arg, ResultConfig &config_arg) :
+    fstream(result_file),
+    network(network_arg),
+    config(config_arg)
   {
     std::cout << "Write result to file: " << result_file << '\n';
     write_header();
-  };
-  // Destructor
-  ~ResultWriter() {
-    delete m_fstream_ptr;
   };
 
   /**
    *  Write map matching result for a trajectory
    * @param tr_id: id of trajectory
    * @param ogeom: original geometry of the trajectory OGRLineString*
-   * @param o_path_ptr: pointer to the optimal path (sequence of candidates)
-   * @param c_path_ptr: pointer to the complete path (sequence of edge ids)
+   * @param o_path: pointer to the optimal path (sequence of candidates)
+   * @param c_path: pointer to the complete path (sequence of edge ids)
    * @param mgeom: the geometry of the matched path (untraversed part at the
    * first and last edge are removed.)
    */
-  void write_result(int tr_id, LineString *ogeom, O_Path *o_path_ptr,
-                    T_Path *t_path_ptr, LineString *mgeom){
+  void write_result(int tr_id, const LineString &ogeom, const O_Path &o_path,
+                    const T_Path &t_path, LineString &mgeom){
     std::stringstream buf;
     buf << tr_id;
     if (config.write_ogeom) {
@@ -68,33 +65,33 @@ public:
     }
     if (config.write_opath) {
       buf << ";";
-      write_o_path(buf,o_path_ptr);
+      write_o_path(buf,o_path);
     }
     if (config.write_error) {
       buf << ";";
-      write_gps_error(buf,o_path_ptr);
+      write_gps_error(buf,o_path);
     }
     if (config.write_offset) {
       buf << ";";
-      write_offset(buf,o_path_ptr);
+      write_offset(buf,o_path);
     }
     // Distance traversed which could be more complicated.
     if (config.write_spdist) {
       buf << ";";
-      write_spdist(buf,o_path_ptr);
+      write_spdist(buf,o_path);
     }
     if (config.write_pgeom) {
       buf << ";";
-      write_pgeom(buf,o_path_ptr);
+      write_pgeom(buf,o_path);
     }
     // Write fields related with cpath
     if (config.write_cpath) {
       buf << ";";
-      write_cpath(buf,t_path_ptr);
+      write_cpath(buf,t_path);
     }
     if (config.write_tpath) {
       buf << ";";
-      write_tpath(buf,t_path_ptr);
+      write_tpath(buf,t_path);
     }
     if (config.write_mgeom) {
       buf << ";";
@@ -102,40 +99,39 @@ public:
     }
     if (config.write_ep) {
       buf << ";";
-      write_ep(buf,o_path_ptr);
+      write_ep(buf,o_path);
     }
     if (config.write_tp) {
       buf << ";";
-      write_tp(buf,o_path_ptr);
+      write_tp(buf,o_path);
     }
     buf << '\n';
-    // Ensure that m_fstream is called corrected in OpenMP
+    // Ensure that fstream is called corrected in OpenMP
     #pragma omp critical
-    m_fstream << buf.rdbuf();
+    fstream << buf.rdbuf();
   };
 
   static std::string mkString(
-    Network *network_ptr, O_Path *o_path_ptr, T_Path *t_path_ptr,
-    LineString *mgeom, bool return_details = false){
+    const Network &network, const O_Path &o_path, const T_Path &t_path,
+    const LineString &mgeom, bool return_details = false){
     std::stringstream buf;
     if (return_details) {
-      write_o_path(buf,o_path_ptr);
+      write_o_path(buf,o_path);
       buf << ";";
-      write_gps_error(buf,o_path_ptr);
+      write_gps_error(buf,o_path);
       buf << ";";
-      write_offset(buf,o_path_ptr);
+      write_offset(buf,o_path);
       buf << ";";
-      write_spdist(buf,o_path_ptr);
-      // Distance traversed which could be more complicated.
+      write_spdist(buf,o_path);
       buf << ";";
-      write_pgeom(buf,o_path_ptr);
+      write_pgeom(buf,o_path);
       buf << ";";
-      write_cpath_network(buf,t_path_ptr,network_ptr);
+      write_cpath_network(buf,t_path,network);
       buf << ";";
-      write_cpath_network(buf,t_path_ptr,network_ptr);
+      write_tpath_network(buf,t_path,network);
       buf << ";";
     }
-    if (mgeom != nullptr) {
+    if (!mgeom.IsEmpty()) {
       write_geometry(buf,mgeom);
     }
     return buf.str();
@@ -153,82 +149,75 @@ public:
     if (config.write_mgeom) header+=";mgeom";
     if (config.write_ep) header+=";ep";
     if (config.write_tp) header+=";tp";
-    m_fstream << header << '\n';
+    fstream << header << '\n';
   };
-  static void write_geometry(std::stringstream &buf, LineString *line){
-    if (line != nullptr) {
-#ifdef USE_BG_GEOMETRY
-      buf << std::setprecision(12) << line->exportToWkt();
-#else
-      char *wkt;
-      line->exportToWkt(&wkt);
-      buf << wkt;
-      CPLFree(wkt);
-#endif
+  static void write_geometry(std::stringstream &buf, const LineString &line){
+    if (!line.IsEmpty()) {
+      buf << std::setprecision(12) << line.exportToWkt();
     }
   };
   // Write the optimal path
-  static void write_o_path(std::stringstream &buf,O_Path *o_path_ptr)
+  static void write_o_path(std::stringstream &buf,const O_Path &o_path)
   {
-    if (o_path_ptr == nullptr) {
+    if (o_path.empty()) {
       return;
     };
-    int N = o_path_ptr->size();
+    int N = o_path.size();
     for (int i = 0; i < N - 1; ++i)
     {
-      buf << (*o_path_ptr)[i]->edge->id_attr << ",";
+      buf << o_path[i]->edge->id << ",";
     }
-    buf << (*o_path_ptr)[N - 1]->edge->id_attr;
+    buf << o_path[N - 1]->edge->id;
   };
 
-  static void write_offset(std::stringstream &buf,O_Path *o_path_ptr)
+  static void write_offset(std::stringstream &buf,const O_Path &o_path)
   {
-    if (o_path_ptr == nullptr) {
+    if (o_path.empty()) {
       return;
     };
-    int N = o_path_ptr->size();
+    int N = o_path.size();
     for (int i = 0; i < N - 1; ++i)
     {
-      buf << (*o_path_ptr)[i]->offset<< ",";
+      buf << o_path[i]->offset<< ",";
     }
-    buf << (*o_path_ptr)[N - 1]->offset;
+    buf << o_path[N - 1]->offset;
   };
 
-  static void write_spdist(std::stringstream &buf,O_Path *o_path_ptr)
+  static void write_spdist(std::stringstream &buf,const O_Path &o_path)
   {
-    if (o_path_ptr == nullptr) {
+    if (o_path.empty()) {
       return;
     };
-    int N = o_path_ptr->size();
+    int N = o_path.size();
     for (int i = 0; i < N - 1; ++i)
     {
-      buf << (*o_path_ptr)[i]->sp_dist<< ",";
+      buf << o_path[i]->sp_dist<< ",";
     }
-    buf << (*o_path_ptr)[N - 1]->sp_dist;
+    buf << o_path[N - 1]->sp_dist;
   };
 
-  static void write_ep(std::stringstream &buf,O_Path *o_path_ptr)
+  static void write_ep(std::stringstream &buf,const O_Path &o_path)
   {
-    if (o_path_ptr == nullptr) {
+    if (o_path.empty()) {
       return;
     };
-    int N = o_path_ptr->size();
+    int N = o_path.size();
     for (int i = 0; i < N - 1; ++i)
     {
-      buf << (*o_path_ptr)[i]->obs_prob<< ",";
+      buf << o_path[i]->obs_prob<< ",";
     }
-    buf << (*o_path_ptr)[N - 1]->obs_prob;
+    buf << o_path[N - 1]->obs_prob;
   };
 
-  static void write_tp(std::stringstream &buf,O_Path *o_path_ptr)
+  static void write_tp(std::stringstream &buf,const O_Path &o_path)
   {
-    if (o_path_ptr == nullptr) return;
-    int N = o_path_ptr->size();
+    if (o_path.empty()) return;
+    int N = o_path.size();
     for (int i = 0; i < N - 1; ++i)
     {
-      float ca = (*o_path_ptr)[i]->cumu_prob;
-      float cb = (*o_path_ptr)[i+1]->cumu_prob;
-      float tp = (cb - ca)/((*o_path_ptr)[i+1]->obs_prob+1e-7);
+      float ca = o_path[i]->cumu_prob;
+      float cb = o_path[i+1]->cumu_prob;
+      float tp = (cb - ca)/(o_path[i+1]->obs_prob+1e-7);
       if (i==N-2) {
         buf << tp;
       } else {
@@ -237,69 +226,69 @@ public:
     }
   };
 
-  static void write_gps_error(std::stringstream &buf,O_Path *o_path_ptr)
+  static void write_gps_error(std::stringstream &buf,const O_Path &o_path)
   {
-    if (o_path_ptr == nullptr) {
+    if (o_path.empty()) {
       return;
     };
-    int N = o_path_ptr->size();
+    int N = o_path.size();
     for (int i = 0; i < N - 1; ++i)
     {
-      buf << (*o_path_ptr)[i]->dist<< ",";
+      buf << o_path[i]->dist<< ",";
     }
-    buf << (*o_path_ptr)[N - 1]->dist;
+    buf << o_path[N - 1]->dist;
   };
 
   // Write the optimal path
-  static void write_pgeom(std::stringstream &buf,O_Path *o_path_ptr)
+  static void write_pgeom(std::stringstream &buf,const O_Path &o_path)
   {
-    if (o_path_ptr == nullptr) {
+    if (o_path.empty()) {
       return;
     };
-    int N = o_path_ptr->size();
+    int N = o_path.size();
     LineString pline;
     // Create a linestring from matched point
     for (int i = 0; i < N; ++i)
     {
-      LineString *edge_geom = (*o_path_ptr)[i]->edge->geom;
+      LineString &edge_geom = o_path[i]->edge->geom;
       double px = 0;
       double py = 0;
       ALGORITHM::locate_point_by_offset(
-        edge_geom,(*o_path_ptr)[i]->offset,&px,&py);
+        edge_geom,o_path[i]->offset,&px,&py);
       pline.addPoint(px,py);
     }
     if (!pline.IsEmpty()) {
-      write_geometry(buf,&pline);
+      write_geometry(buf,pline);
     }
   };
 
   // Write the complete path
-  void write_cpath(std::stringstream &buf,T_Path *t_path_ptr) {
-    if (t_path_ptr == nullptr) return;
-    C_Path *c_path_ptr = &(t_path_ptr->cpath);
-    int N = c_path_ptr->size();
+  void write_cpath(std::stringstream &buf,const T_Path &t_path) {
+    if (t_path.cpath.empty()) return;
+    const C_Path &c_path = t_path.cpath;
+    int N = c_path.size();
     for (int i = 0; i < N - 1; ++i)
     {
-      buf << m_network_ptr->get_edge_id_attr((*c_path_ptr)[i]) << ",";
+      buf << network.get_edge_id(c_path[i]) << ",";
     }
-    buf << m_network_ptr->get_edge_id_attr((*c_path_ptr)[N - 1]);
+    buf << network.get_edge_id(c_path[N - 1]);
   };
 
 
 
   // Write the traversed path separated by vertical bar
-  void write_tpath(std::stringstream &buf,T_Path *t_path_ptr) {
-    if (t_path_ptr == nullptr) return;
+  void write_tpath(std::stringstream &buf,const T_Path &t_path) {
+    if (t_path.cpath.empty()) return;
     // Iterate through consecutive indexes and write the traversed path
-    int J = t_path_ptr->indices.size();
+    int J = t_path.indices.size();
     for (int j=0; j<J-1; ++j) {
-      int a = t_path_ptr->indices[j];
-      int b = t_path_ptr->indices[j+1];
+      int a = t_path.indices[j];
+      int b = t_path.indices[j+1];
       for (int i=a; i<b; ++i) {
-        buf << m_network_ptr->get_edge_id_attr(t_path_ptr->cpath[i]);
+        buf << network.get_edge_id(t_path.cpath[i]);
         buf << ",";
       }
-      buf << m_network_ptr->get_edge_id_attr(t_path_ptr->cpath[b]);
+      buf << network.get_edge_id(t_path.cpath[b]);
       if (j<J-2) {
         // Last element should not have a bar
         buf << "|";
@@ -308,31 +297,31 @@ public:
   };
 
   static void write_cpath_network(
-    std::stringstream &buf,T_Path *t_path_ptr,Network *network_ptr) {
-    if (t_path_ptr == nullptr) return;
-    C_Path *c_path_ptr = &(t_path_ptr->cpath);
-    int N = c_path_ptr->size();
+    std::stringstream &buf, const T_Path &t_path, const Network &network) {
+    if (t_path.cpath.empty()) return;
+    const C_Path &c_path = t_path.cpath;
+    int N = c_path.size();
     for (int i = 0; i < N - 1; ++i)
     {
-      buf << network_ptr->get_edge_id_attr((*c_path_ptr)[i]) << ",";
+      buf << network.get_edge_id(c_path[i]) << ",";
     }
-    buf << network_ptr->get_edge_id_attr((*c_path_ptr)[N - 1]);
+    buf << network.get_edge_id(c_path[N - 1]);
   };
 
   // Write the traversed path separated by vertical bar
   static void write_tpath_network(
-    std::stringstream &buf,T_Path *t_path_ptr,Network *network_ptr) {
-    if (t_path_ptr == nullptr) return;
+    std::stringstream &buf,const T_Path &t_path,const Network &network) {
+    if (t_path.cpath.empty()) return;
     // Iterate through consecutive indexes and write the traversed path
-    int J = t_path_ptr->indices.size();
+    int J = t_path.indices.size();
     for (int j=0; j<J-1; ++j) {
-      int a = t_path_ptr->indices[j];
-      int b = t_path_ptr->indices[j+1];
+      int a = t_path.indices[j];
+      int b = t_path.indices[j+1];
       for (int i=a; i<b; ++i) {
-        buf << network_ptr->get_edge_id_attr(t_path_ptr->cpath[i]);
+        buf << network.get_edge_id(t_path.cpath[i]);
         buf << ",";
       }
-      buf << network_ptr->get_edge_id_attr(t_path_ptr->cpath[b]);
+      buf << network.get_edge_id(t_path.cpath[b]);
       if (j<J-2) {
         // Last element should not have a bar
         buf << "|";
@@ -340,10 +329,9 @@ public:
     }
   };
 private:
-  std::ostream *m_fstream_ptr;
-  std::ostream &m_fstream;
-  Network *m_network_ptr;
-  ResultConfig config;
+  std::ofstream fstream;
+  Network &network;
+  ResultConfig &config;
 }; // ResultWriter
 }; //IO
 } //MM

@@ -18,6 +18,7 @@
 #include <fstream>
 #include <boost/archive/binary_iarchive.hpp>
 #include "types.hpp"
+#include "network.hpp"
 #include "debug.h"
 // #include <boost/functional/hash.hpp>
 namespace MM
@@ -45,10 +46,27 @@ public:
     std::cout<<"Creating UBODT finished\n";
   };
 
-  Record *look_up(int source,int target)
+  ~UBODT(){
+    /* Clean hashtable */
+    std::cout<< "Clean UBODT" << '\n';
+    int i;
+    for (i=0; i<buckets; ++i) {
+      Record* head = hashtable[i];
+      Record* curr;
+      while ((curr = head) != NULL) {
+        head = head->next;
+        free(curr);
+      }
+    }
+    // Destory hash table pointer
+    free(hashtable);
+    std::cout<< "Clean UBODT finished" << '\n';
+  };
+
+  Record *look_up(NodeIndex source,NodeIndex target)
   {
     //int h = (source*multiplier+target)%buckets;
-    int h = cal_bucket_index(source,target);
+    unsigned int h = cal_bucket_index(source,target);
     Record *r = hashtable[h];
     while (r != NULL)
     {
@@ -67,8 +85,8 @@ public:
    *  Return a shortest path (SP) containing edges from source to target.
    *  In case that SP is not found, empty is returned.
    */
-  std::vector<int> look_sp_path(int source,int target){
-    std::vector<int> edges;
+  C_PathIndex look_sp_path(NodeIndex source,NodeIndex target){
+    C_PathIndex edges;
     if (source==target) {return edges;}
     Record *r=look_up(source,target);
     // No transition exist from source to target
@@ -86,32 +104,34 @@ public:
    * (a vector of candidates)
    *
    * @param  path, an optimal path
-   * @return  a complete path. If there is a large gap in the optimal path implying
-   * complete path cannot be found in UBDOT, an empty path is returned
+   * @param  edges, a vector of edges
+   * @return  a complete path (spatially contiguous).
+   * If there is a large gap in the optimal
+   * path implying complete path cannot be found in UBDOT,
+   * an empty path is returned
    */
-  C_Path construct_complete_path(O_Path *path){
-    if (path==nullptr) return nullptr;
-    C_Path *edges= new C_Path();
-    int N = path->size();
-    edges->push_back((*path)[0]->edge->id);
+  C_Path construct_complete_path(O_Path &path, std::vector<Edge> &edges){
+    C_Path cpath;
+    if (path.empty()) return cpath;
+    int N = path.size();
+    cpath.push_back(path[0]->edge->id);
     for(int i=0; i<N-1; ++i) {
-      Candidate* a = (*path)[i];
-      Candidate* b = (*path)[i+1];
+      Candidate* a = path[i];
+      Candidate* b = path[i+1];
       if ((a->edge->id!=b->edge->id) || (a->offset>b->offset)) {
+        // segs stores edge index
         auto segs = look_sp_path(a->edge->target,b->edge->source);
         // No transition exist in UBODT
         if (segs.empty() &&  a->edge->target!=b->edge->source) {
-          delete edges;           // free the memory of edges
-          return nullptr;
+          return C_Path();
         }
         for (int e:segs) {
-          edges->push_back(e);
+          cpath.push_back(edges[e].id);
         }
-        edges->push_back(b->edge->id);
+        cpath.push_back(b->edge->id);
       }
     }
-    CPC_DEBUG(2) std::cout<<"Construct complete path finished "<<'\n';
-    return edges;
+    return cpath;
   };
 
   /**
@@ -121,37 +141,37 @@ public:
    * It returns a traversed path including the cpath and the index of
    * matched edge for each point in the GPS trajectory.
    */
-  T_Path *construct_traversed_path(O_Path *path){
-    if (path==nullptr) return nullptr;
-    int N = path->size();
+  T_Path construct_traversed_path(O_Path &path, Network &network){
+    if (path.empty()) return T_Path();
+    std::vector<Edge> &edges = network.get_edges();
+    int N = path.size();
     // T_Path *edges= new T_Path();
-    T_Path *t_path = new T_Path();
-    t_path->cpath.push_back((*path)[0]->edge->id);
+    T_Path t_path;
+    t_path.cpath.push_back(path[0]->edge->id);
     int current_idx = 0;
-    t_path->indices.push_back(current_idx);
+    t_path.indices.push_back(current_idx);
     for(int i=0; i<N-1; ++i) {
-      Candidate* a = (*path)[i];
-      Candidate* b = (*path)[i+1];
+      Candidate* a = path[i];
+      Candidate* b = path[i+1];
       if ((a->edge->id!=b->edge->id) || (a->offset>b->offset)) {
+        // segs stores edge index
         auto segs = look_sp_path(a->edge->target,b->edge->source);
         // No transition exist in UBODT
         if (segs.empty() &&  a->edge->target!=b->edge->source) {
-          delete t_path;           // free the memory of edges
-          return nullptr;
+          return T_Path();
         }
         for (int e:segs) {
-          t_path->cpath.push_back(e);
+          t_path.cpath.push_back(edges[e].id);
           ++current_idx;
         }
-        t_path->cpath.push_back(b->edge->id);
+        t_path.cpath.push_back(b->edge->id);
         ++current_idx;
-        t_path->indices.push_back(current_idx);
+        t_path.indices.push_back(current_idx);
       } else {
         // b stays on the same edge
-        t_path->indices.push_back(current_idx);
+        t_path.indices.push_back(current_idx);
       }
     }
-    CPC_DEBUG(2) std::cout<<"Construct traversed path finish"<<'\n';
     return t_path;
   };
   /**
@@ -182,31 +202,10 @@ public:
   double get_delta(){
     return delta;
   };
-  inline int cal_bucket_index(int source,int target){
+  inline unsigned int cal_bucket_index(NodeIndex source,NodeIndex target){
     return (source*multiplier+target)%buckets;
   };
-  // inline int cal_bucket_index(int source,int target){
-  //     std::size_t seed = source;
-  //     boost::hash_combine(seed, target);
-  //     return seed%buckets;
-  // };
-  ~UBODT(){
-    /* Clean hashtable */
-    std::cout<< "Clean UBODT" << '\n';
-    int i;
-    for (i=0; i<buckets; ++i) {
-      DEBUG(2) std::cout<<"Clean i "<< i <<'\n';
-      Record* head = hashtable[i];
-      Record* curr;
-      while ((curr = head) != NULL) {
-        head = head->next;
-        free(curr);
-      }
-    }
-    // Destory hash table pointer
-    free(hashtable);
-    std::cout<< "Clean UBODT finished" << '\n';
-  };
+
   // Insert a Record into the hash table
   void insert(Record *r)
   {
@@ -224,6 +223,8 @@ private:
   Record** hashtable;
 };
 
+// Constant values used in UBODT.
+
 double LOAD_FACTOR = 2.0;
 int BUFFER_LINE = 1024;
 
@@ -240,7 +241,8 @@ int estimate_ubodt_rows(const std::string &filename){
     std::string fn_extension = filename.substr(filename.find_last_of(".") + 1);
     std::transform(fn_extension.begin(),
                    fn_extension.end(),
-                   fn_extension.begin(), std::tolower);
+                   fn_extension.begin(),
+                   [](unsigned char c){ return std::tolower(c);});
     if (fn_extension == "csv" || fn_extension == "txt") {
       int row_size = 36;
       return file_bytes/row_size;
@@ -251,9 +253,8 @@ int estimate_ubodt_rows(const std::string &filename){
       int row_size = 28;
       return file_bytes/row_size;
     }
-  } else {
-    return -1;
   }
+  return -1;
 };
 
 int find_prime_number(double value){

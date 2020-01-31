@@ -47,7 +47,9 @@ struct Candidate
   double sp_dist;   // sp distance to previous point, initialized to be 0
 };
 
-/* Record type in UBODT */
+// Record type in UBODT
+// Every column stores index rather than ID.
+// For verification of the result, run ubodt to generate the ID map.
 struct Record
 {
   NodeIndex source;
@@ -59,22 +61,11 @@ struct Record
   Record *next;   // the next Record used in Hashtable
 };
 
-// This is the type used in writing the UBODT result
-struct IDRecord
-{
-  NodeID source;
-  NodeID target;
-  NodeID first_n;   // next_n in the paper
-  NodeID prev_n;
-  EdgeID next_e;
-  double cost;
-  IDRecord *next;   // the next Record used in Hashtable
-};
-
 /* Transitiong graph*/
-
-typedef std::vector<Candidate> Point_Candidates; // candidates of a point
-typedef std::vector<Point_Candidates> Traj_Candidates; // candidates of a trajectory
+// candidates of a point
+typedef std::vector<Candidate> Point_Candidates;
+// candidates of a trajectory
+typedef std::vector<Point_Candidates> Traj_Candidates;
 
 /* Result of map matching  */
 
@@ -84,8 +75,13 @@ typedef std::vector<Candidate*> O_Path;
 // Complete path, a sequence of spatially contiguous edges traversed
 typedef std::vector<EdgeID> C_Path;
 
-// The traversed path stores also the location of GPS point inside the C_Path, thus
-// edges traversed between two GPS observations can be found.
+// Complete path, a sequence of spatially contiguous edges traversed,
+// with edge index stored
+typedef std::vector<EdgeIndex> C_PathIndex;
+
+// The traversed path stores also the location of GPS point
+// inside the C_Path, thus edges traversed between two GPS
+// observations can be accessed.
 struct T_Path {
   C_Path cpath;
   std::vector<int> indices;

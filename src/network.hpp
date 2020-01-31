@@ -170,19 +170,19 @@ public:
   int get_node_count(){
     return node_id_vec.size();;
   };
-  // Get the edge vector
-  std::vector<Edge> *get_edges()
-  {
-    return &edges;
-  };
+
   // Get the ID attribute of an edge according to its index
-  EdgeID get_edge_id(EdgeIndex index)
+  EdgeID get_edge_id(EdgeIndex index) const
   {
     return edges[index].id;
   };
 
   EdgeIndex get_edge_index(EdgeID id){
     return edge_map[id];
+  };
+
+  inline std::vector<Edge> &get_edges(){
+    return edges;
   };
 
   NodeID get_node_id(NodeIndex index){
@@ -314,37 +314,27 @@ public:
    * @return  a pointer to the geometry of the complete path, The
    * caller should take care of freeing its memory.
    */
-  LineString complete_path_to_geometry(const LineString &traj,
+  LineString complete_path_to_geometry(const O_Path &o_path,
                                        const C_Path &complete_path)
   {
     // if (complete_path->empty()) return nullptr;
     LineString line;
     if (complete_path.empty()) return line;
-    int Npts = traj.getNumPoints();
+    int NOsegs = o_path.size();
     int NCsegs = complete_path.size();
     if (NCsegs ==1)
     {
-      double dist;
-      double firstoffset;
-      double lastoffset;
       LineString &firstseg = get_edge_geom(complete_path[0]);
-      ALGORITHM::linear_referencing(traj.getX(0),traj.getY(0),firstseg,
-                                    &dist,&firstoffset);
-      ALGORITHM::linear_referencing(traj.getX(Npts-1),traj.getY(Npts-1),
-                                    firstseg,&dist,&lastoffset);
+      double firstoffset = o_path[0]->offset;
+      double lastoffset =  o_path[NOsegs-1]->offset;
       LineString firstlineseg= ALGORITHM::cutoffseg_unique(firstoffset,
                                                            lastoffset,firstseg);
       append_segs_to_line(&line,firstlineseg,0);
     } else {
       LineString &firstseg = get_edge_geom(complete_path[0]);
       LineString &lastseg = get_edge_geom(complete_path[NCsegs-1]);
-      double dist;
-      double firstoffset;
-      double lastoffset;
-      ALGORITHM::linear_referencing(traj.getX(0),traj.getY(0),firstseg,
-                                    &dist,&firstoffset);
-      ALGORITHM::linear_referencing(traj.getX(Npts-1),traj.getY(Npts-1),
-                                    lastseg,&dist,&lastoffset);
+      double firstoffset = o_path[0]->offset;
+      double lastoffset =  o_path[NOsegs-1]->offset;
       LineString firstlineseg= ALGORITHM::cutoffseg(firstoffset, firstseg, 0);
       LineString lastlineseg= ALGORITHM::cutoffseg(lastoffset, lastseg, 1);
       append_segs_to_line(&line,firstlineseg,0);

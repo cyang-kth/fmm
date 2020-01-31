@@ -50,17 +50,17 @@ public:
    *  Construct a network graph from a network object
    */
   NetworkGraph(Network *network_arg) : network(network_arg) {
-    std::vector<Edge> *edges = network->get_edges();
+    std::vector<Edge> &edges = network->get_edges();
     std::cout << "Construct graph from network edges start" << '\n';
     // Key is the external ID and value is the index of vertice
     NodeIndex current_idx = 0;
     EdgeDescriptor e;
     bool inserted;
     g = Graph_T();     //18
-    int N = edges->size();
+    int N = edges.size();
     // std::cout<< "Network edges : " << N <<"\n";
     for (int i = 0; i < N; ++i) {
-      Edge &edge = (*edges)[i];
+      Edge &edge = edges[i];
       boost::tie(e, inserted) = boost::add_edge(edge.source,edge.target,g);
       // id is the FID read, id_attr is the external property in SHP
       g[e].index = edge.index;
@@ -204,7 +204,7 @@ public:
   void write_result_csv(std::ostream& stream, NodeIndex s,
                         PredecessorMap &pmap, DistanceMap &dmap){
     NodeIDVec &node_id_vec = network->get_node_id_vec();
-    std::vector<IDRecord> source_map;
+    std::vector<Record> source_map;
     for (auto iter = pmap.begin(); iter!=pmap.end(); ++iter) {
       NodeIndex cur_node = iter->first;
       if (cur_node!=s) {
@@ -218,19 +218,19 @@ public:
         NodeIndex successor = v;
         // Write the result
         double cost = dmap[successor];
-        EdgeID edge_id = get_edge_id(s, successor, cost);
+        EdgeIndex edge_index = get_edge_index(s, successor, cost);
         source_map.push_back(
-          {node_id_vec[s],
-           node_id_vec[cur_node],
-           node_id_vec[successor],
-           node_id_vec[prev_node],
-           edge_id,
+          {s,
+           cur_node,
+           successor,
+           prev_node,
+           edge_index,
            dmap[cur_node],
            nullptr});
       }
     }
     #pragma omp critical
-    for (IDRecord &r:source_map) {
+    for (Record &r:source_map) {
       stream << r.source<<";"
              << r.target<<";"
              << r.first_n<<";"
@@ -243,7 +243,7 @@ public:
   void write_result_binary(boost::archive::binary_oarchive& stream, NodeIndex s,
                            PredecessorMap &pmap, DistanceMap &dmap){
     NodeIDVec &node_id_vec = network->get_node_id_vec();
-    std::vector<IDRecord> source_map;
+    std::vector<Record> source_map;
     for (auto iter = pmap.begin(); iter!=pmap.end(); ++iter) {
       NodeIndex cur_node = iter->first;
       if (cur_node!=s) {
@@ -257,19 +257,19 @@ public:
         NodeIndex successor = v;
         // Write the result
         double cost = dmap[successor];
-        EdgeID edge_id = get_edge_id(s, successor, cost);
+        EdgeIndex edge_index = get_edge_index(s, successor, cost);
         source_map.push_back(
-          {node_id_vec[s],
-           node_id_vec[cur_node],
-           node_id_vec[successor],
-           node_id_vec[prev_node],
-           edge_id,
+          {s,
+           cur_node,
+           successor,
+           prev_node,
+           edge_index,
            dmap[cur_node],
            nullptr});
       }
     }
     #pragma omp critical
-    for (IDRecord &r:source_map) {
+    for (Record &r:source_map) {
       stream << r.source << r.target
              << r.first_n << r.prev_n <<r.next_e << r.cost;
     }
@@ -287,7 +287,7 @@ public:
     return num_vertices;
   }
 
-  EdgeID get_edge_id(NodeIndex source, NodeIndex target,
+  EdgeIndex get_edge_index(NodeIndex source, NodeIndex target,
                      double dist) {
     EdgeDescriptor e;
     OutEdgeIterator out_i, out_end;
@@ -302,13 +302,14 @@ public:
         }
       }
     }
-    if (found) return network->get_edge_id(g[e].index);
+    if (found) return g[e].index;
     SPDLOG_ERROR(
       "Edge not found from source {} to target {} dist {}",
       network->get_node_id(source),
       network->get_node_id(target), dist);
     return -1;
   }
+
 private:
   Graph_T g;
   static constexpr double DOUBLE_MIN = 1.e-6;

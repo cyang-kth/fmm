@@ -17,7 +17,7 @@
 #include "types.hpp"
 #include "network.hpp"
 #include "ubodt.hpp"
-#include "multilevel_debug.h"
+#include "debug.h"
 #include "python_types.hpp"
 
 namespace MM
@@ -32,7 +32,7 @@ public:
    *  @param traj: raw trajectory
    *  @param ubodt: UBODT table
    */
-  TransitionGraph(Traj_Candidates *traj_candidates,  LineString &traj,
+  TransitionGraph(Traj_Candidates *traj_candidates, const LineString &traj,
                   UBODT &ubodt, double delta = 5000) :
     m_traj_candidates(traj_candidates),
     m_traj(traj),
@@ -52,7 +52,7 @@ public:
   O_Path viterbi(double pf=0)
   {
     O_Path opath;
-    if (m_traj_candidates->empty()) return path;
+    if (m_traj_candidates->empty()) return opath;
     int N = m_traj_candidates->size();
     /* Update transition probabilities */
     Traj_Candidates::iterator csa = m_traj_candidates->begin();
@@ -122,14 +122,14 @@ public:
       }
     }
     int i = N-1;
-    (*opt_path)[i]=track_cand;
+    opath.push_back(track_cand);
     // Iterate from tail to head to assign path
     while ((track_cand=track_cand->prev)!=NULL)
     {
-      (*opt_path)[i-1]=track_cand;
-      --i;
+      opath.push_back(track_cand);
     }
-    return opt_path;
+    std::reverse(opath.begin(), opath.end());
+    return opath;
   };
 
   /**
@@ -225,7 +225,7 @@ public:
     else
     {
       // No sp path exist from O to D.
-      Record *r = m_ubodt->look_up(ca->edge->target,cb->edge->source);
+      Record *r = m_ubodt.look_up(ca->edge->target,cb->edge->source);
       sp_dist = r==NULL ? DISTANCE_NOT_FOUND : r->cost +
                 ca->edge->length - ca->offset + cb->offset;
     }
@@ -251,7 +251,7 @@ public:
     }
     else
     {
-      Record *r = m_ubodt->look_up(ca->edge->target,cb->edge->source);
+      Record *r = m_ubodt.look_up(ca->edge->target,cb->edge->source);
       // No sp path exist from O to D.
       if (r==NULL) return DISTANCE_NOT_FOUND;
       // calculate original SP distance
@@ -272,16 +272,16 @@ public:
   /**
    *  Calculate the Euclidean distances of all segments in a linestring
    */
-  static std::vector<double> cal_eu_dist(LineString *trajectory)
+  static std::vector<double> cal_eu_dist(const LineString &trajectory)
   {
-    int N = trajectory->getNumPoints();
+    int N = trajectory.getNumPoints();
     std::vector<double> lengths(N-1);
-    double x0 = trajectory->getX(0);
-    double y0 = trajectory->getY(0);
+    double x0 = trajectory.getX(0);
+    double y0 = trajectory.getY(0);
     for(int i = 1; i < N; ++i)
     {
-      double x1 = trajectory->getX(i);
-      double y1 = trajectory->getY(i);
+      double x1 = trajectory.getX(i);
+      double y1 = trajectory.getY(i);
       double dx = x1 - x0;
       double dy = y1 - y0;
       lengths[i-1]=sqrt(dx * dx + dy * dy);
@@ -294,7 +294,7 @@ private:
   // a pointer trajectory candidates
   Traj_Candidates *m_traj_candidates;
   // reference to GPS trajectory
-  LineString &m_traj;
+  const LineString &m_traj;
   // UBODT
   UBODT &m_ubodt;
   // Euclidean distances of segments in the trajectory
