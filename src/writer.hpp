@@ -131,7 +131,7 @@ public:
       write_tpath_network(buf,t_path,network);
       buf << ";";
     }
-    if (!mgeom.IsEmpty()) {
+    if (!mgeom.isEmpty()) {
       write_geometry(buf,mgeom);
     }
     return buf.str();
@@ -152,7 +152,7 @@ public:
     fstream << header << '\n';
   };
   static void write_geometry(std::stringstream &buf, const LineString &line){
-    if (!line.IsEmpty()) {
+    if (!line.isEmpty()) {
       buf << std::setprecision(12) << line.exportToWkt();
     }
   };
@@ -257,7 +257,7 @@ public:
         edge_geom,o_path[i]->offset,&px,&py);
       pline.addPoint(px,py);
     }
-    if (!pline.IsEmpty()) {
+    if (!pline.isEmpty()) {
       write_geometry(buf,pline);
     }
   };

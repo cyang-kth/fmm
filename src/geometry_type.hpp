@@ -45,7 +45,7 @@ public:
   inline int getNumPoints() const {
     return bg::num_points(line);
   };
-  inline bool IsEmpty() const {
+  inline bool isEmpty() const {
     return bg::num_points(line)==0;
   };
   bg::wkt_manipulator<linestring_t> exportToWkt() const {

@@ -245,19 +245,23 @@ public:
   Traj_Candidates search_tr_cs_knn(const LineString &geom, std::size_t k,
                                    double radius, double gps_error)
   {
+    SPDLOG_INFO("Search candidates {} {} {}",k,radius,gps_error);
     int NumberPoints = geom.getNumPoints();
     Traj_Candidates tr_cs(NumberPoints);
     for (int i=0; i<NumberPoints; ++i)
     {
       // Construct a bounding boost_box
+      SPDLOG_INFO("Search for point {}",i);
       double px = geom.getX(i);
       double py = geom.getY(i);
       Point_Candidates pcs;
       boost_box b(boost_point(geom.getX(i)-radius,geom.getY(i)-radius),
                   boost_point(geom.getX(i)+radius,geom.getY(i)+radius));
       std::vector<Item> temp;
+      SPDLOG_INFO("Query for candidates");
       rtree.query(boost::geometry::index::intersects(b),
                   std::back_inserter(temp));
+      SPDLOG_INFO("Filter intersections {}",temp.size());
       for (Item &i:temp)
       {
         // Check for detailed intersection
@@ -277,6 +281,7 @@ public:
       {
         return Traj_Candidates();
       };
+      SPDLOG_INFO("KNN sort");
       // KNN part
       if (pcs.size()<=k)
       {

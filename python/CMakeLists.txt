@@ -24,7 +24,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 # Set the flags.
 
-set(CMAKE_CXX_FLAGS "-O3 -DUSE_BG_GEOMETRY")
+set(CMAKE_CXX_FLAGS "-O3")
 
 # Set the properties for the interface file.
 set_source_files_properties(fmm.i PROPERTIES CPLUSPLUS ON)
