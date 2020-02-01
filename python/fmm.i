@@ -15,7 +15,7 @@ namespace std {
    // %template(IntSet) set<int>;
 }
 
-%include "../src/python_types.hpp"
+%include "python_types.hpp"
 
 %template (CandidateVector) std::vector<MM::CandidateElement>;
 %template (TransitionLattice) std::vector<MM::TLElement>;
@@ -38,7 +38,8 @@ public:
     double get_radius();
     void set_radius(double r);
 private:
-    static MatchResult generate_result(Network *network_ptr,O_Path *o_path_ptr, T_Path *t_path_ptr, LineString *mgeom);
+    static MatchResult generate_result(Network *network_ptr,O_Path *o_path_ptr,
+                                       T_Path *t_path_ptr, LineString *mgeom);
     MM::UBODT *ubodt;
     MM::Network *network;
     MapMatcherConfig config;
