@@ -1,89 +1,98 @@
 #ifndef MM_GEOMTYPES_HPP
 #define MM_GEOMTYPES_HPP
 
-#ifdef USE_BG_GEOMETRY
-
 #include <ogrsf_frmts.h> // C++ API for GDAL
 #include <boost/geometry.hpp>
 #include <boost/geometry/geometries/geometries.hpp>
-#include <boost/geometry/extensions/gis/io/wkb/read_wkb.hpp>
 #include <iterator>
 #include <vector>
 
-#else  // USE_BG_GEOMETRY not defined
-
-#include <ogrsf_frmts.h> // C++ API for GDAL
-
-#endif
+#include "boost/geometry/extensions/gis/io/wkb/read_wkb.hpp"
+#include "boost/geometry/extensions/gis/io/wkb/write_wkb.hpp"
 
 namespace MM {
 
-#ifdef USE_BG_GEOMETRY
-
 namespace bg = boost::geometry;
-typedef bg::model::point<double, 2, bg::cs::cartesian> bg_point_t;
-typedef bg::model::linestring<bg_point_t> linestring_t;
+// Point for rtree box
+typedef bg::model::point<double, 2, bg::cs::cartesian> boost_point;
+typedef bg::model::linestring<boost_point> linestring_t;
 /**
  *  Boost Geometry Linestring, compatible with OGRGeometry
  */
-class BGLineString {
+class LineString {
 public:
-inline double getX(int i){
+  inline double getX(int i) const {
     return bg::get<0>(line.at(i));
-};
-inline double getY(int i){
+  };
+  inline double getY(int i) const {
     return bg::get<1>(line.at(i));
-};
-inline void addPoint(double x,double y){
-    bg::append(line, bg_point_t(x,y));
-};
-inline int getNumPoints(){
+  };
+  inline void setX(int i, double v) {
+    bg::set<0>(line.at(i),v);
+  };
+  inline void setY(int i, double v) {
+    bg::set<1>(line.at(i),v);
+  };
+  inline void addPoint(double x,double y){
+    bg::append(line, boost_point(x,y));
+  };
+  inline void addPoint(const boost_point& point){
+    bg::append(line, point);
+  };
+  inline boost_point getPoint(int i) const {
+    return boost_point(bg::get<0>(line.at(i)),bg::get<1>(line.at(i)));
+  };
+  inline int getNumPoints() const {
     return bg::num_points(line);
-};
-inline bool IsEmpty(){
+  };
+  inline bool isEmpty() const {
     return bg::num_points(line)==0;
-};
-bg::wkt_manipulator<linestring_t> exportToWkt(){
+  };
+  bg::wkt_manipulator<linestring_t> exportToWkt() const {
     return bg::wkt(line);
-};
-linestring_t *get_geometry(){
-    return &line;
-};
-inline double get_Length(){
+  };
+  linestring_t &get_geometry(){
+    return line;
+  };
+  inline void clear(){
+    bg::clear(line);
+  };
+  inline double getLength() const {
     return bg::length(line);
-};
+  };
 private:
-linestring_t line;
-}; // BGLineString
+  linestring_t line;
+}; // LineString
 
-typedef BGLineString LineString;
 
 /**
  *  Convert an OGRLineString to Boost geometry, the caller is responsible to
  *  freeing the memory.
- *
  */
-LineString *ogr2linestring(OGRLineString *line){
-    int binary_size = line->WkbSize();
-    std::vector<unsigned char> wkb(binary_size);
-    // http://www.gdal.org/ogr__core_8h.html#a36cc1f4d807ba8f6fb8951f3adf251e2
-    line->exportToWkb(wkbNDR,&wkb[0]);
-    BGLineString *l = new BGLineString();
-    bg::read_wkb(wkb.begin(),wkb.end(),*(l->get_geometry()));
-    return l;
+LineString ogr2linestring(OGRLineString *line){
+  int binary_size = line->WkbSize();
+  std::vector<unsigned char> wkb(binary_size);
+  line->exportToWkb(wkbNDR,&wkb[0]);
+  LineString l;
+  bg::read_wkb(wkb.begin(),wkb.end(),l.get_geometry());
+  return l;
 };
 
-#else // USE_BG_GEOMETRY not defined
-
-typedef OGRLineString LineString;
-
-LineString *ogr2linestring(OGRLineString *line){
-    LineString *linestring = (OGRLineString*) line->clone();
-    return linestring;
+OGRLineString *linestring2ogr(LineString &line, int srid=4326){
+  std::vector<unsigned char> wkb;
+  bg::write_wkb(line.get_geometry(),std::back_inserter(wkb));
+  OGRGeometry *poGeometry;
+  OGRGeometryFactory::createFromWkb(&wkb[0], NULL, &poGeometry);
+  return (OGRLineString *) poGeometry;
 };
 
-
-#endif //USE_BG_GEOMETRY
+OGRPoint *bg2ogr_point(boost_point &p, int srid=4326){
+  std::vector<unsigned char> wkb;
+  bg::write_wkb(p,std::back_inserter(wkb));
+  OGRGeometry *poGeometry;
+  OGRGeometryFactory::createFromWkb(&wkb[0], NULL, &poGeometry);
+  return (OGRPoint *) poGeometry;
+};
 
 }; // MM
 

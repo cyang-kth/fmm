@@ -12,7 +12,7 @@ set(CMAKE_CXX_STANDARD 11)
 # Make sure the swig package is loaded.
 find_package(SWIG REQUIRED)
 find_package(GDAL 2.2 REQUIRED)
-find_package(PythonLibs REQUIRED)
+find_package(PythonLibs 2.7 REQUIRED)
 find_package(Boost 1.54.0 REQUIRED serialization)
 
 include(${SWIG_USE_FILE})
@@ -24,7 +24,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 # Set the flags.
 
-set(CMAKE_CXX_FLAGS "-O3 -DUSE_BG_GEOMETRY")
+set(CMAKE_CXX_FLAGS "-O3")
 
 # Set the properties for the interface file.
 set_source_files_properties(fmm.i PROPERTIES CPLUSPLUS ON)
