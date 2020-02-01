@@ -102,7 +102,7 @@ public:
   MapMatcher(const std::string &config_file) :
     config(MapMatcherConfig(config_file)){
     std::cout << "Loading model from file" << config_file <<'\n';
-    MM::Network *network = new Network(config.network_file,config.network_id,
+    network = new Network(config.network_file,config.network_id,
             config.network_source,config.network_target);
     network->build_rtree_index();
     int multipler = network->get_node_count();

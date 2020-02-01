@@ -13,8 +13,8 @@
 namespace MM {
 
 namespace bg = boost::geometry;
-typedef boost::geometry::model::point<double, 2,
-                                      boost::geometry::cs::cartesian> boost_point; // Point for rtree box
+// Point for rtree box
+typedef bg::model::point<double, 2, bg::cs::cartesian> boost_point;
 typedef bg::model::linestring<boost_point> linestring_t;
 /**
  *  Boost Geometry Linestring, compatible with OGRGeometry

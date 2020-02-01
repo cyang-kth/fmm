@@ -219,6 +219,7 @@ public:
       ALGORITHM::boundingbox_geometry(edge->geom,&x1,&y1,&x2,&y2);
       boost_box b(boost_point(x1,y1), boost_point(x2,y2));
       rtree.insert(std::make_pair(b,edge));
+      SPDLOG_INFO("Insert box {}",bg::wkt(b));
     }
     SPDLOG_INFO("Create boost rtree done");
   };
@@ -258,7 +259,7 @@ public:
       boost_box b(boost_point(geom.getX(i)-radius,geom.getY(i)-radius),
                   boost_point(geom.getX(i)+radius,geom.getY(i)+radius));
       std::vector<Item> temp;
-      SPDLOG_INFO("Query for candidates");
+      SPDLOG_INFO("Query for candidates for box {}",bg::wkt(b));
       rtree.query(boost::geometry::index::intersects(b),
                   std::back_inserter(temp));
       SPDLOG_INFO("Filter intersections {}",temp.size());

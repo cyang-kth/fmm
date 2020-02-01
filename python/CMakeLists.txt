@@ -12,7 +12,7 @@ set(CMAKE_CXX_STANDARD 11)
 # Make sure the swig package is loaded.
 find_package(SWIG REQUIRED)
 find_package(GDAL 2.2 REQUIRED)
-find_package(PythonLibs REQUIRED)
+find_package(PythonLibs 2.7 REQUIRED)
 find_package(Boost 1.54.0 REQUIRED serialization)
 
 include(${SWIG_USE_FILE})
