@@ -18,30 +18,11 @@
 #include <exception>
 #include <iomanip>
 
+#include "debug.h"
+#include "util.hpp"
+
 namespace MM
 {
-
-bool fileExists(std::string &filename)
-{
-  struct stat buf;
-  if (stat(filename.c_str(), &buf) != -1)
-  {
-    return true;
-  }
-  return false;
-};
-
-// Check extension of the file, 0 for CSV and 1 for Binary
-int get_file_extension(std::string &fn) {
-  std::string fn_extension = fn.substr(fn.find_last_of(".") + 1);
-  if (fn_extension == "csv" || fn_extension == "txt") {
-    return 0;
-  } else if (fn_extension == "bin" || fn_extension == "binary") {
-    return 1;
-  }
-  return 2;
-};
-
 
 /**
  *  The configuration defined for output of the program
@@ -73,8 +54,8 @@ struct ResultConfig {
 };
 
 static const std::vector<std::string>
-  LOG_LEVESLS {"0-trace","1-debug","2-info",
-               "3-warn","4-err","5-critical","6-off"};
+LOG_LEVESLS {"0-trace","1-debug","2-info",
+             "3-warn","4-err","5-critical","6-off"};
 
 /**
  * Configuration class for map matching
@@ -106,7 +87,7 @@ public:
       delta = tree.get("fmm_config.input.ubodt.delta",5000.0);       //
       delta_defined = true;
     }
-    binary_flag = get_file_extension(ubodt_file);
+    binary_flag = UTIL::get_file_extension(ubodt_file);
 
     // Network
     network_file = tree.get<std::string>("fmm_config.input.network.file");
@@ -243,58 +224,52 @@ public:
   bool validate_mm()
   {
     std::cout << "Validating configuration for map match application:\n";
-    if (!fileExists(gps_file))
+    if (!UTIL::fileExists(gps_file))
     {
-      std::cout << std::setw(12)
-                << "" << "Error, GPS_file not found. Program stop.\n";
+      SPDLOG_CRITICAL("GPS file {} not found",gps_file);
       return false;
     };
-    if (!fileExists(network_file))
+    if (!UTIL::fileExists(network_file))
     {
-      std::cout << std::setw(12)
-                << "" << "Error, Network file not found. Program stop.\n";
+      SPDLOG_CRITICAL("Network file {} not found",network_file);
       return false;
     };
-    if (!fileExists(ubodt_file))
+    if (!UTIL::fileExists(ubodt_file))
     {
-      std::cout << std::setw(12)
-                << "" << "Error, UBODT file not found. Program stop.\n";
+      SPDLOG_CRITICAL("UBODT file {} not found",ubodt_file);
       return false;
     };
     if (binary_flag==2) {
-      std::cout << std::setw(12)
-                << "" << "Error, UBODT file extension not recognized.\n";
+      SPDLOG_CRITICAL("UBODT file extension not recognized");
       return false;
     }
-    if (log_level<0 || log_level>LOG_LEVESLS.size()){
-      std::cout << "Invalid log_level: should be 0 - 6\n";
-      std::cout << "0-trace,1-debug,2-info,3-warn,4-err,5-critical,6-off\n";
+    if (log_level<0 || log_level>LOG_LEVESLS.size()) {
+      SPDLOG_CRITICAL("Invalid log_level {}, which should be 0 - 6",log_level);
+      SPDLOG_INFO("0-trace,1-debug,2-info,3-warn,4-err,5-critical,6-off");
       return false;
     }
-    if (fileExists(result_file))
+    if (UTIL::fileExists(result_file))
     {
-      std::cout << std::setw(4)
-                << "" << "Warning, overwrite existing result file."
-                << result_file << '\n';
+      SPDLOG_WARN("Overwrite existing result file {}",result_file);
     };
+    std::string output_folder = UTIL::get_file_directory(result_file);
+    if (!UTIL::folderExists(output_folder)) {
+      SPDLOG_CRITICAL("Output folder {} not exists",output_folder);
+      return false;
+    }
     if (gps_error <= 0 || radius <= 0 || k <= 0)
     {
-      std::cout << std::setw(12)
-                << "" << "Error, mm parameters invalid.\n";
+      SPDLOG_CRITICAL("Invalid mm parameter k {} r {} gps error {}",
+                      k,radius,gps_error);
       return false;
     }
     // Check the definition of parameters search radius and gps error
     if (radius / gps_error > 10) {
-      std::cout << std::setw(12)
-                << "" << "Error, the gps error " << gps_error
-                << "is too small compared with search radius"
-                << radius << '\n';
-      std::cout << std::setw(12)
-                << "It may cause underflow, "
-        "try to increase gps error or descrease search radius\n";
+      SPDLOG_CRITICAL("Too large radius {} compared with gps error {}",
+                      radius,gps_error);
       return false;
     }
-    std::cout << "Validating success.\n";
+    std::cout << "Validating done.\n";
     return true;
   };
 
@@ -363,7 +338,7 @@ public:
 
     // Output
     result_file = tree.get<std::string>("ubodt_config.output.file");
-    binary_flag = get_file_extension(result_file);
+    binary_flag = UTIL::get_file_extension(result_file);
 
     // 0-trace,1-debug,2-info,3-warn,4-err,5-critical,6-off
     log_level = tree.get("ubodt_config.other.log_level",2);
@@ -385,34 +360,35 @@ public:
   bool validate()
   {
     std::cout << "Validating configuration for UBODT construction:\n";
-    if (!fileExists(network_file))
+    if (!UTIL::fileExists(network_file))
     {
-      std::cout << std::setw(12) << "" << "Error,Network file not found\n";
+      SPDLOG_CRITICAL("Network file {} not found",network_file);
       return false;
     }
-    if (fileExists(result_file))
+    if (UTIL::fileExists(result_file))
     {
-      std::cout << std::setw(4)
-                << "" << "Warning, overwrite existing result file "
-                << result_file << '\n';
+      SPDLOG_WARN("Overwrite result file {}",result_file);
     }
-    if (log_level<0 || log_level>LOG_LEVESLS.size()){
-      std::cout << "Invalid log_level: should be 0 - 6\n";
-      std::cout << "0-trace,1-debug,2-info,3-warn,4-err,5-critical,6-off\n";
+    std::string output_folder = UTIL::get_file_directory(result_file);
+    if (!UTIL::folderExists(output_folder)) {
+      SPDLOG_CRITICAL("Output folder {} not exists",output_folder);
+      return false;
+    }
+    if (log_level<0 || log_level>LOG_LEVESLS.size()) {
+      SPDLOG_CRITICAL("Invalid log_level {}, which should be 0 - 6",log_level);
+      SPDLOG_INFO("0-trace,1-debug,2-info,3-warn,4-err,5-critical,6-off");
       return false;
     }
     if (binary_flag==2) {
-      std::cout << std::setw(12)
-                << "" << "Error, UBODT file extension not recognized\n";
+      SPDLOG_CRITICAL("UBODT file extension not recognized");
       return false;
     }
     if (delta <= 0)
     {
-      std::cout << std::setw(12)
-                << "" << "Error,Delta value should be positive.\n";
+      SPDLOG_CRITICAL("Delta {} should be positive");
       return false;
     }
-    std::cout << "Validating success.\n";
+    std::cout << "Validating done.\n";
     return true;
   };
   std::string network_file;

@@ -43,6 +43,35 @@ bool fileExists(std::string &filename)
   return fileExists(filename.c_str());
 };
 
+bool folderExists(std::string &folder_name)
+{
+  if (folder_name.empty()) return true;
+  struct stat sb;
+  if (stat(folder_name.c_str(),&sb) == 0 && S_ISDIR(sb.st_mode)) {
+    return true;
+  }
+  return false;
+}
+
+// Check extension of the file, 0 for CSV and 1 for Binary
+int get_file_extension(std::string &fn) {
+  std::string fn_extension = fn.substr(fn.find_last_of(".") + 1);
+  if (fn_extension == "csv" || fn_extension == "txt") {
+    return 0;
+  } else if (fn_extension == "bin" || fn_extension == "binary") {
+    return 1;
+  }
+  return 2;
+};
+
+std::string get_file_directory(std::string &fn){
+  std::size_t found = fn.find_last_of("/");
+  if (found!=std::string::npos){
+    return fn.substr(0,found);
+  }
+  return {};
+};
+
 /**
  *  Print the candidates of trajectory in a table with header of
  *  step;offset;distance;edge_id
@@ -106,7 +135,6 @@ void print_geometry(LineString *geom){
   }
   std::cout<< geom->exportToWkt()<<'\n';
 };
-
 
 // Get current timestamp
 std::chrono::time_point<std::chrono::system_clock> get_current_time(){

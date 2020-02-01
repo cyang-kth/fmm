@@ -42,7 +42,7 @@ public:
       delta = tree.get("fmm_config.input.ubodt.delta",5000.0);       //
       delta_defined = true;
     }
-    binary_flag = MM::get_file_extension(ubodt_file);
+    binary_flag = MM::UTIL::get_file_extension(ubodt_file);
     // Network
     network_file = tree.get<std::string>("fmm_config.input.network.file");
     network_id = tree.get("fmm_config.input.network.id", "id");
