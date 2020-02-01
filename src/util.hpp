@@ -3,13 +3,13 @@
  * Utility functions
  *
  * @author: Can Yang
- * @version: 2017.11.11
+ * @version: 2020.01.31
  */
 
 #ifndef MM_UTIL_HPP
 #define MM_UTIL_HPP
 
-#include <ogrsf_frmts.h> // C++ API for GDAL
+#include <ogrsf_frmts.h>
 #include <iostream>
 #include <string>
 #include <sys/stat.h>

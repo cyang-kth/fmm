@@ -15,7 +15,8 @@
 #include "../src/transition_graph.hpp"
 #include "../src/config.hpp"
 #include "../src/writer.hpp"
-#include "../src/python_types.hpp"
+
+#include "python_types.hpp"
 
 namespace MM {
 
@@ -184,7 +185,7 @@ public:
       line,config.k,config.radius,config.gps_error);
     MM::TransitionGraph tg = MM::TransitionGraph(
       &traj_candidates,line,*ubodt,config.delta);
-    return tg.generate_transition_lattice();
+    return generate_transition_lattice(tg);
   };
   // Getter and setter to change the configuration in Python interactively.
   void set_gps_error(double error){
@@ -206,6 +207,78 @@ public:
     config.radius = r;
   };
 private:
+  /**
+   *  Generate transition lattice for the transition graph, used in
+   *  Python extension for verification of the result
+   */
+  TransitionLattice generate_transition_lattice(MM::TransitionGraph &tg){
+    TransitionLattice tl;
+    Traj_Candidates *m_traj_candidates = tg.get_traj_candidates();
+    if (m_traj_candidates->empty()) return tl;
+    std::vector<double> &eu_distances = tg.get_eu_distances();
+    int N = m_traj_candidates->size();
+    /* Update transition probabilities */
+    Traj_Candidates::iterator csa = m_traj_candidates->begin();
+    /* Initialize the cumu probabilities of the first layer */
+    Point_Candidates::iterator ca = csa->begin();
+    while (ca != csa->end())
+    {
+      ca->cumu_prob = ca->obs_prob;
+      ++ca;
+    }
+    /* Updating the cumu probabilities of subsequent layers */
+    Traj_Candidates::iterator csb = m_traj_candidates->begin();
+    ++csb;
+    while (csb != m_traj_candidates->end())
+    {
+      Point_Candidates::iterator ca = csa->begin();
+      double eu_dist=eu_distances[std::distance(
+                                    m_traj_candidates->begin(),csa)];
+      while (ca != csa->end())
+      {
+        Point_Candidates::iterator cb = csb->begin();
+        while (cb != csb->end())
+        {
+
+          int step =std::distance(m_traj_candidates->begin(),csa);
+          // Calculate transition probability
+          double sp_dist = tg.get_sp_dist_penalized(ca,cb,0);
+          /*
+             A degenerate case is that the *same point
+             is reported multiple times where both eu_dist and sp_dist = 0
+           */
+          double tran_prob = 1.0;
+          if (eu_dist<0.00001) {
+            tran_prob =sp_dist>0.00001 ? 0 : 1.0;
+          } else {
+            tran_prob =eu_dist>sp_dist ? sp_dist/eu_dist : eu_dist/sp_dist;
+          }
+
+          if (ca->cumu_prob + tran_prob * cb->obs_prob >= cb->cumu_prob)
+          {
+            cb->cumu_prob = ca->cumu_prob + tran_prob * cb->obs_prob;
+            cb->prev = &(*ca);
+            cb->sp_dist = sp_dist;
+          }
+          tl.push_back(
+            {step,
+             ca->edge->id,
+             cb->edge->id,
+             sp_dist,
+             eu_dist,
+             tran_prob,
+             cb->obs_prob,
+             ca->cumu_prob + tran_prob * cb->obs_prob});
+          ++cb;
+        }
+        ++ca;
+      }
+      ++csa;
+      ++csb;
+    }
+    return tl;
+  };
+
   static MatchResult generate_result(
     const Network &network,const O_Path &o_path,
     const T_Path &t_path, const LineString &mgeom){

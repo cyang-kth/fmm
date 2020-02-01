@@ -12,6 +12,7 @@
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
 
 #include "spdlog/spdlog.h"
-#include "spdlog/fmt/ostr.h" // must be included for custom operator
+// must be included for custom operator
+#include "spdlog/fmt/ostr.h"
 
 #endif // MM_DEBUG_HPP

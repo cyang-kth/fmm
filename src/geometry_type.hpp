@@ -68,12 +68,10 @@ private:
 /**
  *  Convert an OGRLineString to Boost geometry, the caller is responsible to
  *  freeing the memory.
- *
  */
 LineString ogr2linestring(OGRLineString *line){
   int binary_size = line->WkbSize();
   std::vector<unsigned char> wkb(binary_size);
-  // http://www.gdal.org/ogr__core_8h.html#a36cc1f4d807ba8f6fb8951f3adf251e2
   line->exportToWkb(wkbNDR,&wkb[0]);
   LineString l;
   bg::read_wkb(wkb.begin(),wkb.end(),l.get_geometry());

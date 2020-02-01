@@ -8,6 +8,7 @@
 
 #ifndef MM_GPS_HPP
 #define MM_GPS_HPP
+
 #include "geometry_type.hpp"
 namespace MM {
 

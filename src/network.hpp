@@ -11,12 +11,11 @@
 
 #ifndef MM_NETWORK_HPP
 #define MM_NETWORK_HPP
-#include <ogrsf_frmts.h> // C++ API for GDAL
+#include <ogrsf_frmts.h>
 #include <iostream>
-#include <cmath> // Calulating probability
-#include <iomanip>
-#include <algorithm> // Partial sort copy
-#include <unordered_set> // Partial sort copy
+#include <cmath>
+#include <algorithm>
+
 // Data structures for Rtree
 #include <boost/geometry/geometries/box.hpp>
 #include <boost/geometry/index/rtree.hpp>
@@ -84,8 +83,7 @@ public:
     OGRLayer  *ogrlayer = poDS->GetLayer(0);
     int NUM_FEATURES = ogrlayer->GetFeatureCount();
     SPDLOG_INFO("Number of edges in file: {}",NUM_FEATURES);
-    // edges= std::vector<Edge>(NUM_FEATURES);
-    // Initialize network edges
+
     OGRFeatureDefn *ogrFDefn = ogrlayer->GetLayerDefn();
     OGRFeature *ogrFeature;
 
@@ -114,7 +112,8 @@ public:
       SPDLOG_INFO("Geometry type of network is {}",
                   OGRGeometryTypeToName(ogrFDefn->GetGeomType()));
     }
-    OGRSpatialReference *ogrsr = ogrFDefn->GetGeomFieldDefn(0)->GetSpatialRef();
+    OGRSpatialReference *ogrsr =
+      ogrFDefn->GetGeomFieldDefn(0)->GetSpatialRef();
     if (ogrsr != nullptr) {
       srid = ogrsr->GetEPSGGeogCS();
       if (srid==-1)
@@ -208,20 +207,14 @@ public:
   // Construct a Rtree using the vector of edges
   void build_rtree_index()
   {
-    // Build an rtree for candidate search
-    SPDLOG_INFO("Create boost rtree");
-    // create some Items
     for (std::size_t i = 0; i < edges.size(); ++i)
     {
-      // create a boost_box
       Edge *edge = &edges[i];
       double x1,y1,x2,y2;
       ALGORITHM::boundingbox_geometry(edge->geom,&x1,&y1,&x2,&y2);
       boost_box b(boost_point(x1,y1), boost_point(x2,y2));
       rtree.insert(std::make_pair(b,edge));
-      SPDLOG_INFO("Insert box {}",bg::wkt(b));
     }
-    SPDLOG_INFO("Create boost rtree done");
   };
   /**
    *  Search for k nearest neighboring (KNN) candidates of a
@@ -246,27 +239,20 @@ public:
   Traj_Candidates search_tr_cs_knn(const LineString &geom, std::size_t k,
                                    double radius, double gps_error)
   {
-    SPDLOG_INFO("Search candidates {} {} {}",k,radius,gps_error);
     int NumberPoints = geom.getNumPoints();
     Traj_Candidates tr_cs(NumberPoints);
     for (int i=0; i<NumberPoints; ++i)
     {
-      // Construct a bounding boost_box
-      SPDLOG_INFO("Search for point {}",i);
       double px = geom.getX(i);
       double py = geom.getY(i);
       Point_Candidates pcs;
       boost_box b(boost_point(geom.getX(i)-radius,geom.getY(i)-radius),
                   boost_point(geom.getX(i)+radius,geom.getY(i)+radius));
       std::vector<Item> temp;
-      SPDLOG_INFO("Query for candidates for box {}",bg::wkt(b));
       rtree.query(boost::geometry::index::intersects(b),
                   std::back_inserter(temp));
-      SPDLOG_INFO("Filter intersections {}",temp.size());
       for (Item &i:temp)
       {
-        // Check for detailed intersection
-        // The two edges are all in OGR_linestring
         Edge *edge = i.second;
         double offset;
         double dist;
@@ -278,11 +264,11 @@ public:
           pcs.push_back(c);
         }
       }
+      // If no candidate is found, return an empty Traj_Candidates
       if (pcs.empty())
       {
         return Traj_Candidates();
       };
-      SPDLOG_INFO("KNN sort");
       // KNN part
       if (pcs.size()<=k)
       {
@@ -323,7 +309,6 @@ public:
   LineString complete_path_to_geometry(const O_Path &o_path,
                                        const C_Path &complete_path)
   {
-    // if (complete_path->empty()) return nullptr;
     LineString line;
     if (complete_path.empty()) return line;
     int NOsegs = o_path.size();
@@ -333,8 +318,8 @@ public:
       LineString &firstseg = get_edge_geom(complete_path[0]);
       double firstoffset = o_path[0]->offset;
       double lastoffset =  o_path[NOsegs-1]->offset;
-      LineString firstlineseg= ALGORITHM::cutoffseg_unique(firstoffset,
-                                                           lastoffset,firstseg);
+      LineString firstlineseg= ALGORITHM::cutoffseg_unique(
+        firstoffset,lastoffset,firstseg);
       append_segs_to_line(&line,firstlineseg,0);
     } else {
       LineString &firstseg = get_edge_geom(complete_path[0]);
@@ -353,7 +338,6 @@ public:
         }
       };
       append_segs_to_line(&line,lastlineseg,1);
-      // Free the memory
     }
     return line;
   };

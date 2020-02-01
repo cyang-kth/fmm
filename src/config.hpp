@@ -3,7 +3,7 @@
  * Configuration Class defined for the two application
  *
  * @author: Can Yang
- * @version: 2019.03.27
+ * @version: 2020.01.31
  */
 #ifndef MM_CONFIG_HPP
 #define MM_CONFIG_HPP
@@ -351,8 +351,6 @@ public:
     std::cout << "Read configuration from xml file: " << file << '\n';
     boost::property_tree::read_xml(file, tree);
     // Parse the XML into the property tree.
-    // Without default value, the throwing version of get to find attribute.
-    // If the path cannot be resolved, an exception is thrown.
 
     // UBODT configuration
     delta = tree.get("ubodt_config.parameters.delta", 5000.0);
@@ -362,14 +360,13 @@ public:
     network_id = tree.get("ubodt_config.input.network.id", "id");
     network_source = tree.get("ubodt_config.input.network.source", "source");
     network_target = tree.get("ubodt_config.input.network.target", "target");
-    // int temp = tree.get("ubodt_config.input.network.nid_index",0);
-    // nid_index= temp>0;
+
     // Output
     result_file = tree.get<std::string>("ubodt_config.output.file");
     binary_flag = get_file_extension(result_file);
+
     // 0-trace,1-debug,2-info,3-warn,4-err,5-critical,6-off
     log_level = tree.get("ubodt_config.other.log_level",2);
-    // binary_flag = tree.get("ubodt_config.output.binary", 1);
   };
   void print()
   {

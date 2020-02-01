@@ -6,7 +6,7 @@
  * Viterbi algorithm is implemented.
  *
  * @author: Can Yang
- * @version: 2017.11.11
+ * @version: 2020.01.31
  */
 
 #ifndef MM_TRANSITION_GRAPH_HPP
@@ -18,7 +18,6 @@
 #include "network.hpp"
 #include "ubodt.hpp"
 #include "debug.h"
-#include "python_types.hpp"
 
 namespace MM
 {
@@ -78,11 +77,8 @@ public:
         {
           // Calculate transition probability
           double sp_dist = get_sp_dist_penalized(ca,cb,pf);
-
-          /*
-              A degenerate case is that the same point
-              is reported multiple times where both eu_dist and sp_dist = 0
-           */
+          // A degenerate case is that the same point
+          // is reported multiple times where both eu_dist and sp_dist = 0
           double tran_prob = 1.0;
           if (eu_dist<0.00001) {
             tran_prob =sp_dist>0.00001 ? 0 : 1.0;
@@ -102,7 +98,7 @@ public:
       }
       ++csa;
       ++csb;
-    }  // End of calculating transition probability
+    }
 
     // Back track to find optimal path
     Candidate *track_cand=nullptr;
@@ -130,76 +126,6 @@ public:
     }
     std::reverse(opath.begin(), opath.end());
     return opath;
-  };
-
-  /**
-   *  Generate transition lattice for the transition graph, used in
-   *  Python extension for verification of the result
-   */
-  TransitionLattice generate_transition_lattice(){
-    TransitionLattice tl;
-    if (m_traj_candidates->empty()) return tl;
-    int N = m_traj_candidates->size();
-    /* Update transition probabilities */
-    Traj_Candidates::iterator csa = m_traj_candidates->begin();
-    /* Initialize the cumu probabilities of the first layer */
-    Point_Candidates::iterator ca = csa->begin();
-    while (ca != csa->end())
-    {
-      ca->cumu_prob = ca->obs_prob;
-      ++ca;
-    }
-    /* Updating the cumu probabilities of subsequent layers */
-    Traj_Candidates::iterator csb = m_traj_candidates->begin();
-    ++csb;
-    while (csb != m_traj_candidates->end())
-    {
-      Point_Candidates::iterator ca = csa->begin();
-      double eu_dist=eu_distances[std::distance(
-                                    m_traj_candidates->begin(),csa)];
-      while (ca != csa->end())
-      {
-        Point_Candidates::iterator cb = csb->begin();
-        while (cb != csb->end())
-        {
-
-          int step =std::distance(m_traj_candidates->begin(),csa);
-          // Calculate transition probability
-          double sp_dist = get_sp_dist_penalized(ca,cb,0);
-          /*
-             A degenerate case is that the *same point
-             is reported multiple times where both eu_dist and sp_dist = 0
-           */
-          double tran_prob = 1.0;
-          if (eu_dist<0.00001) {
-            tran_prob =sp_dist>0.00001 ? 0 : 1.0;
-          } else {
-            tran_prob =eu_dist>sp_dist ? sp_dist/eu_dist : eu_dist/sp_dist;
-          }
-
-          if (ca->cumu_prob + tran_prob * cb->obs_prob >= cb->cumu_prob)
-          {
-            cb->cumu_prob = ca->cumu_prob + tran_prob * cb->obs_prob;
-            cb->prev = &(*ca);
-            cb->sp_dist = sp_dist;
-          }
-          tl.push_back(
-            {step,
-             ca->edge->id,
-             cb->edge->id,
-             sp_dist,
-             eu_dist,
-             tran_prob,
-             cb->obs_prob,
-             ca->cumu_prob + tran_prob * cb->obs_prob});
-          ++cb;
-        }
-        ++ca;
-      }
-      ++csa;
-      ++csb;
-    }     // End of calculating transition probability
-    return tl;
   };
 
   /**
@@ -270,7 +196,7 @@ public:
     return sp_dist;
   };
   /**
-   *  Calculate the Euclidean distances of all segments in a linestring
+   *  Calculate the length of all segments in a linestring
    */
   static std::vector<double> cal_eu_dist(const LineString &trajectory)
   {
@@ -290,8 +216,17 @@ public:
     }
     return lengths;
   };
+
+  Traj_Candidates *get_traj_candidates(){
+    return m_traj_candidates;
+  };
+
+  std::vector<double> &get_eu_distances(){
+    return eu_distances;
+  }
+
 private:
-  // a pointer trajectory candidates
+  // a pointer to trajectory candidates
   Traj_Candidates *m_traj_candidates;
   // reference to GPS trajectory
   const LineString &m_traj;

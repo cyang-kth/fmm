@@ -3,7 +3,7 @@
  * Definition of Data types used in the FMM algorithm
  *
  * @author: Can Yang
- * @version: 2017.11.11
+ * @version: 2020.01.31
  */
 
 #ifndef MM_TYPES_HPP

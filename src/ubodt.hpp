@@ -4,7 +4,7 @@
  * shortest path routing results.
  *
  * @author: Can Yang
- * @version: 2017.11.11
+ * @version: 2020.01.31
  */
 
 #ifndef MM_UBODT_HPP
@@ -14,13 +14,14 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
-#include <map> /* used for statistics */
+#include <map>
 #include <fstream>
 #include <boost/archive/binary_iarchive.hpp>
+
 #include "types.hpp"
 #include "network.hpp"
 #include "debug.h"
-// #include <boost/functional/hash.hpp>
+
 namespace MM
 {
 
@@ -38,8 +39,6 @@ public:
     std::cout <<"Creating UBODT with buckets "<< buckets
               << " muliplier "<< multiplier <<"\n";
     hashtable = (Record **) malloc(sizeof(Record*)*buckets);
-    // This initialization is required to later
-    // free the memory, to figure out the problem
     for (int i = 0; i < buckets; i++) {
       hashtable[i] = NULL;
     }
@@ -65,7 +64,6 @@ public:
 
   Record *look_up(NodeIndex source,NodeIndex target)
   {
-    //int h = (source*multiplier+target)%buckets;
     unsigned int h = cal_bucket_index(source,target);
     Record *r = hashtable[h];
     while (r != NULL)
@@ -81,6 +79,7 @@ public:
     }
     return r;
   };
+
   /**
    *  Return a shortest path (SP) containing edges from source to target.
    *  In case that SP is not found, empty is returned.
@@ -174,6 +173,7 @@ public:
     }
     return t_path;
   };
+
   /**
    *  Print statistics of the hashtable to a file
    */
@@ -215,6 +215,7 @@ public:
     hashtable[h]=r;
     if (r->cost > delta) delta = r->cost;
   };
+
 private:
   const long long multiplier;   // multiplier to get a unique ID
   const int buckets;   // number of buckets
@@ -347,7 +348,6 @@ UBODT *read_ubodt_binary(const std::string &filename, int multiplier=50000)
     ia >> r->cost;
     r->next=NULL;
     if (NUM_ROWS%progress_step==0) printf("Read rows: %d\n",NUM_ROWS);
-    /* Insert into the hash table */
     table->insert(r);
   }
   ifs.close();

@@ -4,20 +4,22 @@
  * the standard shapefile reader in GDAL.
  *
  * @author: Can Yang
- * @version: 2017.11.11
+ * @version: 2020.01.31
  */
 
 #ifndef MM_READER_HPP /* Currently not used */
 #define MM_READER_HPP
+
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <sstream>
+
 #include "debug.h"
 #include "types.hpp"
 #include "gps.hpp"
 #include "util.hpp"
-#include <iomanip>
+
 
 namespace MM
 {
@@ -54,37 +56,33 @@ public:
         GDAL_OF_VECTOR, NULL, NULL, NULL );
     if( poDS == NULL )
     {
-      printf( "Open failed.\n" );
-      exit( 1 );
+      SPDLOG_CRITICAL("Open GDAL dataset failed {}",filename);
+      std::exit(EXIT_FAILURE);
     }
     ogrlayer = poDS->GetLayer(0);
     _cursor=0;
-    // Get the number of features first
     OGRFeatureDefn *ogrFDefn = ogrlayer->GetLayerDefn();
-    // This should be a local field rather than a new variable
     id_idx=ogrFDefn->GetFieldIndex(id_name.c_str());
     NUM_FEATURES= ogrlayer->GetFeatureCount();
     if (id_idx<0)
     {
-      std::cout<< "ERROR: id column not found with "<<id_name<< '\n';
+      SPDLOG_CRITICAL("Id column {} not found",id_name);
       GDALClose( poDS );
       std::exit(EXIT_FAILURE);
     }
     if (wkbFlatten(ogrFDefn->GetGeomType()) != wkbLineString)
     {
-      std::cout<<std::setw(12)<<""<< "Geometry type of trajectory is "
-        <<OGRGeometryTypeToName(ogrFDefn->GetGeomType())<<'\n';
-      std::cout<<std::setw(12)<<""<< "It should be LineString"<< '\n';
+      SPDLOG_CRITICAL("Geometry type is not linestring {}",
+                      OGRGeometryTypeToName(ogrFDefn->GetGeomType()));
       GDALClose( poDS );
-      std::cout<<"Program stop"<< '\n';
       std::exit(EXIT_FAILURE);
     } else {
-      std::cout<< "\tGeometry type is " <<
-        OGRGeometryTypeToName(ogrFDefn->GetGeomType())<<'\n';
+      SPDLOG_INFO("Geometry type is {}",
+                      OGRGeometryTypeToName(ogrFDefn->GetGeomType()));
     }
-    std::cout<<"    Index of ID column: " << id_idx<< '\n';
-    std::cout<<"    Total number of trajectories: " << NUM_FEATURES << '\n';
-    std::cout<<"Finish reading meta data" << '\n';
+    SPDLOG_INFO("Index of id column {}",id_idx);
+    SPDLOG_INFO("Total number of trajectories {}",NUM_FEATURES);
+    SPDLOG_INFO("Finish reading meta data");
   };
   // If there are still features not read
   bool has_next_feature()
@@ -116,8 +114,6 @@ public:
       LineString linestring = ogr2linestring((OGRLineString*) rawgeometry);
       OGRFeature::DestroyFeature(ogrFeature);
       trajectories.push_back({trid,linestring});
-      // trajectories[i].id = trid;
-      // trajectories[i].geom = linestring;
       ++i;
     }
     _cursor+=trajectories_size;
@@ -137,8 +133,6 @@ public:
       OGRGeometry *rawgeometry = ogrFeature->GetGeometryRef();
       LineString linestring = ogr2linestring((OGRLineString*) rawgeometry);
       OGRFeature::DestroyFeature(ogrFeature);
-      // trajectories[i].id = trid;
-      // trajectories[i].geom = linestring;
       trajectories.push_back({trid,linestring});
       ++i;
     }
@@ -158,7 +152,7 @@ private:
   int NUM_FEATURES=0;
   int id_idx;   // Index of the id column in shapefile
   int _cursor=0;   // Keep record of current features read
-  GDALDataset *poDS;   // GDAL 2.1.0
+  GDALDataset *poDS;
   OGRLayer  *ogrlayer;
 }; // TrajectoryReader
 } // IO

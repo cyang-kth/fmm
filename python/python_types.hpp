@@ -11,15 +11,12 @@
 
 #include <vector>
 #include <string>
-#include "geometry_type.hpp"
+#include "../src/geometry_type.hpp"
 
 namespace MM {
 
-/**
- *  MatchResult used for communicating with Python
- */
 struct MatchResult {
-  std::vector<int> opath;       // optimal path
+  std::vector<int> opath;
   std::vector<int> cpath;
   std::string mgeom;
   std::string pgeom;

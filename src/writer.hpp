@@ -4,13 +4,14 @@
  * writing the results.
  *
  * @author: Can Yang
- * @version: 2017.11.11
+ * @version: 2020.01.31
  */
 
-#ifndef MM_WRITER_HPP /* Currently not used */
+#ifndef MM_WRITER_HPP
 #define MM_WRITER_HPP
 #include <iostream>
 #include <fstream>
+
 #include "types.hpp"
 #include "debug.h"
 #include "config.hpp"

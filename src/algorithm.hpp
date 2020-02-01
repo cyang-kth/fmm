@@ -203,8 +203,8 @@ LineString cutoffseg_unique(double offset1, double offset2,
 {
   LineString cutoffline;
   int Npoints = linestring.getNumPoints();
-  if (Npoints==2)        // A single segment
-  {
+  if (Npoints==2) {
+    // A single segment
     double x1 = linestring.getX(0);
     double y1 = linestring.getY(0);
     double x2 = linestring.getX(1);
@@ -218,10 +218,9 @@ LineString cutoffseg_unique(double offset1, double offset2,
     double new_y2 = y1+ratio2*(y2-y1);
     cutoffline.addPoint(new_x1, new_y1);
     cutoffline.addPoint(new_x2, new_y2);
-  }
-  else        // Multiple segments
-  {
-    double L = 0;              // current length parsed
+  } else {
+    // Multiple segments
+    double L = 0;
     int i = 0;
     while(i<Npoints-1)
     {
@@ -268,7 +267,7 @@ void locate_point_by_offset(const LineString &linestring, double offset,
     *y = linestring.getY(0);
     return;
   }
-  double L_processed=0;        // length parsed
+  double L_processed=0;
   int i = 0;
   double px=0;
   double py=0;

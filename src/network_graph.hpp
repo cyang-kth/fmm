@@ -28,11 +28,13 @@
 #include <iostream>
 #include <fstream>
 #include <deque>
-#include <algorithm> // std::reverse
+#include <algorithm>
 #include <unordered_map>
-#include <omp.h> // OpenMP
+// OpenMP
+#include <omp.h>
 
-#include <boost/archive/binary_oarchive.hpp> // Binary output of UBODT
+// Binary output of UBODT
+#include <boost/archive/binary_oarchive.hpp>
 
 #include <boost/graph/dijkstra_shortest_paths.hpp>
 #include <boost/graph/dijkstra_shortest_paths_no_color_map.hpp>
@@ -52,8 +54,6 @@ public:
   NetworkGraph(Network *network_arg) : network(network_arg) {
     std::vector<Edge> &edges = network->get_edges();
     SPDLOG_INFO("Construct graph from network edges start");
-    // Key is the external ID and value is the index of vertice
-    NodeIndex current_idx = 0;
     EdgeDescriptor e;
     bool inserted;
     g = Graph_T();     //18
@@ -74,13 +74,12 @@ public:
 
   /**
    *  Routing from a single source to all nodes within an upperbound
-   *  Results are returned in pmap and dmap.
+   *  Pmap and dmap are updated to record the result.
    */
   void single_source_upperbound_dijkstra(NodeIndex s,
                                          double delta,
                                          PredecessorMap *pmap,
                                          DistanceMap *dmap){
-    SPDLOG_TRACE("Routing start for source {}",network->get_node_id(s));
     Heap Q;
     // Initialization
     Q.push(s,0);
@@ -88,35 +87,28 @@ public:
     dmap->insert({s,0});
     OutEdgeIterator out_i, out_end;
     double temp_dist = 0;
-    // Search Astar
+    // Dijkstra search
     while (!Q.empty()) {
-      SPDLOG_TRACE("  Heap size {}",Q.size());
       HeapNode node = Q.top();
       Q.pop();
       NodeIndex u = node.index;
-      SPDLOG_TRACE("  Examine u id {} cost {}",
-                   network->get_node_id(u), node.dist);
       if (node.dist>delta) break;
       for (boost::tie(out_i, out_end) = boost::out_edges(u,g);
            out_i != out_end; ++out_i) {
         EdgeDescriptor e = *out_i;
         NodeIndex v = boost::target(e,g);
         temp_dist = node.dist + g[e].length;
-        SPDLOG_TRACE("    Examine v {} cost {}",
-                     network->get_node_id(v), temp_dist);
-        // HeapNode node_v{v,temp_dist,temp_tentative_dist};
         auto iter = dmap->find(v);
         if (iter!=dmap->end()) {
+          // dmap contains node v
           if (iter->second>temp_dist) {
+            // a smaller distance is found for v
             (*pmap)[v] = u;
             (*dmap)[v] = temp_dist;
-            SPDLOG_TRACE("    Heap push v id {} cost {}",
-                         network->get_node_id(v), temp_dist);
             Q.decrease_key(v,temp_dist);
           };
         } else {
-          SPDLOG_TRACE("    Heap push v id {} cost {}",
-                       network->get_node_id(v), temp_dist);
+          // dmap does not contain v
           if (temp_dist<=delta){
             Q.push(v,temp_dist);
             pmap->insert({v,u});
@@ -124,14 +116,14 @@ public:
           }
         }
       }
-    } // end of while
-    SPDLOG_TRACE("Routing end");
+    }
   }
 
   /**
-   * Precompute an UBODT with delta and save it to the file
-   * @param filename [description]
-   * @param delta    [description]
+   * Precompute an UBODT with upperbound and save it to the file
+   * @param filename  output file to write the result
+   * @param delta     upper bound
+   * @param binary    format of saving ubodt as binary or not
    */
   void precompute_ubodt(const std::string &filename, double delta,
                         bool binary=true) {
@@ -155,18 +147,15 @@ public:
       for(NodeIndex source = 0; source < num_vertices; ++source)  {
         if (source%step_size==0)
           SPDLOG_INFO("Progress {} / {}",source, num_vertices);
-        SPDLOG_TRACE("Iterate source {}",network->get_node_id(source));
         PredecessorMap pmap;
         DistanceMap dmap;
-        SPDLOG_TRACE("Call dijkstra");
         single_source_upperbound_dijkstra(source,delta,&pmap,&dmap);
-        SPDLOG_TRACE("Write result to file");
         write_result_csv(myfile,source,pmap,dmap);
-        SPDLOG_TRACE("Write result to file done");
       }
     }
     myfile.close();
   }
+
   // Parallelly generate ubodt using OpenMP
   void precompute_ubodt_omp(const std::string &filename, double delta,
                             bool binary=true) {
@@ -215,11 +204,15 @@ public:
     myfile.close();
   }
 
-
+  /**
+   * Write the result of routing from a single source node
+   * @param stream output stream
+   * @param s      source node
+   * @param pmap   predecessor map
+   * @param dmap   distance map
+   */
   void write_result_csv(std::ostream& stream, NodeIndex s,
                         PredecessorMap &pmap, DistanceMap &dmap){
-    SPDLOG_TRACE("Write result for source {}",network->get_node_id(s));
-    SPDLOG_TRACE("DistanceMap size {}",dmap.size());
     NodeIDVec &node_id_vec = network->get_node_id_vec();
     std::vector<Record> source_map;
     for (auto iter = pmap.begin(); iter!=pmap.end(); ++iter) {
@@ -228,12 +221,11 @@ public:
         NodeIndex prev_node = iter->second;
         NodeIndex v = cur_node;
         NodeIndex u;
-        // When u=s, v is the next node visited
         while ((u = pmap[v]) != s) {
           v = u;
         }
         NodeIndex successor = v;
-        // Write the result
+        // Write the result to source map
         double cost = dmap[successor];
         EdgeIndex edge_index = get_edge_index(s, successor, cost);
         source_map.push_back(
@@ -255,9 +247,17 @@ public:
              << r.next_e<<";"
              << r.cost<<"\n";
     }
-    SPDLOG_TRACE("Write result done");
   }
 
+  /**
+   * Write the result of routing from a single source node in
+   * binary format
+   *
+   * @param stream output stream
+   * @param s      source node
+   * @param pmap   predecessor map
+   * @param dmap   distance map
+   */
   void write_result_binary(boost::archive::binary_oarchive& stream,
                            NodeIndex s,
                            PredecessorMap &pmap,
@@ -317,7 +317,7 @@ public:
       e = *out_i;
       if (target == boost::target(e, g)) {
         found = true;
-        if (abs(g[e].length - dist)<=1e-5) {
+        if (abs(g[e].length - dist)<=DOUBLE_MIN) {
           break;
         }
       }

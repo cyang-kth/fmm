@@ -1,3 +1,14 @@
+/**
+ * Definition of heap types
+ *
+ * @author: Can Yang
+ * @version: 2020.01.31
+ */
+
+
+#ifndef MM_HEAP_HPP
+#define MM_HEAP_HPP
+
 #include "fiboheap/fiboheap.h"
 
 namespace MM {
@@ -48,6 +59,8 @@ private:
   typedef FibHeap<HeapNode>::FibNode *HeapNodeHandle;
   FibHeap<HeapNode> heap;
   std::unordered_map<NodeIndex,HeapNodeHandle> handle_data;
-};
+}; // Heap
 
-};
+}; //MM
+
+#endif
