@@ -79,8 +79,6 @@ int main (int argc, char **argv)
       std::chrono::steady_clock::now();
     std::cout<<"Start to map match trajectories with total number "
              << num_trajectories <<'\n';
-    // The header is moved to constructor of result writer
-    // rw.write_header();
 
     while (tr_reader.has_next_feature())
     {
@@ -109,9 +107,6 @@ int main (int argc, char **argv)
     std::cout<<"\n============================="<<'\n';
     std::cout<<"MM process finished"<<'\n';
     std::chrono::steady_clock::time_point end= std::chrono::steady_clock::now();
-    // clock_t end_time = clock(); // program end time
-    // Unit is second
-    // double time_spent = (double)(end_time - begin_time) / CLOCKS_PER_SEC;
     double time_spent =
       std::chrono::duration_cast<std::chrono::milliseconds>
         (end - begin).count()/1000.;

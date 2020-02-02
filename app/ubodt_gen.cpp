@@ -48,12 +48,7 @@ int main(int argc, char* argv[])
     double time_spent =
       std::chrono::duration_cast<std::chrono::milliseconds>
         (end - begin).count() / 1000.;
-    //double time_spent = (double)(end_time - begin_time) / CLOCKS_PER_SEC;
     std::cout << "Time takes " << time_spent << '\n';
-    // clock_t end_time = clock(); // program end time
-    // // Unit is second
-    // double time_spent = (double)(end_time - begin_time) / CLOCKS_PER_SEC;
-    // std::cout<<"Time takes "<<time_spent<<'\n';
   }
   std::cout<<"------------    Program finished     ------------"<<endl;
   return 0;

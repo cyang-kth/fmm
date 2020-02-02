@@ -41,20 +41,18 @@ int main(int argc, char* argv[])
                         config.network_id,
                         config.network_source,
                         config.network_target);
-    // std::ostream result_file(config.result_file);
-    // std::ofstream ofs(config.result_file);
+
     MM::NetworkGraph graph(&network);
     std::cout<<"Upperbound config (delta): "<<config.delta<<'\n';
     bool binary = (config.binary_flag==1);
     graph.precompute_ubodt_omp(config.result_file, config.delta, binary);
     std::chrono::steady_clock::time_point end =
       std::chrono::steady_clock::now();
-    // Unit is second
-    // std::cout << "Time takes" <<  <<std::endl;
+
     double time_spent =
       std::chrono::duration_cast<std::chrono::milliseconds>
         (end - begin).count() / 1000.;
-    //double time_spent = (double)(end_time - begin_time) / CLOCKS_PER_SEC;
+    
     std::cout << "Time takes " << time_spent << '\n';
   }
   std::cout<<"------------    Program finished     ------------"<<endl;

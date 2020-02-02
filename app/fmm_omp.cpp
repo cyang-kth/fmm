@@ -116,11 +116,9 @@ int main (int argc, char **argv)
     }
     std::cout << "\n=============================" << '\n';
     std::cout << "MM process finished" << '\n';
-    // clock_t end_time = clock(); // program end time
     std::chrono::steady_clock::time_point end =
       std::chrono::steady_clock::now();
-    // Unit is second
-    // std::cout << "Time takes" <<  <<std::endl;
+
     double time_spent =
       std::chrono::duration_cast<std::chrono::milliseconds>
         (end - begin).count() / 1000.;

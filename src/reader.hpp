@@ -20,18 +20,36 @@
 #include "gps.hpp"
 #include "util.hpp"
 
-
 namespace MM
 {
 namespace IO
 {
 
-class AbstractTrajReader{
+// An interface for trajectory reader
+class TrajReaderInterface {
 public:
-  virtual Trajectory read_next_trajectory()=0;
-  virtual bool has_next_feature()=0;
-  virtual int get_num_trajectories()=0;
+  virtual Trajectory read_next_trajectory() = 0;
+  virtual bool has_next_feature() = 0;
+  std::vector<Trajectory> read_next_N_trajectories(int N){
+    std::vector<Trajectory> trajectories;
+    int i = 0;
+    while(i<N && has_next_feature()) {
+      trajectories.push_back(read_next_trajectory());
+      ++i;
+    }
+    return trajectories;
+  };
+  std::vector<Trajectory> read_all_trajectories(){
+    std::vector<Trajectory> trajectories;
+    int i = 0;
+    while(has_next_feature()) {
+      trajectories.push_back(read_next_trajectory());
+      ++i;
+    }
+    return trajectories;
+  };
 };
+
 /**
  *  According to the documentation at http://gdal.org/1.11/ogr/ogr_apitut.html
  *
@@ -47,20 +65,21 @@ public:
  *      OGRGeometryFactory::destroyGeometry(geometry_pointer);
  *
  */
-class TrajectoryReader: public AbstractTrajReader
+class TrajectoryGDALReader : public TrajReaderInterface
 {
 public:
   /**
-   *  Constructor of TrajectoryReader
+   *  Constructor of TrajectoryGDALReader
    *  @param filename, a GPS ESRI shapefile path
    *  @param id_name, the ID column name in the GPS shapefile
    */
-  TrajectoryReader(const std::string & filename,const std::string & id_name)
+  TrajectoryGDALReader(const std::string & filename,
+                       const std::string & id_name)
   {
-    std::cout<<"Reading meta data of GPS trajectories from: "<<filename<< '\n';
+    SPDLOG_INFO("Reading GPS trajectories GDAL format from {}", filename);
     OGRRegisterAll();
     poDS = (GDALDataset*) GDALOpenEx(filename.c_str(),
-        GDAL_OF_VECTOR, NULL, NULL, NULL );
+                                     GDAL_OF_VECTOR, NULL, NULL, NULL );
     if( poDS == NULL )
     {
       SPDLOG_CRITICAL("Open GDAL dataset failed {}",filename);
@@ -85,7 +104,7 @@ public:
       std::exit(EXIT_FAILURE);
     } else {
       SPDLOG_INFO("Geometry type is {}",
-                      OGRGeometryTypeToName(ogrFDefn->GetGeomType()));
+                  OGRGeometryTypeToName(ogrFDefn->GetGeomType()));
     }
     SPDLOG_INFO("Index of id column {}",id_idx);
     SPDLOG_INFO("Total number of trajectories {}",NUM_FEATURES);
@@ -107,51 +126,14 @@ public:
     ++_cursor;
     return Trajectory{trid,linestring};
   };
-  // Read the next N trajectories in the shapefile
-  std::vector<Trajectory> read_next_N_trajectories(int N=30000)
-  {
-    int trajectories_size = NUM_FEATURES-_cursor<N ? NUM_FEATURES-_cursor : N;
-    std::vector<Trajectory> trajectories;
-    int i=0;
-    while(i<trajectories_size)
-    {
-      OGRFeature *ogrFeature =ogrlayer->GetNextFeature();
-      int trid = ogrFeature->GetFieldAsInteger(id_idx);
-      OGRGeometry *rawgeometry = ogrFeature->GetGeometryRef();
-      LineString linestring = ogr2linestring((OGRLineString*) rawgeometry);
-      OGRFeature::DestroyFeature(ogrFeature);
-      trajectories.push_back({trid,linestring});
-      ++i;
-    }
-    _cursor+=trajectories_size;
-    return trajectories;
-  };
-  // Read all trajectories at once, which can consume a lot of
-  // memories
-  std::vector<Trajectory> read_all_trajectories()
-  {
-    std::cout<<"\t Read all trajectoires" << '\n';
-    std::vector<Trajectory> trajectories;
-    int i=0;
-    while(i<NUM_FEATURES)
-    {
-      OGRFeature *ogrFeature =ogrlayer->GetNextFeature();
-      int trid = ogrFeature->GetFieldAsInteger(id_idx);
-      OGRGeometry *rawgeometry = ogrFeature->GetGeometryRef();
-      LineString linestring = ogr2linestring((OGRLineString*) rawgeometry);
-      OGRFeature::DestroyFeature(ogrFeature);
-      trajectories.push_back({trid,linestring});
-      ++i;
-    }
-    std::cout<<"\t Read trajectory set size : "<< i <<'\n';
-    return trajectories;
-  };
+
   // Get the number of trajectories in the file
   int get_num_trajectories()
   {
     return NUM_FEATURES;
   };
-  ~TrajectoryReader()
+
+  ~TrajectoryGDALReader()
   {
     GDALClose( poDS );
   };
@@ -161,89 +143,112 @@ private:
   int _cursor=0;   // Keep record of current features read
   GDALDataset *poDS;
   OGRLayer  *ogrlayer;
-}; // TrajectoryReader
+}; // TrajectoryGDALReader
 
-class TrajectoryCSVReader: public AbstractTrajReader{
+class TrajectoryCSVReader : public TrajReaderInterface {
 public:
-    TrajectoryCSVReader(const std::string &e_filename,
-                        const std::string &id_name,
-                        const std::string &geom_name):
+  TrajectoryCSVReader(const std::string &e_filename,
+                      const std::string &id_name,
+                      const std::string &geom_name) :
     ifs(e_filename){
-      std::string line;
-      std::getline(ifs, line);
-      std::stringstream check1(line);
-      std::string intermediate;
-      // Tokenizing w.r.t. space ' '
-      int i = 0;
-      while(getline(check1, intermediate, delim))
-      {
-        if (intermediate.compare(id_name) == 0) {
-          id_idx = i;
-        }
-        if (intermediate.compare(geom_name) == 0) {
-          geom_idx = i;
-        }
-        ++i;
-      }
-      if (id_idx<0 ||geom_idx<0){
-        SPDLOG_CRITICAL("Id {} or Geometry column {} not found",
-                        id_name,geom_name);
-        std::exit(EXIT_FAILURE);
-      }
-      SPDLOG_INFO("Id index {} Geometry index {}",id_idx,geom_idx);
-    };
-    Trajectory read_next_trajectory(){
-      // Read the geom idx column into a trajectory
-      std::string line;
-      std::getline(ifs, line);
-      std::stringstream ss(line);
-      int trid;
-      int index=0;
-      std::string intermediate;
-#ifdef USE_BG_GEOMETRY
-      LineString *linestring = new LineString();
-#else
-      OGRLineString *linestring;
-#endif
-      while (std::getline(ss,intermediate,delim)){
-        if (index == id_idx){
-          trid = std::stoi(intermediate);
-        }
-        if (index == geom_idx){
-          // intermediate
-#ifdef USE_BG_GEOMETRY
-          boost::geometry::read_wkt(intermediate,*(linestring->get_geometry()));
-          // BGLineString *linestring = ogr2bg((OGRLineString*) rawgeometry);
-#else
-          linestring = read_wkt(intermediate);
-#endif
-        }
-        ++index;
-      }
-      return Trajectory{trid,linestring};
-    };
-    int get_num_trajectories()
+    SPDLOG_INFO("Reading GPS trajectories CSV format from {}", e_filename);
+    std::string line;
+    std::getline(ifs, line);
+    std::stringstream check1(line);
+    std::string intermediate;
+    // Tokenizing w.r.t. space ' '
+    int i = 0;
+    while(getline(check1, intermediate, delim))
     {
-      return 100;
-    };
-    bool has_next_feature() {
-        return ifs.peek() != EOF;
-    };
-    void reset_cursor(){
-      ifs.clear();
-      ifs.seekg(0, std::ios::beg);
-      std::string line;
-      std::getline(ifs, line);
-    };
-    void close(){
-      ifs.close();
+      if (intermediate.compare(id_name) == 0) {
+        id_idx = i;
+      }
+      if (intermediate.compare(geom_name) == 0) {
+        geom_idx = i;
+      }
+      ++i;
     }
+    if (id_idx<0 ||geom_idx<0) {
+      SPDLOG_CRITICAL("Id {} or Geometry column {} not found",
+                      id_name,geom_name);
+      std::exit(EXIT_FAILURE);
+    }
+    SPDLOG_INFO("Id index {} Geometry index {}",id_idx,geom_idx);
+  };
+  Trajectory read_next_trajectory(){
+    // Read the geom idx column into a trajectory
+    std::string line;
+    std::getline(ifs, line);
+    std::stringstream ss(line);
+    int trid;
+    int index=0;
+    std::string intermediate;
+    LineString linestring;
+    while (std::getline(ss,intermediate,delim)) {
+      if (index == id_idx) {
+        trid = std::stoi(intermediate);
+      }
+      if (index == geom_idx) {
+        boost::geometry::read_wkt(intermediate,linestring->get_geometry());
+      }
+      ++index;
+    }
+    return Trajectory{trid,linestring};
+  };
+  bool has_next_feature() {
+    return ifs.peek() != EOF;
+  };
+  void reset_cursor(){
+    ifs.clear();
+    ifs.seekg(0, std::ios::beg);
+    std::string line;
+    std::getline(ifs, line);
+  };
+  void close(){
+    ifs.close();
+  };
 private:
-    std::fstream ifs;
-    int id_idx=-1;
-    int geom_idx=-1;
-    char delim = ';';
+  std::fstream ifs;
+  int id_idx=-1;
+  int geom_idx=-1;
+  char delim = ';';
 }; // TrajectoryCSVReader
+
+class GPSReader {
+public:
+  // GDAL format
+  GPSReader(const std::string &filename,
+            const std::string &id_name){
+    mode = 0;
+    reader = ;
+    reader = TrajectoryGDALReader(filename,id_name);
+  };
+
+  // Trajectory CSV format
+  GPSReader(const std::string &filename, const std::string &id_name,
+            const std::string &geom_name){
+    mode = 1;
+    reader = TrajectoryCSVReader(filename,id_name,geom_name);
+  };
+
+  inline Trajectory read_next_trajectory(){
+    return reader->read_next_trajectory();
+  };
+  inline bool has_next_feature(){
+    return reader->has_next_feature;
+  };
+  inline std::vector<Trajectory> read_next_N_trajectories(int N){
+    return reader->read_next_N_trajectories(N);
+  };
+  inline std::vector<Trajectory> read_all_trajectories(){
+    return reader->read_all_trajectories();
+  };
+
+private:
+  TrajReaderInterface *reader;
+  // 0 for GDAL, 1 for CSV
+  int mode;
+};
 
 } // IO
 } // MM
