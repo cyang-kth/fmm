@@ -25,29 +25,29 @@
 using namespace std;
 using namespace MM;
 using namespace MM::IO;
-int main (int argc, char **argv)
+
+void run(int argc, char **argv)
 {
-  spdlog::set_pattern("[%s:%#] %v");
-  std::cout<<"------------ Fast map matching (FMM) ------------"<<endl;
-  std::cout<<"------------     Author: Can Yang    ------------"<<endl;
-  std::cout<<"------------   Version: 2020.01.31   ------------"<<endl;
-  std::cout<<"------------     Applicaton: fmm     ------------"<<endl;
   if (argc<2)
   {
-    std::cout<<"No configuration file supplied"<<endl;
     std::cout<<"A configuration file is given in the example folder"<<endl;
-    std::cout<<"Run `fmm config.xml`"<<endl;
+    std::cout<<"Run `fmm config.xml` or with arguments"<<endl;
+    FMM_Config::print_help();
   } else {
-    std::string configfile(argv[1]);
-    FMM_Config config(configfile);
+    if (argc==2){
+      std::string first_arg(argv[1]);
+      if (first_arg=="--help"||first_arg=="-h"){
+        FMM_Config::print_help();
+        return;
+      }
+    }
+    FMM_Config config(argc,argv);
     if (!config.validate_mm())
     {
-      std::cout<<"Invalid configuration file, program stop"<<endl;
-      return 0;
+      SPDLOG_CRITICAL("Validation fail, program stop");
+      return;
     };
     config.print();
-    spdlog::set_level((spdlog::level::level_enum) config.log_level);
-    // clock_t begin_time = clock(); // program start time
     std::chrono::steady_clock::time_point begin =
       std::chrono::steady_clock::now();
     Network network(
@@ -64,30 +64,31 @@ int main (int argc, char **argv)
     }
     if (!config.delta_defined) {
       config.delta = ubodt->get_delta();
-      std::cout<<"    Delta inferred from ubodt as "<< config.delta <<'\n';
+      SPDLOG_INFO("Delta inferred from ubodt as {}",config.delta);
     }
-    TrajectoryReader tr_reader(config.gps_file,config.gps_id);
+    GPSReader gps_reader(config);
     ResultConfig result_config = config.get_result_config();
     ResultWriter rw(config.result_file,network,result_config);
     int progress=0;
     int points_matched=0;
     int total_points=0;
-    int num_trajectories = tr_reader.get_num_trajectories();
-    int step_size = num_trajectories/10;
-    if (step_size<10) step_size=10;
+    int num_trajectories = gps_reader.get_trajectory_number();
+    int step_size = 1;
+    if (num_trajectories<0) {
+      step_size = 1000;
+      SPDLOG_INFO("Progress report step {}",step_size);
+    } else {
+      step_size = num_trajectories /10;
+      if (step_size<10) step_size=10;
+      SPDLOG_INFO("Total trajectory number {}",num_trajectories);
+      SPDLOG_INFO("Progress report step {}",step_size);
+    }
     std::chrono::steady_clock::time_point corrected_begin =
       std::chrono::steady_clock::now();
-    std::cout<<"Start to map match trajectories with total number "
-             << num_trajectories <<'\n';
-    // The header is moved to constructor of result writer
-    // rw.write_header();
-
-    while (tr_reader.has_next_feature())
+    while (gps_reader.has_next_trajectory())
     {
-      Trajectory trajectory = tr_reader.read_next_trajectory();
+      Trajectory trajectory = gps_reader.read_next_trajectory();
       int points_in_tr = trajectory.geom.getNumPoints();
-      if (progress%step_size==0)
-        std::cout<<"Progress "<<progress << " / " << num_trajectories <<'\n';
       // Candidate search
       Traj_Candidates traj_candidates = network.search_tr_cs_knn(
         trajectory,config.k,config.radius,config.gps_error);
@@ -105,30 +106,35 @@ int main (int argc, char **argv)
       total_points+=points_in_tr;
       if (!t_path.cpath.empty()) points_matched+=points_in_tr;
       ++progress;
+      if (progress%step_size==0)
+        SPDLOG_INFO("Progress {}",progress);
     }
-    std::cout<<"\n============================="<<'\n';
-    std::cout<<"MM process finished"<<'\n';
+    SPDLOG_INFO("Progress {}",progress);
+    SPDLOG_TRACE("MM process finished");
     std::chrono::steady_clock::time_point end= std::chrono::steady_clock::now();
-    // clock_t end_time = clock(); // program end time
-    // Unit is second
-    // double time_spent = (double)(end_time - begin_time) / CLOCKS_PER_SEC;
     double time_spent =
       std::chrono::duration_cast<std::chrono::milliseconds>
         (end - begin).count()/1000.;
     double time_spent_exclude_input =
       std::chrono::duration_cast<std::chrono::milliseconds>
         (end - corrected_begin).count()/1000.;
-    std::cout<<"Time takes "<<time_spent<<'\n';
-    std::cout<<"Time takes excluding input "<<time_spent_exclude_input<<'\n';
-    std::cout<<"Finish map match total points "<<total_points
-             <<" and points matched "<<points_matched<<'\n';
-    std::cout<<"Matched percentage: "
-             <<points_matched/(double)total_points<<'\n';
-    std::cout<<"Point match speed:"<<points_matched/time_spent<<"pt/s"<<'\n';
-    std::cout<<"Point match speed (excluding input): "
-             <<points_matched/time_spent_exclude_input<<"pt/s"<<'\n';
+    SPDLOG_INFO("Time takes {}, excluding input takes",
+                time_spent, time_spent_exclude_input);
+    SPDLOG_INFO("Total points {} matched {}",total_points,points_matched);
+    SPDLOG_INFO("Matched percentage: ",points_matched/(double)total_points);
+    SPDLOG_INFO("Point match speed: {} pt/s (excluding input {} pt/s)",
+                points_matched/time_spent,
+                points_matched/time_spent_exclude_input);
     delete ubodt;
   }
+};
+
+int main(int argc, char **argv){
+  std::cout<<"------------ Fast map matching (FMM) ------------"<<endl;
+  std::cout<<"------------     Author: Can Yang    ------------"<<endl;
+  std::cout<<"------------   Version: 2020.01.31   ------------"<<endl;
+  std::cout<<"------------     Applicaton: fmm     ------------"<<endl;
+  run(argc,argv);
   std::cout<<"------------    Program finished     ------------"<<endl;
   return 0;
 };
