@@ -19,6 +19,7 @@
 #include "types.hpp"
 #include "gps.hpp"
 #include "util.hpp"
+#include "config.hpp"
 
 namespace MM
 {
@@ -29,11 +30,12 @@ namespace IO
 class TrajReaderInterface {
 public:
   virtual Trajectory read_next_trajectory() = 0;
-  virtual bool has_next_feature() = 0;
+  virtual bool has_next_trajectory() = 0;
+  virtual int get_trajectory_number() = 0;
   std::vector<Trajectory> read_next_N_trajectories(int N){
     std::vector<Trajectory> trajectories;
     int i = 0;
-    while(i<N && has_next_feature()) {
+    while(i<N && has_next_trajectory()) {
       trajectories.push_back(read_next_trajectory());
       ++i;
     }
@@ -42,7 +44,7 @@ public:
   std::vector<Trajectory> read_all_trajectories(){
     std::vector<Trajectory> trajectories;
     int i = 0;
-    while(has_next_feature()) {
+    while(has_next_trajectory()) {
       trajectories.push_back(read_next_trajectory());
       ++i;
     }
@@ -111,7 +113,7 @@ public:
     SPDLOG_INFO("Finish reading meta data");
   };
   // If there are still features not read
-  bool has_next_feature()
+  bool has_next_trajectory()
   {
     return _cursor<NUM_FEATURES;
   };
@@ -128,7 +130,7 @@ public:
   };
 
   // Get the number of trajectories in the file
-  int get_num_trajectories()
+  int get_trajectory_number()
   {
     return NUM_FEATURES;
   };
@@ -189,14 +191,19 @@ public:
         trid = std::stoi(intermediate);
       }
       if (index == geom_idx) {
-        boost::geometry::read_wkt(intermediate,linestring->get_geometry());
+        boost::geometry::read_wkt(intermediate,linestring.get_geometry());
       }
       ++index;
     }
     return Trajectory{trid,linestring};
   };
-  bool has_next_feature() {
+  bool has_next_trajectory() {
     return ifs.peek() != EOF;
+  };
+  // For CSV file, the number is unknown, so -1 is returned.
+  int get_trajectory_number()
+  {
+    return -1;
   };
   void reset_cursor(){
     ifs.clear();
@@ -216,36 +223,56 @@ private:
 
 class GPSReader {
 public:
+  GPSReader(FMM_Config &config){
+    mode = config.get_gps_format();
+    if (mode == 0) {
+      reader = std::make_shared<TrajectoryGDALReader>
+                 (config.gps_file,config.gps_id);
+    } else if (mode == 1) {
+      reader = std::make_shared<TrajectoryCSVReader>
+                 (config.gps_file,config.gps_id,config.gps_geom);
+    } else {
+      SPDLOG_CRITICAL("Unrecognized GPS format");
+      std::exit(EXIT_FAILURE);
+    }
+  };
   // GDAL format
   GPSReader(const std::string &filename,
             const std::string &id_name){
     mode = 0;
-    reader = ;
-    reader = TrajectoryGDALReader(filename,id_name);
+    reader = std::make_shared<TrajectoryGDALReader>(filename,id_name);
   };
 
   // Trajectory CSV format
   GPSReader(const std::string &filename, const std::string &id_name,
             const std::string &geom_name){
     mode = 1;
-    reader = TrajectoryCSVReader(filename,id_name,geom_name);
+    reader = std::make_shared<TrajectoryCSVReader>(filename,id_name,geom_name);
   };
 
   inline Trajectory read_next_trajectory(){
     return reader->read_next_trajectory();
   };
-  inline bool has_next_feature(){
-    return reader->has_next_feature;
+
+  inline bool has_next_trajectory(){
+    return reader->has_next_trajectory();
   };
+
+  inline int get_trajectory_number()
+  {
+    return reader->get_trajectory_number();
+  };
+
   inline std::vector<Trajectory> read_next_N_trajectories(int N){
     return reader->read_next_N_trajectories(N);
   };
+
   inline std::vector<Trajectory> read_all_trajectories(){
     return reader->read_all_trajectories();
   };
 
 private:
-  TrajReaderInterface *reader;
+  std::shared_ptr<TrajReaderInterface> reader;
   // 0 for GDAL, 1 for CSV
   int mode;
 };

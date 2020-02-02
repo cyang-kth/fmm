@@ -33,9 +33,7 @@ int main(int argc, char* argv[])
       return 0;
     };
     config.print();
-    spdlog::set_level((spdlog::level::level_enum) config.log_level);
-    spdlog::set_pattern("[%l][%s:%-3#] %v");
-    std::cout<<"Write UBODT to file "<<config.result_file<<'\n';
+    SPDLOG_INFO("Write UBODT to file {}",config.result_file);
     MM::Network network(config.network_file,
                         config.network_id,
                         config.network_source,
@@ -48,7 +46,7 @@ int main(int argc, char* argv[])
     double time_spent =
       std::chrono::duration_cast<std::chrono::milliseconds>
         (end - begin).count() / 1000.;
-    std::cout << "Time takes " << time_spent << '\n';
+    SPDLOG_INFO("Time takes {}",time_spent);
   }
   std::cout<<"------------    Program finished     ------------"<<endl;
   return 0;

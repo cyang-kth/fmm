@@ -39,10 +39,9 @@ int main (int argc, char **argv)
   {
     std::cout << "No configuration file supplied" << endl;
     std::cout << "A configuration file is given in the example folder" << endl;
-    std::cout << "Run `fmm config.xml`" << endl;
+    MM::FMM_Config::print_help();
   } else {
-    std::string configfile(argv[1]);
-    FMM_Config config(configfile);
+    FMM_Config config(argc,argv);
     if (!config.validate_mm())
     {
       std::cout << "Invalid configuration file, program stop" << endl;
@@ -66,24 +65,30 @@ int main (int argc, char **argv)
     }
     if (!config.delta_defined) {
       config.delta = ubodt->get_delta();
-      std::cout<<"    Delta inferred from ubodt as "<< config.delta <<'\n';
+      SPDLOG_INFO("Delta inferred from ubodt as {}",config.delta);
     }
-    TrajectoryReader tr_reader(config.gps_file, config.gps_id);
+    GPSReader gps_reader(config);
     ResultConfig result_config = config.get_result_config();
     ResultWriter rw(config.result_file,network,result_config);
     int progress = 0;
     int points_matched = 0;
     int total_points = 0;
-    int num_trajectories = tr_reader.get_num_trajectories();
     int buffer_trajectories_size = 100000;
-    int step_size = num_trajectories / 10;
-    if (step_size < 10) step_size = 10;
-    std::cout << "Start to map match trajectories with total number "
-              << num_trajectories << '\n';
+    int num_trajectories = gps_reader.get_trajectory_number();
+    int step_size = 1;
+    if (num_trajectories<0) {
+      step_size = 1000;
+      SPDLOG_INFO("Progress report step {}",step_size);
+    } else {
+      step_size = num_trajectories /10;
+      if (step_size<10) step_size=10;
+      SPDLOG_INFO("Total trajectory number {}",num_trajectories);
+      SPDLOG_INFO("Progress report step {}",step_size);
+    }
     // No geometry output
-    while (tr_reader.has_next_feature()) {
+    while (gps_reader.has_next_trajectory()) {
       std::vector<Trajectory> trajectories =
-        tr_reader.read_next_N_trajectories(buffer_trajectories_size);
+        gps_reader.read_next_N_trajectories(buffer_trajectories_size);
       int trajectories_fetched = trajectories.size();
             #pragma omp parallel for
       for (int i = 0; i < trajectories_fetched; ++i) {
@@ -109,13 +114,12 @@ int main (int argc, char **argv)
         ++progress;
         if (progress % step_size == 0) {
           std::stringstream buf;
-          buf << "Progress " << progress << " / " << num_trajectories << '\n';
+          buf << "Progress " << progress << '\n';
           std::cout << buf.rdbuf();
         }
       }
     }
-    std::cout << "\n=============================" << '\n';
-    std::cout << "MM process finished" << '\n';
+    SPDLOG_INFO("Progress {}",progress);
     std::chrono::steady_clock::time_point end =
       std::chrono::steady_clock::now();
 
@@ -123,13 +127,10 @@ int main (int argc, char **argv)
       std::chrono::duration_cast<std::chrono::milliseconds>
         (end - begin).count() / 1000.;
     //double time_spent = (double)(end_time - begin_time) / CLOCKS_PER_SEC;
-    std::cout << "Time takes " << time_spent << '\n';
-    std::cout << "Finish map match total points " << total_points
-              << " and points matched " << points_matched << '\n';
-    std::cout << "Matched percentage: "
-              << points_matched / (double)total_points << '\n';
-    std::cout << "Point match speed:"
-              << points_matched / time_spent << "pt/s" << '\n';
+    SPDLOG_INFO("Time takes {}",time_spent);
+    SPDLOG_INFO("Total points {} matched {}",total_points,points_matched);
+    SPDLOG_INFO("Matched percentage: ",points_matched/(double)total_points);
+    SPDLOG_INFO("Point match speed: {} pts",points_matched/time_spent);
     delete ubodt;
   }
   std::cout << "------------    Program finished     ------------" << endl;

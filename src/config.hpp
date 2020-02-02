@@ -72,12 +72,14 @@ public:
     } else {
       initialize_arg(argc,argv);
     }
+    std::cout<<"Set log level as "<<LOG_LEVESLS[log_level]<<"\n";
+    spdlog::set_level((spdlog::level::level_enum) log_level);
+    spdlog::set_pattern("[%l][%s:%-3#] %v");
   };
 
   void initialize_xml(const std::string &file)
   {
-    SPDLOG_INFO("Start reading FMM configuration from xml file {}",
-                file);
+    std::cout<<"Start with reading FMM configuration "<<file<<"\n";
     // Create empty property tree object
     boost::property_tree::ptree tree;
     boost::property_tree::read_xml(file, tree);
@@ -108,7 +110,7 @@ public:
     gps_file = tree.get<std::string>("fmm_config.input.gps.file");
     gps_id = tree.get("fmm_config.input.gps.id", "id");
     gps_geom = tree.get("fmm_config.input.gps.geom", "geom");
-    
+
     // Other parameters
     k = tree.get("fmm_config.parameters.k", 8);
     radius = tree.get("fmm_config.parameters.r", 300.0);
@@ -173,13 +175,13 @@ public:
         result_config.write_tp = true;
       }
     } else {
-      SPDLOG_INFO("Default output fields used.");
+      std::cout<<"Default output fields used.\n";
     }
-    SPDLOG_INFO("Finish with reading FMM configuration");
+    std::cout<<"Finish with reading FMM configuration.\n";
   };
 
   void initialize_arg(int argc, char **argv){
-    SPDLOG_INFO("Start reading FMM configuration from arguments");
+    std::cout<<"Start reading FMM configuration from arguments\n";
     cxxopts::Options options("fmm_config", "Configuration parser of fmm");
     options.add_options()
       ("u,ubodt","Ubodt file name", cxxopts::value<std::string>())
@@ -288,7 +290,7 @@ public:
         result_config.write_tp = true;
       }
     }
-    SPDLOG_INFO("Finish with reading FMM configuration");
+    std::cout<<"Finish with reading FMM configuration\n";
   };
 
   ResultConfig get_result_config(){
@@ -319,61 +321,66 @@ public:
 
   void print()
   {
-    std::cout << "------------------------------------------\n";
-    std::cout << "Configuration parameters for map matching application: \n";
-    std::cout << "Network_file: " << network_file << '\n';;
-    std::cout << "Network id: " << network_id << '\n';
-    std::cout << "Network source: " << network_source << '\n';
-    std::cout << "Network target: " << network_target << '\n';
-    std::cout << "ubodt_file: " << ubodt_file << '\n';
+    std::cout << "------------------------------------------------\n";
+    std::cout << "FMM Configurations\n";
+    std::cout << "  Network_file: " << network_file << '\n';;
+    std::cout << "  Network id: " << network_id << '\n';
+    std::cout << "  Network source: " << network_source << '\n';
+    std::cout << "  Network target: " << network_target << '\n';
+    std::cout << "  ubodt_file: " << ubodt_file << '\n';
     if (delta_defined) {
-      std::cout << "delta: " << delta << '\n';
+      std::cout << "  delta: " << delta << '\n';
     } else {
-      std::cout << "delta: " << "undefined, to be inferred from ubodt file\n";
+      std::cout << "  delta: " << "undefined, to be inferred from ubodt file\n";
     }
-    std::cout << "ubodt format(1 binary, 0 csv): " << binary_flag << '\n';
-    std::cout << "gps_file: " << gps_file << '\n';
-    std::cout << "gps_id: " << gps_id << '\n';
-    std::cout << "k: " << k << '\n';
-    std::cout << "radius: " << radius << '\n';
-    std::cout << "gps_error: " << gps_error << '\n';
-    std::cout << "penalty_factor: " << penalty_factor << '\n';
-    std::cout << "log_level:" << LOG_LEVESLS[log_level] << '\n';
-    std::cout << "result_file:" << result_file << '\n';
-    std::cout << "Output fields:"<<'\n';
+    std::cout << "  ubodt format(1 binary, 0 csv): " << binary_flag << '\n';
+    std::cout << "  gps_file: " << gps_file << '\n';
+    std::cout << "  gps_id: " << gps_id << '\n';
+    std::cout << "  k: " << k << '\n';
+    std::cout << "  radius: " << radius << '\n';
+    std::cout << "  gps_error: " << gps_error << '\n';
+    std::cout << "  penalty_factor: " << penalty_factor << '\n';
+    std::cout << "  log_level:" << LOG_LEVESLS[log_level] << '\n';
+    std::cout << "  result_file:" << result_file << '\n';
+    std::cout << "  Output fields:\n   ";
     if (result_config.write_ogeom)
-      std::cout << std::left << std::setw(8) << ""  << "ogeom"<<'\n';
+      std::cout << " ogeom ";
     if (result_config.write_opath)
-      std::cout << std::left << std::setw(8) << ""  << "opath"<<'\n';
+      std::cout << " opath ";
     if (result_config.write_pgeom)
-      std::cout << std::left << std::setw(8) << "" << "pgeom"<<'\n';
+      std::cout << " pgeom ";
     if (result_config.write_offset)
-      std::cout << std::left << std::setw(8) << "" << "offset"<<'\n';
+      std::cout << " offset ";
     if (result_config.write_error)
-      std::cout << std::left << std::setw(8) << "" << "error"<<'\n';
+      std::cout << " error ";
     if (result_config.write_spdist)
-      std::cout << std::left << std::setw(8) << "" << "spdist"<<'\n';
+      std::cout << " spdist ";
     if (result_config.write_cpath)
-      std::cout << std::left << std::setw(8) << "" << "cpath"<<'\n';
+      std::cout << " cpath ";
     if (result_config.write_tpath)
-      std::cout << std::left << std::setw(8) << "" << "tpath"<<'\n';
+      std::cout << " tpath ";
     if (result_config.write_mgeom)
-      std::cout << std::left << std::setw(8) << "" << "mgeom"<<'\n';
+      std::cout << " mgeom ";
     if (result_config.write_ep)
-      std::cout << std::left << std::setw(8) << "" << "ep"<<'\n';
+      std::cout << " ep ";
     if (result_config.write_tp)
-      std::cout << std::left << std::setw(8) << "" << "tp"<<'\n';
-
+      std::cout << " tp ";
+    std::cout << "\n";
     std::cout << "------------------------------------------\n";
   };
+
   bool validate_mm()
   {
-    std::cout << "Validating configuration for map match application:\n";
+    SPDLOG_INFO("Validating configuration");
     if (!UTIL::fileExists(gps_file))
     {
       SPDLOG_CRITICAL("GPS file {} not found",gps_file);
       return false;
     };
+    if (get_gps_format()<0){
+      SPDLOG_CRITICAL("Unknown GPS format");
+      return false;
+    }
     if (!UTIL::fileExists(network_file))
     {
       SPDLOG_CRITICAL("Network file {} not found",network_file);
@@ -414,8 +421,34 @@ public:
                       radius,gps_error);
       return false;
     }
-    std::cout << "Validating done.\n";
+    SPDLOG_INFO("Validating done");
     return true;
+  };
+
+  // Check gps format 0 for GDAL shapefile, 1 for trajectory CSV file
+  int get_gps_format(){
+    std::string fn_extension = gps_file.substr(
+      gps_file.find_last_of(".") + 1);
+    if (fn_extension == "csv" || fn_extension == "txt") {
+      return 1;
+    } else if (fn_extension == "db" || fn_extension == "shp") {
+      return 0;
+    } else {
+      SPDLOG_CRITICAL("GPS file extension {} unknown",fn_extension);
+      return -1;
+    }
+  };
+
+  static std::set<std::string> string2set(const std::string &s,
+                                          char delim=','){
+    std::set<std::string> result;
+    std::stringstream ss(s);
+    std::string intermediate;
+    while(getline(ss, intermediate, delim))
+    {
+      result.insert(intermediate);
+    }
+    return result;
   };
 
   /* Input files */
@@ -467,7 +500,6 @@ public:
    */
   UBODT_Config(const std::string &file)
   {
-
     // Create empty property tree object
     boost::property_tree::ptree tree;
     std::cout << "Read configuration from xml file: " << file << '\n';
@@ -489,24 +521,27 @@ public:
 
     // 0-trace,1-debug,2-info,3-warn,4-err,5-critical,6-off
     log_level = tree.get("ubodt_config.other.log_level",2);
+    std::cout<<"Set log level as "<<LOG_LEVESLS[log_level]<<"\n";
+    spdlog::set_level((spdlog::level::level_enum) log_level);
+    spdlog::set_pattern("[%l][%s:%-3#] %v");
   };
   void print()
   {
     std::cout << "------------------------------------------\n";
-    std::cout << "Configuration parameters for UBODT construction: \n";
-    std::cout << "Network_file: " << network_file << '\n';;
-    std::cout << "Network id: " << network_id << '\n';
-    std::cout << "Network source: " << network_source << '\n';
-    std::cout << "Network target: " << network_target << '\n';
-    std::cout << "delta: " << delta << '\n';
-    std::cout << "Output file:" << result_file << '\n';
-    std::cout << "Output format(1 binary, 0 csv): " << binary_flag << '\n';
-    std::cout << "log_level:" << LOG_LEVESLS[log_level] << '\n';
+    std::cout << "UBODT Configuration: \n";
+    std::cout << "  Network_file: " << network_file << '\n';;
+    std::cout << "  Network id: " << network_id << '\n';
+    std::cout << "  Network source: " << network_source << '\n';
+    std::cout << "  Network target: " << network_target << '\n';
+    std::cout << "  delta: " << delta << '\n';
+    std::cout << "  Output file:" << result_file << '\n';
+    std::cout << "  Output format(1 binary, 0 csv): " << binary_flag << '\n';
+    std::cout << "  log_level:" << LOG_LEVESLS[log_level] << '\n';
     std::cout << "------------------------------------------\n";
   };
   bool validate()
   {
-    std::cout << "Validating configuration for UBODT construction:\n";
+    SPDLOG_INFO("Validating configuration for UBODT construction");
     if (!UTIL::fileExists(network_file))
     {
       SPDLOG_CRITICAL("Network file {} not found",network_file);
@@ -535,7 +570,7 @@ public:
       SPDLOG_CRITICAL("Delta {} should be positive");
       return false;
     }
-    std::cout << "Validating done.\n";
+    SPDLOG_INFO("Validating done.");
     return true;
   };
   std::string network_file;

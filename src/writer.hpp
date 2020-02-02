@@ -43,7 +43,7 @@ public:
     network(network_arg),
     config(config_arg)
   {
-    std::cout << "Write result to file: " << result_file << '\n';
+    SPDLOG_INFO("Write result to file {}",result_file);
     write_header();
   };
 

@@ -82,7 +82,6 @@ public:
     }
     OGRLayer  *ogrlayer = poDS->GetLayer(0);
     int NUM_FEATURES = ogrlayer->GetFeatureCount();
-    SPDLOG_INFO("Number of edges in file: {}",NUM_FEATURES);
 
     OGRFeatureDefn *ogrFDefn = ogrlayer->GetLayerDefn();
     OGRFeature *ogrFeature;
@@ -91,10 +90,9 @@ public:
     int id_idx=ogrFDefn->GetFieldIndex(id_name.c_str());
     int source_idx=ogrFDefn->GetFieldIndex(source_name.c_str());
     int target_idx=ogrFDefn->GetFieldIndex(target_name.c_str());
-    SPDLOG_INFO("Number of edges in file: {}",NUM_FEATURES);
-    SPDLOG_INFO("SHP ID idx: {}",id_idx);
-    SPDLOG_INFO("SHP source idx: {}",source_idx);
-    SPDLOG_INFO("SHP target idx: {}",target_idx);
+    SPDLOG_DEBUG("SHP ID idx: {}",id_idx);
+    SPDLOG_DEBUG("SHP source idx: {}",source_idx);
+    SPDLOG_DEBUG("SHP target idx: {}",target_idx);
     if (source_idx<0||target_idx<0||id_idx<0)
     {
       SPDLOG_CRITICAL("Id, source or target column not found");
@@ -109,7 +107,7 @@ public:
       GDALClose( poDS );
       std::exit(EXIT_FAILURE);
     } else {
-      SPDLOG_INFO("Geometry type of network is {}",
+      SPDLOG_TRACE("Geometry type of network is {}",
                   OGRGeometryTypeToName(ogrFDefn->GetGeomType()));
     }
     OGRSpatialReference *ogrsr =
@@ -120,8 +118,6 @@ public:
       {
         srid= 4326;
         SPDLOG_WARN("SRID is not found, set to 4326 by default");
-      } else {
-        SPDLOG_INFO("SRID is {}",srid);
       }
     } else {
       srid= 4326;
@@ -160,10 +156,9 @@ public:
       OGRFeature::DestroyFeature(ogrFeature);
     }
     GDALClose( poDS );
-    SPDLOG_INFO("Read network done.");
     num_vertices = node_id_vec.size();
-    SPDLOG_INFO("Node count is {}",num_vertices);
-    SPDLOG_INFO("Total number of edges read {}",edges.size());
+    SPDLOG_INFO("Read network done edges {} nodes {} srid {}",
+                num_vertices,edges.size(),srid);
   };    // Network constructor
 
   int get_node_count(){
