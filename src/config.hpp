@@ -229,7 +229,7 @@ public:
     k = result["candidates"].as<int>();
     radius = result["radius"].as<double>();;
 
-    log_level = result["log_level"].as<double>();
+    log_level = result["log_level"].as<int>();
 
     // HMM
     gps_error = result["error"].as<double>();
@@ -495,10 +495,19 @@ public:
 class UBODT_Config
 {
 public:
-  /**
-   * FILETYPE 0 for ini and 1 for XML
-   */
-  UBODT_Config(const std::string &file)
+  UBODT_Config(int argc, char **argv){
+    if (argc==2) {
+      std::string configfile(argv[1]);
+      initialize_xml(configfile);
+    } else {
+      initialize_arg(argc,argv);
+    }
+    std::cout<<"Set log level as "<<LOG_LEVESLS[log_level]<<"\n";
+    spdlog::set_level((spdlog::level::level_enum) log_level);
+    spdlog::set_pattern("[%l][%s:%-3#] %v");
+  };
+
+  void initialize_xml(const std::string &file)
   {
     // Create empty property tree object
     boost::property_tree::ptree tree;
@@ -507,7 +516,7 @@ public:
     // Parse the XML into the property tree.
 
     // UBODT configuration
-    delta = tree.get("ubodt_config.parameters.delta", 5000.0);
+    delta = tree.get("ubodt_config.parameters.delta", 3000.0);
 
     // Network
     network_file = tree.get<std::string>("ubodt_config.input.network.file");
@@ -521,10 +530,38 @@ public:
 
     // 0-trace,1-debug,2-info,3-warn,4-err,5-critical,6-off
     log_level = tree.get("ubodt_config.other.log_level",2);
-    std::cout<<"Set log level as "<<LOG_LEVESLS[log_level]<<"\n";
-    spdlog::set_level((spdlog::level::level_enum) log_level);
-    spdlog::set_pattern("[%l][%s:%-3#] %v");
   };
+
+  void initialize_arg(int argc, char **argv){
+    std::cout<<"Start reading ubodt configuration from arguments\n";
+    cxxopts::Options options("ubodt_config", "Configuration parser of ubodt_gen");
+    options.add_options()
+      ("a,network","Network file name", cxxopts::value<std::string>())
+      ("b,id","Network id name",
+      cxxopts::value<std::string>()->default_value("id"))
+      ("c,source","Network source name",
+      cxxopts::value<std::string>()->default_value("source"))
+      ("t,target","Network target name",
+      cxxopts::value<std::string>()->default_value("target"))
+      ("d,delta","Upperbound distance",
+      cxxopts::value<double>()->default_value("3000.0"))
+      ("o,output","Output file name", cxxopts::value<std::string>())
+      ("l,log_level","Log level",cxxopts::value<int>()->default_value("2"));
+
+    auto result = options.parse(argc, argv);
+    // Output
+    result_file = result["output"].as<std::string>();
+    binary_flag = UTIL::get_file_extension(result_file);
+
+    network_file = result["network"].as<std::string>();
+    network_id = result["id"].as<std::string>();
+    network_source = result["source"].as<std::string>();
+    network_target = result["target"].as<std::string>();
+
+    log_level = result["log_level"].as<int>();
+    delta = result["delta"].as<double>();
+  };
+
   void print()
   {
     std::cout << "------------------------------------------\n";
@@ -539,6 +576,19 @@ public:
     std::cout << "  log_level:" << LOG_LEVESLS[log_level] << '\n';
     std::cout << "------------------------------------------\n";
   };
+
+  static void print_help(){
+    std::cout<<"ubodt_gen argument lists:\n";
+    std::cout<<"--network (required) <string>: Network file name\n";
+    std::cout<<"--output (required) <string>: Output file name\n";
+    std::cout<<"--id (optional) <string>: Network id name (id)\n";
+    std::cout<<"--source (optional) <string>: Network source name (source)\n";
+    std::cout<<"--target (optional) <string>: Network target name (target)\n";
+    std::cout<<"--delta (optional) <double>: upperbound (3000.0)\n";
+    std::cout<<"--log_level (optional) <int>: log level (2)\n";
+    std::cout<<"For xml configuration, check example folder\n";
+  };
+
   bool validate()
   {
     SPDLOG_INFO("Validating configuration for UBODT construction");

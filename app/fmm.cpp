@@ -25,23 +25,27 @@
 using namespace std;
 using namespace MM;
 using namespace MM::IO;
-int main (int argc, char **argv)
+
+void run(int argc, char **argv)
 {
-  std::cout<<"------------ Fast map matching (FMM) ------------"<<endl;
-  std::cout<<"------------     Author: Can Yang    ------------"<<endl;
-  std::cout<<"------------   Version: 2020.01.31   ------------"<<endl;
-  std::cout<<"------------     Applicaton: fmm     ------------"<<endl;
   if (argc<2)
   {
     std::cout<<"A configuration file is given in the example folder"<<endl;
     std::cout<<"Run `fmm config.xml` or with arguments"<<endl;
-    MM::FMM_Config::print_help();
+    FMM_Config::print_help();
   } else {
+    if (argc==2){
+      std::string first_arg(argv[1]);
+      if (first_arg=="--help"||first_arg=="-h"){
+        FMM_Config::print_help();
+        return;
+      }
+    }
     FMM_Config config(argc,argv);
     if (!config.validate_mm())
     {
       SPDLOG_CRITICAL("Validation fail, program stop");
-      return 0;
+      return;
     };
     config.print();
     std::chrono::steady_clock::time_point begin =
@@ -123,6 +127,14 @@ int main (int argc, char **argv)
                 points_matched/time_spent_exclude_input);
     delete ubodt;
   }
+};
+
+int main(int argc, char **argv){
+  std::cout<<"------------ Fast map matching (FMM) ------------"<<endl;
+  std::cout<<"------------     Author: Can Yang    ------------"<<endl;
+  std::cout<<"------------   Version: 2020.01.31   ------------"<<endl;
+  std::cout<<"------------     Applicaton: fmm     ------------"<<endl;
+  run(argc,argv);
   std::cout<<"------------    Program finished     ------------"<<endl;
   return 0;
 };

@@ -11,29 +11,31 @@
 #include <ctime>
 using namespace std;
 using namespace MM;
-int main(int argc, char* argv[])
-{
+
+void run(int argc, char **argv){
   spdlog::set_pattern("[%s:%#] %v");
-  std::cout<<"------------ Fast map matching (FMM) ------------"<<endl;
-  std::cout<<"------------     Author: Can Yang    ------------"<<endl;
-  std::cout<<"------------   Version: 2020.01.31   ------------"<<endl;
-  std::cout<<"------------Application: ubodt_gen_omp------------"<<endl;
   if (argc<2) {
-    std::cout<<"No configuration file supplied"<<endl;
     std::cout<<"A configuration file is given in the example folder"<<endl;
-    std::cout<<"Run `ubodt_gen_opt config.xml`"<<endl;
+    std::cout<<"Run `ubodt_gen_omp config.xml` or with arguments"<<endl;
+    UBODT_Config::print_help();
+    return;
   } else {
-    //clock_t begin_time = clock(); // program start time
-    std::chrono::steady_clock::time_point begin =
-      std::chrono::steady_clock::now();
-    std::string configfile(argv[1]);
-    UBODT_Config config(configfile);
+    if (argc==2){
+      std::string first_arg(argv[1]);
+      if (first_arg=="--help"||first_arg=="-h"){
+        UBODT_Config::print_help();
+        return;
+      }
+    }
+    UBODT_Config config(argc,argv);
     if (!config.validate())
     {
-      std::cout<<"Invalid configuration file, program stop"<<endl;
-      return 0;
+      SPDLOG_CRITICAL("Validation fail, program stop");
+      return;
     };
     config.print();
+    std::chrono::steady_clock::time_point begin =
+      std::chrono::steady_clock::now();
     SPDLOG_INFO("Write UBODT to file {}",config.result_file);
     MM::Network network(config.network_file,
                         config.network_id,
@@ -46,12 +48,20 @@ int main(int argc, char* argv[])
     graph.precompute_ubodt_omp(config.result_file, config.delta, binary);
     std::chrono::steady_clock::time_point end =
       std::chrono::steady_clock::now();
-
     double time_spent =
       std::chrono::duration_cast<std::chrono::milliseconds>
         (end - begin).count() / 1000.;
     SPDLOG_INFO("Time takes {}",time_spent);
   }
+};
+
+int main(int argc, char* argv[])
+{
+  std::cout<<"------------ Fast map matching (FMM) ------------"<<endl;
+  std::cout<<"------------     Author: Can Yang    ------------"<<endl;
+  std::cout<<"------------   Version: 2020.01.31   ------------"<<endl;
+  std::cout<<"------------Application: ubodt_gen_omp------------"<<endl;
+  run(argc,argv);
   std::cout<<"------------    Program finished     ------------"<<endl;
   return 0;
 };

@@ -28,24 +28,29 @@
 using namespace std;
 using namespace MM;
 using namespace MM::IO;
-int main (int argc, char **argv)
+
+void run(int argc, char **argv)
 {
   spdlog::set_pattern("[%s:%#] %v");
-  std::cout << "------------ Fast map matching (FMM) ------------" << endl;
-  std::cout << "------------     Author: Can Yang    ------------" << endl;
-  std::cout << "------------   Version: 2020.01.31   ------------" << endl;
-  std::cout << "------------   Applicaton: fmm_omp   ------------" << endl;
   if (argc < 2)
   {
     std::cout << "No configuration file supplied" << endl;
     std::cout << "A configuration file is given in the example folder" << endl;
-    MM::FMM_Config::print_help();
+    FMM_Config::print_help();
+    return;
   } else {
+    if (argc==2){
+      std::string first_arg(argv[1]);
+      if (first_arg=="--help"||first_arg=="-h"){
+        FMM_Config::print_help();
+        return;
+      }
+    }
     FMM_Config config(argc,argv);
     if (!config.validate_mm())
     {
       std::cout << "Invalid configuration file, program stop" << endl;
-      return 0;
+      return;
     };
     config.print();
     spdlog::set_level((spdlog::level::level_enum) config.log_level);
@@ -122,7 +127,6 @@ int main (int argc, char **argv)
     SPDLOG_INFO("Progress {}",progress);
     std::chrono::steady_clock::time_point end =
       std::chrono::steady_clock::now();
-
     double time_spent =
       std::chrono::duration_cast<std::chrono::milliseconds>
         (end - begin).count() / 1000.;
@@ -133,6 +137,14 @@ int main (int argc, char **argv)
     SPDLOG_INFO("Point match speed: {} pts",points_matched/time_spent);
     delete ubodt;
   }
-  std::cout << "------------    Program finished     ------------" << endl;
+};
+
+int main(int argc, char **argv){
+  std::cout<<"------------ Fast map matching (FMM) ------------"<<endl;
+  std::cout<<"------------     Author: Can Yang    ------------"<<endl;
+  std::cout<<"------------   Version: 2020.01.31   ------------"<<endl;
+  std::cout<<"------------   Applicaton: fmm_omp   ------------"<<endl;
+  run(argc,argv);
+  std::cout<<"------------    Program finished     ------------"<<endl;
   return 0;
 };
