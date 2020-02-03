@@ -50,8 +50,7 @@ public:
    */
   O_Path viterbi(double pf=0)
   {
-    O_Path opath;
-    if (m_traj_candidates->empty()) return opath;
+    if (m_traj_candidates->empty()) return O_Path{};
     int N = m_traj_candidates->size();
     /* Update transition probabilities */
     Traj_Candidates::iterator csa = m_traj_candidates->begin();
@@ -99,8 +98,11 @@ public:
       ++csa;
       ++csb;
     }
+    return back_track();
+  };
 
-    // Back track to find optimal path
+  O_Path back_track(){
+    O_Path opath;
     Candidate *track_cand=nullptr;
     double final_prob = -0.001;
     Point_Candidates& last_candidates = m_traj_candidates->back();
@@ -117,10 +119,9 @@ public:
         track_cand = &(*c);
       }
     }
-    int i = N-1;
     opath.push_back(track_cand);
     // Iterate from tail to head to assign path
-    while ((track_cand=track_cand->prev)!=NULL)
+    while ((track_cand=track_cand->prev)!=nullptr)
     {
       opath.push_back(track_cand);
     }

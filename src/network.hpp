@@ -255,15 +255,10 @@ public:
         if (dist<=radius)
         {
           Candidate c = {offset,dist,Network::emission_prob(dist,gps_error),
-                         edge,NULL,0,0};
+                         edge,nullptr,0,0};
           pcs.push_back(c);
         }
       }
-      // If no candidate is found, return an empty Traj_Candidates
-      if (pcs.empty())
-      {
-        return Traj_Candidates();
-      };
       // KNN part
       if (pcs.size()<=k)
       {
