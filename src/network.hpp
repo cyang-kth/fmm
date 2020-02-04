@@ -108,7 +108,7 @@ public:
       std::exit(EXIT_FAILURE);
     } else {
       SPDLOG_TRACE("Geometry type of network is {}",
-                  OGRGeometryTypeToName(ogrFDefn->GetGeomType()));
+                   OGRGeometryTypeToName(ogrFDefn->GetGeomType()));
     }
     OGRSpatialReference *ogrsr =
       ogrFDefn->GetGeomFieldDefn(0)->GetSpatialRef();
@@ -131,7 +131,18 @@ public:
       NodeID source = ogrFeature->GetFieldAsInteger(source_idx);
       NodeID target = ogrFeature->GetFieldAsInteger(target_idx);
       OGRGeometry *rawgeometry = ogrFeature->GetGeometryRef();
-      LineString geom = ogr2linestring((OGRLineString*) rawgeometry);
+      LineString geom;
+      if (rawgeometry->getGeometryType()==wkbLineString) {
+        geom = ogr2linestring((OGRLineString*) rawgeometry);
+      } else if (rawgeometry->getGeometryType()==wkbMultiLineString) {
+        SPDLOG_TRACE("Feature id {} s {} t {} is multilinestring",
+                     id, source, target);
+        SPDLOG_TRACE("Read only the first linestring");
+        geom = ogr2linestring((OGRMultiLineString*) rawgeometry);
+      } else {
+        SPDLOG_CRITICAL("Unknown geometry type for feature id {} s {} t {}",
+                        id, source, target);
+      }
       NodeIndex s_idx,t_idx;
       if (node_map.find(source)==node_map.end()) {
         s_idx = node_id_vec.size();
