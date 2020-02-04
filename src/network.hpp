@@ -108,8 +108,9 @@ public:
       std::exit(EXIT_FAILURE);
     } else {
       SPDLOG_TRACE("Geometry type of network is {}",
-                  OGRGeometryTypeToName(ogrFDefn->GetGeomType()));
+                   OGRGeometryTypeToName(ogrFDefn->GetGeomType()));
     }
+    SPDLOG_TRACE("Read spatial reference");
     OGRSpatialReference *ogrsr =
       ogrFDefn->GetGeomFieldDefn(0)->GetSpatialRef();
     if (ogrsr != nullptr) {
@@ -123,15 +124,28 @@ public:
       srid= 4326;
       SPDLOG_WARN("SRID is not found, set to 4326 by default");
     }
-    // Read data from shapefile
+    SPDLOG_TRACE("Read data from ogrlayer");
     EdgeIndex index = 0;
     while( (ogrFeature = ogrlayer->GetNextFeature()) != NULL)
     {
       EdgeID id = ogrFeature->GetFieldAsInteger(id_idx);
       NodeID source = ogrFeature->GetFieldAsInteger(source_idx);
       NodeID target = ogrFeature->GetFieldAsInteger(target_idx);
+      SPDLOG_TRACE("Read feature index {} id {} s {} t {}",
+                   index, id, source, target);
       OGRGeometry *rawgeometry = ogrFeature->GetGeometryRef();
-      LineString geom = ogr2linestring((OGRLineString*) rawgeometry);
+      LineString geom;
+      if (rawgeometry->getGeometryType()==wkbLineString) {
+        geom = ogr2linestring((OGRLineString*) rawgeometry);
+      } else if (rawgeometry->getGeometryType()==wkbMultiLineString) {
+        SPDLOG_TRACE("Feature id {} s {} t {} is multilinestring",
+                    id, source, target);
+        SPDLOG_TRACE("Read only the first linestring");
+        geom = ogr2linestring((OGRMultiLineString*) rawgeometry);
+      } else {
+        SPDLOG_CRITICAL("Unknown geometry type for feature id {} s {} t {}",
+                        id, source, target);
+      }
       NodeIndex s_idx,t_idx;
       if (node_map.find(source)==node_map.end()) {
         s_idx = node_id_vec.size();
@@ -304,7 +318,7 @@ public:
     SPDLOG_TRACE("Complete path {}", vec2string<EdgeID>(complete_path));
     if (complete_path.empty()) return line;
     // If complete path contains -1, export empty line
-    for (auto &item:complete_path){
+    for (auto &item:complete_path) {
       if (item == -1) return line;
     }
     int NOsegs = o_path.size();
