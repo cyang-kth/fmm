@@ -180,6 +180,48 @@ public:
     }
     return sp_dist;
   };
+
+  /**
+   * Get the penalized shortest path (SP) distance from Candidate ca to cb
+   * if a and b are not connected, connected_ab will be set as false
+   */
+  double get_sp_dist_penalized(Point_Candidates::iterator& ca,
+                               Point_Candidates::iterator& cb,
+                               double pf)
+  {
+    double sp_dist=0;
+    //  Transition on the same edge
+    if ( ca->edge->id == cb->edge->id && ca->offset <= cb->offset )
+    {
+      sp_dist = cb->offset - ca->offset;
+    }
+    else if(ca->edge->target == cb->edge->source)
+    {
+      // Transition on the same OD nodes
+      sp_dist = ca->edge->length - ca->offset + cb->offset;
+    }
+    else
+    {
+      Record *r = m_ubodt.look_up(ca->edge->target,cb->edge->source);
+      // No sp path exist from O to D.
+      if (r==NULL) {
+        return DISTANCE_NOT_FOUND;
+      };
+      // calculate original SP distance
+      sp_dist = r->cost + ca->edge->length - ca->offset + cb->offset;
+      // Two penalized cases
+      if(r->prev_n==cb->edge->target)
+      {
+        sp_dist+=pf*cb->edge->length;
+      }
+      if(r->first_n==ca->edge->source)
+      {
+        sp_dist+=pf*ca->edge->length;
+      }
+    }
+    return sp_dist;
+  };
+
   /**
    * Get the penalized shortest path (SP) distance from Candidate ca to cb
    * if a and b are not connected, connected_ab will be set as false
