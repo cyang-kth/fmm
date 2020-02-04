@@ -30,7 +30,4 @@
         </fields>
         <file>mr.txt</file>
     </output>
-    <other>
-      <log_level>0</log_level>
-    </other>
 </fmm_config>
