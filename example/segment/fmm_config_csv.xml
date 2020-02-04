@@ -2,14 +2,14 @@
 <fmm_config>
     <input>
         <ubodt>
-            <file>ubodt.txt</file>
+            <file>../ubodt.txt</file>
         </ubodt>
         <network>
-            <file>data/edges.shp</file>
+            <file>../data/edges.shp</file>
             <id>id</id>
         </network>
         <gps>
-            <file>data/trips.shp</file>
+            <file>trips_outlier.csv</file>
             <id>id</id>
         </gps>
     </input>
@@ -21,14 +21,14 @@
     </parameters>
     <output>
         <fields>
-          <opath/>
-          <cpath/>
-          <tpath/>
-          <mgeom/>
-          <ep/>
-          <tp/>
+            <opath/>
+            <cpath/>
+            <tpath/>
+            <mgeom/>
+            <ep/>
+            <tp/>
         </fields>
-        <file>mr.txt</file>
+        <file>mr_outlier.txt</file>
     </output>
     <other>
       <log_level>0</log_level>

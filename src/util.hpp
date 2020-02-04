@@ -23,6 +23,27 @@
 
 namespace MM
 {
+
+template <typename T> std::string vec2string(const std::vector<T>& v) {
+  std::stringstream ss;
+  for (int i = 0; i < v.size(); ++i) {
+    ss << v[i];
+    if (i != v.size() - 1)
+      ss << ",";
+  }
+  return ss.str();
+};
+
+std::string opath2string(const O_Path &opath){
+  std::stringstream ss;
+  for (int i = 0; i < opath.size(); ++i) {
+    ss << (opath[i]==nullptr?-1:opath[i]->edge->id);
+    if (i != opath.size() - 1)
+      ss << ",";
+  }
+  return ss.str();
+};
+
 namespace UTIL
 {
 /**
@@ -66,7 +87,7 @@ int get_file_extension(std::string &fn) {
 
 std::string get_file_directory(std::string &fn){
   std::size_t found = fn.find_last_of("/");
-  if (found!=std::string::npos){
+  if (found!=std::string::npos) {
     return fn.substr(0,found);
   }
   return {};

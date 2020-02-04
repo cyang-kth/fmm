@@ -108,10 +108,15 @@ void run(int argc, char **argv)
         O_Path o_path = tg.viterbi(config.penalty_factor);
         T_Path t_path = ubodt->construct_traversed_path(o_path,network);
         LineString m_geom;
+        MultiLineString t_geom; //
         if (result_config.write_mgeom) {
           m_geom = network.complete_path_to_geometry(o_path,t_path.cpath);
         }
-        rw.write_result(trajectory.id,trajectory.geom,o_path,t_path,m_geom);
+        if (result_config.write_tgeom) {
+          t_geom = network.ot_path_to_multilinestring(o_path,t_path);
+        }
+        rw.write_result(
+          trajectory.id,trajectory.geom,o_path,t_path,m_geom,t_geom);
         // update statistics
         #pragma omp critical
         total_points+=points_in_tr;

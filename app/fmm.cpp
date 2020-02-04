@@ -89,19 +89,32 @@ void run(int argc, char **argv)
     {
       Trajectory trajectory = gps_reader.read_next_trajectory();
       int points_in_tr = trajectory.geom.getNumPoints();
+      SPDLOG_TRACE("Match trajectory {} points {}",trajectory.id,points_in_tr);
       // Candidate search
       Traj_Candidates traj_candidates = network.search_tr_cs_knn(
         trajectory,config.k,config.radius,config.gps_error);
+      SPDLOG_TRACE("Candidate search done");
       TransitionGraph tg(
         &traj_candidates,trajectory.geom,*ubodt,config.delta);
+      SPDLOG_TRACE("TG creation done");
       // Optimal path inference
       O_Path o_path = tg.viterbi(config.penalty_factor);
+      SPDLOG_TRACE("Viterbi inference done");
       T_Path t_path = ubodt->construct_traversed_path(o_path,network);
+      SPDLOG_TRACE("Tpath creation done");
       LineString m_geom;
+      MultiLineString t_geom; //
       if (result_config.write_mgeom) {
         m_geom = network.complete_path_to_geometry(o_path,t_path.cpath);
       }
-      rw.write_result(trajectory.id,trajectory.geom,o_path,t_path,m_geom);
+      SPDLOG_TRACE("Cpath geometry done");
+      if (result_config.write_tgeom) {
+        t_geom = network.ot_path_to_multilinestring(o_path,t_path);
+      }
+      SPDLOG_TRACE("Tpath geometry done");
+      rw.write_result(
+        trajectory.id,trajectory.geom,o_path,t_path,m_geom,t_geom);
+      SPDLOG_TRACE("Write result done");
       // update statistics
       total_points+=points_in_tr;
       if (!t_path.cpath.empty()) points_matched+=points_in_tr;

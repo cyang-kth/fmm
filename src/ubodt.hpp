@@ -37,7 +37,7 @@ public:
   UBODT(int buckets_arg,int multiplier_arg) :
     buckets(buckets_arg),multiplier(multiplier_arg) {
     SPDLOG_TRACE("Intialization UBODT with buckets {} multiplier {}",
-                buckets, multiplier);
+                 buckets, multiplier);
     hashtable = (Record **) malloc(sizeof(Record*)*buckets);
     for (int i = 0; i < buckets; i++) {
       hashtable[i] = NULL;
@@ -109,28 +109,9 @@ public:
    * path implying complete path cannot be found in UBDOT,
    * an empty path is returned
    */
-  C_Path construct_complete_path(O_Path &path, std::vector<Edge> &edges){
-    C_Path cpath;
-    if (path.empty()) return cpath;
-    int N = path.size();
-    cpath.push_back(path[0]->edge->id);
-    for(int i=0; i<N-1; ++i) {
-      Candidate* a = path[i];
-      Candidate* b = path[i+1];
-      if ((a->edge->id!=b->edge->id) || (a->offset>b->offset)) {
-        // segs stores edge index
-        auto segs = look_sp_path(a->edge->target,b->edge->source);
-        // No transition exist in UBODT
-        if (segs.empty() &&  a->edge->target!=b->edge->source) {
-          return C_Path();
-        }
-        for (int e:segs) {
-          cpath.push_back(edges[e].id);
-        }
-        cpath.push_back(b->edge->id);
-      }
-    }
-    return cpath;
+  C_Path construct_complete_path(O_Path &path, Network &network){
+    T_Path tpath = construct_traversed_path(path,network);
+    return tpath.cpath;
   };
 
   /**
@@ -141,35 +122,104 @@ public:
    * matched edge for each point in the GPS trajectory.
    */
   T_Path construct_traversed_path(O_Path &path, Network &network){
+    SPDLOG_TRACE("Opath {}", opath2string(path));
     if (path.empty()) return T_Path();
     std::vector<Edge> &edges = network.get_edges();
     int N = path.size();
     // T_Path *edges= new T_Path();
     T_Path t_path;
-    t_path.cpath.push_back(path[0]->edge->id);
-    int current_idx = 0;
-    t_path.indices.push_back(current_idx);
+    int current_idx = -1;
+    // if (path[0]==nullptr){
+    //   t_path.cpath.push_back(-1);
+    // } else {
+    //   t_path.cpath.push_back(path[0]->edge->id);
+    // }
+    // int current_idx = 0;
+    // t_path.indices.push_back(current_idx);
+    bool prev_connected = false;
     for(int i=0; i<N-1; ++i) {
+      SPDLOG_TRACE("Iterate i {}",i);
       Candidate* a = path[i];
       Candidate* b = path[i+1];
-      if ((a->edge->id!=b->edge->id) || (a->offset>b->offset)) {
-        // segs stores edge index
-        auto segs = look_sp_path(a->edge->target,b->edge->source);
-        // No transition exist in UBODT
-        if (segs.empty() &&  a->edge->target!=b->edge->source) {
-          return T_Path();
-        }
-        for (int e:segs) {
-          t_path.cpath.push_back(edges[e].id);
-          ++current_idx;
-        }
-        t_path.cpath.push_back(b->edge->id);
+      if (a==nullptr && b==nullptr ) {
+        SPDLOG_TRACE("a null b null");
+        t_path.cpath.push_back(-1);
         ++current_idx;
+        SPDLOG_TRACE("Push back current index {}",current_idx);
         t_path.indices.push_back(current_idx);
-      } else {
-        // b stays on the same edge
-        t_path.indices.push_back(current_idx);
+        if (i==N-2) {
+          t_path.cpath.push_back(-1);
+          ++current_idx;
+          SPDLOG_TRACE("Push back current index {}",current_idx);
+          t_path.indices.push_back(current_idx);
+        }
+        prev_connected = false;
       }
+      if (a==nullptr && b!=nullptr ) {
+        SPDLOG_TRACE("a null b {}",b->edge->id);
+        t_path.cpath.push_back(-1);
+        ++current_idx;
+        SPDLOG_TRACE("Push back current index {}",current_idx);
+        t_path.indices.push_back(current_idx);
+        if (i==N-2) {
+          t_path.cpath.push_back(b->edge->id);
+          ++current_idx;
+          SPDLOG_TRACE("Push back current index {}",current_idx);
+          t_path.indices.push_back(current_idx);
+        }
+        prev_connected = false;
+      }
+      if (a!=nullptr && b==nullptr) {
+        SPDLOG_TRACE("a {} b nullptr",a->edge->id);
+        if (!prev_connected) {
+          t_path.cpath.push_back(a->edge->id);
+          ++current_idx;
+          SPDLOG_TRACE("Push back current index {}",current_idx);
+          t_path.indices.push_back(current_idx);
+        }
+        if (i==N-2) {
+          t_path.cpath.push_back(-1);
+          ++current_idx;
+          SPDLOG_TRACE("Push back current index {}",current_idx);
+          t_path.indices.push_back(current_idx);
+        }
+        prev_connected = false;
+      }
+      if (a!=nullptr && b !=nullptr) {
+        SPDLOG_TRACE("a {} b {}",a->edge->id,b->edge->id);
+        if (!prev_connected) {
+          t_path.cpath.push_back(a->edge->id);
+          ++current_idx;
+          SPDLOG_TRACE("Push back current index {}",current_idx);
+          t_path.indices.push_back(current_idx);
+        }
+        if ((a->edge->id!=b->edge->id) || (a->offset>b->offset)) {
+          // segs stores edge index
+          auto segs = look_sp_path(a->edge->target,b->edge->source);
+          // No transition exist in UBODT
+          if (segs.empty() &&  a->edge->target!=b->edge->source) {
+            t_path.cpath.push_back(-1);
+            ++current_idx;
+            prev_connected = false;
+          } else {
+            for (int e:segs) {
+              t_path.cpath.push_back(edges[e].id);
+              ++current_idx;
+            }
+            t_path.cpath.push_back(b->edge->id);
+            ++current_idx;
+            SPDLOG_TRACE("Push back current index {}",current_idx);
+            t_path.indices.push_back(current_idx);
+            prev_connected = true;
+          }
+        } else {
+          // b stays on the same edge
+          SPDLOG_TRACE("Push back current index {}",current_idx);
+          t_path.indices.push_back(current_idx);
+          prev_connected = true;
+        }
+      }
+      SPDLOG_TRACE("Iterate i {} done",i);
     }
     return t_path;
   };
@@ -244,7 +294,9 @@ int estimate_ubodt_rows(const std::string &filename){
     std::transform(fn_extension.begin(),
                    fn_extension.end(),
                    fn_extension.begin(),
-                   [](unsigned char c){ return std::tolower(c);});
+                   [](unsigned char c){
+        return std::tolower(c);
+      });
     if (fn_extension == "csv" || fn_extension == "txt") {
       int row_size = 36;
       return file_bytes/row_size;

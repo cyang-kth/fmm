@@ -300,7 +300,13 @@ public:
                                        const C_Path &complete_path)
   {
     LineString line;
+    SPDLOG_TRACE("Opath {}", opath2string(o_path));
+    SPDLOG_TRACE("Complete path {}", vec2string<EdgeID>(complete_path));
     if (complete_path.empty()) return line;
+    // If complete path contains -1, export empty line
+    for (auto &item:complete_path){
+      if (item == -1) return line;
+    }
     int NOsegs = o_path.size();
     int NCsegs = complete_path.size();
     if (NCsegs ==1)
@@ -331,6 +337,34 @@ public:
     }
     return line;
   };
+
+  MultiLineString ot_path_to_multilinestring(
+    const O_Path &o_path,const T_Path &t_path)
+  {
+    SPDLOG_TRACE("Opath {}", opath2string(o_path));
+    SPDLOG_TRACE("T path index {}", vec2string<int>(t_path.indices));
+    SPDLOG_TRACE("Complete path {}", vec2string<EdgeID>(t_path.cpath));
+    if (t_path.cpath.empty()) return {};
+    std::vector<LineString> lines;
+    // Iterate through consecutive indexes and write the traversed path
+    int J = t_path.indices.size();
+    for (int j=0; j<J-1; ++j) {
+      O_Path lopath;
+      lopath.push_back(o_path[j]);
+      lopath.push_back(o_path[j+1]);
+      C_Path lcpath;
+      int a = t_path.indices[j];
+      int b = t_path.indices[j+1];
+      for (int i=a; i<b; ++i) {
+        lcpath.push_back(t_path.cpath[i]);
+      }
+      lcpath.push_back(t_path.cpath[b]);
+      SPDLOG_TRACE("Complete path j {} J {}", j, J);
+      lines.push_back(complete_path_to_geometry(lopath,lcpath));
+    }
+    return MultiLineString(lines);
+  };
+
 
   /**
    * Calculate the emission probability
