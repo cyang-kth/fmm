@@ -133,7 +133,7 @@ void run(int argc, char **argv)
     //double time_spent = (double)(end_time - begin_time) / CLOCKS_PER_SEC;
     SPDLOG_INFO("Time takes {}",time_spent);
     SPDLOG_INFO("Total points {} matched {}",total_points,points_matched);
-    SPDLOG_INFO("Matched percentage: ",points_matched/(double)total_points);
+    SPDLOG_INFO("Matched percentage: {}",points_matched/(double)total_points);
     SPDLOG_INFO("Point match speed: {} pts",points_matched/time_spent);
     delete ubodt;
   }

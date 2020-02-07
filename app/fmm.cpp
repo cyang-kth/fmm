@@ -121,7 +121,7 @@ void run(int argc, char **argv)
     SPDLOG_INFO("Time takes {}, excluding input takes",
                 time_spent, time_spent_exclude_input);
     SPDLOG_INFO("Total points {} matched {}",total_points,points_matched);
-    SPDLOG_INFO("Matched percentage: ",points_matched/(double)total_points);
+    SPDLOG_INFO("Matched percentage: {}",points_matched/(double)total_points);
     SPDLOG_INFO("Point match speed: {} pt/s (excluding input {} pt/s)",
                 points_matched/time_spent,
                 points_matched/time_spent_exclude_input);
