@@ -191,6 +191,11 @@ public:
         trid = std::stoi(intermediate);
       }
       if (index == geom_idx) {
+        // remove quote if possible
+        intermediate.erase(
+          std::remove(intermediate.begin(),intermediate.end(), '\"' ),
+          intermediate.end()
+          );
         boost::geometry::read_wkt(intermediate,linestring.get_geometry());
       }
       ++index;
