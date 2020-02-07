@@ -53,6 +53,8 @@ struct ResultConfig {
   bool write_ep = false;
   // The transition probability of each matched point.
   bool write_tp = false;
+  // The length of the matched edge
+  bool write_length = false;
 };
 
 static const std::vector<std::string>
@@ -161,6 +163,9 @@ public:
       if (tree.get_child_optional("fmm_config.output.fields.tp")) {
         result_config.write_tp = true;
       }
+      if (tree.get_child_optional("fmm_config.output.fields.length")) {
+        result_config.write_length = true;
+      }
       if (tree.get_child_optional("fmm_config.output.fields.all")) {
         result_config.write_ogeom= true;
         result_config.write_opath = true;
@@ -173,6 +178,7 @@ public:
         result_config.write_tpath = true;
         result_config.write_ep = true;
         result_config.write_tp = true;
+        result_config.write_length = true;
       }
     } else {
       std::cout<<"Default output fields used.\n";
@@ -276,6 +282,9 @@ public:
       if (dict.find("tp")!=dict.end()) {
         result_config.write_tp = true;
       }
+      if (dict.find("length")!=dict.end()) {
+        result_config.write_length = true;
+      }
       if (dict.find("all")!=dict.end()) {
         result_config.write_ogeom= true;
         result_config.write_opath = true;
@@ -288,6 +297,7 @@ public:
         result_config.write_tpath = true;
         result_config.write_ep = true;
         result_config.write_tp = true;
+        result_config.write_length = true;
       }
     }
     std::cout<<"Finish with reading FMM configuration\n";
@@ -315,7 +325,7 @@ public:
     std::cout<<"--log_level (optional) <int>: log level (2)\n";
     std::cout<<"--output_fields (optional) <string>: Output fields\n";
     std::cout<<"  opath,cpath,tpath,ogeom,mgeom,pgeom,\n";
-    std::cout<<"  offset,error,spdist,tp,ep,all\n";
+    std::cout<<"  offset,error,spdist,tp,ep,length,all\n";
     std::cout<<"For xml configuration, check example folder\n";
   };
 
@@ -365,6 +375,8 @@ public:
       std::cout << " ep ";
     if (result_config.write_tp)
       std::cout << " tp ";
+    if (result_config.write_length)
+      std::cout << " length ";
     std::cout << "\n";
     std::cout << "------------------------------------------\n";
   };

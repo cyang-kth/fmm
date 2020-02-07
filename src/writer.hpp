@@ -76,7 +76,6 @@ public:
       buf << ";";
       write_offset(buf,o_path);
     }
-    // Distance traversed which could be more complicated.
     if (config.write_spdist) {
       buf << ";";
       write_spdist(buf,o_path);
@@ -105,6 +104,10 @@ public:
     if (config.write_tp) {
       buf << ";";
       write_tp(buf,o_path);
+    }
+    if (config.write_length) {
+      buf << ";";
+      write_length(buf,o_path);
     }
     buf << '\n';
     // Ensure that fstream is called corrected in OpenMP
@@ -150,6 +153,7 @@ public:
     if (config.write_mgeom) header+=";mgeom";
     if (config.write_ep) header+=";ep";
     if (config.write_tp) header+=";tp";
+    if (config.write_length) header+=";length";
     fstream << header << '\n';
   };
   static void write_geometry(std::stringstream &buf, const LineString &line){
@@ -208,6 +212,19 @@ public:
       buf << o_path[i]->obs_prob<< ",";
     }
     buf << o_path[N - 1]->obs_prob;
+  };
+
+  static void write_length(std::stringstream &buf,const O_Path &o_path)
+  {
+    if (o_path.empty()) {
+      return;
+    };
+    int N = o_path.size();
+    for (int i = 0; i < N - 1; ++i)
+    {
+      buf << o_path[i]->edge->length<< ",";
+    }
+    buf << o_path[N - 1]->edge->length;
   };
 
   static void write_tp(std::stringstream &buf,const O_Path &o_path)
