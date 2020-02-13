@@ -1,6 +1,12 @@
-# Fast map matching (FMM) https://fmm-wiki.github.io/
+<div align="center">
+  <img src="img/fmm_social.jpg">
+</div>
 
-This project is an implementation of the fast map matching (FMM) algorithm introduced in this paper [Fast map matching, an algorithm integrating hidden Markov model with precomputation](http://www.tandfonline.com/doi/full/10.1080/13658816.2017.1400548), which acelerates the performance by precomputation. A post-print version of the paper can be downloaded at my [home page](https://people.kth.se/~cyang/).
+**`FMM-Wiki link`** |
+------------------- |
+[![Wiki](https://img.shields.io/badge/link-wiki-blue.svg)](https://fmm-wiki.github.io/) |
+
+FMM is an implementation of the fast map matching algorithm introduced in this paper [Fast map matching, an algorithm integrating hidden Markov model with precomputation](http://www.tandfonline.com/doi/full/10.1080/13658816.2017.1400548), which acelerates the performance by precomputation. A post-print version of the paper can be downloaded from this [link](https://people.kth.se/~cyang/bib/fmm.pdf).
 
 ### Features of fmm
 
