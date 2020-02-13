@@ -16,6 +16,7 @@ namespace bg = boost::geometry;
 // Point for rtree box
 typedef bg::model::point<double, 2, bg::cs::cartesian> boost_point;
 typedef bg::model::linestring<boost_point> linestring_t;
+
 /**
  *  Boost Geometry Linestring, compatible with OGRGeometry
  */
@@ -88,6 +89,12 @@ LineString ogr2linestring(OGRMultiLineString *mline){
   LineString l;
   bg::read_wkb(wkb.begin(),wkb.end(),l.get_geometry());
   return l;
+};
+
+LineString wkt2linestring(const std::string &wkt){
+  LineString line;
+  boost::geometry::read_wkt(wkt,line.get_geometry());
+  return line;
 };
 
 OGRLineString *linestring2ogr(LineString &line, int srid=4326){

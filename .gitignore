@@ -5,7 +5,6 @@ output/
 dist/
 test/bin/
 test/log/
-test/
 
 # Cmake
 

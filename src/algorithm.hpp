@@ -18,6 +18,19 @@ namespace MM
 {
 namespace ALGORITHM {
 
+bool approximate_equal(const LineString &la, const LineString &lb,
+  double delta){
+  int N = la.getNumPoints();
+  if (lb.getNumPoints()!=N)
+    return false;
+  bool result = true;
+  for (int i=0;i<N;++i){
+    if (boost::geometry::distance(la.getPoint(i),lb.getPoint(i))>delta)
+      result = false;
+  }
+  return result;
+};
+
 /**
  * Compute the boundary of an LineString and returns the result in
  * the passed x1,y1,x2,y2 variables.
@@ -189,6 +202,51 @@ void linear_referencing(double px, double py, const LineString &linestring,
   *result_offset=final_offset;
 };  // linear_referencing
 
+/**
+ * Locate the point on a linestring according to the input of offset
+ * The two pointer's target value will be updated.
+ */
+void locate_point_by_offset(const LineString &linestring, double offset,
+                            double *x, double *y){
+  int Npoints = linestring.getNumPoints();
+  if (offset<=0.0) {
+    *x = linestring.getX(0);
+    *y = linestring.getY(0);
+    return;
+  }
+  double L_processed=0;
+  int i = 0;
+  double px=0;
+  double py=0;
+  bool found = false;
+  // Find the idx of the point to be exported close to p
+  while(i<Npoints-1)
+  {
+    double x1 = linestring.getX(i);
+    double y1 = linestring.getY(i);
+    double x2 = linestring.getX(i+1);
+    double y2 = linestring.getY(i+1);
+    double deltaL = std::sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
+    double ratio = (offset-L_processed)/deltaL;
+    if(offset>=L_processed && offset<=L_processed+deltaL)
+    {
+      px = x1+ratio*(x2-x1);
+      py = y1+ratio*(y2-y1);
+      found = true;
+      break;
+    }
+    ++i;
+    L_processed += deltaL;
+  };
+  if (found) {
+    *x = px;
+    *y = py;
+  } else {
+    *x = linestring.getX(Npoints-1);
+    *y = linestring.getY(Npoints-1);
+  }
+};  // locate_point_by_offset
+
 
 /**
  * added by Diao 18.01.17
@@ -253,52 +311,6 @@ LineString cutoffseg_unique(double offset1, double offset2,
   }
   return cutoffline;
 }; //cutoffseg_twoparameters
-
-
-/**
- * Locate the point on a linestring according to the input of offset
- * The two pointer's target value will be updated.
- */
-void locate_point_by_offset(const LineString &linestring, double offset,
-                            double *x, double *y){
-  int Npoints = linestring.getNumPoints();
-  if (offset<=0.0) {
-    *x = linestring.getX(0);
-    *y = linestring.getY(0);
-    return;
-  }
-  double L_processed=0;
-  int i = 0;
-  double px=0;
-  double py=0;
-  bool found = false;
-  // Find the idx of the point to be exported close to p
-  while(i<Npoints-1)
-  {
-    double x1 = linestring.getX(i);
-    double y1 = linestring.getY(i);
-    double x2 = linestring.getX(i+1);
-    double y2 = linestring.getY(i+1);
-    double deltaL = std::sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
-    double ratio = (offset-L_processed)/deltaL;
-    if(offset>=L_processed && offset<=L_processed+deltaL)
-    {
-      px = x1+ratio*(x2-x1);
-      py = y1+ratio*(y2-y1);
-      found = true;
-      break;
-    }
-    ++i;
-    L_processed += deltaL;
-  };
-  if (found) {
-    *x = px;
-    *y = py;
-  } else {
-    *x = linestring.getX(Npoints-1);
-    *y = linestring.getY(Npoints-1);
-  }
-};  // locate_point_by_offset
 
 /**
  * added by Diao 18.01.17
