@@ -2,7 +2,7 @@
   <img src="img/fmm_social.jpg">
 </div>
 
-**`FMM-Wiki link`** |
+**`FMM-Wiki`** |
 ------------------- |
 [![Wiki](https://img.shields.io/badge/link-wiki-blue.svg)](https://fmm-wiki.github.io/) |
 
