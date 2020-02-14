@@ -37,14 +37,8 @@ TEST_CASE( "Algorithm are tested", "[algorithm]" ) {
   }
 
   SECTION( "locate_point_by_offset" ) {
-    v.reserve( 10 );
-    REQUIRE( v.size() == 5 );
-    REQUIRE( v.capacity() >= 10 );
   }
-  
+
   SECTION( "cutoffseg" ) {
-    v.reserve( 10 );
-    REQUIRE( v.size() == 5 );
-    REQUIRE( v.capacity() >= 10 );
   }
 }
