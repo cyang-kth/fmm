@@ -6,6 +6,10 @@ dist/
 test/bin/
 test/log/
 
+# Mac
+
+**/.DS_Store
+
 # Cmake
 
 build/

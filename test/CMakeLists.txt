@@ -34,6 +34,9 @@ include_directories(../include)
 add_executable(algorithm_test algorithm_test.cpp)
 target_link_libraries(algorithm_test ${GDAL_LIBRARIES} ${Boost_LIBRARIES})
 
+add_executable(network_test network_test.cpp)
+target_link_libraries(network_test ${GDAL_LIBRARIES} ${Boost_LIBRARIES})
+
 # file(GLOB TEST_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 # foreach( test_file ${TEST_SOURCES} )
 #   # I used a simple string replace, to cut off .cpp.

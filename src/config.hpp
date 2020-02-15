@@ -389,7 +389,7 @@ public:
       SPDLOG_CRITICAL("GPS file {} not found",gps_file);
       return false;
     };
-    if (get_gps_format()<0){
+    if (get_gps_format()<0) {
       SPDLOG_CRITICAL("Unknown GPS format");
       return false;
     }
@@ -546,7 +546,8 @@ public:
 
   void initialize_arg(int argc, char **argv){
     std::cout<<"Start reading ubodt configuration from arguments\n";
-    cxxopts::Options options("ubodt_config", "Configuration parser of ubodt_gen");
+    cxxopts::Options options("ubodt_config",
+                             "Configuration parser of ubodt_gen");
     options.add_options()
       ("a,network","Network file name", cxxopts::value<std::string>())
       ("b,id","Network id name",
