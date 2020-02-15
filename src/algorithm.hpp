@@ -342,77 +342,16 @@ LineString cutoffseg_unique(double offset1, double offset2,
  */
 LineString cutoffseg(double offset, const LineString &linestring, int mode)
 {
-  LineString cutoffline;
-  int Npoints = linestring.getNumPoints();
-  if (Npoints==2)
-  {
-    double x1 = linestring.getX(0);
-    double y1 = linestring.getY(0);
-    double x2 = linestring.getX(1);
-    double y2 = linestring.getY(1);
-    double deltaL = std::sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
-    double ratio = offset/deltaL;
-    double new_x = x1+ratio*(x2-x1);
-    double new_y = y1+ratio*(y2-y1);
-    if (mode==0) {
-      // export p -> end
-      //if (1-ratio>0.0001) cutoffline.addPoint(new_x, new_y);
-      if (1-ratio>0) cutoffline.addPoint(new_x, new_y);
-      cutoffline.addPoint(x2, y2);
-    } else {
-      // export start -> p
-      cutoffline.addPoint(x1, y1);
-      //if (1-ratio>0.0001) cutoffline.addPoint(new_x, new_y);
-      if (1-ratio>=0) cutoffline.addPoint(new_x, new_y);
-    }
+  double L = linestring.getLength();
+  double offset1, offset2;
+  if (mode==0){
+    offset1 = offset;
+    offset2 = L;
   } else {
-    double L_processed=0;              // length parsed
-    int i = 0;
-    int p_idx = 0;
-    double px=0;
-    double py=0;
-    // Find the idx of the point to be exported close to p
-    while(i<Npoints-1)
-    {
-      double x1 = linestring.getX(i);
-      double y1 = linestring.getY(i);
-      double x2 = linestring.getX(i+1);
-      double y2 = linestring.getY(i+1);
-      double deltaL = std::sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
-      double ratio = (offset-L_processed)/deltaL;
-      //if
-      if(offset>=L_processed && offset<=L_processed+deltaL)
-      {
-        px= x1+ratio*(x2-x1);
-        py = y1+ratio*(y2-y1);
-        break;
-      }
-      ++i;
-      L_processed += deltaL;
-    };
-    if (offset>L_processed) {
-      // The offset value is slightly bigger than the length because
-      // of precision
-      // implies that px and py are still 0
-      px = linestring.getX(i);
-      py = linestring.getY(i);
-    }
-    p_idx = i;
-    if (mode==0) {              // export p -> end
-      cutoffline.addPoint(px,py);
-      for(int j=p_idx+1; j<Npoints; ++j)
-      {
-        cutoffline.addPoint(linestring.getX(j), linestring.getY(j));
-      }
-    } else {              // export start -> p
-      for(int j=0; j<p_idx+1; ++j)
-      {
-        cutoffline.addPoint(linestring.getX(j), linestring.getY(j));
-      }
-      cutoffline.addPoint(px,py);
-    }
+    offset1 = 0;
+    offset2 = offset;
   }
-  return cutoffline;
+  return cutoffseg_unique(offset1,offset2,linestring);
 }; //cutoffseg
 
 } // ALGORITHM

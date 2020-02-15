@@ -8,8 +8,15 @@ set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 
 project(fmm_test)
 
+if (LOG_LEVEL)
+  message(STATUS "LOG_LEVEL defined ${LOG_LEVEL}")
+else()
+  message(STATUS "LOG_LEVEL OFF")
+  set(LOG_LEVEL "OFF")
+endif (LOG_LEVEL)
+
 set(CMAKE_BUILD_TYPE "Release")
-set(CMAKE_CXX_FLAGS "-O3 -DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE")
+set(CMAKE_CXX_FLAGS "-O3 -DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_${LOG_LEVEL}")
 set(CMAKE_CXX_STANDARD 11)
 
 find_package(Boost 1.54.0 REQUIRED serialization)
