@@ -9,7 +9,7 @@ set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 project(fmm_test)
 
 set(CMAKE_BUILD_TYPE "Release")
-set(CMAKE_CXX_FLAGS "-O3")
+set(CMAKE_CXX_FLAGS "-O3 -DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE")
 set(CMAKE_CXX_STANDARD 11)
 
 find_package(Boost 1.54.0 REQUIRED serialization)
@@ -31,12 +31,15 @@ endif (GDAL_FOUND)
 
 include_directories(../include)
 
-file(GLOB TEST_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
-foreach( test_file ${TEST_SOURCES} )
-  # I used a simple string replace, to cut off .cpp.
-  string( REPLACE ".cpp" "" filename ${test_file})
-  get_filename_component(test_name ${filename} NAME)
-  add_executable(${test_name} ${test_file})
-  target_link_libraries(${test_name} ${GDAL_LIBRARIES} ${Boost_LIBRARIES})
-  install(TARGETS ${test_name} DESTINATION bin)
-endforeach( test_file ${TEST_SOURCES} )
+add_executable(algorithm_test algorithm_test.cpp)
+target_link_libraries(algorithm_test ${GDAL_LIBRARIES} ${Boost_LIBRARIES})
+
+# file(GLOB TEST_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
+# foreach( test_file ${TEST_SOURCES} )
+#   # I used a simple string replace, to cut off .cpp.
+#   string( REPLACE ".cpp" "" filename ${test_file})
+#   get_filename_component(test_name ${filename} NAME)
+#   add_executable(${test_name} ${test_file})
+#   target_link_libraries(${test_name} ${GDAL_LIBRARIES} ${Boost_LIBRARIES})
+#   install(TARGETS ${test_name} DESTINATION bin)
+# endforeach( test_file ${TEST_SOURCES} )

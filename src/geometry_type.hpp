@@ -61,6 +61,21 @@ public:
   inline double getLength() const {
     return bg::length(line);
   };
+  friend std::ostream& operator<<(std::ostream& os, const LineString& rhs){
+    os<<bg::wkt(rhs.line);
+    return os;
+  };
+  bool operator==(const LineString& rhs) const {
+    int N = getNumPoints();
+    if (rhs.getNumPoints()!=N)
+      return false;
+    bool result = true;
+    for (int i=0;i<N;++i){
+      if (boost::geometry::distance(getPoint(i),rhs.getPoint(i))>1e-6)
+        result = false;
+    }
+    return result;
+  };
 private:
   linestring_t line;
 }; // LineString

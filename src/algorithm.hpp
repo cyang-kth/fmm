@@ -19,12 +19,12 @@ namespace MM
 namespace ALGORITHM {
 
 bool approximate_equal(const LineString &la, const LineString &lb,
-  double delta){
+                       double delta=1e-6){
   int N = la.getNumPoints();
   if (lb.getNumPoints()!=N)
     return false;
   bool result = true;
-  for (int i=0;i<N;++i){
+  for (int i=0; i<N; ++i) {
     if (boost::geometry::distance(la.getPoint(i),lb.getPoint(i))>delta)
       result = false;
   }
@@ -260,6 +260,7 @@ LineString cutoffseg_unique(double offset1, double offset2,
                             const LineString &linestring)
 {
   LineString cutoffline;
+  SPDLOG_TRACE("Offset1 {} Offset2 {}",offset1,offset2);
   int Npoints = linestring.getNumPoints();
   if (Npoints==2) {
     // A single segment
@@ -278,7 +279,8 @@ LineString cutoffseg_unique(double offset1, double offset2,
     cutoffline.addPoint(new_x2, new_y2);
   } else {
     // Multiple segments
-    double L = 0;
+    double l1 = 0;
+    double l2 = 0;
     int i = 0;
     while(i<Npoints-1)
     {
@@ -287,25 +289,38 @@ LineString cutoffseg_unique(double offset1, double offset2,
       double x2 = linestring.getX(i+1);
       double y2 = linestring.getY(i+1);
       double deltaL = std::sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
-      // If L <= offset1 <= L + deltaL
-      if (L< offset1 && offset1<L+deltaL) {
-        double ratio1 = (offset1-L)/deltaL;
-        double new_x1 = x1+ratio1*(x2-x1);
-        double new_y1 = y1+ratio1*(y2-y1);
-        cutoffline.addPoint(new_x1, new_y1);
-      }
-      // If offset1 < L < offset2
-      if (offset1<L && L< offset2) {
+      l2 = l1 + deltaL;
+      // Insert p1
+      SPDLOG_TRACE("  L1 {} L2 {} ",l1,l2);
+      if (l1>=offset1 && l1<=offset2){
         cutoffline.addPoint(x1,y1);
+        SPDLOG_TRACE("  add p1 {} {}",x1,y1);
       }
-      // If L <= offset2 <= L + deltaL
-      if (L< offset2 && offset2<L+deltaL) {
-        double ratio2 = (offset2-L)/deltaL;
-        double new_x2 = x1+ratio2*(x2-x1);
-        double new_y2 = y1+ratio2*(y2-y1);
-        cutoffline.addPoint(new_x2, new_y2);
+
+      // Insert p between p1 and p2
+      if (offset1>l1 && offset1<l2){
+        double ratio1 = (offset1-l1)/deltaL;
+        double px = x1+ratio1*(x2-x1);
+        double py = y1+ratio1*(y2-y1);
+        cutoffline.addPoint(px, py);
+        SPDLOG_TRACE("  add p {} {} between p1 p2",px,py);
       }
-      L = L + deltaL;
+
+      if (offset2>l1 && offset2<l2){
+        double ratio2 = (offset2-l1)/deltaL;
+        double px = x1+ratio2*(x2-x1);
+        double py = y1+ratio2*(y2-y1);
+        cutoffline.addPoint(px, py);
+        SPDLOG_TRACE("  add p {} {} between p1 p2",px,py);
+      }
+
+      // last point
+      if (i==Npoints-2 && offset2>=l2){
+        cutoffline.addPoint(x2, y2);
+        SPDLOG_TRACE("  add p2 {} {} for last point",x2,y2);
+      }
+
+      l1 = l2;
       ++i;
     };
   }
