@@ -12,16 +12,25 @@ TEST_CASE( "Network graph is tested", "[network_graph]" ) {
   NetworkGraph ng(&network);
 
   SECTION( "single_source_upperbound_dijkstra" ) {
-
+    NodeID nid = 2;
+    NodeIndex source = network.get_node_index(nid);
+    double delta = 5.1;
+    PredecessorMap pmap;
+    DistanceMap dmap;
+    ng.single_source_upperbound_dijkstra(source,delta,&pmap,&dmap);
+    REQUIRE(dmap.at(network.get_node_index(4))==5.0);
+    REQUIRE(pmap.at(network.get_node_index(4))==
+            network.get_node_index(9));
+    REQUIRE(dmap.find(network.get_node_index(3))==dmap.end());
   }
 
   SECTION( "get_edge_index" ) {
-    double px = 1;
-    double py = 3;
-    double result_dist,result_offset;
-    linear_referencing(px,py,line,&result_dist,&result_offset);
-    REQUIRE( result_dist == Approx(sqrt(2)));
-    REQUIRE( result_offset == 2 );
+    REQUIRE(network.get_edge_id(ng.get_edge_index(
+      network.get_node_index(11),network.get_node_index(12),1
+    ))==20);
+    REQUIRE(ng.get_edge_index(
+      network.get_node_index(11),network.get_node_index(12),0.5
+    ) == -1);
   }
 
 }

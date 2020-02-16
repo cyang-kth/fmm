@@ -8,30 +8,33 @@
 #include "../src/reader.hpp"
 
 using namespace MM;
+using namespace MM::IO;
 using namespace std;
 
-TEST_CASE( "Network is tested", "[network]" ) {
+TEST_CASE( "fmm is tested", "[fmm]" ) {
   spdlog::set_level((spdlog::level::level_enum) 0);
   spdlog::set_pattern("[%l][%s:%-3#] %v");
   Network network("../data/network.gpkg");
-
-  SECTION( "node edge getter test" ) {
-
-  }
-
-  SECTION( "search_tr_cs_knn" ) {
-    double px = 1;
-    double py = 3;
-    double result_dist,result_offset;
-    linear_referencing(px,py,line,&result_dist,&result_offset);
-    REQUIRE( result_dist == Approx(sqrt(2)));
-    REQUIRE( result_offset == 2 );
-  }
-
-  SECTION( "complete_path_to_geometry" ) {
-    double px,py;
-    locate_point_by_offset(line,2+sqrt(2),&px,&py);
-    REQUIRE( px == Approx(1.0) );
-    REQUIRE( py == Approx(1.0) );
+  network.build_rtree_index();
+  int multiplier = network.get_node_count();
+  TrajectoryCSVReader reader("../data/trips.csv","id","geom");
+  std::vector<Trajectory> trajectories = reader.read_all_trajectories();
+  SECTION( "ubodt_csv_test" ) {
+    const Trajectory &trajectory = trajectories[0];
+    UBODT *ubodt = read_ubodt_csv("../data/ubodt.txt",multiplier);
+    Traj_Candidates traj_candidates = network.search_tr_cs_knn(
+      trajectory.geom,4,0.4,0.5);
+    TransitionGraph tg(
+      &traj_candidates,trajectory.geom,*ubodt);
+    // Optimal path inference
+    O_Path o_path = tg.viterbi();
+    T_Path t_path = ubodt->construct_traversed_path(o_path,network);
+    LineString m_geom = network.complete_path_to_geometry(
+      o_path,t_path.cpath);
+    LineString expected_mgeom = wkt2linestring(
+      "LINESTRING(2 0.250988700565,2 1,2 2,3 2,4 2,4 2.45776836158)");
+    REQUIRE_THAT(t_path.cpath,Catch::Equals<int>({2,5,13,14,23}));
+    REQUIRE(expected_mgeom==m_geom);
+    delete ubodt;
   }
 }

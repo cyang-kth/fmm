@@ -307,7 +307,7 @@ public:
     return num_vertices;
   }
 
-  EdgeIndex get_edge_index(NodeIndex source, NodeIndex target,
+  int get_edge_index(NodeIndex source, NodeIndex target,
                            double dist) {
     EdgeDescriptor e;
     OutEdgeIterator out_i, out_end;
@@ -316,8 +316,8 @@ public:
          out_i != out_end; ++out_i) {
       e = *out_i;
       if (target == boost::target(e, g)) {
-        found = true;
         if (abs(g[e].length - dist)<=DOUBLE_MIN) {
+          found = true;
           break;
         }
       }

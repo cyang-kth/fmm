@@ -38,18 +38,14 @@ endif (GDAL_FOUND)
 
 include_directories(../include)
 
-add_executable(algorithm_test algorithm_test.cpp)
-target_link_libraries(algorithm_test ${GDAL_LIBRARIES} ${Boost_LIBRARIES})
+# add_executable(algorithm_test algorithm_test.cpp)
+# target_link_libraries(algorithm_test ${GDAL_LIBRARIES} ${Boost_LIBRARIES})
 
-add_executable(network_test network_test.cpp)
-target_link_libraries(network_test ${GDAL_LIBRARIES} ${Boost_LIBRARIES})
-
-# file(GLOB TEST_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
-# foreach( test_file ${TEST_SOURCES} )
-#   # I used a simple string replace, to cut off .cpp.
-#   string( REPLACE ".cpp" "" filename ${test_file})
-#   get_filename_component(test_name ${filename} NAME)
-#   add_executable(${test_name} ${test_file})
-#   target_link_libraries(${test_name} ${GDAL_LIBRARIES} ${Boost_LIBRARIES})
-#   install(TARGETS ${test_name} DESTINATION bin)
-# endforeach( test_file ${TEST_SOURCES} )
+file(GLOB TEST_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
+foreach( test_file ${TEST_SOURCES} )
+  string( REPLACE ".cpp" "" filename ${test_file})
+  get_filename_component(test_name ${filename} NAME)
+  add_executable(${test_name} ${test_file})
+  target_link_libraries(${test_name} ${GDAL_LIBRARIES} ${Boost_LIBRARIES})
+  install(TARGETS ${test_name} DESTINATION bin)
+endforeach( test_file ${TEST_SOURCES} )

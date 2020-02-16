@@ -222,6 +222,46 @@ public:
       rtree.insert(std::make_pair(b,edge));
     }
   };
+
+  Point_Candidates search_point_candidate_edges(
+    double px, double py, std::size_t k, double radius,
+    double gps_error = 50
+    ) const {
+    SPDLOG_TRACE("Search point candidates k {} r{}",k,radius);
+    Point_Candidates pcs;
+    boost_box b(boost_point(px-radius,py-radius),
+                boost_point(px+radius,py+radius));
+    std::vector<Item> temp;
+    rtree.query(boost::geometry::index::intersects(b),
+                std::back_inserter(temp));
+    for (Item &i:temp)
+    {
+      Edge *edge = i.second;
+      double offset;
+      double dist;
+      ALGORITHM::linear_referencing(px,py,edge->geom,&dist,&offset);
+      if (dist<=radius)
+      {
+        Candidate c = {offset,dist,Network::emission_prob(dist,gps_error),
+                       edge,nullptr,0,0};
+        pcs.push_back(c);
+      }
+    }
+    SPDLOG_TRACE("Intersect found candidates {}",pcs.size());
+    // If no candidate is found, return an empty Traj_Candidates
+    if (pcs.size()>k)
+    {
+      Point_Candidates temp(k);
+      std::partial_sort_copy(
+        pcs.begin(),pcs.end(),
+        temp.begin(),temp.end(),
+        candidate_compare);
+      pcs = temp;
+      SPDLOG_TRACE("Return top {} candidates",pcs.size());
+    };
+    return pcs;
+  };
+
   /**
    *  Search for k nearest neighboring (KNN) candidates of a
    *  trajectory within a search radius
@@ -233,8 +273,8 @@ public:
    *  the candidates selected for each point in a trajectory
    *
    */
-  Traj_Candidates search_tr_cs_knn(Trajectory &trajectory, std::size_t k,
-                                   double radius,double gps_error){
+  inline Traj_Candidates search_tr_cs_knn(
+    Trajectory &trajectory, std::size_t k, double radius,double gps_error){
     return search_tr_cs_knn(trajectory.geom,k,radius,gps_error);
   }
 
@@ -246,49 +286,20 @@ public:
                                    double radius, double gps_error)
   {
     int NumberPoints = geom.getNumPoints();
-    Traj_Candidates tr_cs(NumberPoints);
+    Traj_Candidates tr_cs;
     for (int i=0; i<NumberPoints; ++i)
     {
       double px = geom.getX(i);
       double py = geom.getY(i);
-      Point_Candidates pcs;
-      boost_box b(boost_point(geom.getX(i)-radius,geom.getY(i)-radius),
-                  boost_point(geom.getX(i)+radius,geom.getY(i)+radius));
-      std::vector<Item> temp;
-      rtree.query(boost::geometry::index::intersects(b),
-                  std::back_inserter(temp));
-      for (Item &i:temp)
+      Point_Candidates pcs = search_point_candidate_edges(
+        px,py,k,radius,gps_error);
+      if (!pcs.empty())
       {
-        Edge *edge = i.second;
-        double offset;
-        double dist;
-        ALGORITHM::linear_referencing(px,py,edge->geom,&dist,&offset);
-        if (dist<=radius)
-        {
-          Candidate c = {offset,dist,Network::emission_prob(dist,gps_error),
-                         edge,NULL,0,0};
-          pcs.push_back(c);
-        }
-      }
-      // If no candidate is found, return an empty Traj_Candidates
-      if (pcs.empty())
-      {
-        return Traj_Candidates();
+        tr_cs.push_back(pcs);
+      } else {
+        tr_cs.clear();
+        break;
       };
-      // KNN part
-      if (pcs.size()<=k)
-      {
-        tr_cs[i]=pcs;
-      }
-      else
-      {
-        // Find the KNN neighbors
-        tr_cs[i]=Point_Candidates(k);
-        std::partial_sort_copy(
-          pcs.begin(),pcs.end(),
-          tr_cs[i].begin(),tr_cs[i].end(),
-          candidate_compare);
-      }
     }
     return tr_cs;
   };
