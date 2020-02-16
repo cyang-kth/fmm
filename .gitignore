@@ -5,7 +5,10 @@ output/
 dist/
 test/bin/
 test/log/
-test/
+
+# Mac
+
+**/.DS_Store
 
 # Mac
 

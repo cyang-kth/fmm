@@ -16,6 +16,7 @@ namespace bg = boost::geometry;
 // Point for rtree box
 typedef bg::model::point<double, 2, bg::cs::cartesian> boost_point;
 typedef bg::model::linestring<boost_point> linestring_t;
+
 /**
  *  Boost Geometry Linestring, compatible with OGRGeometry
  */
@@ -60,6 +61,21 @@ public:
   inline double getLength() const {
     return bg::length(line);
   };
+  friend std::ostream& operator<<(std::ostream& os, const LineString& rhs){
+    os<<bg::wkt(rhs.line);
+    return os;
+  };
+  bool operator==(const LineString& rhs) const {
+    int N = getNumPoints();
+    if (rhs.getNumPoints()!=N)
+      return false;
+    bool result = true;
+    for (int i=0;i<N;++i){
+      if (boost::geometry::distance(getPoint(i),rhs.getPoint(i))>1e-6)
+        result = false;
+    }
+    return result;
+  };
 private:
   linestring_t line;
 }; // LineString
@@ -88,6 +104,12 @@ LineString ogr2linestring(OGRMultiLineString *mline){
   LineString l;
   bg::read_wkb(wkb.begin(),wkb.end(),l.get_geometry());
   return l;
+};
+
+LineString wkt2linestring(const std::string &wkt){
+  LineString line;
+  boost::geometry::read_wkt(wkt,line.get_geometry());
+  return line;
 };
 
 OGRLineString *linestring2ogr(LineString &line, int srid=4326){

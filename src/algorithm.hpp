@@ -18,6 +18,19 @@ namespace MM
 {
 namespace ALGORITHM {
 
+bool approximate_equal(const LineString &la, const LineString &lb,
+                       double delta=1e-6){
+  int N = la.getNumPoints();
+  if (lb.getNumPoints()!=N)
+    return false;
+  bool result = true;
+  for (int i=0; i<N; ++i) {
+    if (boost::geometry::distance(la.getPoint(i),lb.getPoint(i))>delta)
+      result = false;
+  }
+  return result;
+};
+
 /**
  * Compute the boundary of an LineString and returns the result in
  * the passed x1,y1,x2,y2 variables.
@@ -189,72 +202,6 @@ void linear_referencing(double px, double py, const LineString &linestring,
   *result_offset=final_offset;
 };  // linear_referencing
 
-
-/**
- * added by Diao 18.01.17
- * modified by Can 18.01.19
- * @param   offset1        start offset(from start node)
- * @param   offset2        end offset(from start node)
- * @param   linestring    input linestring
- * @return  cutoffline    output cut linstring
- */
-LineString cutoffseg_unique(double offset1, double offset2,
-                            const LineString &linestring)
-{
-  LineString cutoffline;
-  int Npoints = linestring.getNumPoints();
-  if (Npoints==2) {
-    // A single segment
-    double x1 = linestring.getX(0);
-    double y1 = linestring.getY(0);
-    double x2 = linestring.getX(1);
-    double y2 = linestring.getY(1);
-    double L = std::sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
-    double ratio1 = offset1/L;
-    double new_x1 = x1+ratio1*(x2-x1);
-    double new_y1 = y1+ratio1*(y2-y1);
-    double ratio2 = offset2/L;
-    double new_x2 = x1+ratio2*(x2-x1);
-    double new_y2 = y1+ratio2*(y2-y1);
-    cutoffline.addPoint(new_x1, new_y1);
-    cutoffline.addPoint(new_x2, new_y2);
-  } else {
-    // Multiple segments
-    double L = 0;
-    int i = 0;
-    while(i<Npoints-1)
-    {
-      double x1 = linestring.getX(i);
-      double y1 = linestring.getY(i);
-      double x2 = linestring.getX(i+1);
-      double y2 = linestring.getY(i+1);
-      double deltaL = std::sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
-      // If L <= offset1 <= L + deltaL
-      if (L< offset1 && offset1<L+deltaL) {
-        double ratio1 = (offset1-L)/deltaL;
-        double new_x1 = x1+ratio1*(x2-x1);
-        double new_y1 = y1+ratio1*(y2-y1);
-        cutoffline.addPoint(new_x1, new_y1);
-      }
-      // If offset1 < L < offset2
-      if (offset1<L && L< offset2) {
-        cutoffline.addPoint(x1,y1);
-      }
-      // If L <= offset2 <= L + deltaL
-      if (L< offset2 && offset2<L+deltaL) {
-        double ratio2 = (offset2-L)/deltaL;
-        double new_x2 = x1+ratio2*(x2-x1);
-        double new_y2 = y1+ratio2*(y2-y1);
-        cutoffline.addPoint(new_x2, new_y2);
-      }
-      L = L + deltaL;
-      ++i;
-    };
-  }
-  return cutoffline;
-}; //cutoffseg_twoparameters
-
-
 /**
  * Locate the point on a linestring according to the input of offset
  * The two pointer's target value will be updated.
@@ -300,6 +247,86 @@ void locate_point_by_offset(const LineString &linestring, double offset,
   }
 };  // locate_point_by_offset
 
+
+/**
+ * added by Diao 18.01.17
+ * modified by Can 18.01.19
+ * @param   offset1        start offset(from start node)
+ * @param   offset2        end offset(from start node)
+ * @param   linestring    input linestring
+ * @return  cutoffline    output cut linstring
+ */
+LineString cutoffseg_unique(double offset1, double offset2,
+                            const LineString &linestring)
+{
+  LineString cutoffline;
+  SPDLOG_TRACE("Offset1 {} Offset2 {}",offset1,offset2);
+  int Npoints = linestring.getNumPoints();
+  if (Npoints==2) {
+    // A single segment
+    double x1 = linestring.getX(0);
+    double y1 = linestring.getY(0);
+    double x2 = linestring.getX(1);
+    double y2 = linestring.getY(1);
+    double L = std::sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
+    double ratio1 = offset1/L;
+    double new_x1 = x1+ratio1*(x2-x1);
+    double new_y1 = y1+ratio1*(y2-y1);
+    double ratio2 = offset2/L;
+    double new_x2 = x1+ratio2*(x2-x1);
+    double new_y2 = y1+ratio2*(y2-y1);
+    cutoffline.addPoint(new_x1, new_y1);
+    cutoffline.addPoint(new_x2, new_y2);
+  } else {
+    // Multiple segments
+    double l1 = 0;
+    double l2 = 0;
+    int i = 0;
+    while(i<Npoints-1)
+    {
+      double x1 = linestring.getX(i);
+      double y1 = linestring.getY(i);
+      double x2 = linestring.getX(i+1);
+      double y2 = linestring.getY(i+1);
+      double deltaL = std::sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
+      l2 = l1 + deltaL;
+      // Insert p1
+      SPDLOG_TRACE("  L1 {} L2 {} ",l1,l2);
+      if (l1>=offset1 && l1<=offset2){
+        cutoffline.addPoint(x1,y1);
+        SPDLOG_TRACE("  add p1 {} {}",x1,y1);
+      }
+
+      // Insert p between p1 and p2
+      if (offset1>l1 && offset1<l2){
+        double ratio1 = (offset1-l1)/deltaL;
+        double px = x1+ratio1*(x2-x1);
+        double py = y1+ratio1*(y2-y1);
+        cutoffline.addPoint(px, py);
+        SPDLOG_TRACE("  add p {} {} between p1 p2",px,py);
+      }
+
+      if (offset2>l1 && offset2<l2){
+        double ratio2 = (offset2-l1)/deltaL;
+        double px = x1+ratio2*(x2-x1);
+        double py = y1+ratio2*(y2-y1);
+        cutoffline.addPoint(px, py);
+        SPDLOG_TRACE("  add p {} {} between p1 p2",px,py);
+      }
+
+      // last point
+      if (i==Npoints-2 && offset2>=l2){
+        cutoffline.addPoint(x2, y2);
+        SPDLOG_TRACE("  add p2 {} {} for last point",x2,y2);
+      }
+
+      l1 = l2;
+      ++i;
+    };
+  }
+  return cutoffline;
+}; //cutoffseg_twoparameters
+
 /**
  * added by Diao 18.01.17
  * modified by Can 18.01.19
@@ -315,77 +342,16 @@ void locate_point_by_offset(const LineString &linestring, double offset,
  */
 LineString cutoffseg(double offset, const LineString &linestring, int mode)
 {
-  LineString cutoffline;
-  int Npoints = linestring.getNumPoints();
-  if (Npoints==2)
-  {
-    double x1 = linestring.getX(0);
-    double y1 = linestring.getY(0);
-    double x2 = linestring.getX(1);
-    double y2 = linestring.getY(1);
-    double deltaL = std::sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
-    double ratio = offset/deltaL;
-    double new_x = x1+ratio*(x2-x1);
-    double new_y = y1+ratio*(y2-y1);
-    if (mode==0) {
-      // export p -> end
-      //if (1-ratio>0.0001) cutoffline.addPoint(new_x, new_y);
-      if (1-ratio>0) cutoffline.addPoint(new_x, new_y);
-      cutoffline.addPoint(x2, y2);
-    } else {
-      // export start -> p
-      cutoffline.addPoint(x1, y1);
-      //if (1-ratio>0.0001) cutoffline.addPoint(new_x, new_y);
-      if (1-ratio>=0) cutoffline.addPoint(new_x, new_y);
-    }
+  double L = linestring.getLength();
+  double offset1, offset2;
+  if (mode==0){
+    offset1 = offset;
+    offset2 = L;
   } else {
-    double L_processed=0;              // length parsed
-    int i = 0;
-    int p_idx = 0;
-    double px=0;
-    double py=0;
-    // Find the idx of the point to be exported close to p
-    while(i<Npoints-1)
-    {
-      double x1 = linestring.getX(i);
-      double y1 = linestring.getY(i);
-      double x2 = linestring.getX(i+1);
-      double y2 = linestring.getY(i+1);
-      double deltaL = std::sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
-      double ratio = (offset-L_processed)/deltaL;
-      //if
-      if(offset>=L_processed && offset<=L_processed+deltaL)
-      {
-        px= x1+ratio*(x2-x1);
-        py = y1+ratio*(y2-y1);
-        break;
-      }
-      ++i;
-      L_processed += deltaL;
-    };
-    if (offset>L_processed) {
-      // The offset value is slightly bigger than the length because
-      // of precision
-      // implies that px and py are still 0
-      px = linestring.getX(i);
-      py = linestring.getY(i);
-    }
-    p_idx = i;
-    if (mode==0) {              // export p -> end
-      cutoffline.addPoint(px,py);
-      for(int j=p_idx+1; j<Npoints; ++j)
-      {
-        cutoffline.addPoint(linestring.getX(j), linestring.getY(j));
-      }
-    } else {              // export start -> p
-      for(int j=0; j<p_idx+1; ++j)
-      {
-        cutoffline.addPoint(linestring.getX(j), linestring.getY(j));
-      }
-      cutoffline.addPoint(px,py);
-    }
+    offset1 = 0;
+    offset2 = offset;
   }
-  return cutoffline;
+  return cutoffseg_unique(offset1,offset2,linestring);
 }; //cutoffseg
 
 } // ALGORITHM
