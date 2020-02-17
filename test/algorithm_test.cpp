@@ -12,15 +12,6 @@ TEST_CASE( "Algorithm are tested", "[algorithm]" ) {
   std::string wkt_geom = "LineString(0 0,0 1,0 2,1 1,2 1,2 0)";
   LineString line = wkt2linestring(wkt_geom);
 
-  SECTION( "approximate_equal" ) {
-    double x1,y1,x2,y2;
-    boundingbox_geometry(line,&x1,&y1,&x2,&y2);
-    REQUIRE( x1 == 0 );
-    REQUIRE( y1 == 0 );
-    REQUIRE( x2 == 2 );
-    REQUIRE( y2 == 2 );
-  }
-
   SECTION( "boundingbox_geometry" ) {
     double x1,y1,x2,y2;
     boundingbox_geometry(line,&x1,&y1,&x2,&y2);
