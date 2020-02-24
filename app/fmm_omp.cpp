@@ -34,8 +34,8 @@ void run(int argc, char **argv)
   spdlog::set_pattern("[%s:%#] %v");
   if (argc < 2)
   {
-    std::cout << "No configuration file supplied" << endl;
-    std::cout << "A configuration file is given in the example folder" << endl;
+    std::cout << "No configuration file supplied\n";
+    std::cout << "A configuration file is given in the example folder\n";
     FMM_Config::print_help();
     return;
   } else {
@@ -49,7 +49,7 @@ void run(int argc, char **argv)
     FMM_Config config(argc,argv);
     if (!config.validate_mm())
     {
-      std::cout << "Invalid configuration file, program stop" << endl;
+      SPDLOG_CRITICAL("Validation fail, program stop");
       return;
     };
     config.print();
@@ -140,11 +140,11 @@ void run(int argc, char **argv)
 };
 
 int main(int argc, char **argv){
-  std::cout<<"------------ Fast map matching (FMM) ------------"<<endl;
-  std::cout<<"------------     Author: Can Yang    ------------"<<endl;
-  std::cout<<"------------   Version: 2020.01.31   ------------"<<endl;
-  std::cout<<"------------   Applicaton: fmm_omp   ------------"<<endl;
+  std::cout<<"------------ Fast map matching (FMM) ------------\n";
+  std::cout<<"------------     Author: Can Yang    ------------\n";
+  std::cout<<"------------   Version: 2020.01.31   ------------\n";
+  std::cout<<"------------   Applicaton: fmm_omp   ------------\n";
   run(argc,argv);
-  std::cout<<"------------    Program finished     ------------"<<endl;
+  std::cout<<"------------    Program finished     ------------\n";
   return 0;
 };
