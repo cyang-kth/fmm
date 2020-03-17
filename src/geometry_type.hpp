@@ -95,14 +95,14 @@ LineString ogr2linestring(OGRLineString *line){
 };
 
 LineString ogr2linestring(OGRMultiLineString *mline){
-  if (mline->IsEmpty()) return {};
-  OGRGeometryCollection *lines = mline->toUpperClass();
-  OGRGeometry *line = lines->getGeometryRef(0);
-  int binary_size = line->WkbSize();
-  std::vector<unsigned char> wkb(binary_size);
-  line->exportToWkb(wkbNDR,&wkb[0]);
   LineString l;
-  bg::read_wkb(wkb.begin(),wkb.end(),l.get_geometry());
+  if (!mline->IsEmpty() && mline->getNumGeometries()>0){
+    OGRGeometry *line = mline->getGeometryRef(0);
+    int binary_size = line->WkbSize();
+    std::vector<unsigned char> wkb(binary_size);
+    line->exportToWkb(wkbNDR,&wkb[0]);
+    bg::read_wkb(wkb.begin(),wkb.end(),l.get_geometry());
+  }
   return l;
 };
 

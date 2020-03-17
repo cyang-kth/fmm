@@ -35,6 +35,7 @@ _deps
 *.layout
 .kdev4/
 *.kdev4
+.idea/
 
 # log file
 *.log
