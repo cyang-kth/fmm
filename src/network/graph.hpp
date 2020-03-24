@@ -1,10 +1,3 @@
-/**
- * Definition of graph types
- *
- * @author: Can Yang
- * @version: 2020.01.31
- */
-
 #ifndef MM_GRAPH_TYPE_HPP
 #define MM_GRAPH_TYPE_HPP
 
@@ -12,7 +5,7 @@
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/property_map/property_map.hpp>
 
-#include "types.hpp"
+#include "network/type.hpp"
 
 namespace MM{
 

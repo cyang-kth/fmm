@@ -3,15 +3,18 @@
  * Definition of Data types used in the FMM algorithm
  *
  * @author: Can Yang
- * @version: 2020.01.31
+ * @version: 2017.11.11
  */
 
 #ifndef MM_TYPES_HPP
 #define MM_TYPES_HPP
 
 #include <vector>
+#include <list>
+#include <string>
 #include <unordered_map>
-#include "geometry_type.hpp"
+
+#include "core/geometry.hpp"
 
 namespace MM {
 
@@ -33,46 +36,32 @@ struct Edge
   NodeIndex source;   // source node index
   NodeIndex target;   // target node index
   double length;   // length of the edge polyline
-  LineString geom;   // edge geometry
+  LineString geom;   // the edge geometry
 };
 
 struct Candidate
 {
+  NodeIndex index; // The index is defined for a specific candidate
   double offset;   // offset distance from the start of polyline to p'
   double dist;   // distance from original point p to map matched point p'
-  double obs_prob;   // this is the emission probability
   Edge *edge;   // candidate edge
-  Candidate* prev;   // optimal previous candidate used in Viterbi algorithm
-  double cumu_prob;   // used in Viterbi, initialized to be 0
-  double sp_dist;   // sp distance to previous point, initialized to be 0
+  Point point;   // boost point
 };
 
-// Record type in UBODT
-// Every column stores index rather than ID.
-// For verification of the result, run ubodt to generate the ID map.
-struct Record
-{
-  NodeIndex source;
-  NodeIndex target;
-  NodeIndex first_n;   // next_n in the paper
-  NodeIndex prev_n;
-  EdgeIndex next_e;
-  double cost;
-  Record *next;   // the next Record used in Hashtable
-};
-
-/* Transitiong graph*/
 // candidates of a point
 typedef std::vector<Candidate> Point_Candidates;
 // candidates of a trajectory
 typedef std::vector<Point_Candidates> Traj_Candidates;
 
+typedef std::vector<const Candidate*> OptCandidatePath;
+
 /* Result of map matching  */
 
 // Optimal path containing candidates matched to each point in a trajectory
-typedef std::vector<Candidate*> O_Path;
+typedef std::vector<EdgeID> O_Path;
+// typedef std::list<Candidate*> O_Path;
 
-// Complete path, a sequence of spatially contiguous edges traversed
+// Complete path, a contiguous sequence of edges traversed
 typedef std::vector<EdgeID> C_Path;
 
 // Complete path, a sequence of spatially contiguous edges traversed,

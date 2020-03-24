@@ -37,7 +37,8 @@ if(OPENMP_FOUND)
   message(STATUS "OpenMP_CXX_LIBRARIES found at ${OpenMP_CXX_LIBRARIES}")
 endif()
 
-include_directories(include)
+include_directories(third_party)
+include_directories(src)
 
 file(GLOB APP_SOURCES app/*.cpp)
 foreach( source_file ${APP_SOURCES} )

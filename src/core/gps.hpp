@@ -9,12 +9,21 @@
 #ifndef MM_GPS_HPP
 #define MM_GPS_HPP
 
-#include "geometry_type.hpp"
+#include "core/geometry.hpp"
+
+#include <vector>
+
 namespace MM {
 
-struct Trajectory {
+struct Trajectory{
   int id;
   LineString geom;
+};
+
+struct TemporalTrajectory{
+  int id;
+  LineString geom;
+  std::vector<double> timestamps;
 };
 
 } // MM
