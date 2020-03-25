@@ -234,12 +234,12 @@ int BUFFER_LINE = 1024;
  *  Estimate the number of rows in a UBODT file from its size in byte
  *  @Returns the number of rows
  */
-int estimate_ubodt_rows(const std::string &filename){
+long estimate_ubodt_rows(const std::string &filename){
   struct stat stat_buf;
   int rc = stat(filename.c_str(), &stat_buf);
   if (rc==0) {
-    int file_bytes = stat_buf.st_size;
-    SPDLOG_TRACE("UBODT file size is {} bytes",file_bytes);
+    long file_bytes = stat_buf.st_size;
+    SPDLOG_INFO("UBODT file size is {} bytes",file_bytes);
     std::string fn_extension = filename.substr(filename.find_last_of(".") + 1);
     std::transform(fn_extension.begin(),
                    fn_extension.end(),
@@ -249,7 +249,6 @@ int estimate_ubodt_rows(const std::string &filename){
       int row_size = 36;
       return file_bytes/row_size;
     } else if (fn_extension == "bin" || fn_extension == "binary") {
-      Record r;
       // When exporting to a file using boost binary writer,
       // the padding is removed.
       int row_size = 28;
@@ -278,9 +277,9 @@ int find_prime_number(double value){
 UBODT *read_ubodt_csv(const std::string &filename, int multiplier=50000)
 {
   SPDLOG_INFO("Reading UBODT file (CSV format) from {}",filename);
-  int rows = estimate_ubodt_rows(filename);
+  long rows = estimate_ubodt_rows(filename);
   int buckets = find_prime_number(rows/LOAD_FACTOR);
-  SPDLOG_TRACE("Estimated buckets {}",buckets);
+  SPDLOG_INFO("Estimated rows {} buckets {}",rows, buckets);
   int progress_step = 1000000;
   UBODT *table = new UBODT(buckets, multiplier);
   FILE* stream = fopen(filename.c_str(), "r");
@@ -310,10 +309,10 @@ UBODT *read_ubodt_csv(const std::string &filename, int multiplier=50000)
   };
   fclose(stream);
   double lf = NUM_ROWS/(double)buckets;
-  SPDLOG_TRACE("Estimated load factor #elements/#tablebuckets {}",lf);
-  if (lf>10)
+  if (lf>10) {
     SPDLOG_WARN("Load factor is too large.");
-  SPDLOG_INFO("Finish reading UBODT with rows {}",NUM_ROWS);
+  }
+  SPDLOG_INFO("Finish reading UBODT with rows {} lf {}",NUM_ROWS,lf);
   return table;
 };
 
@@ -323,12 +322,12 @@ UBODT *read_ubodt_csv(const std::string &filename, int multiplier=50000)
 UBODT *read_ubodt_binary(const std::string &filename, int multiplier=50000)
 {
   SPDLOG_INFO("Reading UBODT file (binary format) from {}",filename);
-  int rows = estimate_ubodt_rows(filename);
+  long rows = estimate_ubodt_rows(filename);
   int progress_step = 1000000;
-  SPDLOG_TRACE("Estimated rows is {}",rows);
   int buckets = find_prime_number(rows/LOAD_FACTOR);
+  SPDLOG_INFO("Estimated rows {} buckets {}",rows, buckets);
   UBODT *table = new UBODT(buckets,multiplier);
-  unsigned int NUM_ROWS = 0;
+  long NUM_ROWS = 0;
   std::ifstream ifs(filename.c_str());
   // Check byte offset
   std::streampos archiveOffset = ifs.tellg();
@@ -352,10 +351,10 @@ UBODT *read_ubodt_binary(const std::string &filename, int multiplier=50000)
   }
   ifs.close();
   double lf = NUM_ROWS/(double)buckets;
-  SPDLOG_TRACE("Estimated load factor #elements/#tablebuckets {}",lf);
-  if (lf>10)
+  if (lf>10){
     SPDLOG_WARN("Load factor is too large.");
-  SPDLOG_INFO("Finish reading UBODT with rows {}", NUM_ROWS);
+  }
+  SPDLOG_INFO("Finish reading UBODT with rows {} lf {}", NUM_ROWS,lf);
   return table;
 };
 
