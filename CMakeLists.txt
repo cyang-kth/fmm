@@ -66,17 +66,7 @@ add_executable(fmm src/app/fmm.cpp
         $<TARGET_OBJECTS:UTIL>
         $<TARGET_OBJECTS:IO>
         $<TARGET_OBJECTS:NETWORK>)
-target_link_libraries(fmm ${GDAL_LIBRARIES} ${Boost_LIBRARIES})
-
-add_executable(fmm_omp src/app/fmm_omp.cpp
-        $<TARGET_OBJECTS:FMM>
-        $<TARGET_OBJECTS:MM>
-        $<TARGET_OBJECTS:CORE>
-        $<TARGET_OBJECTS:ALGORITHM>
-        $<TARGET_OBJECTS:UTIL>
-        $<TARGET_OBJECTS:IO>
-        $<TARGET_OBJECTS:NETWORK>)
-target_link_libraries(fmm_omp ${GDAL_LIBRARIES} ${Boost_LIBRARIES}
+target_link_libraries(fmm ${GDAL_LIBRARIES} ${Boost_LIBRARIES}
         ${OpenMP_CXX_LIBRARIES})
 
 add_executable(ubodt_gen src/app/ubodt_gen.cpp
@@ -87,17 +77,7 @@ add_executable(ubodt_gen src/app/ubodt_gen.cpp
         $<TARGET_OBJECTS:UTIL>
         $<TARGET_OBJECTS:IO>
         $<TARGET_OBJECTS:NETWORK>)
-target_link_libraries(ubodt_gen ${GDAL_LIBRARIES} ${Boost_LIBRARIES})
-
-add_executable(ubodt_gen_omp src/app/ubodt_gen_omp.cpp
-        $<TARGET_OBJECTS:FMM>
-        $<TARGET_OBJECTS:MM>
-        $<TARGET_OBJECTS:CORE>
-        $<TARGET_OBJECTS:ALGORITHM>
-        $<TARGET_OBJECTS:UTIL>
-        $<TARGET_OBJECTS:IO>
-        $<TARGET_OBJECTS:NETWORK>)
-target_link_libraries(ubodt_gen_omp ${GDAL_LIBRARIES} ${Boost_LIBRARIES}
+target_link_libraries(ubodt_gen ${GDAL_LIBRARIES} ${Boost_LIBRARIES}
         ${OpenMP_CXX_LIBRARIES})
 
 add_executable(stmatch src/app/stmatch.cpp
@@ -108,17 +88,6 @@ add_executable(stmatch src/app/stmatch.cpp
         $<TARGET_OBJECTS:UTIL>
         $<TARGET_OBJECTS:IO>
         $<TARGET_OBJECTS:NETWORK>)
-target_link_libraries(stmatch ${GDAL_LIBRARIES})
-
-add_executable(stmatch_omp src/app/stmatch_omp.cpp
-        $<TARGET_OBJECTS:STMATCH>
-        $<TARGET_OBJECTS:MM>
-        $<TARGET_OBJECTS:CORE>
-        $<TARGET_OBJECTS:ALGORITHM>
-        $<TARGET_OBJECTS:UTIL>
-        $<TARGET_OBJECTS:IO>
-        $<TARGET_OBJECTS:NETWORK>)
 target_link_libraries(stmatch ${GDAL_LIBRARIES} ${OpenMP_CXX_LIBRARIES})
 
-install(TARGETS fmm fmm_omp ubodt_gen ubodt_gen_omp stmatch stmatch_omp
-        DESTINATION bin)
+install(TARGETS fmm ubodt_gen stmatch DESTINATION bin)
