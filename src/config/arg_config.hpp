@@ -5,13 +5,20 @@
 #ifndef FMM_SRC_CONFIG_ARG_CONFIG_HPP_
 #define FMM_SRC_CONFIG_ARG_CONFIG_HPP_
 
+#include "config/gps_config.hpp"
+#include "config/network_config.hpp"
+#include "config/result_config.hpp"
+
 namespace MM{
+
 class ArgConfig{
- public:
+public:
   ArgConfig(int argc,char **argv){
     data = opts.parse(argc,argv);
   };
-  ParseResult data;
+  NetworkConfig get_network_config() const;
+  GPSConfig get_gps_config() const;
+  ResultConfig get_result_config() const;
 private:
   bool data_projected = false;
   int step = 0;
@@ -19,8 +26,7 @@ private:
   int log_level = 5;
   std::string ubodt_file;
   bool help_specified = false;
-  // Whether export the nodes visited or not.
-  bool verbose = false;
+  ParseResult data;
 };
 }
 

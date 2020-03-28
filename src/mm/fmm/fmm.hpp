@@ -5,8 +5,6 @@
 #ifndef MM_SRC_MM_FMM_FMM_H_
 #define MM_SRC_MM_FMM_FMM_H_
 
-#include "mm/mm_interface.hpp"
-#include "mm/composite_graph.hpp"
 #include "mm/transition_graph.hpp"
 #include "mm/fmm/ubodt.hpp"
 #include "mm/fmm/fmm_config.hpp"
@@ -14,13 +12,12 @@
 
 namespace MM {
 
-class FMM : public MMInterface {
+class FMM{
 public:
-  FMM(const Network &network_arg, const NetworkGraph &ng_arg,
-      const UBODT &ubodt_arg)
-      : MMInterface(network_arg, ng_arg), ubodt(ubodt_arg) {
+  FMM(const Network &network, const NetworkGraph &graph,
+      const UBODT &ubodt)
+      : network_(network), graph_(graph), ubodt_(ubodt){
   };
-
   // Procedure of HMM based map matching algorithm.
   MatchResult match_temporal_traj(const TemporalTrajectory &traj,
                                   const FMMConfig &config);
@@ -35,7 +32,9 @@ protected:
   void update_layer(int level, TGLayer *la_ptr, TGLayer *lb_ptr,
                     double eu_dist);
 private:
-  const UBODT &ubodt;
+  const Network &network_;
+  const NetworkGraph &graph_;
+  const UBODT &ubodt_;
 };
 
 }

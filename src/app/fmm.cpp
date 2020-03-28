@@ -5,23 +5,10 @@
  * @author: Can Yang
  * @version: 2017.11.11
  */
-#include <iostream>
-#include <stdio.h>
-#include <stdlib.h>
-#include <iostream>
-#include <sstream>
-#include <iomanip>
-#include <fstream>
-#include <string>
-#include <ctime>
-#include "../src/network.hpp"
-#include "../src/ubodt.hpp"
-#include "../src/transition_graph.hpp"
-#include "../src/gps.hpp"
-#include "../src/reader.hpp"
-#include "../src/writer.hpp"
-#include "../src/debug.h"
-#include "../src/config.hpp"
+
+#include"mm/fmm/fmm.hpp"
+#include<iostream>
+
 using namespace std;
 using namespace MM;
 using namespace MM::IO;

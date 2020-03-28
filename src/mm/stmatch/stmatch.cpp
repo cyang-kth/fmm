@@ -9,7 +9,7 @@ namespace MM {
 
 // Procedure of HMM based map matching algorithm.
 MatchResult STMATCH::match_temporal_traj(const TemporalTrajectory &traj,
-                                         const MMConfig &config){
+                                         const STMATCHConfig &config){
   SPDLOG_TRACE("Count of points in trajectory {}", traj.geom.get_num_points())
   SPDLOG_TRACE("Search candidates")
   Traj_Candidates tc = network.search_tr_cs_knn(
