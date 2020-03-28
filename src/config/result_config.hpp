@@ -5,9 +5,11 @@
 #ifndef FMM_SRC_CONFIG_RESULT_CONFIG_HPP_
 #define FMM_SRC_CONFIG_RESULT_CONFIG_HPP_
 
+#include<string>
+
 namespace MM{
 
-struct ResultConfig {
+struct OutputConfig {
   // Original geometry
   bool write_ogeom = false;
   // Optimal path, the edge matched to each point
@@ -33,6 +35,11 @@ struct ResultConfig {
   bool write_tp = false;
   // The length of the matched edge
   bool write_length = false;
+};
+
+struct ResultConfig{
+  std::string file;
+  OutputConfig output_config;
 };
 
 }

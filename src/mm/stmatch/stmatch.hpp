@@ -2,18 +2,19 @@
 #define MM_STMATCH_HPP
 
 #include "mm/mm_interface.hpp"
+#include "stmatch_config.hpp"
 #include "mm/composite_graph.hpp"
 #include "mm/transition_graph.hpp"
 
 namespace MM {
 
 class STMATCH : public MMInterface {
- public:
+public:
   using MMInterface::MMInterface;
   // Procedure of HMM based map matching algorithm.
   MatchResult match_temporal_traj(const TemporalTrajectory &traj,
-                                  const MMConfig &config);
- protected:
+                                  const STMATCHConfig &config);
+protected:
   void update_tg(TransitionGraph *tg,
                  const CompositeGraph &cg,
                  const TemporalTrajectory &traj,

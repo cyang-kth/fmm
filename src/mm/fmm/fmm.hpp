@@ -8,12 +8,14 @@
 #include "mm/mm_interface.hpp"
 #include "mm/composite_graph.hpp"
 #include "mm/transition_graph.hpp"
-#include "ubodt.h"
+#include "mm/fmm/ubodt.hpp"
+#include "mm/fmm/fmm_config.hpp"
+
 
 namespace MM {
 
 class FMM : public MMInterface {
- public:
+public:
   FMM(const Network &network_arg, const NetworkGraph &ng_arg,
       const UBODT &ubodt_arg)
       : MMInterface(network_arg, ng_arg), ubodt(ubodt_arg) {
@@ -21,17 +23,18 @@ class FMM : public MMInterface {
 
   // Procedure of HMM based map matching algorithm.
   MatchResult match_temporal_traj(const TemporalTrajectory &traj,
-                                  const MMConfig &config);
- protected:
+                                  const FMMConfig &config);
+protected:
   double get_sp_dist(const Candidate* ca,
                      const Candidate* cb);
+  // Update the transition graph
   void update_tg(TransitionGraph *tg,
                  const TemporalTrajectory &traj,
                  const MMConfig &config);
 
   void update_layer(int level, TGLayer *la_ptr, TGLayer *lb_ptr,
                     double eu_dist);
- private:
+private:
   const UBODT &ubodt;
 };
 
