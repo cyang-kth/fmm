@@ -11,7 +11,7 @@
 namespace MM
 {
 
-struct STMATCHConfig{
+struct STMATCHConfig {
   int k;
   double radius;
   double gps_error;
@@ -20,6 +20,27 @@ struct STMATCHConfig{
   // factor multiplied to vmax*deltaT to limit the search of shortest path
   double factor;
 };
+
+/**
+ * Configuration class for map matching
+ */
+class STMATCHAppConfig
+{
+public:
+  STMATCHAppConfig(int argc, char **argv);
+  void load_xml(const std::string &file);
+  void load_arg(int argc, char **argv);
+  static void print_help();
+  void print();
+  bool validate_mm();
+  int get_gps_format();
+  NetworkConfig network_config;
+  GPSConfig gps_config;
+  ResultConfig result_config;
+  STMATCHConfig stmatch_config;
+  // 0-trace,1-debug,2-info,3-warn,4-err,5-critical,6-off
+  int log_level;
+}; // STMATCHAppConfig
 
 } // MM
 #endif //MM_STMATCH_CONFIG_HPP
