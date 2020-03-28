@@ -6,8 +6,8 @@
  * @version: 2017.11.11
  */
 
-#include"mm/fmm/fmm.hpp"
-#include<iostream>
+#include "mm/fmm/fmm.hpp"
+#include <iostream>
 
 using namespace std;
 using namespace MM;
@@ -17,55 +17,37 @@ void run(int argc, char **argv)
 {
 
   UTIL::TimePoint start_time = std::chrono::steady_clock::now();
-  std::shared_ptr<MMInterface> mm_model;
-  switch (config_.algorithm_id) {
-    case (MM_ALGOR_TAG::CWRMM):
-      SPDLOG_INFO("Create CWRMM model")
-      mm_model = std::make_shared<CWRMM>(network_,ng_);
-      break;
-    case (MM_ALGOR_TAG::FCDMM):
-      SPDLOG_INFO("Create FCDMM model")
-      mm_model = std::make_shared<FCDMM>(network_,ng_);
-      break;
-    case (MM_ALGOR_TAG::STMATCH):
-      SPDLOG_INFO("Create STMATCH model")
-      mm_model = std::make_shared<STMATCH>(network_,ng_);
-      break;
-    default:
-      SPDLOG_CRITICAL("MM Algorithm not found")
-      break;
-  }
-  if (!config_.mm_log_file.empty()){
-    SPDLOG_INFO("Write log of mm to file {}", config_.mm_log_file)
-    auto mm_logger = spdlog::basic_logger_mt("mm_logger",
-                                             config_.mm_log_file,true);
-    mm_logger->set_level(static_cast<spdlog::level::level_enum>
-                         (config_.mm_log_level));
-    //mm_logger->set_pattern("[%^%l%$][%s:%-3#] %v");
-    mm_logger->set_pattern("%v");
-    mm_model->set_logger(mm_logger);
-  }
-  MMConfig mm_config = config_.get_mm_config();
-  // Create trajectory reader and result writer
-  std::shared_ptr<IO::TemporalGPSReader> reader;
-  if (config_.gps_point){
-    reader = std::make_shared<IO::CSVTemporalPointReader>(
-        config_.gps_file,config_.gps_id,
-        config_.gps_x,config_.gps_y, config_.gps_timestamp
-        );
-  } else {
-    reader = std::make_shared<IO::CSVTemporalTrajectoryReader>(
-        config_.gps_file,config_.gps_id,
-        config_.gps_geom,config_.gps_timestamp
-    );
-  }
+
+  // Read configurations
+
+  ArgConfig config(argc,argv);
+
+  NetworkConfig network_config = config.get_network_config();
+  GPSConfig gps_config = config.get_gps_config();
+  ResultConfig result_config = config.get_result_config();
+  UBODTConfig ubodt_config = config.get_ubodt_config();
+
+  // Create network data and FMM model, reader and writer
+
+  Network network(network_config.file, network_config.id,
+                  network_config.source, network_config.target);
+  NetworkGraph graph(network);
+  auto ubodt = UBODT::read_file(ubodt_config.file);
+  FMM model(network, graph, ubodt);
+  MMConfig fmm_config = config.get_mm_config();
+  GPSReader reader(config_.gps_file,config_.gps_id,
+                   config_.gps_geom,config_.gps_timestamp);
   OutputConfig result_config = config_.get_result_config();
-  IO::CSVMatchResultWriter writer(config_.result_file,result_config);
+  IO::CSVMatchResultWriter writer(result_config.file,
+                                  result_config.output_config);
+
+  // Start map matching
+
   int progress=0;
   int points_matched=0;
   int total_points=0;
   int step_size = 100;
-  if (config_.step>0) step_size = config_.step;
+  if (config_.step>0) step_size = config.step;
   SPDLOG_INFO("Progress report step {}",step_size)
   UTIL::TimePoint corrected_begin = std::chrono::steady_clock::now();
   SPDLOG_INFO("Start to match trajectories")
@@ -76,35 +58,23 @@ void run(int argc, char **argv)
     if (progress%step_size==0) {
       SPDLOG_INFO("Progress {}",progress)
     }
-    if (reader->has_time_stamp()){
-      TemporalTrajectory traj = reader->read_next_temporal_trajectory();
-      int points_in_tr = traj.geom.get_num_points();
-      MM::MatchResult result = mm_model->match_temporal_traj(
-          traj, mm_config);
-      writer.write_result(result);
-      if (!result.cpath.empty()) {
-        points_matched+=points_in_tr;
-      }
-      total_points+=points_in_tr;
-    } else {
-      Trajectory traj = reader->read_next_trajectory();
-      int points_in_tr = traj.geom.get_num_points();
-      MM::MatchResult result = mm_model->match_traj(
-          traj, mm_config);
-      writer.write_result(result);
-      if (!result.cpath.empty()) {
-        points_matched+=points_in_tr;
-      }
-      total_points+=points_in_tr;
+    TemporalTrajectory traj = reader->read_next_temporal_trajectory();
+    int points_in_tr = traj.geom.get_num_points();
+    MM::MatchResult result = mm_model->match_temporal_traj(
+      traj, mm_config);
+    writer.write_result(result);
+    if (!result.cpath.empty()) {
+      points_matched+=points_in_tr;
     }
+    total_points+=points_in_tr;
     ++progress;
   }
   SPDLOG_INFO("MM process finished")
   UTIL::TimePoint end_time = std::chrono::steady_clock::now();
   double time_spent = std::chrono::duration_cast<std::chrono::milliseconds>(
-      end_time - start_time).count()/1000.;
+    end_time - start_time).count()/1000.;
   double time_spent_exclude_input = std::chrono::duration_cast<
-      std::chrono::milliseconds>(end_time - corrected_begin).count()/1000.;
+    std::chrono::milliseconds>(end_time - corrected_begin).count()/1000.;
   SPDLOG_INFO("Time takes {}",time_spent)
   SPDLOG_INFO("Time takes excluding input {}",time_spent_exclude_input)
   SPDLOG_INFO("Finish map match total points {} matched {}",

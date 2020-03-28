@@ -10,10 +10,10 @@
 namespace MM{
 
 struct NetworkConfig{
-  std::string network_file;
-  std::string network_id;
-  std::string network_source;
-  std::string network_target;
+  std::string file;
+  std::string id;
+  std::string source;
+  std::string target;
 };
 
 }
