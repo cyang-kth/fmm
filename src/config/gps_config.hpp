@@ -17,7 +17,15 @@ struct GPSConfig{
   std::string gps_x;
   std::string gps_y;
   bool gps_point = false; // The GPS data stores point or not
+  static GPSConfig load_from_xml(){
+
+  };
+  static GPSConfig load_from_arg(){
+
+  };
 };
+
+
 
 }
 

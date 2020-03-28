@@ -40,6 +40,12 @@ struct OutputConfig {
 struct ResultConfig{
   std::string file;
   OutputConfig output_config;
+  static ResultConfig load_from_xml(){
+    
+  };
+  static ResultConfig load_from_arg(){
+
+  };
 };
 
 }

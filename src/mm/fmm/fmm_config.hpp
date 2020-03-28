@@ -19,6 +19,8 @@ struct FMMConfig{
   int k;
   double radius; //meter
   double gps_error; //meter
+  static FMMConfig load_from_arg();
+  static FMMConfig load_from_xml();
 };
 
 /**

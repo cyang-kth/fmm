@@ -1,4 +1,4 @@
-#include "config/app_config.hpp"
+#include "mm/fmm/fmm_config.hpp"
 
 namespace MM {
 
@@ -19,107 +19,21 @@ void FMMAppConfig::load_xml(const std::string &file){
   // Create empty property tree object
   boost::property_tree::ptree tree;
   boost::property_tree::read_xml(file, tree);
-
   // UBODT
-  ubodt_file = tree.get<std::string>("fmm_config.input.ubodt.file");
-  // Check if delta is specified or not
-  if (!tree.get_optional<bool>("fmm_config.input.ubodt.delta")
-      .is_initialized()) {
-    delta_defined = false;
-    delta = 0.0;
-  } else {
-    delta = tree.get("fmm_config.input.ubodt.delta",5000.0);       //
-    delta_defined = true;
-  }
-  binary_flag = UTIL::get_file_extension(ubodt_file);
+  ubodt_file = tree.get<std::string>("mm_config.input.ubodt.file");
 
-  // Network
-  network_file = tree.get<std::string>("fmm_config.input.network.file");
-  network_id = tree.get("fmm_config.input.network.id", "id");
-  network_source = tree.get("fmm_config.input.network.source", "source");
-  network_target = tree.get("fmm_config.input.network.target", "target");
+  network_config = NetworkConfig::load_from_xml();
+  gps_config = GPSConfig::load_from_xml();
+  result_config = ResultConfig::load_from_xml();
+  fmm_config = FMMConfig::load_from_xml();
 
-  // GPS
-  gps_file = tree.get<std::string>("fmm_config.input.gps.file");
-  gps_id = tree.get("fmm_config.input.gps.id", "id");
-  gps_geom = tree.get("fmm_config.input.gps.geom", "geom");
-
-  // Other parameters
-  k = tree.get("fmm_config.parameters.k", 8);
-  radius = tree.get("fmm_config.parameters.r", 300.0);
-
-  // HMM
-  gps_error = tree.get("fmm_config.parameters.gps_error", 50.0);
-  penalty_factor = tree.get("fmm_config.parameters.pf", 0.0);
-
-  // Output
-  result_file = tree.get<std::string>("fmm_config.output.file");
-  log_level = tree.get("fmm_config.other.log_level",2);
-
-  if (tree.get_child_optional("fmm_config.output.fields")) {
-    // Fields specified
-    // close the default output fields (cpath,mgeom are true by default)
-    result_config.write_cpath = false;
-    result_config.write_mgeom = false;
-    if (tree.get_child_optional("fmm_config.output.fields.ogeom")) {
-      result_config.write_ogeom = true;
-    }
-    if (tree.get_child_optional("fmm_config.output.fields.opath")) {
-      result_config.write_opath = true;
-    }
-    if (tree.get_child_optional("fmm_config.output.fields.cpath")) {
-      result_config.write_cpath = true;
-    }
-    if (tree.get_child_optional("fmm_config.output.fields.tpath")) {
-      result_config.write_tpath = true;
-    }
-    if (tree.get_child_optional("fmm_config.output.fields.mgeom")) {
-      result_config.write_mgeom = true;
-    }
-    if (tree.get_child_optional("fmm_config.output.fields.pgeom")) {
-      result_config.write_pgeom = true;
-    }
-    if (tree.get_child_optional("fmm_config.output.fields.offset")) {
-      result_config.write_offset = true;
-    }
-    if (tree.get_child_optional("fmm_config.output.fields.error")) {
-      result_config.write_error = true;
-    }
-    if (tree.get_child_optional("fmm_config.output.fields.spdist")) {
-      result_config.write_spdist = true;
-    }
-    if (tree.get_child_optional("fmm_config.output.fields.ep")) {
-      result_config.write_ep = true;
-    }
-    if (tree.get_child_optional("fmm_config.output.fields.tp")) {
-      result_config.write_tp = true;
-    }
-    if (tree.get_child_optional("fmm_config.output.fields.length")) {
-      result_config.write_length = true;
-    }
-    if (tree.get_child_optional("fmm_config.output.fields.all")) {
-      result_config.write_ogeom= true;
-      result_config.write_opath = true;
-      result_config.write_pgeom = true;
-      result_config.write_offset = true;
-      result_config.write_error = true;
-      result_config.write_spdist = true;
-      result_config.write_cpath = true;
-      result_config.write_mgeom = true;
-      result_config.write_tpath = true;
-      result_config.write_ep = true;
-      result_config.write_tp = true;
-      result_config.write_length = true;
-    }
-  } else {
-    std::cout<<"Default output fields used.\n";
-  }
-  std::cout<<"Finish with reading FMM configuration.\n";
+  log_level = tree.get("mm_config.other.log_level",2);
+  std::cout<<"Finish with reading FMM xml configuration.\n";
 };
 
 void FMMAppConfig::load_arg(int argc, char **argv){
   std::cout<<"Start reading FMM configuration from arguments\n";
-  cxxopts::Options options("fmm_config", "Configuration parser of fmm");
+  cxxopts::Options options("mm_config", "Configuration parser of fmm");
   options.add_options()
     ("u,ubodt","Ubodt file name", cxxopts::value<std::string>())
     ("a,network","Network file name", cxxopts::value<std::string>())
@@ -148,90 +62,13 @@ void FMMAppConfig::load_arg(int argc, char **argv){
 
   auto result = options.parse(argc, argv);
   ubodt_file = result["ubodt"].as<std::string>();
-  binary_flag = UTIL::get_file_extension(ubodt_file);
-  delta_defined = false;
-  delta = 0.0;
+  network_config = NetworkConfig::load_from_arg();
+  gps_config = GPSConfig::load_from_arg();
+  result_config = ResultConfig::load_from_arg();
+  fmm_config = FMMConfig::load_from_arg();
 
-  network_file = result["network"].as<std::string>();
-  network_id = result["network_id"].as<std::string>();
-  network_source = result["source"].as<std::string>();
-  network_target = result["target"].as<std::string>();
-
-  // GPS
-  gps_file = result["gps"].as<std::string>();
-  gps_id = result["gps_id"].as<std::string>();
-  gps_geom = result["gps_geom"].as<std::string>();
-
-  // Other parameters
-  k = result["candidates"].as<int>();
-  radius = result["radius"].as<double>();;
-
-  log_level = result["log_level"].as<int>();
-
-  // HMM
-  gps_error = result["error"].as<double>();
-  penalty_factor = result["pf"].as<double>();
-
-  // Output
-  result_file = result["output"].as<std::string>();
-
-  if (result.count("output_fields")>0) {
-    result_config.write_cpath = false;
-    result_config.write_mgeom = false;
-    std::string fields = result["output_fields"].as<std::string>();
-    std::set<std::string> dict = string2set(fields);
-    if (dict.find("opath")!=dict.end()) {
-      result_config.write_opath = true;
-    }
-    if (dict.find("cpath")!=dict.end()) {
-      result_config.write_cpath = true;
-    }
-    if (dict.find("mgeom")!=dict.end()) {
-      result_config.write_mgeom = true;
-    }
-    if (dict.find("ogeom")!=dict.end()) {
-      result_config.write_ogeom = true;
-    }
-    if (dict.find("tpath")!=dict.end()) {
-      result_config.write_tpath = true;
-    }
-    if (dict.find("pgeom")!=dict.end()) {
-      result_config.write_pgeom = true;
-    }
-    if (dict.find("offset")!=dict.end()) {
-      result_config.write_offset = true;
-    }
-    if (dict.find("error")!=dict.end()) {
-      result_config.write_error = true;
-    }
-    if (dict.find("spdist")!=dict.end()) {
-      result_config.write_spdist = true;
-    }
-    if (dict.find("ep")!=dict.end()) {
-      result_config.write_ep = true;
-    }
-    if (dict.find("tp")!=dict.end()) {
-      result_config.write_tp = true;
-    }
-    if (dict.find("length")!=dict.end()) {
-      result_config.write_length = true;
-    }
-    if (dict.find("all")!=dict.end()) {
-      result_config.write_ogeom= true;
-      result_config.write_opath = true;
-      result_config.write_pgeom = true;
-      result_config.write_offset = true;
-      result_config.write_error = true;
-      result_config.write_spdist = true;
-      result_config.write_cpath = true;
-      result_config.write_mgeom = true;
-      result_config.write_tpath = true;
-      result_config.write_ep = true;
-      result_config.write_tp = true;
-      result_config.write_length = true;
-    }
-  }
-  std::cout<<"Finish with reading FMM configuration\n";
+  log_level = tree.get("mm_config.other.log_level",2);
+  std::cout<<"Finish with reading FMM arg configuration\n";
 };
 
 ResultConfig get_result_config(){
@@ -262,57 +99,9 @@ static void print_help(){
 
 void print()
 {
-  std::cout << "------------------------------------------------\n";
-  std::cout << "FMM Configurations\n";
-  std::cout << "  Network_file: " << network_file << '\n';;
-  std::cout << "  Network id: " << network_id << '\n';
-  std::cout << "  Network source: " << network_source << '\n';
-  std::cout << "  Network target: " << network_target << '\n';
-  std::cout << "  ubodt_file: " << ubodt_file << '\n';
-  if (delta_defined) {
-    std::cout << "  delta: " << delta << '\n';
-  } else {
-    std::cout << "  delta: " << "undefined, to be inferred from ubodt file\n";
-  }
-  std::cout << "  ubodt format(1 binary, 0 csv): " << binary_flag << '\n';
-  std::cout << "  gps_file: " << gps_file << '\n';
-  std::cout << "  gps_id: " << gps_id << '\n';
-  std::cout << "  k: " << k << '\n';
-  std::cout << "  radius: " << radius << '\n';
-  std::cout << "  gps_error: " << gps_error << '\n';
-  std::cout << "  penalty_factor: " << penalty_factor << '\n';
-  std::cout << "  log_level:" << LOG_LEVESLS[log_level] << '\n';
-  std::cout << "  result_file:" << result_file << '\n';
-  std::cout << "  Output fields:\n   ";
-  if (result_config.write_ogeom)
-    std::cout << " ogeom ";
-  if (result_config.write_opath)
-    std::cout << " opath ";
-  if (result_config.write_pgeom)
-    std::cout << " pgeom ";
-  if (result_config.write_offset)
-    std::cout << " offset ";
-  if (result_config.write_error)
-    std::cout << " error ";
-  if (result_config.write_spdist)
-    std::cout << " spdist ";
-  if (result_config.write_cpath)
-    std::cout << " cpath ";
-  if (result_config.write_tpath)
-    std::cout << " tpath ";
-  if (result_config.write_mgeom)
-    std::cout << " mgeom ";
-  if (result_config.write_ep)
-    std::cout << " ep ";
-  if (result_config.write_tp)
-    std::cout << " tp ";
-  if (result_config.write_length)
-    std::cout << " length ";
-  std::cout << "\n";
-  std::cout << "------------------------------------------\n";
 };
 
-bool validate_mm()
+bool validate()
 {
   SPDLOG_INFO("Validating configuration");
   if (!UTIL::fileExists(gps_file))

@@ -14,6 +14,12 @@ struct NetworkConfig{
   std::string id;
   std::string source;
   std::string target;
+  static NetworkConfig load_from_xml(){
+
+  };
+  static NetworkConfig load_from_arg(){
+
+  };
 };
 
 }
