@@ -22,11 +22,10 @@ void FMMAppConfig::load_xml(const std::string &file){
   // UBODT
   ubodt_file = tree.get<std::string>("mm_config.input.ubodt.file");
 
-  network_config = NetworkConfig::load_from_xml();
-  gps_config = GPSConfig::load_from_xml();
-  result_config = ResultConfig::load_from_xml();
-  fmm_config = FMMConfig::load_from_xml();
-
+  network_config = NetworkConfig::load_from_xml(tree);
+  gps_config = GPSConfig::load_from_xml(tree);
+  result_config = ResultConfig::load_from_xml(tree);
+  fmm_config = FMMConfig::load_from_xml(tree);
   log_level = tree.get("mm_config.other.log_level",2);
   std::cout<<"Finish with reading FMM xml configuration.\n";
 };
@@ -62,17 +61,12 @@ void FMMAppConfig::load_arg(int argc, char **argv){
 
   auto result = options.parse(argc, argv);
   ubodt_file = result["ubodt"].as<std::string>();
-  network_config = NetworkConfig::load_from_arg();
-  gps_config = GPSConfig::load_from_arg();
-  result_config = ResultConfig::load_from_arg();
-  fmm_config = FMMConfig::load_from_arg();
-
-  log_level = tree.get("mm_config.other.log_level",2);
+  network_config = NetworkConfig::load_from_arg(result);
+  gps_config = GPSConfig::load_from_arg(result);
+  result_config = ResultConfig::load_from_arg(result);
+  fmm_config = FMMConfig::load_from_arg(result);
+  log_level = result["log_level"].as<int>();
   std::cout<<"Finish with reading FMM arg configuration\n";
-};
-
-ResultConfig get_result_config(){
-  return result_config;
 };
 
 static void print_help(){
@@ -97,9 +91,7 @@ static void print_help(){
   std::cout<<"For xml configuration, check example folder\n";
 };
 
-void print()
-{
-};
+void print(){};
 
 bool validate()
 {

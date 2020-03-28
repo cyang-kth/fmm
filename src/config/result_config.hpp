@@ -5,7 +5,10 @@
 #ifndef FMM_SRC_CONFIG_RESULT_CONFIG_HPP_
 #define FMM_SRC_CONFIG_RESULT_CONFIG_HPP_
 
-#include<string>
+#include <string>
+#include "cxxopts/cxxopts.hpp"
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/xml_parser.hpp>
 
 namespace MM{
 
@@ -40,12 +43,10 @@ struct OutputConfig {
 struct ResultConfig{
   std::string file;
   OutputConfig output_config;
-  static ResultConfig load_from_xml(){
-    
-  };
-  static ResultConfig load_from_arg(){
-
-  };
+  static ResultConfig load_from_xml(
+    const boost::property_tree::ptree &xml_data);
+  static ResultConfig load_from_arg(
+    const cxxopts::ParseResult &arg_data);
 };
 
 }
