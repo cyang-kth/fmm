@@ -2,6 +2,17 @@
 
 namespace MM {
 
+std::string GPSConfig::to_string() const{
+  std::stringstream ss;
+  ss<<"GPS file: "<< file << "\n";
+  ss<<"Id: "<< id << "\n";
+  ss<<"Geom: "<< geom << "\n";
+  ss<<"X: "<< x << "\n";
+  ss<<"Y: "<< y << "\n";
+  ss<<"Timestamp: "<< timestamp << "\n";
+  return ss.str();
+};
+
 GPSConfig GPSConfig::load_from_xml(
   const boost::property_tree::ptree &xml_data){
   std::string file = tree.get<std::string>("fmm_config.input.gps.file");
@@ -24,4 +35,5 @@ GPSConfig GPSConfig::load_from_arg(
   std::string y = arg_data["gps_y"].as<std::string>();
   return GPSConfig{file,id,geom,x,y,timestamp};
 };
+
 }

@@ -21,6 +21,7 @@ struct GPSConfig{
   std::string y;
   std::string timestamp;
   bool gps_point = false; // The GPS data stores point or not
+  std::string to_string() const;
   static GPSConfig load_from_xml(const boost::property_tree::ptree &xml_data);
   static GPSConfig load_from_arg(const cxxopts::ParseResult &arg_data);
 };

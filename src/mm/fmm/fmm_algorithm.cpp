@@ -2,7 +2,7 @@
 // Created by Can Yang on 2020/3/22.
 //
 
-#include "fmm.hpp"
+#include "mm/fmm/fmm_algorithm.hpp"
 #include "util/util.hpp"
 #include "util/debug.hpp"
 

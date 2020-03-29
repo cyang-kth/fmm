@@ -1,7 +1,7 @@
-#ifndef MM_STMATCH_HPP
-#define MM_STMATCH_HPP
+#ifndef MM_STMATCH_ALGORITHM_HPP
+#define MM_STMATCH_ALGORITHM_HPP
 
-#include "stmatch_config.hpp"
+#include "mm/stmatch/stmatch_config.hpp"
 #include "mm/composite_graph.hpp"
 #include "mm/transition_graph.hpp"
 

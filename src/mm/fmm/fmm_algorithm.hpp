@@ -2,13 +2,12 @@
 // Created by Can Yang on 2020/3/22.
 //
 
-#ifndef MM_SRC_MM_FMM_FMM_H_
-#define MM_SRC_MM_FMM_FMM_H_
+#ifndef MM_SRC_MM_FMM_FMM_ALGORITHM_H_
+#define MM_SRC_MM_FMM_FMM_ALGORITHM_H_
 
 #include "mm/transition_graph.hpp"
 #include "mm/fmm/ubodt.hpp"
 #include "mm/fmm/fmm_config.hpp"
-
 
 namespace MM {
 

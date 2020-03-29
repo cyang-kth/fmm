@@ -2,6 +2,15 @@
 
 namespace MM {
 
+std::string NetworkConfig::to_string() const {
+  std::stringstream ss;
+  ss<<"Network file: "<< file << "\n";
+  ss<<"Id: "<< id << "\n";
+  ss<<"Source: "<< source << "\n";
+  ss<<"Target: "<< target << "\n";
+  return ss.str();
+};
+
 NetworkConfig NetworkConfig::load_from_xml(
   const boost::property_tree::ptree &xml_data){
   std::string file = xml_data.get<std::string>("fmm_config.input.network.file");

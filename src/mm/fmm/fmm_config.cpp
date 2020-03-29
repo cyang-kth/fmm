@@ -1,6 +1,32 @@
 #include "mm/fmm/fmm_config.hpp"
+#include "util/debug.hpp"
+#include "util/util.hpp"
 
 namespace MM {
+
+std::string FMMConfig::to_string() const {
+  std::stringstream ss;
+  ss<<"k: "<< k << "\n";
+  ss<<"radius: "<< radius << "\n";
+  ss<<"gps_error: "<< gps_error << "\n";
+  return ss.str();
+};
+
+FMMConfig FMMConfig::load_from_xml(
+  const boost::property_tree::ptree &xml_data){
+  int k = xml_data.get("fmm_config.parameters.k", 8);
+  double radius = xml_data.get("fmm_config.parameters.r", 300.0);
+  double gps_error = xml_data.get("fmm_config.parameters.gps_error", 50.0);
+  return FMMConfig{k,radius,gps_error};
+};
+
+FMMConfig FMMConfig::load_from_arg(
+  const cxxopts::ParseResult &arg_data){
+  int k = arg_data["candidates"].as<int>();
+  double radius = arg_data["radius"].as<double>();
+  double gps_error = arg_data["error"].as<double>();
+  return FMMConfig{k,radius,gps_error};
+};
 
 FMMAppConfig::FMMAppConfig(int argc, char **argv){
   if (argc==2) {
@@ -19,13 +45,13 @@ void FMMAppConfig::load_xml(const std::string &file){
   // Create empty property tree object
   boost::property_tree::ptree tree;
   boost::property_tree::read_xml(file, tree);
-  // UBODT
-  ubodt_file = tree.get<std::string>("mm_config.input.ubodt.file");
-
   network_config = NetworkConfig::load_from_xml(tree);
   gps_config = GPSConfig::load_from_xml(tree);
   result_config = ResultConfig::load_from_xml(tree);
   fmm_config = FMMConfig::load_from_xml(tree);
+
+  // UBODT
+  ubodt_file = tree.get<std::string>("mm_config.input.ubodt.file");
   log_level = tree.get("mm_config.other.log_level",2);
   std::cout<<"Finish with reading FMM xml configuration.\n";
 };
@@ -34,18 +60,18 @@ void FMMAppConfig::load_arg(int argc, char **argv){
   std::cout<<"Start reading FMM configuration from arguments\n";
   cxxopts::Options options("mm_config", "Configuration parser of fmm");
   options.add_options()
-    ("u,ubodt","Ubodt file name", cxxopts::value<std::string>())
-    ("a,network","Network file name", cxxopts::value<std::string>())
-    ("b,network_id","Network id name",
+    ("ubodt","Ubodt file name", cxxopts::value<std::string>())
+    ("network","Network file name", cxxopts::value<std::string>())
+    ("network_id","Network id name",
     cxxopts::value<std::string>()->default_value("id"))
-    ("c,source","Network source name",
+    ("source","Network source name",
     cxxopts::value<std::string>()->default_value("source"))
-    ("d,target","Network target name",
+    ("target","Network target name",
     cxxopts::value<std::string>()->default_value("target"))
-    ("g,gps","GPS file name", cxxopts::value<std::string>())
-    ("f,gps_id","GPS file id",
+    ("gps","GPS file name", cxxopts::value<std::string>())
+    ("gps_id","GPS file id",
     cxxopts::value<std::string>()->default_value("id"))
-    ("n,gps_geom","GPS file geom column name",
+    ("gps_geom","GPS file geom column name",
     cxxopts::value<std::string>()->default_value("geom"))
     ("k,candidates","Number of candidates",
     cxxopts::value<int>()->default_value("8"))
@@ -53,10 +79,8 @@ void FMMAppConfig::load_arg(int argc, char **argv){
     cxxopts::value<double>()->default_value("300.0"))
     ("e,error","GPS error",
     cxxopts::value<double>()->default_value("50.0"))
-    ("p,pf","penalty_factor",
-    cxxopts::value<double>()->default_value("0.0"))
-    ("o,output","Output file name", cxxopts::value<std::string>())
-    ("m,output_fields","Output fields", cxxopts::value<std::string>())
+    ("output","Output file name", cxxopts::value<std::string>())
+    ("output_fields","Output fields", cxxopts::value<std::string>())
     ("l,log_level","Log level",cxxopts::value<int>()->default_value("2"));
 
   auto result = options.parse(argc, argv);
@@ -69,31 +93,35 @@ void FMMAppConfig::load_arg(int argc, char **argv){
   std::cout<<"Finish with reading FMM arg configuration\n";
 };
 
-static void print_help(){
+void FMMAppConfig::print_help(){
   std::cout<<"fmm argument lists:\n";
   std::cout<<"--ubodt (required) <string>: Ubodt file name\n";
   std::cout<<"--network (required) <string>: Network file name\n";
-  std::cout<<"--gps (required) <string>: GPS file name\n";
-  std::cout<<"--output (required) <string>: Output file name\n";
   std::cout<<"--network_id (optional) <string>: Network id name (id)\n";
   std::cout<<"--source (optional) <string>: Network source name (source)\n";
   std::cout<<"--target (optional) <string>: Network target name (target)\n";
+  std::cout<<"--gps (required) <string>: GPS file name\n";
   std::cout<<"--gps_id (optional) <string>: GPS id name (id)\n";
   std::cout<<"--gps_geom (optional) <string>: GPS geometry name (geom)\n";
   std::cout<<"--candidates (optional) <int>: number of candidates (8)\n";
   std::cout<<"--radius (optional) <double>: search radius (300)\n";
   std::cout<<"--error (optional) <double>: GPS error (50)\n";
-  std::cout<<"--pf (optional) <double>: penalty factor (0)\n";
-  std::cout<<"--log_level (optional) <int>: log level (2)\n";
+  std::cout<<"--output (required) <string>: Output file name\n";
   std::cout<<"--output_fields (optional) <string>: Output fields\n";
   std::cout<<"  opath,cpath,tpath,ogeom,mgeom,pgeom,\n";
   std::cout<<"  offset,error,spdist,tp,ep,length,all\n";
+  std::cout<<"--log_level (optional) <int>: log level (2)\n";
   std::cout<<"For xml configuration, check example folder\n";
 };
 
-void print(){};
+void FMMAppConfig::print() const {
+  std::cout<<"---Network Config---\n"<< network_config.to_string() << "\n";
+  std::cout<<"---GPS Config---\n"<< gps_config.to_string() << "\n";
+  std::cout<<"---Result Config---\n"<< result_config.to_string() << "\n";
+  std::cout<<"---FMM Config---\n"<< fmm_config.to_string() << "\n";
+};
 
-bool validate()
+bool FMMAppConfig::validate() const
 {
   SPDLOG_INFO("Validating configuration");
   if (!UTIL::fileExists(gps_file))
@@ -150,7 +178,7 @@ bool validate()
 };
 
 // Check gps format 0 for GDAL shapefile, 1 for trajectory CSV file
-int get_gps_format(){
+int get_gps_format() const {
   std::string fn_extension = gps_file.substr(
     gps_file.find_last_of(".") + 1);
   if (fn_extension == "csv" || fn_extension == "txt") {

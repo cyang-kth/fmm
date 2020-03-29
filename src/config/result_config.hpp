@@ -43,6 +43,7 @@ struct OutputConfig {
 struct ResultConfig{
   std::string file;
   OutputConfig output_config;
+  std::string to_string() const;
   static ResultConfig load_from_xml(
     const boost::property_tree::ptree &xml_data);
   static ResultConfig load_from_arg(

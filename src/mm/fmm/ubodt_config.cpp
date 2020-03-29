@@ -7,9 +7,9 @@
 UBODT_Config::UBODT_Config(int argc, char **argv){
   if (argc==2) {
     std::string configfile(argv[1]);
-    initialize_xml(configfile);
+    load_xml(configfile);
   } else {
-    initialize_arg(argc,argv);
+    load_arg(argc,argv);
   }
   std::cout<<"Set log level as "<<LOG_LEVESLS[log_level]<<"\n";
   spdlog::set_level((spdlog::level::level_enum) log_level);

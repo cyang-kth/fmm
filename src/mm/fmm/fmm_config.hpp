@@ -17,10 +17,13 @@ namespace MM
 
 struct FMMConfig{
   int k;
-  double radius; //meter
-  double gps_error; //meter
-  static FMMConfig load_from_arg();
-  static FMMConfig load_from_xml();
+  double radius;
+  double gps_error;
+  std::string to_string() const;
+  static FMMConfig load_from_xml(
+    const boost::property_tree::ptree &xml_data);
+  static FMMConfig load_from_arg(
+    const cxxopts::ParseResult &arg_data);
 };
 
 /**
@@ -32,13 +35,10 @@ public:
   FMMAppConfig(int argc, char **argv);
   void load_xml(const std::string &file);
   void load_arg(int argc, char **argv);
-  ResultConfig &get_result_config(){
-    return result_config;
-  };
-  bool validate();
+  bool validate() const;
+  int get_gps_format() const;
+  void print() const;
   static void print_help();
-  void print();
-  int get_gps_format();
   NetworkConfig network_config;
   GPSConfig gps_config;
   ResultConfig result_config;

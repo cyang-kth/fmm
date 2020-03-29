@@ -3,6 +3,37 @@
 
 namespace MM {
 
+std::string ResultConfig::to_string() const {
+  std::stringstream ss;
+  ss<<"Output file: "<< file << "\n";
+  ss<<"Output fields: ";
+  if (output_config.write_ogeom)
+    ss << " ogeom ";
+  if (output_config.write_opath)
+    ss << " opath ";
+  if (output_config.write_pgeom)
+    ss << " pgeom ";
+  if (output_config.write_offset)
+    ss << " offset ";
+  if (output_config.write_error)
+    ss << " error ";
+  if (output_config.write_spdist)
+    ss << " spdist ";
+  if (output_config.write_cpath)
+    ss << " cpath ";
+  if (output_config.write_tpath)
+    ss << " tpath ";
+  if (output_config.write_mgeom)
+    ss << " mgeom ";
+  if (output_config.write_ep)
+    ss << " ep ";
+  if (output_config.write_tp)
+    ss << " tp ";
+  if (output_config.write_length)
+    ss << " length ";
+  return ss.str();
+};
+
 ResultConfig ResultConfig::load_from_xml(
   const boost::property_tree::ptree &xml_data){
   ResultConfig config;

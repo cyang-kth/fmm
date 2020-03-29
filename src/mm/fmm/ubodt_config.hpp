@@ -4,14 +4,10 @@ public:
   UBODT_Config(int argc, char **argv);
   void load_xml(const std::string &file);
   void load_arg(int argc, char **argv);
-  void print();
+  void print() const;
+  bool validate() const;
   static void print_help();
-  bool validate();
-  std::string network_file;
-  std::string network_id;
-  std::string network_source;
-  std::string network_target;
-  int binary_flag;
+  NetworkConfig network_config;
   double delta;
   std::string result_file;
   int log_level;

@@ -1,4 +1,4 @@
-#include "mm/stmatch/stmatch.hpp"
+#include "mm/stmatch/stmatch_algorithm.hpp"
 #include "algorithm/geom_algorithm.hpp"
 #include "util/debug.hpp"
 #include "util/util.hpp"
