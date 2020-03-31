@@ -6,9 +6,10 @@
 #define FMM_SRC_CONFIG_GPS_CONFIG_HPP_
 
 #include <string>
-#include "cxxopts/cxxopts.hpp"
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
+
+#include "cxxopts/cxxopts.hpp"
 
 
 namespace MM{
@@ -22,6 +23,9 @@ struct GPSConfig{
   std::string timestamp;
   bool gps_point = false; // The GPS data stores point or not
   std::string to_string() const;
+  // Check gps format, returns 0 for GDAL shapefile,
+  // 1 for trajectory CSV file and -1 if not other format
+  int get_gps_format() const;
   static GPSConfig load_from_xml(const boost::property_tree::ptree &xml_data);
   static GPSConfig load_from_arg(const cxxopts::ParseResult &arg_data);
 };

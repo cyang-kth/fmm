@@ -1,33 +1,29 @@
 #ifndef MM_SRC_MM_STMATCH_STMATCH_APP_H_
 #define MM_SRC_MM_STMATCH_STMATCH_APP_H_
 
+#include "mm/stmatch/stmatch_app_config.hpp"
+
 namespace MM {
 class STMATCHApp {
 public:
-  STMATCHApp(STMATCHConfig config);
+  STMATCHApp(const STMATCHConfig &config):
+    config_(config),
+    network_(config_.network_config.file,
+             config_.network_config.id,
+             config_.network_config.source,
+             config_.network_config.target),
+    ng_(network_);
   void run(){
     UTIL::TimePoint start_time = std::chrono::steady_clock::now();
-    NetworkConfig network_config = config.get_network_config();
-    GPSConfig gps_config = config.get_gps_config();
-    ResultConfig result_config = config.get_result_config();
-    UBODTConfig ubodt_config = config.get_ubodt_config();
-
-    // Create network data and FMM model, reader and writer
-
-    Network network(network_config.file, network_config.id,
-                    network_config.source, network_config.target);
-    NetworkGraph graph(network);
-    STMATCH mm_model(network, graph);
-    STMATCHConfig stmatch_config{config.k, config.r, config.gps_error,
-                                 config.vmax, config.factor};
-    GPSReader reader(config.gps_file,config.gps_id,
-                     config.gps_geom,config.gps_timestamp);
+    STMATCH mm_model(network_, ng_);
+    const STMATCHConfig &stmatch_config =
+        config_.stmatch_config;
+    GPSReader reader(config_.gps_config);
     OutputConfig result_config = config.get_result_config();
     IO::CSVMatchResultWriter writer(result_config.file,
                                     result_config.output_config);
 
     // Start map matching
-
     int progress=0;
     int points_matched=0;
     int total_points=0;
@@ -70,6 +66,10 @@ public:
                 points_matched/time_spent_exclude_input)
     SPDLOG_INFO("Time takes {}",time_spent)
   };
+ private:
+  const STMATCHAppConfig &config_;
+  Network network_;
+  NetworkGraph ng_;
 };
 }
 

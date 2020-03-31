@@ -23,10 +23,13 @@ struct TGElement {
   const Candidate *c;
   TGElement *prev;
   double ep;
+  double tp;
   double cumu_prob;
+  double sp_dist;
 };
 
 typedef std::vector<TGElement> TGLayer;
+typedef std::vector<const TGElement*> TGOpath;
 
 class TransitionGraph
 {
@@ -38,7 +41,7 @@ public:
    *  @param traj: raw trajectory
    *  @param ubodt: UBODT table
    */
-  TransitionGraph(const Traj_Candidates &tc, double gps_error); // TransitionGraph
+  TransitionGraph(const Traj_Candidates &tc, double gps_error);
 
   static double calc_tp(double sp_dist,double eu_dist);
 
@@ -49,7 +52,7 @@ public:
 
   const TGElement *find_optimal_candidate(const TGLayer &layer);
 
-  OptCandidatePath backtrack();
+  TGOpath backtrack();
 
   std::vector<TGLayer> &get_layers();
 private:

@@ -36,4 +36,17 @@ GPSConfig GPSConfig::load_from_arg(
   return GPSConfig{file,id,geom,x,y,timestamp};
 };
 
+int GPSConfig::get_gps_format() const {
+  std::string fn_extension = gps_file.substr(
+      gps_file.find_last_of(".") + 1);
+  if (fn_extension == "csv" || fn_extension == "txt") {
+    return 1;
+  } else if (fn_extension == "gpkg" || fn_extension == "shp") {
+    return 0;
+  } else {
+    SPDLOG_CRITICAL("GPS file extension {} unknown",fn_extension);
+    return -1;
+  }
+};
+
 }
