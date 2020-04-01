@@ -171,6 +171,10 @@ std::vector<double> CSVTrajectoryReader::string2time(
   return values;
 }
 
+bool CSVTrajectoryReader::has_timestamp() {
+  return timestamp_idx > 0;
+}
+
 Trajectory CSVTrajectoryReader::read_next_trajectory() {
   // Read the geom idx column into a trajectory
   std::string line;

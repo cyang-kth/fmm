@@ -9,57 +9,55 @@
 #include <boost/archive/binary_oarchive.hpp>
 #include "util/debug.hpp"
 
-
-namespace MM{
+namespace MM {
 
 void UBODTGenApp::run() const {
-  if (!config_.validate())
-  {
+  if (!config_.validate()) {
     SPDLOG_CRITICAL("Validation fail, program stop");
     return;
   };
   config_.print();
   std::chrono::steady_clock::time_point begin =
       std::chrono::steady_clock::now();
-  SPDLOG_INFO("Write UBODT to file {}",config_.result_file)
+  SPDLOG_INFO("Write UBODT to file {}", config_.result_file)
 
   bool binary = config_.is_binary_output();
-  precompute_ubodt(config_.result_file,config_.delta,binary);
+  precompute_ubodt(config_.result_file, config_.delta, binary);
   std::chrono::steady_clock::time_point end =
       std::chrono::steady_clock::now();
   double time_spent =
       std::chrono::duration_cast<std::chrono::milliseconds>
           (end - begin).count() / 1000.;
-  SPDLOG_INFO("Time takes {}",time_spent);
+  SPDLOG_INFO("Time takes {}", time_spent);
 }
 
 void UBODTGenApp::precompute_ubodt(
     const std::string &filename, double delta, bool binary) const {
   int num_vertices = graph_.get_num_vertices();
-  int step_size = num_vertices/10;
-  if (step_size<10) step_size=10;
+  int step_size = num_vertices / 10;
+  if (step_size < 10) step_size = 10;
   std::ofstream myfile(filename);
-  SPDLOG_INFO("Start to generate UBODT with delta {}",delta);
+  SPDLOG_INFO("Start to generate UBODT with delta {}", delta);
   SPDLOG_INFO("Output format {}", (binary ? "binary" : "csv"));
   if (binary) {
     boost::archive::binary_oarchive oa(myfile);
-    for(NodeIndex source = 0; source < num_vertices; ++source)  {
-      if (source%step_size==0)
+    for (NodeIndex source = 0; source < num_vertices; ++source) {
+      if (source % step_size == 0)
         SPDLOG_INFO("Progress {} / {}", source, num_vertices);
       PredecessorMap pmap;
       DistanceMap dmap;
-      graph_.single_source_upperbound_dijkstra(source,delta,&pmap,&dmap);
-      write_result_binary(oa,source,pmap,dmap);
+      graph_.single_source_upperbound_dijkstra(source, delta, &pmap, &dmap);
+      write_result_binary(oa, source, pmap, dmap);
     }
   } else {
     myfile << "source;target;next_n;prev_n;next_e;distance\n";
-    for(NodeIndex source = 0; source < num_vertices; ++source)  {
-      if (source%step_size==0)
-        SPDLOG_INFO("Progress {} / {}",source, num_vertices);
+    for (NodeIndex source = 0; source < num_vertices; ++source) {
+      if (source % step_size == 0)
+        SPDLOG_INFO("Progress {} / {}", source, num_vertices);
       PredecessorMap pmap;
       DistanceMap dmap;
-      graph_.single_source_upperbound_dijkstra(source,delta,&pmap,&dmap);
-      write_result_csv(myfile,source,pmap,dmap);
+      graph_.single_source_upperbound_dijkstra(source, delta, &pmap, &dmap);
+      write_result_csv(myfile, source, pmap, dmap);
     }
   }
   myfile.close();
@@ -68,12 +66,12 @@ void UBODTGenApp::precompute_ubodt(
 // Parallelly generate ubodt using OpenMP
 void UBODTGenApp::precompute_ubodt_omp(
     const std::string &filename, double delta,
-                          bool binary=true) const {
+    bool binary) const {
   int num_vertices = graph_.get_num_vertices();
-  int step_size = num_vertices/10;
-  if (step_size<10) step_size=10;
+  int step_size = num_vertices / 10;
+  if (step_size < 10) step_size = 10;
   std::ofstream myfile(filename);
-  SPDLOG_INFO("Start to generate UBODT with delta {}",delta);
+  SPDLOG_INFO("Start to generate UBODT with delta {}", delta);
   SPDLOG_INFO("Output format {}", (binary ? "binary" : "csv"));
   if (binary) {
     boost::archive::binary_oarchive oa(myfile);
@@ -81,7 +79,7 @@ void UBODTGenApp::precompute_ubodt_omp(
 #pragma omp parallel
     {
 #pragma omp for
-      for(int source = 0; source < num_vertices; ++source) {
+      for (int source = 0; source < num_vertices; ++source) {
         ++progress;
         if (progress % step_size == 0) {
           SPDLOG_INFO("Progress {} / {}", progress, num_vertices);
@@ -89,8 +87,8 @@ void UBODTGenApp::precompute_ubodt_omp(
         PredecessorMap pmap;
         DistanceMap dmap;
         std::stringstream node_output_buf;
-        graph_.single_source_upperbound_dijkstra(source,delta,&pmap,&dmap);
-        write_result_binary(oa,source,pmap,dmap);
+        graph_.single_source_upperbound_dijkstra(source, delta, &pmap, &dmap);
+        write_result_binary(oa, source, pmap, dmap);
       }
     }
   } else {
@@ -99,7 +97,7 @@ void UBODTGenApp::precompute_ubodt_omp(
 #pragma omp parallel
     {
 #pragma omp for
-      for(int source = 0; source < num_vertices; ++source) {
+      for (int source = 0; source < num_vertices; ++source) {
         ++progress;
         if (progress % step_size == 0) {
           SPDLOG_INFO("Progress {} / {}", progress, num_vertices);
@@ -107,8 +105,8 @@ void UBODTGenApp::precompute_ubodt_omp(
         PredecessorMap pmap;
         DistanceMap dmap;
         std::stringstream node_output_buf;
-        graph_.single_source_upperbound_dijkstra(source,delta,&pmap,&dmap);
-        write_result_csv(myfile,source,pmap,dmap);
+        graph_.single_source_upperbound_dijkstra(source, delta, &pmap, &dmap);
+        write_result_csv(myfile, source, pmap, dmap);
       }
     }
   }
@@ -122,12 +120,12 @@ void UBODTGenApp::precompute_ubodt_omp(
    * @param pmap   predecessor map
    * @param dmap   distance map
    */
-void UBODTGenApp::write_result_csv(std::ostream& stream, NodeIndex s,
-                      PredecessorMap &pmap, DistanceMap &dmap) const {
+void UBODTGenApp::write_result_csv(std::ostream &stream, NodeIndex s,
+                                   PredecessorMap &pmap, DistanceMap &dmap) const {
   std::vector<Record> source_map;
-  for (auto iter = pmap.begin(); iter!=pmap.end(); ++iter) {
+  for (auto iter = pmap.begin(); iter != pmap.end(); ++iter) {
     NodeIndex cur_node = iter->first;
-    if (cur_node!=s) {
+    if (cur_node != s) {
       NodeIndex prev_node = iter->second;
       NodeIndex v = cur_node;
       NodeIndex u;
@@ -150,12 +148,12 @@ void UBODTGenApp::write_result_csv(std::ostream& stream, NodeIndex s,
   }
 #pragma omp critical
   for (Record &r:source_map) {
-    stream << r.source<<";"
-           << r.target<<";"
-           << r.first_n<<";"
-           << r.prev_n<<";"
-           << r.next_e<<";"
-           << r.cost<<"\n";
+    stream << r.source << ";"
+           << r.target << ";"
+           << r.first_n << ";"
+           << r.prev_n << ";"
+           << r.next_e << ";"
+           << r.cost << "\n";
   }
 }
 
@@ -168,14 +166,14 @@ void UBODTGenApp::write_result_csv(std::ostream& stream, NodeIndex s,
  * @param pmap   predecessor map
  * @param dmap   distance map
  */
-void UBODTGenApp::write_result_binary(boost::archive::binary_oarchive& stream,
-                         NodeIndex s,
-                         PredecessorMap &pmap,
-                         DistanceMap &dmap) const {
+void UBODTGenApp::write_result_binary(boost::archive::binary_oarchive &stream,
+                                      NodeIndex s,
+                                      PredecessorMap &pmap,
+                                      DistanceMap &dmap) const {
   std::vector<Record> source_map;
-  for (auto iter = pmap.begin(); iter!=pmap.end(); ++iter) {
+  for (auto iter = pmap.begin(); iter != pmap.end(); ++iter) {
     NodeIndex cur_node = iter->first;
-    if (cur_node!=s) {
+    if (cur_node != s) {
       NodeIndex prev_node = iter->second;
       NodeIndex v = cur_node;
       NodeIndex u;
@@ -200,7 +198,7 @@ void UBODTGenApp::write_result_binary(boost::archive::binary_oarchive& stream,
 #pragma omp critical
   for (Record &r:source_map) {
     stream << r.source << r.target
-           << r.first_n << r.prev_n <<r.next_e << r.cost;
+           << r.first_n << r.prev_n << r.next_e << r.cost;
   }
 }
 
