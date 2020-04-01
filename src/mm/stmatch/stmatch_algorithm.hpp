@@ -3,11 +3,32 @@
 
 #include "network/network.hpp"
 #include "network/network_graph.hpp"
-#include "mm/stmatch/stmatch_config.hpp"
 #include "mm/composite_graph.hpp"
 #include "mm/transition_graph.hpp"
 
+#include <string>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/xml_parser.hpp>
+
+#include "cxxopts/cxxopts.hpp"
+
 namespace MM {
+
+struct STMATCHAlgorConfig {
+  int k;
+  double radius;
+  double gps_error;
+  // maximum speed of the vehicle
+  double vmax;
+  // factor multiplied to vmax*deltaT to limit the search of shortest path
+  double factor;
+  bool validate() const;
+  std::string to_string() const;
+  static STMATCHAlgorConfig load_from_xml(
+      const boost::property_tree::ptree &xml_data);
+  static STMATCHAlgorConfig load_from_arg(
+      const cxxopts::ParseResult &arg_data);
+};
 
 class STMATCH {
  public:
@@ -17,12 +38,12 @@ class STMATCH {
   };
   // Procedure of HMM based map matching algorithm.
   MatchResult match_traj(const Trajectory &traj,
-                         const STMATCHConfig &config);
+                         const STMATCHAlgorConfig &config);
  protected:
   void update_tg(TransitionGraph *tg,
                  const CompositeGraph &cg,
                  const Trajectory &traj,
-                 const STMATCHConfig &config);
+                 const STMATCHAlgorConfig &config);
 
   void update_layer(int level, TGLayer *la_ptr, TGLayer *lb_ptr,
                     const CompositeGraph &cg,

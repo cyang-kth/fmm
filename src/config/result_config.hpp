@@ -6,6 +6,7 @@
 #define FMM_SRC_CONFIG_RESULT_CONFIG_HPP_
 
 #include <string>
+#include <set>
 #include "cxxopts/cxxopts.hpp"
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
@@ -43,6 +44,7 @@ struct OutputConfig {
 struct ResultConfig{
   std::string file;
   OutputConfig output_config;
+  bool validate() const;
   std::string to_string() const;
   static std::set<std::string> string2set(const std::string &s);
   static ResultConfig load_from_xml(

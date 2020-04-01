@@ -7,9 +7,49 @@
 
 namespace MM {
 
+std::string STMATCHAlgorConfig::to_string() const {
+  std::stringstream ss;
+  ss<<"k: "<< k << "\n";
+  ss<<"radius: "<< radius << "\n";
+  ss<<"gps_error: "<< gps_error << "\n";
+  ss<<"vmax: "<< vmax << "\n";
+  ss<<"factor: "<< factor << "\n";
+  return ss.str();
+};
+
+STMATCHAlgorConfig STMATCHAlgorConfig::load_from_xml(
+    const boost::property_tree::ptree &xml_data){
+  int k = xml_data.get("fmm_config.parameters.k", 8);
+  double radius = xml_data.get("fmm_config.parameters.r", 300.0);
+  double gps_error = xml_data.get("fmm_config.parameters.gps_error", 50.0);
+  double vmax = xml_data.get("fmm_config.parameters.vmax", 80.0);;
+  double factor = xml_data.get("fmm_config.parameters.factor", 1.5);;
+  return STMATCHAlgorConfig{k, radius, gps_error, vmax, factor};
+};
+
+STMATCHAlgorConfig STMATCHAlgorConfig::load_from_arg(
+    const cxxopts::ParseResult &arg_data){
+  int k = arg_data["candidates"].as<int>();
+  double radius = arg_data["radius"].as<double>();
+  double gps_error = arg_data["error"].as<double>();
+  double vmax = arg_data["vmax"].as<double>();
+  double factor = arg_data["factor"].as<double>();
+  return STMATCHAlgorConfig{k, radius, gps_error, vmax, factor};
+};
+
+bool STMATCHAlgorConfig::validate() const{
+  if (gps_error <= 0 || radius <= 0 || k <= 0 || vmax <=0 || factor<=0 )
+  {
+    SPDLOG_CRITICAL("Invalid mm parameter k {} r {} gps error {} vmax {} f {}",
+                    k,radius,gps_error,vmax,factor);
+    return false;
+  }
+  return true;
+}
+
 // Procedure of HMM based map matching algorithm.
 MatchResult STMATCH::match_traj(const Trajectory &traj,
-                                const STMATCHConfig &config) {
+                                const STMATCHAlgorConfig &config) {
   SPDLOG_TRACE("Count of points in trajectory {}", traj.geom.get_num_points())
   SPDLOG_TRACE("Search candidates")
   Traj_Candidates tc = network_.search_tr_cs_knn(
@@ -54,7 +94,7 @@ MatchResult STMATCH::match_traj(const Trajectory &traj,
 void STMATCH::update_tg(TransitionGraph *tg,
                         const CompositeGraph &cg,
                         const Trajectory &traj,
-                        const STMATCHConfig &config) {
+                        const STMATCHAlgorConfig &config) {
   SPDLOG_TRACE("Update transition graph")
   std::vector<TGLayer> &layers = tg->get_layers();
   std::vector<double> eu_dists = ALGORITHM::cal_eu_dist(traj.geom);

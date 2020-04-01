@@ -17,6 +17,7 @@ struct NetworkConfig{
   std::string id;
   std::string source;
   std::string target;
+  bool validate() const;
   std::string to_string() const;
   static NetworkConfig load_from_xml(
     const boost::property_tree::ptree &xml_data);

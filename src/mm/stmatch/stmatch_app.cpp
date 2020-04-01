@@ -17,7 +17,7 @@ STMATCHApp::STMATCHApp(const STMATCHAppConfig &config) :
 void STMATCHApp::run() {
   UTIL::TimePoint start_time = std::chrono::steady_clock::now();
   STMATCH mm_model(network_, ng_);
-  const STMATCHConfig &stmatch_config =
+  const STMATCHAlgorConfig &stmatch_config =
       config_.stmatch_config;
   IO::GPSReader reader(config_.gps_config);
   IO::CSVMatchResultWriter writer(config_.result_config.file,

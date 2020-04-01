@@ -43,6 +43,10 @@ public:
   std::vector<EdgeIndex> back_track(NodeIndex source, NodeIndex target,
                                     const PredecessorMap &pmap,
                                     const DistanceMap&dmap) const;
+  void single_source_upperbound_dijkstra(NodeIndex source,
+                                         double delta,
+                                         PredecessorMap *pmap,
+                                         DistanceMap *dmap) const;
   /**
    *  Find the edge ID given a pair of nodes and its cost,
    *  if not found, return -1

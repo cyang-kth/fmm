@@ -1,4 +1,4 @@
-#include "mm/fmm/ubodt_config.hpp"
+#include "mm/fmm/ubodt_gen_app_config.hpp"
 #include "util/util.hpp"
 #include "util/debug.hpp"
 
@@ -8,7 +8,7 @@ namespace MM {
  * Configuration class for UBODT
  */
 
-UBODTConfig::UBODTConfig(int argc, char **argv) {
+UBODTGenAppConfig::UBODTGenAppConfig(int argc, char **argv) {
   if (argc == 2) {
     std::string configfile(argv[1]);
     load_xml(configfile);
@@ -20,43 +20,31 @@ UBODTConfig::UBODTConfig(int argc, char **argv) {
   spdlog::set_pattern("[%l][%s:%-3#] %v");
 };
 
-void UBODTConfig::load_xml(const std::string &file) {
+void UBODTGenAppConfig::load_xml(const std::string &file) {
   // Create empty property tree object
   boost::property_tree::ptree tree;
   std::cout << "Read configuration from xml file: " << file << '\n';
   boost::property_tree::read_xml(file, tree);
-  // Parse the XML into the property tree.
-
-  // UBODT configuration
+  network_config = NetworkConfig::load_from_xml(tree);
   delta = tree.get("ubodt_config.parameters.delta", 3000.0);
-
-  // Network
-  network_file = tree.get<std::string>("ubodt_config.input.network.file");
-  network_id = tree.get("ubodt_config.input.network.id", "id");
-  network_source = tree.get("ubodt_config.input.network.source", "source");
-  network_target = tree.get("ubodt_config.input.network.target", "target");
-
-  // Output
   result_file = tree.get<std::string>("ubodt_config.output.file");
-  binary_flag = UTIL::get_file_extension(result_file);
-
   // 0-trace,1-debug,2-info,3-warn,4-err,5-critical,6-off
   log_level = tree.get("ubodt_config.other.log_level", 2);
 };
 
-void initialize_arg(int argc, char **argv) {
+void UBODTGenAppConfig::load_arg(int argc, char **argv) {
   std::cout << "Start reading ubodt configuration from arguments\n";
   cxxopts::Options options("ubodt_config",
                            "Configuration parser of ubodt_gen");
   options.add_options()
-      ("a,network", "Network file name", cxxopts::value<std::string>())
-      ("b,id", "Network id name",
+      ("network", "Network file name", cxxopts::value<std::string>())
+      ("network_id", "Network id name",
        cxxopts::value<std::string>()->default_value("id"))
-      ("c,source", "Network source name",
+      ("source", "Network source name",
        cxxopts::value<std::string>()->default_value("source"))
-      ("t,target", "Network target name",
+      ("target", "Network target name",
        cxxopts::value<std::string>()->default_value("target"))
-      ("d,delta", "Upperbound distance",
+      ("delta", "Upperbound distance",
        cxxopts::value<double>()->default_value("3000.0"))
       ("o,output", "Output file name", cxxopts::value<std::string>())
       ("l,log_level", "Log level", cxxopts::value<int>()->default_value("2"));
@@ -64,32 +52,23 @@ void initialize_arg(int argc, char **argv) {
   auto result = options.parse(argc, argv);
   // Output
   result_file = result["output"].as<std::string>();
-  binary_flag = UTIL::get_file_extension(result_file);
-
-  network_file = result["network"].as<std::string>();
-  network_id = result["id"].as<std::string>();
-  network_source = result["source"].as<std::string>();
-  network_target = result["target"].as<std::string>();
-
+  network_config =  NetworkConfig::load_from_arg(result);
   log_level = result["log_level"].as<int>();
   delta = result["delta"].as<double>();
 };
 
-void print() {
+void UBODTGenAppConfig::print() const {
   std::cout << "------------------------------------------\n";
   std::cout << "UBODT Configuration: \n";
-  std::cout << "  Network_file: " << network_file << '\n';;
-  std::cout << "  Network id: " << network_id << '\n';
-  std::cout << "  Network source: " << network_source << '\n';
-  std::cout << "  Network target: " << network_target << '\n';
+  std::cout <<"---Network Config---\n"<< network_config.to_string() << "\n";
+  std::cout <<"---UBODT Config---\n";
   std::cout << "  delta: " << delta << '\n';
   std::cout << "  Output file:" << result_file << '\n';
-  std::cout << "  Output format(1 binary, 0 csv): " << binary_flag << '\n';
   std::cout << "  log_level:" << LOG_LEVESLS[log_level] << '\n';
   std::cout << "------------------------------------------\n";
 };
 
-static void print_help() {
+void UBODTGenAppConfig::print_help() {
   std::cout << "ubodt_gen argument lists:\n";
   std::cout << "--network (required) <string>: Network file name\n";
   std::cout << "--output (required) <string>: Output file name\n";
@@ -101,27 +80,22 @@ static void print_help() {
   std::cout << "For xml configuration, check example folder\n";
 };
 
-bool validate() {
+bool UBODTGenAppConfig::validate() const {
   SPDLOG_INFO("Validating configuration for UBODT construction");
-  if (!UTIL::fileExists(network_file)) {
-    SPDLOG_CRITICAL("Network file {} not found", network_file);
+  if (!network_config.validate()) {
     return false;
   }
-  if (UTIL::fileExists(result_file)) {
+  if (UTIL::file_exists(result_file)) {
     SPDLOG_WARN("Overwrite result file {}", result_file);
   }
   std::string output_folder = UTIL::get_file_directory(result_file);
-  if (!UTIL::folderExists(output_folder)) {
+  if (!UTIL::folder_exist(output_folder)) {
     SPDLOG_CRITICAL("Output folder {} not exists", output_folder);
     return false;
   }
   if (log_level < 0 || log_level > LOG_LEVESLS.size()) {
     SPDLOG_CRITICAL("Invalid log_level {}, which should be 0 - 6", log_level);
     SPDLOG_INFO("0-trace,1-debug,2-info,3-warn,4-err,5-critical,6-off");
-    return false;
-  }
-  if (binary_flag == 2) {
-    SPDLOG_CRITICAL("UBODT file extension not recognized");
     return false;
   }
   if (delta <= 0) {
@@ -131,5 +105,12 @@ bool validate() {
   SPDLOG_INFO("Validating done.");
   return true;
 };
+
+bool UBODTGenAppConfig::is_binary_output() const {
+  if (UTIL::check_file_extension(result_file,"bin")){
+    return true;
+  }
+  return false;
+}
 
 }

@@ -28,7 +28,7 @@ void STMATCHAppConfig::load_xml(const std::string &file){
   network_config = NetworkConfig::load_from_xml(tree);
   gps_config = GPSConfig::load_from_xml(tree);
   result_config = ResultConfig::load_from_xml(tree);
-  stmatch_config = STMATCHConfig::load_from_xml(tree);
+  stmatch_config = STMATCHAlgorConfig::load_from_xml(tree);
   log_level = tree.get("mm_config.other.log_level",2);
   step =  tree.get("mm_config.other.step",100);
   std::cout<<"Finish with reading stmatch xml configuration.\n";
@@ -69,7 +69,7 @@ void STMATCHAppConfig::load_arg(int argc, char **argv){
   network_config = NetworkConfig::load_from_arg(result);
   gps_config = GPSConfig::load_from_arg(result);
   result_config = ResultConfig::load_from_arg(result);
-  stmatch_config = STMATCHConfig::load_from_arg(result);
+  stmatch_config = STMATCHAlgorConfig::load_from_arg(result);
   log_level = result["log_level"].as<int>();
   step = result["step"].as<int>();
   std::cout<<"Finish with reading stmatch arg configuration\n";
@@ -104,6 +104,21 @@ void STMATCHAppConfig::print_help(){
   std::cout<<"  offset,error,spdist,tp,ep,length,all\n";
   std::cout<<"--log_level (optional) <int>: log level (2)\n";
   std::cout<<"For xml configuration, check example folder\n";
+}
+bool STMATCHAppConfig::validate() const {
+  if (!gps_config.validate()){
+    return false;
+  }
+  if (!result_config.validate()){
+    return false;
+  }
+  if (!network_config.validate()){
+    return false;
+  }
+  if (!stmatch_config.validate()){
+    return false;
+  }
+  return true;
 };
 
 

@@ -57,8 +57,10 @@ double meter2degree(double dist_meter);
  * Check if the file exists or not
  */
 bool file_exists(const char *filename);
-
 bool file_exists(const std::string &filename);
+bool folder_exist(const std::string &folder_name);
+std::string get_file_directory(const std::string &fn);
+
 
 bool string2bool(const std::string &str);
 

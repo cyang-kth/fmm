@@ -8,7 +8,7 @@
 #include "config/gps_config.hpp"
 #include "config/network_config.hpp"
 #include "config/result_config.hpp"
-#include "mm/stmatch/stmatch_config.hpp"
+#include "mm/stmatch/stmatch_algorithm.hpp"
 
 namespace MM{
 
@@ -27,7 +27,7 @@ class STMATCHAppConfig
   NetworkConfig network_config;
   GPSConfig gps_config;
   ResultConfig result_config;
-  STMATCHConfig stmatch_config;
+  STMATCHAlgorConfig stmatch_config;
   // 0-trace,1-debug,2-info,3-warn,4-err,5-critical,6-off
   int log_level;
   int step;

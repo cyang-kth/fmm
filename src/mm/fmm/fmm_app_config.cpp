@@ -29,7 +29,7 @@ void FMMAppConfig::load_xml(const std::string &file){
   network_config = NetworkConfig::load_from_xml(tree);
   gps_config = GPSConfig::load_from_xml(tree);
   result_config = ResultConfig::load_from_xml(tree);
-  fmm_config = FMMConfig::load_from_xml(tree);
+  fmm_config = FMMAlgorConfig::load_from_xml(tree);
 
   // UBODT
   ubodt_file = tree.get<std::string>("mm_config.input.ubodt.file");
@@ -71,7 +71,7 @@ void FMMAppConfig::load_arg(int argc, char **argv){
   network_config = NetworkConfig::load_from_arg(result);
   gps_config = GPSConfig::load_from_arg(result);
   result_config = ResultConfig::load_from_arg(result);
-  fmm_config = FMMConfig::load_from_arg(result);
+  fmm_config = FMMAlgorConfig::load_from_arg(result);
   log_level = result["log_level"].as<int>();
   step = result["step"].as<int>();
   std::cout<<"Finish with reading FMM arg configuration\n";
@@ -108,51 +108,29 @@ void FMMAppConfig::print() const {
 bool FMMAppConfig::validate() const
 {
   SPDLOG_INFO("Validating configuration");
-
-  if (binary_flag==2) {
-    SPDLOG_CRITICAL("UBODT file extension not recognized");
-    return false;
-  }
   if (log_level<0 || log_level>LOG_LEVESLS.size()) {
     SPDLOG_CRITICAL("Invalid log_level {}, which should be 0 - 6",log_level);
     SPDLOG_INFO("0-trace,1-debug,2-info,3-warn,4-err,5-critical,6-off");
     return false;
   }
-  if (UTIL::file_exists(result_file))
-  {
-    SPDLOG_WARN("Overwrite existing result file {}",result_file);
-  };
-  std::string output_folder = UTIL::get_file_directory(result_file);
-  if (!UTIL::folderExists(output_folder)) {
-    SPDLOG_CRITICAL("Output folder {} not exists",output_folder);
+  if (!gps_config.validate()){
     return false;
   }
-  if (gps_error <= 0 || radius <= 0 || k <= 0)
-  {
-    SPDLOG_CRITICAL("Invalid mm parameter k {} r {} gps error {}",
-                    k,radius,gps_error);
+  if (!result_config.validate()){
     return false;
   }
-  // Check the definition of parameters search radius and gps error
-  if (radius / gps_error > 10) {
-    SPDLOG_CRITICAL("Too large radius {} compared with gps error {}",
-                    radius,gps_error);
+  if (!network_config.validate()){
+    return false;
+  }
+  if (!fmm_config.validate()){
+    return false;
+  }
+  if (!UTIL::file_exists(ubodt_file)){
+    SPDLOG_CRITICAL("UBODT file not exists {}", ubodt_file);
     return false;
   }
   SPDLOG_INFO("Validating done");
   return true;
-};
-
-static std::set<std::string> string2set(const std::string &s,
-                                        char delim=','){
-  std::set<std::string> result;
-  std::stringstream ss(s);
-  std::string intermediate;
-  while(getline(ss, intermediate, delim))
-  {
-    result.insert(intermediate);
-  }
-  return result;
 };
 
 }

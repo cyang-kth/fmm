@@ -1,4 +1,6 @@
 #include "config/network_config.hpp"
+#include "util/util.hpp"
+#include "util/debug.hpp"
 
 namespace MM {
 
@@ -28,4 +30,12 @@ NetworkConfig NetworkConfig::load_from_arg(
   std::string target = arg_data["target"].as<std::string>();
   return NetworkConfig{file,id,source,target};
 };
+
+bool NetworkConfig::validate() const {
+  if (!UTIL::file_exists(file)){
+    SPDLOG_CRITICAL("Network file not found {}",file)
+    return false;
+  }
+  return true;
+}
 }

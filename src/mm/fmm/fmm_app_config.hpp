@@ -8,7 +8,7 @@
 #include "config/gps_config.hpp"
 #include "config/network_config.hpp"
 #include "config/result_config.hpp"
-#include "mm/fmm/fmm_config.hpp"
+#include "mm/fmm/fmm_algorithm.hpp"
 
 namespace MM{
 
@@ -27,7 +27,7 @@ class FMMAppConfig
   NetworkConfig network_config;
   GPSConfig gps_config;
   ResultConfig result_config;
-  FMMConfig fmm_config;
+  FMMAlgorConfig fmm_config;
   // UBODT configurations
   std::string ubodt_file;
   // 0-trace,1-debug,2-info,3-warn,4-err,5-critical,6-off

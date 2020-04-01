@@ -9,9 +9,26 @@
 #include "network/network_graph.hpp"
 #include "mm/transition_graph.hpp"
 #include "mm/fmm/ubodt.hpp"
-#include "mm/fmm/fmm_config.hpp"
+
+#include <string>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/xml_parser.hpp>
+
+#include "cxxopts/cxxopts.hpp"
 
 namespace MM {
+
+struct FMMAlgorConfig{
+  int k;
+  double radius;
+  double gps_error;
+  bool validate () const;
+  std::string to_string() const;
+  static FMMAlgorConfig load_from_xml(
+      const boost::property_tree::ptree &xml_data);
+  static FMMAlgorConfig load_from_arg(
+      const cxxopts::ParseResult &arg_data);
+};
 
 class FMM {
  public:
@@ -21,14 +38,14 @@ class FMM {
   };
   // Procedure of HMM based map matching algorithm.
   MatchResult match_traj(const Trajectory &traj,
-                         const FMMConfig &config);
+                         const FMMAlgorConfig &config);
  protected:
   double get_sp_dist(const Candidate *ca,
                      const Candidate *cb);
   // Update the transition graph
   void update_tg(TransitionGraph *tg,
                  const Trajectory &traj,
-                 const FMMConfig &config);
+                 const FMMAlgorConfig &config);
 
   void update_layer(int level, TGLayer *la_ptr, TGLayer *lb_ptr,
                     double eu_dist);

@@ -1,4 +1,6 @@
 #include "config/result_config.hpp"
+#include "util/util.hpp"
+#include "util/debug.hpp"
 #include <set>
 
 namespace MM {
@@ -170,6 +172,18 @@ std::set<std::string> ResultConfig::string2set(
     result.insert(intermediate);
   }
   return result;
+}
+bool ResultConfig::validate() const {
+  if (UTIL::file_exists(file))
+  {
+    SPDLOG_WARN("Overwrite existing result file {}",file);
+  };
+  std::string output_folder = UTIL::get_file_directory(file);
+  if (!UTIL::folder_exist(output_folder)) {
+    SPDLOG_CRITICAL("Output folder {} not exists",output_folder);
+    return false;
+  }
+  return true;
 };
 
 }

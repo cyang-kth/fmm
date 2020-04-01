@@ -168,5 +168,23 @@ bool check_file_extension(const std::string &filename,
   return result;
 }
 
+bool folder_exist(const std::string &folder_name)
+{
+  if (folder_name.empty()) return true;
+  struct stat sb;
+  if (stat(folder_name.c_str(),&sb) == 0 && S_ISDIR(sb.st_mode)) {
+    return true;
+  }
+  return false;
+}
+
+std::string get_file_directory(const std::string &fn){
+  std::size_t found = fn.find_last_of("/");
+  if (found!=std::string::npos){
+    return fn.substr(0,found);
+  }
+  return {};
+};
+
 } // Util
 } // MM

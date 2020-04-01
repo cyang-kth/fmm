@@ -82,3 +82,6 @@ _deps
 
 *.bin
 *.binary
+
+# bash file to sync file
+sync.sh

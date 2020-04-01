@@ -57,8 +57,8 @@ add_library(IO OBJECT ${IOGlob})
 add_library(MM OBJECT ${MMGlob})
 add_library(UTIL OBJECT ${UtilGlob})
 add_library(NETWORK OBJECT ${NetworkGlob})
-add_library(FMM OBJECT ${FMMGlob} ${MMGlob})
-add_library(STMATCH OBJECT ${MMGlob} ${STMATCHGlob})
+add_library(FMM OBJECT ${FMMGlob})
+add_library(STMATCH OBJECT ${STMATCHGlob})
 
 add_executable(fmm src/app/fmm.cpp
         $<TARGET_OBJECTS:MM>
@@ -72,7 +72,7 @@ add_executable(fmm src/app/fmm.cpp
 target_link_libraries(fmm ${GDAL_LIBRARIES} ${Boost_LIBRARIES}
         ${OpenMP_CXX_LIBRARIES})
 
-add_executable(ubodt_gen src/app/ubodt_gen.cpp
+add_executable(ubodt_gen src/app/ubodt_gen_app.cpp
         $<TARGET_OBJECTS:MM>
         $<TARGET_OBJECTS:CORE>
         $<TARGET_OBJECTS:CONFIG>
