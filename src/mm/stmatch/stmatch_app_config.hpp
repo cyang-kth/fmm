@@ -30,6 +30,7 @@ class STMATCHAppConfig
   STMATCHConfig stmatch_config;
   // 0-trace,1-debug,2-info,3-warn,4-err,5-critical,6-off
   int log_level;
+  int step;
 }; // STMATCHAppConfig
 
 }

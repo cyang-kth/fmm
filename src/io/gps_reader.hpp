@@ -11,6 +11,7 @@
 #define MM_GPS_READER_HPP
 
 #include "core/gps.hpp"
+#include "config/gps_config.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -114,6 +115,30 @@ class CSVPointReader : public ITrajectoryReader {
   int timestamp_idx = -1;
   char delim = ';';
 }; // CSVTemporalTrajectoryReader
+
+class GPSReader {
+ public:
+  GPSReader(const GPSConfig &config);
+  inline Trajectory read_next_trajectory(){
+    return reader->read_next_trajectory();
+  };
+  inline bool has_next_feature(){
+    return reader->has_next_feature();
+  };
+
+  inline std::vector<Trajectory> read_next_N_trajectories(int N){
+    return reader->read_next_N_trajectories(N);
+  };
+
+  inline std::vector<Trajectory> read_all_trajectories(){
+    return reader->read_all_trajectories();
+  };
+
+ private:
+  std::shared_ptr<ITrajectoryReader> reader;
+  // 0 for GDAL, 1 for CSV, -1 for unknown
+  int mode;
+};
 
 } // IO
 } // MM

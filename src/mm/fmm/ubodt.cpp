@@ -2,7 +2,7 @@
 // Created by Can Yang on 2020/3/22.
 //
 
-#include "ubodt.h"
+#include "mm/fmm/ubodt.hpp"
 #include "util/util.hpp"
 #include <fstream>
 #include <boost/archive/binary_iarchive.hpp>
@@ -80,26 +80,36 @@ std::vector<EdgeIndex> UBODT::look_sp_path(NodeIndex source,
  * path implying complete path cannot be found in UBDOT,
  * an empty path is returned
  */
-C_Path UBODT::construct_complete_path(const OptCandidatePath &path,
-                                      const std::vector<Edge> &edges) const {
+C_Path UBODT::construct_complete_path(const TGOpath &path,
+                                      const std::vector<Edge> &edges,
+                                      std::vector<int> *indices) const {
   C_Path cpath;
+  if (!indices->empty()) indices->clear();
   if (path.empty()) return cpath;
   int N = path.size();
-  cpath.push_back(path[0]->edge->id);
+  cpath.push_back(path[0]->c->edge->id);
+  int current_idx = 0;
+  indices->push_back(current_idx);
   for (int i = 0; i < N - 1; ++i) {
-    const Candidate *a = path[i];
-    const Candidate *b = path[i + 1];
+    const Candidate *a = path[i]->c;
+    const Candidate *b = path[i + 1]->c;
     if ((a->edge->id != b->edge->id) || (a->offset > b->offset)) {
       // segs stores edge index
       auto segs = look_sp_path(a->edge->target, b->edge->source);
       // No transition exist in UBODT
       if (segs.empty() && a->edge->target != b->edge->source) {
+        indices->clear();
         return C_Path();
       }
       for (int e:segs) {
         cpath.push_back(edges[e].id);
+        ++current_idx;
       }
       cpath.push_back(b->edge->id);
+      ++current_idx;
+      indices->push_back(current_idx);
+    } else {
+      indices->push_back(current_idx);
     }
   }
   return cpath;

@@ -328,8 +328,25 @@ void CSVPointReader::close() {
 }
 
 bool CSVPointReader::has_timestamp() {
-  return timestamp_idx>0;
+  return timestamp_idx > 0;
 }
+
+GPSReader::GPSReader(const GPSConfig &config) {
+  mode = config.get_gps_format();
+  if (mode == 0) {
+    reader = std::make_shared<GDALTrajectoryReader>
+        (config.file, config.id,config.timestamp);
+  } else if (mode == 1) {
+    reader = std::make_shared<CSVTrajectoryReader>
+        (config.file, config.id, config.geom, config.timestamp);
+  } else if (mode == 2) {
+    reader = std::make_shared<CSVPointReader>
+        (config.file, config.id, config.x, config.y, config.timestamp);
+  } else {
+    SPDLOG_CRITICAL("Unrecognized GPS format");
+    std::exit(EXIT_FAILURE);
+  }
+};
 
 } // IO
 } // MM

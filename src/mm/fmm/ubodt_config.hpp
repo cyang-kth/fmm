@@ -1,7 +1,14 @@
-class UBODT_Config
+#ifndef MM_FMM_UBODT_CONFIG
+#define MM_FMM_UBODT_CONFIG
+
+#include "config/network_config.hpp"
+
+namespace MM{
+
+class UBODTConfig
 {
-public:
-  UBODT_Config(int argc, char **argv);
+ public:
+  UBODTConfig(int argc, char **argv);
   void load_xml(const std::string &file);
   void load_arg(int argc, char **argv);
   void print() const;
@@ -12,3 +19,7 @@ public:
   std::string result_file;
   int log_level;
 }; // UBODT_Config
+
+}
+
+#endif

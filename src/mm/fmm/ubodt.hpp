@@ -6,6 +6,7 @@
 #define MM_SRC_MM_FMM_UBODT_H_
 
 #include "network/type.hpp"
+#include "mm/transition_graph.hpp"
 #include "util/debug.hpp"
 
 namespace MM {
@@ -46,9 +47,9 @@ class UBODT {
    * path implying complete path cannot be found in UBDOT,
    * an empty path is returned
    */
-  C_Path construct_complete_path(const OptCandidatePath &path,
-                                 const std::vector<Edge> &edges) const;
-
+  C_Path construct_complete_path(const TGOpath &path,
+                                 const std::vector<Edge> &edges,
+                                 std::vector<int> *indices) const;
   double get_delta() const;
 
   unsigned int cal_bucket_index(NodeIndex source, NodeIndex target) const;

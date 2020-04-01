@@ -32,6 +32,7 @@ class FMMAppConfig
   std::string ubodt_file;
   // 0-trace,1-debug,2-info,3-warn,4-err,5-critical,6-off
   int log_level;
+  int step = 1;
 }; // FMMAppConfig
 
 }

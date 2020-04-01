@@ -23,19 +23,31 @@ MatchResult FMM::match_traj(const MM::Trajectory &traj,
   // The network will be used internally to update transition graph
   update_tg(&tg, traj, config);
   SPDLOG_TRACE("Optimal path inference")
-  TGOpath oc_path = tg.backtrack();
-  SPDLOG_TRACE("Optimal path size {}", oc_path.size())
-  O_Path opath(oc_path.size());
-  std::transform(oc_path.begin(), oc_path.end(), opath.begin(),
-                 [](const Candidate *a) {
-                   return a->edge->id;
+  TGOpath tg_opath = tg.backtrack();
+  SPDLOG_TRACE("Optimal path size {}", tg_opath.size())
+  MatchedCandidatePath matched_candidate_path(tg_opath.size());
+  std::transform(tg_opath.begin(), tg_opath.end(),
+                 matched_candidate_path.begin(),
+                 [](const TGElement *a) {
+                   return MatchedCandidate{
+                       a->c, a->ep, a->tp, a->sp_dist
+                   };
                  });
+  O_Path opath(tg_opath.size());
+  std::transform(tg_opath.begin(), tg_opath.end(),
+                 opath.begin(),
+                 [](const TGElement *a) {
+                   return a->c->edge->id;
+                 });
+  std::vector<int> indices;
   const std::vector<Edge> &edges = network_.get_edges();
-  C_Path cpath = ubodt_.construct_complete_path(oc_path,edges);
+  C_Path cpath = ubodt_.construct_complete_path(tg_opath,edges,
+      &indices);
   SPDLOG_TRACE("Complete path inference")
   LineString mgeom = network_.complete_path_to_geometry(
       traj.geom, cpath);
-  return MatchResult{traj.id, opath, cpath, mgeom};
+  return MatchResult{
+      traj.id, matched_candidate_path, opath, cpath, indices, mgeom};
 }
 
 double FMM::get_sp_dist(const MM::Candidate *ca, const MM::Candidate *cb) {

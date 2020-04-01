@@ -26,22 +26,29 @@ MatchResult STMATCH::match_traj(const Trajectory &traj,
   // The network will be used internally to update transition graph
   update_tg(&tg, cg, traj, config);
   SPDLOG_TRACE("Optimal path inference")
-  TGOpath oc_path = tg.backtrack();
-  SPDLOG_TRACE("Optimal path size {}", oc_path.size())
-  MatchedCandidatePath matched_candidate_path(oc_path.size());
-  std::transform(oc_path.begin(), oc_path.end(),
+  TGOpath tg_opath = tg.backtrack();
+  SPDLOG_TRACE("Optimal path size {}", tg_opath.size())
+  MatchedCandidatePath matched_candidate_path(tg_opath.size());
+  std::transform(tg_opath.begin(), tg_opath.end(),
                  matched_candidate_path.begin(),
                  [](const TGElement *a) {
                    return MatchedCandidate{
                        a->c, a->ep, a->tp, a->sp_dist
                    };
                  });
-  C_Path cpath = build_cpath(oc_path);
+  O_Path opath(tg_opath.size());
+  std::transform(tg_opath.begin(), tg_opath.end(),
+                 opath.begin(),
+                 [](const TGElement *a) {
+                   return a->c->edge->id;
+                 });
+  std::vector<int> indices;
+  C_Path cpath = build_cpath(tg_opath, &indices);
   SPDLOG_TRACE("Complete path inference")
   LineString mgeom = network_.complete_path_to_geometry(
       traj.geom, cpath);
   return MatchResult{
-      traj.id, matched_candidate_path, opath, cpath, mgeom};
+      traj.id, matched_candidate_path, opath, cpath, indices, mgeom};
 }
 
 void STMATCH::update_tg(TransitionGraph *tg,
@@ -174,13 +181,17 @@ std::vector<double> STMATCH::shortest_path_upperbound(
   return distances;
 }
 
-C_Path STMATCH::build_cpath(const TGOpath &opath) {
+C_Path STMATCH::build_cpath(const TGOpath &opath, std::vector<int> *indices) {
   SPDLOG_TRACE("Build cpath from optimal candidate path")
   C_Path cpath;
+  if (!indices->empty()) indices->clear();
   if (opath.empty()) return cpath;
   const std::vector<Edge> &edges = network_.get_edges();
   int N = opath.size();
   cpath.push_back(opath[0]->c->edge->id);
+  int current_idx = 0;
+  indices->push_back(current_idx);
+  ++current_idx;
   for (int i = 0; i < N - 1; ++i) {
     const Candidate *a = opath[i]->c;
     const Candidate *b = opath[i + 1]->c;
@@ -188,15 +199,21 @@ C_Path STMATCH::build_cpath(const TGOpath &opath) {
     if ((a->edge->id != b->edge->id) || (a->offset > b->offset)) {
       auto segs = graph_.shortest_path_dijkstra(a->edge->target,
                                                 b->edge->source);
-      // No transition exist in UBODT
+      // No transition found
       if (segs.empty() && a->edge->target != b->edge->source) {
+        indices->clear();
         return {};
       }
       // SPDLOG_TRACE("Edges found {}",segs);
       for (int e:segs) {
         cpath.push_back(edges[e].id);
+        ++current_idx;
       }
       cpath.push_back(b->edge->id);
+      ++current_idx;
+      indices->push_back(current_idx);
+    } else {
+      indices->push_back(current_idx);
     }
   }
   // SPDLOG_INFO("Build cpath from optimal candidate path done");

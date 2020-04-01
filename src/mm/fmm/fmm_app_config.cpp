@@ -34,6 +34,7 @@ void FMMAppConfig::load_xml(const std::string &file){
   // UBODT
   ubodt_file = tree.get<std::string>("mm_config.input.ubodt.file");
   log_level = tree.get("mm_config.other.log_level",2);
+  step =  tree.get("mm_config.other.step",100);
   std::cout<<"Finish with reading FMM xml configuration.\n";
 };
 
@@ -62,7 +63,8 @@ void FMMAppConfig::load_arg(int argc, char **argv){
        cxxopts::value<double>()->default_value("50.0"))
       ("output","Output file name", cxxopts::value<std::string>())
       ("output_fields","Output fields", cxxopts::value<std::string>())
-      ("l,log_level","Log level",cxxopts::value<int>()->default_value("2"));
+      ("l,log_level","Log level",cxxopts::value<int>()->default_value("2"))
+      ("step","Step report",cxxopts::value<int>()->default_value("100"));
 
   auto result = options.parse(argc, argv);
   ubodt_file = result["ubodt"].as<std::string>();
@@ -71,6 +73,7 @@ void FMMAppConfig::load_arg(int argc, char **argv){
   result_config = ResultConfig::load_from_arg(result);
   fmm_config = FMMConfig::load_from_arg(result);
   log_level = result["log_level"].as<int>();
+  step = result["step"].as<int>();
   std::cout<<"Finish with reading FMM arg configuration\n";
 };
 
@@ -105,25 +108,7 @@ void FMMAppConfig::print() const {
 bool FMMAppConfig::validate() const
 {
   SPDLOG_INFO("Validating configuration");
-  if (!UTIL::file_exists(gps_file))
-  {
-    SPDLOG_CRITICAL("GPS file {} not found",gps_file);
-    return false;
-  };
-  if (get_gps_format()<0) {
-    SPDLOG_CRITICAL("Unknown GPS format");
-    return false;
-  }
-  if (!UTIL::file_exists(network_file))
-  {
-    SPDLOG_CRITICAL("Network file {} not found",network_file);
-    return false;
-  };
-  if (!UTIL::file_exists(ubodt_file))
-  {
-    SPDLOG_CRITICAL("UBODT file {} not found",ubodt_file);
-    return false;
-  };
+
   if (binary_flag==2) {
     SPDLOG_CRITICAL("UBODT file extension not recognized");
     return false;

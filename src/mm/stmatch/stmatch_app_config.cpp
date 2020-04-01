@@ -25,15 +25,12 @@ void STMATCHAppConfig::load_xml(const std::string &file){
   // Create empty property tree object
   boost::property_tree::ptree tree;
   boost::property_tree::read_xml(file, tree);
-  // UBODT
-  ubodt_file = tree.get<std::string>("mm_config.input.ubodt.file");
-
-  network_config = NetworkConfig::load_from_xml();
-  gps_config = GPSConfig::load_from_xml();
-  result_config = ResultConfig::load_from_xml();
-  stmatch_config = STMATCHAppConfig::load_from_xml();
-
+  network_config = NetworkConfig::load_from_xml(tree);
+  gps_config = GPSConfig::load_from_xml(tree);
+  result_config = ResultConfig::load_from_xml(tree);
+  stmatch_config = STMATCHConfig::load_from_xml(tree);
   log_level = tree.get("mm_config.other.log_level",2);
+  step =  tree.get("mm_config.other.step",100);
   std::cout<<"Finish with reading stmatch xml configuration.\n";
 };
 
@@ -65,19 +62,20 @@ void STMATCHAppConfig::load_arg(int argc, char **argv){
        cxxopts::value<double>()->default_value("1.5"))
       ("o,output","Output file name", cxxopts::value<std::string>())
       ("m,output_fields","Output fields", cxxopts::value<std::string>())
-      ("l,log_level","Log level",cxxopts::value<int>()->default_value("2"));
+      ("l,log_level","Log level",cxxopts::value<int>()->default_value("2"))
+      ("step","Step report",cxxopts::value<int>()->default_value("100"));
 
   auto result = options.parse(argc, argv);
-  ubodt_file = result["ubodt"].as<std::string>();
   network_config = NetworkConfig::load_from_arg(result);
   gps_config = GPSConfig::load_from_arg(result);
   result_config = ResultConfig::load_from_arg(result);
   stmatch_config = STMATCHConfig::load_from_arg(result);
-
+  log_level = result["log_level"].as<int>();
+  step = result["step"].as<int>();
   std::cout<<"Finish with reading stmatch arg configuration\n";
 };
 
-void STMATCHAppConfig::print(){
+void STMATCHAppConfig::print() const {
   std::cout<<"---Network Config---\n"<< network_config.to_string() << "\n";
   std::cout<<"---GPS Config---\n"<< gps_config.to_string() << "\n";
   std::cout<<"---Result Config---\n"<< result_config.to_string() << "\n";

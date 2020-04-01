@@ -28,7 +28,7 @@ class FMM {
   // Update the transition graph
   void update_tg(TransitionGraph *tg,
                  const Trajectory &traj,
-                 const MMConfig &config);
+                 const FMMConfig &config);
 
   void update_layer(int level, TGLayer *la_ptr, TGLayer *lb_ptr,
                     double eu_dist);

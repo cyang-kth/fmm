@@ -41,8 +41,15 @@ class STMATCH {
       int level,
       const CompositeGraph &cg, NodeIndex source,
       const std::vector<NodeIndex> &targets, double delta);
-
-  C_Path build_cpath(const TGOpath &opath);
+  /**
+   * Create a complete path from the optimal element path in the transition
+   * graph
+   * @param tg_opath a vector of TGElement* in transition graph
+   * @param indices the indices to be updated to store the index of matched
+   * edge in the cpath.
+   * @return a complete path traversed by the trajectory
+   */
+  C_Path build_cpath(const TGOpath &tg_opath, std::vector<int> *indices);
  private:
   const Network &network_;
   const NetworkGraph &graph_;

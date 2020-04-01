@@ -5,8 +5,8 @@ namespace MM {
 
 std::string ResultConfig::to_string() const {
   std::stringstream ss;
-  ss<<"Output file: "<< file << "\n";
-  ss<<"Output fields: ";
+  ss << "Output file: " << file << "\n";
+  ss << "Output fields: ";
   if (output_config.write_ogeom)
     ss << " ogeom ";
   if (output_config.write_opath)
@@ -35,7 +35,7 @@ std::string ResultConfig::to_string() const {
 };
 
 ResultConfig ResultConfig::load_from_xml(
-  const boost::property_tree::ptree &xml_data){
+    const boost::property_tree::ptree &xml_data) {
   ResultConfig config;
   config.file = xml_data.get<std::string>("fmm_config.output.file");
   if (xml_data.get_child_optional("fmm_config.output.fields")) {
@@ -80,7 +80,7 @@ ResultConfig ResultConfig::load_from_xml(
       config.output_config.write_length = true;
     }
     if (xml_data.get_child_optional("fmm_config.output.fields.all")) {
-      config.output_config.write_ogeom= true;
+      config.output_config.write_ogeom = true;
       config.output_config.write_opath = true;
       config.output_config.write_pgeom = true;
       config.output_config.write_offset = true;
@@ -98,52 +98,52 @@ ResultConfig ResultConfig::load_from_xml(
 };
 
 ResultConfig ResultConfig::load_from_arg(
-  const cxxopts::ParseResult &arg_data){
+    const cxxopts::ParseResult &arg_data) {
   ResultConfig config;
-  config.file = result["output"].as<std::string>();
-  if (result.count("output_fields")>0) {
+  config.file = arg_data["output"].as<std::string>();
+  if (arg_data.count("output_fields") > 0) {
     config.output_config.write_cpath = false;
     config.output_config.write_mgeom = false;
-    std::string fields = result["output_fields"].as<std::string>();
+    std::string fields = arg_data["output_fields"].as<std::string>();
     std::set<std::string> dict = string2set(fields);
-    if (dict.find("opath")!=dict.end()) {
+    if (dict.find("opath") != dict.end()) {
       config.output_config.write_opath = true;
     }
-    if (dict.find("cpath")!=dict.end()) {
+    if (dict.find("cpath") != dict.end()) {
       config.output_config.write_cpath = true;
     }
-    if (dict.find("mgeom")!=dict.end()) {
+    if (dict.find("mgeom") != dict.end()) {
       config.output_config.write_mgeom = true;
     }
-    if (dict.find("ogeom")!=dict.end()) {
+    if (dict.find("ogeom") != dict.end()) {
       config.output_config.write_ogeom = true;
     }
-    if (dict.find("tpath")!=dict.end()) {
+    if (dict.find("tpath") != dict.end()) {
       config.output_config.write_tpath = true;
     }
-    if (dict.find("pgeom")!=dict.end()) {
+    if (dict.find("pgeom") != dict.end()) {
       config.output_config.write_pgeom = true;
     }
-    if (dict.find("offset")!=dict.end()) {
+    if (dict.find("offset") != dict.end()) {
       config.output_config.write_offset = true;
     }
-    if (dict.find("error")!=dict.end()) {
+    if (dict.find("error") != dict.end()) {
       config.output_config.write_error = true;
     }
-    if (dict.find("spdist")!=dict.end()) {
+    if (dict.find("spdist") != dict.end()) {
       config.output_config.write_spdist = true;
     }
-    if (dict.find("ep")!=dict.end()) {
+    if (dict.find("ep") != dict.end()) {
       config.output_config.write_ep = true;
     }
-    if (dict.find("tp")!=dict.end()) {
+    if (dict.find("tp") != dict.end()) {
       config.output_config.write_tp = true;
     }
-    if (dict.find("length")!=dict.end()) {
+    if (dict.find("length") != dict.end()) {
       config.output_config.write_length = true;
     }
-    if (dict.find("all")!=dict.end()) {
-      config.output_config.write_ogeom= true;
+    if (dict.find("all") != dict.end()) {
+      config.output_config.write_ogeom = true;
       config.output_config.write_opath = true;
       config.output_config.write_pgeom = true;
       config.output_config.write_offset = true;
@@ -159,4 +159,17 @@ ResultConfig ResultConfig::load_from_arg(
   }
   return config;
 };
+
+std::set<std::string> ResultConfig::string2set(
+    const std::string &s) {
+  char delim = ',';
+  std::set<std::string> result;
+  std::stringstream ss(s);
+  std::string intermediate;
+  while (getline(ss, intermediate, delim)) {
+    result.insert(intermediate);
+  }
+  return result;
+};
+
 }

@@ -1,4 +1,6 @@
 #include "config/gps_config.hpp"
+#include "util/util.hpp"
+#include "util/debug.hpp"
 
 namespace MM {
 
@@ -15,32 +17,38 @@ std::string GPSConfig::to_string() const{
 
 GPSConfig GPSConfig::load_from_xml(
   const boost::property_tree::ptree &xml_data){
-  std::string file = tree.get<std::string>("fmm_config.input.gps.file");
-  std::string id = tree.get("fmm_config.input.gps.id", "id");
-  std::string geom = tree.get("fmm_config.input.gps.geom", "geom");
-  std::string timestamp = tree.get("fmm_config.input.gps.timestamp",
+  GPSConfig config;
+  config.file = xml_data.get<std::string>("fmm_config.input.gps.file");
+  config.id = xml_data.get("fmm_config.input.gps.id", "id");
+  config.geom = xml_data.get("fmm_config.input.gps.geom", "geom");
+  config.timestamp = xml_data.get("fmm_config.input.gps.timestamp",
   "timestamp");
-  std::string x = tree.get("fmm_config.input.gps.x", "x");
-  std::string y = tree.get("fmm_config.input.gps.y", "y");
-  return GPSConfig{file,id,geom,x,y,timestamp};
+  config.x = xml_data.get("fmm_config.input.gps.x", "x");
+  config.y = xml_data.get("fmm_config.input.gps.y", "y");
+  return config;
 };
 
 GPSConfig GPSConfig::load_from_arg(
   const cxxopts::ParseResult &arg_data){
-  std::string file = arg_data["gps"].as<std::string>();
-  std::string id = arg_data["gps_id"].as<std::string>();
-  std::string geom = arg_data["gps_geom"].as<std::string>();
-  std::string timestamp = arg_data["gps_timestamp"].as<std::string>();
-  std::string x = arg_data["gps_x"].as<std::string>();
-  std::string y = arg_data["gps_y"].as<std::string>();
-  return GPSConfig{file,id,geom,x,y,timestamp};
+  GPSConfig config;
+  config.file = arg_data["gps"].as<std::string>();
+  config.id = arg_data["gps_id"].as<std::string>();
+  config.geom = arg_data["gps_geom"].as<std::string>();
+  config.timestamp = arg_data["gps_timestamp"].as<std::string>();
+  config.x = arg_data["gps_x"].as<std::string>();
+  config.y = arg_data["gps_y"].as<std::string>();
+  return config;
 };
 
 int GPSConfig::get_gps_format() const {
-  std::string fn_extension = gps_file.substr(
-      gps_file.find_last_of(".") + 1);
+  std::string fn_extension = file.substr(
+      file.find_last_of(".") + 1);
   if (fn_extension == "csv" || fn_extension == "txt") {
-    return 1;
+    if (gps_point) {
+      return 2;
+    } else {
+      return 1;
+    }
   } else if (fn_extension == "gpkg" || fn_extension == "shp") {
     return 0;
   } else {
@@ -48,5 +56,18 @@ int GPSConfig::get_gps_format() const {
     return -1;
   }
 };
+
+bool GPSConfig::validate() const {
+  if (!UTIL::file_exists(file))
+  {
+    SPDLOG_CRITICAL("GPS file {} not found",file);
+    return false;
+  };
+  if (get_gps_format()<0) {
+    SPDLOG_CRITICAL("Unknown GPS format");
+    return false;
+  }
+  return true;
+}
 
 }

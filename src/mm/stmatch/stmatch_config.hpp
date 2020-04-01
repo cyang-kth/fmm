@@ -14,8 +14,7 @@
 
 #include "cxxopts/cxxopts.hpp"
 
-namespace MM
-{
+namespace MM {
 
 struct STMATCHConfig {
   int k;
@@ -27,9 +26,9 @@ struct STMATCHConfig {
   double factor;
   std::string to_string() const;
   static STMATCHConfig load_from_xml(
-    const boost::property_tree::ptree &xml_data);
+      const boost::property_tree::ptree &xml_data);
   static STMATCHConfig load_from_arg(
-    const cxxopts::ParseResult &arg_data);
+      const cxxopts::ParseResult &arg_data);
 };
 
 } // MM
