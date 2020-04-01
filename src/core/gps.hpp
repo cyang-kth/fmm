@@ -18,13 +18,9 @@ namespace MM {
 struct Trajectory{
   int id;
   LineString geom;
-};
-
-struct TemporalTrajectory{
-  int id;
-  LineString geom;
   std::vector<double> timestamps;
 };
+
 
 } // MM
 #endif /* MM_GPS_HPP */

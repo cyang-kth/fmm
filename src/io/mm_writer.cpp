@@ -11,7 +11,6 @@
 #include "util/util.hpp"
 #include "util/debug.hpp"
 
-#include <iostream>
 #include <sstream>
 
 namespace MM {
@@ -27,11 +26,10 @@ CSVMatchResultWriter::CSVMatchResultWriter(const std::string &result_file,
                                            const OutputConfig &config_arg) :
     m_fstream(result_file), config_(config_arg) {
   write_header();
-};
+}
 
 void CSVMatchResultWriter::write_header() {
   std::string header = "id";
-  if (config_.write_ogeom) header += ";ogeom";
   if (config_.write_opath) header += ";opath";
   if (config_.write_error) header += ";error";
   if (config_.write_offset) header += ";offset";
@@ -44,7 +42,7 @@ void CSVMatchResultWriter::write_header() {
   if (config_.write_tp) header += ";tp";
   if (config_.write_length) header += ";length";
   m_fstream << header << '\n';
-};
+}
 
 void CSVMatchResultWriter::write_result(const MatchResult &result) {
   std::stringstream buf;
@@ -57,30 +55,30 @@ void CSVMatchResultWriter::write_result(const MatchResult &result) {
     if (!result.opt_candidate_path.empty()) {
       int N = result.opt_candidate_path.size();
       for (int i = 0; i < N - 1; ++i) {
-        buf << result.opt_candidate_path[i]->c->dist << ",";
+        buf << result.opt_candidate_path[i].c->dist << ",";
       }
-      buf << result.opt_candidate_path[N - 1]->c->dist;
-    };
+      buf << result.opt_candidate_path[N - 1].c->dist;
+    }
   }
   if (config_.write_offset) {
     buf << ";";
     if (!result.opt_candidate_path.empty()) {
       int N = result.opt_candidate_path.size();
       for (int i = 0; i < N - 1; ++i) {
-        buf << result.opt_candidate_path[i]->c->offset << ",";
+        buf << result.opt_candidate_path[i].c->offset << ",";
       }
-      buf << result.opt_candidate_path[N - 1]->c->offset;
-    };
+      buf << result.opt_candidate_path[N - 1].c->offset;
+    }
   }
   if (config_.write_spdist) {
     buf << ";";
     if (!result.opt_candidate_path.empty()) {
       int N = result.opt_candidate_path.size();
       for (int i = 0; i < N - 1; ++i) {
-        buf << result.opt_candidate_path[i]->sp_dist << ",";
+        buf << result.opt_candidate_path[i].sp_dist << ",";
       }
-      buf << result.opt_candidate_path[N - 1]->sp_dist;
-    };
+      buf << result.opt_candidate_path[N - 1].sp_dist;
+    }
   }
   if (config_.write_pgeom) {
     buf << ";";
@@ -88,11 +86,11 @@ void CSVMatchResultWriter::write_result(const MatchResult &result) {
       int N = result.opt_candidate_path.size();
       LineString pline;
       for (int i = 0; i < N; ++i) {
-        const Point &point = result.opt_candidate_path[i]->c->point;
+        const Point &point = result.opt_candidate_path[i].c->point;
         pline.add_point(point);
       }
       buf << pline;
-    };
+    }
   }
   // Write fields related with cpath
   if (config_.write_cpath) {
@@ -116,7 +114,7 @@ void CSVMatchResultWriter::write_result(const MatchResult &result) {
           buf << "|";
         }
       }
-    };
+    }
   }
   if (config_.write_mgeom) {
     buf << ";" << result.mgeom;
@@ -126,36 +124,36 @@ void CSVMatchResultWriter::write_result(const MatchResult &result) {
     if (!result.opt_candidate_path.empty()) {
       int N = result.opt_candidate_path.size();
       for (int i = 0; i < N - 1; ++i) {
-        buf << result.opt_candidate_path[i]->ep << ",";
+        buf << result.opt_candidate_path[i].ep << ",";
       }
-      buf << result.opt_candidate_path[N - 1]->ep;
-    };
+      buf << result.opt_candidate_path[N - 1].ep;
+    }
   }
   if (config_.write_tp) {
     buf << ";";
     if (!result.opt_candidate_path.empty()) {
       int N = result.opt_candidate_path.size();
       for (int i = 0; i < N - 1; ++i) {
-        buf << result.opt_candidate_path[i]->tp << ",";
+        buf << result.opt_candidate_path[i].tp << ",";
       }
-      buf << result.opt_candidate_path[N - 1]->tp;
-    };
+      buf << result.opt_candidate_path[N - 1].tp;
+    }
   }
   if (config_.write_length) {
     buf << ";";
     if (!result.opt_candidate_path.empty()) {
       int N = result.opt_candidate_path.size();
       for (int i = 0; i < N - 1; ++i) {
-        buf << result.opt_candidate_path[i]->c->edge->ength << ",";
+        buf << result.opt_candidate_path[i].c->edge->length << ",";
       }
-      buf << result.opt_candidate_path[N - 1]->c->edge->length;
-    };
+      buf << result.opt_candidate_path[N - 1].c->edge->length;
+    }
   }
   buf << '\n';
   // Ensure that fstream is called corrected in OpenMP
 #pragma omp critical
   m_fstream << buf.rdbuf();
-};
+}
 
-};     //IO
+}    //IO
 } //MM

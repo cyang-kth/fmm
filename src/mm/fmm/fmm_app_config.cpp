@@ -3,6 +3,9 @@
 //
 
 #include "mm/fmm/fmm_app_config.hpp"
+#include "util/debug.hpp"
+#include "util/util.hpp"
+
 
 namespace MM{
 
@@ -102,7 +105,7 @@ void FMMAppConfig::print() const {
 bool FMMAppConfig::validate() const
 {
   SPDLOG_INFO("Validating configuration");
-  if (!UTIL::fileExists(gps_file))
+  if (!UTIL::file_exists(gps_file))
   {
     SPDLOG_CRITICAL("GPS file {} not found",gps_file);
     return false;
@@ -111,12 +114,12 @@ bool FMMAppConfig::validate() const
     SPDLOG_CRITICAL("Unknown GPS format");
     return false;
   }
-  if (!UTIL::fileExists(network_file))
+  if (!UTIL::file_exists(network_file))
   {
     SPDLOG_CRITICAL("Network file {} not found",network_file);
     return false;
   };
-  if (!UTIL::fileExists(ubodt_file))
+  if (!UTIL::file_exists(ubodt_file))
   {
     SPDLOG_CRITICAL("UBODT file {} not found",ubodt_file);
     return false;
@@ -130,7 +133,7 @@ bool FMMAppConfig::validate() const
     SPDLOG_INFO("0-trace,1-debug,2-info,3-warn,4-err,5-critical,6-off");
     return false;
   }
-  if (UTIL::fileExists(result_file))
+  if (UTIL::file_exists(result_file))
   {
     SPDLOG_WARN("Overwrite existing result file {}",result_file);
   };

@@ -7,8 +7,8 @@
  * @version: 2017.11.11
  */
 
-#ifndef MM_TRAJECTORY_READER_HPP
-#define MM_TRAJECTORY_READER_HPP
+#ifndef MM_GPS_READER_HPP
+#define MM_GPS_READER_HPP
 
 #include "core/gps.hpp"
 
@@ -40,6 +40,7 @@ class ITrajectoryReader {
 public:
   virtual Trajectory read_next_trajectory() = 0;
   virtual bool has_next_feature() = 0;
+  virtual bool has_timestamp() = 0;
   virtual void close() = 0;
   std::vector<Trajectory> read_next_N_trajectories(int N=1000);
   std::vector<Trajectory> read_all_trajectories();
@@ -54,14 +55,17 @@ public:
    *  @param id_name, the ID column name in the GPS shapefile
    */
   GDALTrajectoryReader(const std::string & filename,
-                       const std::string & id_name);
+                       const std::string & id_name,
+                       const std::string & timestamp_name);
   Trajectory read_next_trajectory() override;
   bool has_next_feature() override;
+  bool has_timestamp() override;
   void close() override;
   int get_num_trajectories();
 private:
   int NUM_FEATURES=0;
-  int id_idx;   // Index of the id column in shapefile
+  int id_idx = -1;   // Index of the id column in shapefile
+  int timestamp_idx = -1;   // Index of the id column in shapefile
   int _cursor=0;   // Keep record of current features read
   GDALDataset *poDS;   // GDAL 2.1.0
   OGRLayer  *ogrlayer;
@@ -72,72 +76,44 @@ class CSVTrajectoryReader : public ITrajectoryReader {
 public:
   CSVTrajectoryReader(const std::string &e_filename,
                       const std::string &id_name,
-                      const std::string &geom_name);
+                      const std::string &geom_name,
+                      const std::string &timestamp_name);
   void reset_cursor();
   Trajectory read_next_trajectory() override;
   bool has_next_feature() override;
+  bool has_timestamp() override;
   void close() override;
-private:
+  static std::vector<double> string2time(const std::string &str);
+ private:
   std::fstream ifs;
   int id_idx = -1;
   int geom_idx = -1;
+  int timestamp_idx =-1;   // Index of the id column in shapefile
   char delim = ';';
 }; // TrajectoryCSVReader
 
-class TemporalGPSReader{
-public:
-  virtual TemporalTrajectory read_next_temporal_trajectory()=0;
-  virtual Trajectory read_next_trajectory()=0;
-  virtual bool has_time_stamp() const = 0;
-  virtual bool has_next_feature()=0;
-  virtual void close() = 0;
-};
-
-class CSVTemporalTrajectoryReader: public TemporalGPSReader {
-public:
-  CSVTemporalTrajectoryReader(const std::string &e_filename,
-                              const std::string &id_name,
-                              const std::string &geom_name,
-                              const std::string &time_name);
-  TemporalTrajectory read_next_temporal_trajectory() override;
-  Trajectory read_next_trajectory() override;
-  static std::vector<double> string2time(const std::string &str);
-  bool has_next_feature() override;
-  void reset_cursor();
-  void close() override;
-  bool has_time_stamp() const override;
-private:
-  std::fstream ifs;
-  int id_idx = -1;
-  int geom_idx = -1;
-  int time_idx = -1;
-  char delim = ';';
-}; // CSVTemporalTrajectoryReader
-
-class CSVTemporalPointReader : public TemporalGPSReader {
+class CSVPointReader : public ITrajectoryReader {
  public:
-  CSVTemporalPointReader(
+  CSVPointReader(
        const std::string &e_filename,
        const std::string &id_name,
        const std::string &x_name,
        const std::string &y_name,
        const std::string &time_name);
-  TemporalTrajectory read_next_temporal_trajectory() override;
   Trajectory read_next_trajectory() override;
   bool has_next_feature() override;
   void reset_cursor();
+  bool has_timestamp() override;
   void close() override;
-  bool has_time_stamp() const override;
  private:
   std::string prev_line="";
   std::fstream ifs;
   int id_idx = -1;
   int x_idx = -1;
   int y_idx = -1;
-  int time_idx = -1;
+  int timestamp_idx = -1;
   char delim = ';';
 }; // CSVTemporalTrajectoryReader
-
 
 } // IO
 } // MM

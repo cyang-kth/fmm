@@ -2,6 +2,7 @@
 #define MM_SRC_MM_STMATCH_STMATCH_APP_H_
 
 #include "mm/stmatch/stmatch_app_config.hpp"
+#include "mm/stmatch/stmatch_algorithm.hpp"
 
 namespace MM {
 class STMATCHApp {

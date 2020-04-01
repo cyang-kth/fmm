@@ -2,6 +2,7 @@
 #define MM_SRC_MM_FMM_FMM_APP_H_
 
 #include "fmm_app_config.hpp"
+#include "fmm_algorithm.hpp"
 
 namespace MM {
 class FMMApp {

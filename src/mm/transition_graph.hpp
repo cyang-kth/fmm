@@ -13,6 +13,7 @@
 #define MM_TRANSITION_GRAPH_HPP
 
 #include "network/type.hpp"
+#include "mm/mm_result.hpp"
 
 #include <float.h>
 

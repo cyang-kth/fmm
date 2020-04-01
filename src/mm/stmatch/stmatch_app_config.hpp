@@ -8,6 +8,7 @@
 #include "config/gps_config.hpp"
 #include "config/network_config.hpp"
 #include "config/result_config.hpp"
+#include "mm/stmatch/stmatch_config.hpp"
 
 namespace MM{
 

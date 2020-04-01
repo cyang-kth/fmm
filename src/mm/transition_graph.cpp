@@ -13,8 +13,6 @@
 #include "network/type.hpp"
 #include "util/debug.hpp"
 
-#include <float.h>
-
 namespace MM
 {
 
@@ -27,19 +25,19 @@ TransitionGraph::TransitionGraph(const Traj_Candidates &tc, double gps_error){
     }
     layers.push_back(layer);
   }
-  if (tc.size()>0) {
+  if (!tc.empty()) {
     reset_layer(&(layers[0]));
   }
-};
+}
 
 double TransitionGraph::calc_tp(double sp_dist,double eu_dist){
   return eu_dist>=sp_dist ? (sp_dist+1e-6)/(eu_dist+1e-6) : eu_dist/sp_dist;
-};
+}
 
 double TransitionGraph::calc_ep(double dist,double error){
   double a = dist / error;
-  return exp(-0.5 * a * a);;
-};
+  return exp(-0.5 * a * a);
+}
 
 // Reset the properties of a candidate set
 void TransitionGraph::reset_layer(TGLayer *layer){
@@ -47,7 +45,7 @@ void TransitionGraph::reset_layer(TGLayer *layer){
     iter->cumu_prob = iter->ep;
     iter->prev = nullptr;
   }
-};
+}
 
 const TGElement *TransitionGraph::find_optimal_candidate(const TGLayer &layer){
   const TGElement *opt_c=nullptr;
@@ -62,10 +60,10 @@ const TGElement *TransitionGraph::find_optimal_candidate(const TGLayer &layer){
     }
   }
   return opt_c;
-};
+}
 
-OptCandidatePath TransitionGraph::backtrack(){
-  SPDLOG_TRACE("Backtrack on transition graph");
+TGOpath TransitionGraph::backtrack(){
+  SPDLOG_TRACE("Backtrack on transition graph")
   TGElement* track_cand=nullptr;
   double final_prob = -0.001;
   std::vector<TGElement>& last_layer = layers.back();
@@ -77,23 +75,22 @@ OptCandidatePath TransitionGraph::backtrack(){
       track_cand = &(*c);
     }
   }
-  OptCandidatePath opath;
+  TGOpath opath;
   if (final_prob>0) {
-    opath.push_back(track_cand->c);
+    opath.push_back(track_cand);
     // Iterate from tail to head to assign path
     while ((track_cand=track_cand->prev)!=nullptr)
     {
-      opath.push_back(track_cand->c);
+      opath.push_back(track_cand);
     }
     std::reverse(opath.begin(), opath.end());
   }
-  SPDLOG_TRACE("Backtrack on transition graph done");
-  // SPDLOG_INFO("Opath is {}",opath);
+  SPDLOG_TRACE("Backtrack on transition graph done")
   return opath;
-};
+}
 
 std::vector<TGLayer> &TransitionGraph::get_layers(){
   return layers;
-};
+}
 
 } // MM

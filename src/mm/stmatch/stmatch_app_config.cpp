@@ -3,6 +3,8 @@
 //
 
 #include "mm/stmatch/stmatch_app_config.hpp"
+#include "util/debug.hpp"
+#include "util/util.hpp"
 
 namespace MM{
 
@@ -70,7 +72,7 @@ void STMATCHAppConfig::load_arg(int argc, char **argv){
   network_config = NetworkConfig::load_from_arg(result);
   gps_config = GPSConfig::load_from_arg(result);
   result_config = ResultConfig::load_from_arg(result);
-  stmatch_config = STMATCHAppConfig::load_from_arg(result);
+  stmatch_config = STMATCHConfig::load_from_arg(result);
 
   std::cout<<"Finish with reading stmatch arg configuration\n";
 };
