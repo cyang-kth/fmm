@@ -4,16 +4,27 @@
 
 namespace MM {
 
-std::string GPSConfig::to_string() const{
-  std::stringstream ss;
-  ss<<"GPS file: "<< file << "\n";
-  ss<<"Id: "<< id << "\n";
-  ss<<"Geom: "<< geom << "\n";
-  ss<<"X: "<< x << "\n";
-  ss<<"Y: "<< y << "\n";
-  ss<<"Timestamp: "<< timestamp << "\n";
-  ss<<"Format: "<< get_gps_format() << "\n";
-  return ss.str();
+void GPSConfig::print() const{
+  int format = get_gps_format();
+  if (format==0) {
+    SPDLOG_INFO("GPS format: GDAL trajectory");
+    SPDLOG_INFO("File name: {} ",file);
+    SPDLOG_INFO("ID name: {} ",id);
+    SPDLOG_INFO("Timestamp name: {} ",timestamp);
+  } else if (format==1) {
+    SPDLOG_INFO("GPS format: CSV trajectory");
+    SPDLOG_INFO("File name: {} ",file);
+    SPDLOG_INFO("ID name: {} ",id);
+    SPDLOG_INFO("Geom name: {} ",geom);
+    SPDLOG_INFO("Timestamp name: {} ",timestamp);
+  } else {
+    SPDLOG_INFO("GPS format: CSV point");
+    SPDLOG_INFO("File name: {} ",file);
+    SPDLOG_INFO("ID name: {} ",id);
+    SPDLOG_INFO("x name: {} ",x);
+    SPDLOG_INFO("y name: {} ",y);
+    SPDLOG_INFO("Timestamp name: {} ",timestamp);
+  }
 };
 
 GPSConfig GPSConfig::load_from_xml(

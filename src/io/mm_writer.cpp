@@ -143,12 +143,12 @@ void CSVMatchResultWriter::write_result(const MatchResult &result) {
     buf << ";";
     if (!result.opt_candidate_path.empty()) {
       int N = result.opt_candidate_path.size();
-      SPDLOG_TRACE("Write length {}",N)
+      SPDLOG_TRACE("Write length {}",N);
       for (int i = 0; i < N - 1; ++i) {
-        // SPDLOG_TRACE("Write length {}",i)
+        // SPDLOG_TRACE("Write length {}",i);
         buf << result.opt_candidate_path[i].c.edge->length << ",";
       }
-      // SPDLOG_TRACE("Write length {}",N-1)
+      // SPDLOG_TRACE("Write length {}",N-1);
       buf << result.opt_candidate_path[N - 1].c.edge->length;
     }
   }

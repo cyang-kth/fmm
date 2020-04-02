@@ -4,13 +4,12 @@
 
 namespace MM {
 
-std::string NetworkConfig::to_string() const {
-  std::stringstream ss;
-  ss<<"Network file: "<< file << "\n";
-  ss<<"Id: "<< id << "\n";
-  ss<<"Source: "<< source << "\n";
-  ss<<"Target: "<< target << "\n";
-  return ss.str();
+void NetworkConfig::print() const{
+  SPDLOG_INFO("NetworkConfig");
+  SPDLOG_INFO("File name: {} ",file);
+  SPDLOG_INFO("ID name: {} ",id);
+  SPDLOG_INFO("Source name: {} ",source);
+  SPDLOG_INFO("Target name: {} ",target);
 };
 
 NetworkConfig NetworkConfig::load_from_xml(
@@ -33,7 +32,7 @@ NetworkConfig NetworkConfig::load_from_arg(
 
 bool NetworkConfig::validate() const {
   if (!UTIL::file_exists(file)){
-    SPDLOG_CRITICAL("Network file not found {}",file)
+    SPDLOG_CRITICAL("Network file not found {}",file);
     return false;
   }
   return true;

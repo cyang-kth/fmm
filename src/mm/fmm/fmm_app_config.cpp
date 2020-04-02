@@ -7,23 +7,27 @@
 #include "util/util.hpp"
 
 
-namespace MM{
+namespace MM {
 
 FMMAppConfig::FMMAppConfig(int argc, char **argv){
+  spdlog::set_pattern("[%^%l%$][%s:%-3#] %v");
   if (argc==2) {
     std::string configfile(argv[1]);
-    load_xml(configfile);
+    if (UTIL::check_file_extension(configfile,"xml,XML"))
+      load_xml(configfile);
+    else {
+      load_arg(argc,argv);
+    }
   } else {
     load_arg(argc,argv);
   }
-  print();
-  std::cout<<"Set log level as "<<LOG_LEVESLS[log_level]<<"\n";
   spdlog::set_level((spdlog::level::level_enum) log_level);
-  spdlog::set_pattern("[%l][%s:%-3#] %v");
+  if (!help_specified)
+    print();
 };
 
 void FMMAppConfig::load_xml(const std::string &file){
-  std::cout<<"Start with reading FMM configuration "<<file<<"\n";
+  SPDLOG_INFO("Start with reading FMM configuration {}",file);
   // Create empty property tree object
   boost::property_tree::ptree tree;
   boost::property_tree::read_xml(file, tree);
@@ -31,45 +35,60 @@ void FMMAppConfig::load_xml(const std::string &file){
   gps_config = GPSConfig::load_from_xml(tree);
   result_config = ResultConfig::load_from_xml(tree);
   fmm_config = FMMAlgorConfig::load_from_xml(tree);
-
   // UBODT
   ubodt_file = tree.get<std::string>("config.input.ubodt.file");
   log_level = tree.get("config.other.log_level",2);
   step =  tree.get("config.other.step",100);
   use_omp = !(!tree.get_child_optional("config.other.use_omp"));
-  std::cout<<"Finish with reading FMM xml configuration.\n";
+  projected = !(!tree.get_child_optional("config.other.projected"));
+  SPDLOG_INFO("Finish with reading FMM xml configuration");
 };
 
 void FMMAppConfig::load_arg(int argc, char **argv){
-  std::cout<<"Start reading FMM configuration from arguments\n";
+  SPDLOG_INFO("Start reading FMM configuration from arguments");
   cxxopts::Options options("fmm_config", "Configuration parser of fmm");
   options.add_options()
-      ("ubodt","Ubodt file name", cxxopts::value<std::string>())
-      ("network","Network file name", cxxopts::value<std::string>())
-      ("network_id","Network id name",
-       cxxopts::value<std::string>()->default_value("id"))
-      ("source","Network source name",
-       cxxopts::value<std::string>()->default_value("source"))
-      ("target","Network target name",
-       cxxopts::value<std::string>()->default_value("target"))
-      ("gps","GPS file name", cxxopts::value<std::string>())
-      ("gps_id","GPS file id",
-       cxxopts::value<std::string>()->default_value("id"))
-      ("gps_geom","GPS file geom column name",
-       cxxopts::value<std::string>()->default_value("geom"))
-      ("k,candidates","Number of candidates",
-       cxxopts::value<int>()->default_value("8"))
-      ("r,radius","Search radius",
-       cxxopts::value<double>()->default_value("300.0"))
-      ("e,error","GPS error",
-       cxxopts::value<double>()->default_value("50.0"))
-      ("output","Output file name", cxxopts::value<std::string>())
-      ("output_fields","Output fields", cxxopts::value<std::string>())
-      ("l,log_level","Log level",cxxopts::value<int>()->default_value("2"))
-      ("step","Step report",cxxopts::value<int>()->default_value("100"))
-      ("h,help",   "Help information")
-      ("use_omp","Use parallel computing if specified");
-
+    ("ubodt","Ubodt file name",
+    cxxopts::value<std::string>()->default_value(""))
+    ("network","Network file name",
+    cxxopts::value<std::string>()->default_value(""))
+    ("network_id","Network id name",
+    cxxopts::value<std::string>()->default_value("id"))
+    ("source","Network source name",
+    cxxopts::value<std::string>()->default_value("source"))
+    ("target","Network target name",
+    cxxopts::value<std::string>()->default_value("target"))
+    ("gps","GPS file name",
+    cxxopts::value<std::string>()->default_value(""))
+    ("gps_id","GPS file id",
+    cxxopts::value<std::string>()->default_value("id"))
+    ("gps_x","GPS x name",
+    cxxopts::value<std::string>()->default_value("x"))
+    ("gps_y","GPS y name",
+    cxxopts::value<std::string>()->default_value("y"))
+    ("gps_geom","GPS file geom column name",
+    cxxopts::value<std::string>()->default_value("geom"))
+    ("gps_timestamp",   "GPS file timestamp column name",
+    cxxopts::value<std::string>()->default_value("timestamp"))
+    ("k,candidates","Number of candidates",
+    cxxopts::value<int>()->default_value("8"))
+    ("r,radius","Search radius",
+    cxxopts::value<double>()->default_value("300.0"))
+    ("e,error","GPS error",
+    cxxopts::value<double>()->default_value("50.0"))
+    ("output","Output file name",
+    cxxopts::value<std::string>()->default_value(""))
+    ("output_fields","Output fields",
+    cxxopts::value<std::string>()->default_value(""))
+    ("l,log_level","Log level",cxxopts::value<int>()->default_value("2"))
+    ("step","Step report",cxxopts::value<int>()->default_value("100"))
+    ("h,help",   "Help information")
+    ("use_omp","Use parallel computing if specified")
+    ("projected","Data is projected or not");
+  if (argc==1) {
+    help_specified = true;
+    return;
+  }
   auto result = options.parse(argc, argv);
   ubodt_file = result["ubodt"].as<std::string>();
   network_config = NetworkConfig::load_from_arg(result);
@@ -79,7 +98,11 @@ void FMMAppConfig::load_arg(int argc, char **argv){
   log_level = result["log_level"].as<int>();
   step = result["step"].as<int>();
   use_omp = result.count("use_omp")>0;
-  std::cout<<"Finish with reading FMM arg configuration\n";
+  projected = result.count("projected")>0;
+  if (result.count("help")>0) {
+    help_specified = true;
+  }
+  SPDLOG_INFO("Finish with reading FMM arg configuration");
 };
 
 void FMMAppConfig::print_help(){
@@ -91,6 +114,10 @@ void FMMAppConfig::print_help(){
   std::cout<<"--target (optional) <string>: Network target name (target)\n";
   std::cout<<"--gps (required) <string>: GPS file name\n";
   std::cout<<"--gps_id (optional) <string>: GPS id name (id)\n";
+  std::cout<<"--gps_x (optional) <string>: GPS x name (x)\n";
+  std::cout<<"--gps_y (optional) <string>: GPS y name (y)\n";
+  std::cout<<"--gps_timestamp (optional) <string>: "
+    "GPS timestamp name (timestamp)\n";
   std::cout<<"--gps_geom (optional) <string>: GPS geometry name (geom)\n";
   std::cout<<"--candidates (optional) <int>: number of candidates (8)\n";
   std::cout<<"--radius (optional) <double>: search radius (300)\n";
@@ -107,41 +134,42 @@ void FMMAppConfig::print_help(){
 };
 
 void FMMAppConfig::print() const {
-  std::cout<<"---Network Config---\n"<< network_config.to_string() << "\n";
-  std::cout<<"---GPS Config---\n"<< gps_config.to_string() << "\n";
-  std::cout<<"---Result Config---\n"<< result_config.to_string() << "\n";
-  std::cout<<"---FMM Config---\n"<< fmm_config.to_string() << "\n";
-  std::cout<<"---Others---\n";
-  std::cout<< "log_level: " << LOG_LEVESLS[log_level] << "\n";
-  std::cout<< "step: " << step << "\n";
-  std::cout<< "use_omp: " << (use_omp?"true":"false") << "\n";
+  SPDLOG_INFO("----   Print configuration    ----");
+  network_config.print();
+  gps_config.print();
+  result_config.print();
+  fmm_config.print();
+  SPDLOG_INFO("Log level {}",LOG_LEVESLS[log_level]);
+  SPDLOG_INFO("Step {}",step);
+  SPDLOG_INFO("Use omp {}",(use_omp ? "true" : "false"));
+  SPDLOG_INFO("---- Print configuration done ----");
 };
 
 bool FMMAppConfig::validate() const
 {
-  SPDLOG_INFO("Validating configuration");
+  SPDLOG_DEBUG("Validating configuration");
   if (log_level<0 || log_level>LOG_LEVESLS.size()) {
     SPDLOG_CRITICAL("Invalid log_level {}, which should be 0 - 6",log_level);
-    SPDLOG_INFO("0-trace,1-debug,2-info,3-warn,4-err,5-critical,6-off");
+    SPDLOG_CRITICAL("0-trace,1-debug,2-info,3-warn,4-err,5-critical,6-off");
     return false;
   }
-  if (!gps_config.validate()){
+  if (!gps_config.validate()) {
     return false;
   }
-  if (!result_config.validate()){
+  if (!result_config.validate()) {
     return false;
   }
-  if (!network_config.validate()){
+  if (!network_config.validate()) {
     return false;
   }
-  if (!fmm_config.validate()){
+  if (!fmm_config.validate()) {
     return false;
   }
-  if (!UTIL::file_exists(ubodt_file)){
+  if (!UTIL::file_exists(ubodt_file)) {
     SPDLOG_CRITICAL("UBODT file not exists {}", ubodt_file);
     return false;
   }
-  SPDLOG_INFO("Validating done");
+  SPDLOG_DEBUG("Validating done");
   return true;
 };
 

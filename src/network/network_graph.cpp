@@ -26,8 +26,7 @@ NetworkGraph::NetworkGraph(const Network &network_arg) : network(network_arg) {
     g[e].length = edge.length;
   }
   num_vertices = boost::num_vertices(g);
-  SPDLOG_INFO("Graph nodes {}", num_vertices);
-  SPDLOG_INFO("Graph edges {}", boost::num_edges(g));
+  SPDLOG_INFO("Graph nodes {} edges {}", num_vertices, boost::num_edges(g));
   SPDLOG_INFO("Construct graph from network edges end");
 }
 
@@ -203,7 +202,7 @@ int NetworkGraph::get_edge_index(NodeIndex source, NodeIndex target,
       return g[e].index;
     }
   }
-  SPDLOG_ERROR("Edge not found")
+  SPDLOG_ERROR("Edge not found");
   return -1;
 }
 void NetworkGraph::single_source_upperbound_dijkstra(NodeIndex s,

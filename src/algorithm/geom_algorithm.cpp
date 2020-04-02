@@ -414,7 +414,7 @@ LineString cutoffseg_unique(double offset1, double offset2,
                             const LineString &linestring)
 {
   LineString cutoffline;
-  SPDLOG_TRACE("Offset1 {} Offset2 {}",offset1,offset2)
+  SPDLOG_TRACE("Offset1 {} Offset2 {}",offset1,offset2);
   int Npoints = linestring.get_num_points();
   if (Npoints==2) {
     // A single segment
@@ -445,10 +445,10 @@ LineString cutoffseg_unique(double offset1, double offset2,
       double deltaL = std::sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
       l2 = l1 + deltaL;
       // Insert p1
-      SPDLOG_TRACE("  L1 {} L2 {} ",l1,l2)
+      SPDLOG_TRACE("  L1 {} L2 {} ",l1,l2);
       if (l1>=offset1 && l1<=offset2){
         cutoffline.add_point(x1,y1);
-        SPDLOG_TRACE("  add p1 {} {}",x1,y1)
+        SPDLOG_TRACE("  add p1 {} {}",x1,y1);
       }
 
       // Insert p between p1 and p2
@@ -457,7 +457,7 @@ LineString cutoffseg_unique(double offset1, double offset2,
         double px = x1+ratio1*(x2-x1);
         double py = y1+ratio1*(y2-y1);
         cutoffline.add_point(px, py);
-        SPDLOG_TRACE("  add p {} {} between p1 p2",px,py)
+        SPDLOG_TRACE("  add p {} {} between p1 p2",px,py);
       }
 
       if (offset2>l1 && offset2<l2){
@@ -465,13 +465,13 @@ LineString cutoffseg_unique(double offset1, double offset2,
         double px = x1+ratio2*(x2-x1);
         double py = y1+ratio2*(y2-y1);
         cutoffline.add_point(px, py);
-        SPDLOG_TRACE("  add p {} {} between p1 p2",px,py)
+        SPDLOG_TRACE("  add p {} {} between p1 p2",px,py);
       }
 
       // last point
       if (i==Npoints-2 && offset2>=l2){
         cutoffline.add_point(x2, y2);
-        SPDLOG_TRACE("  add p2 {} {} for last point",x2,y2)
+        SPDLOG_TRACE("  add p2 {} {} for last point",x2,y2);
       }
 
       l1 = l2;

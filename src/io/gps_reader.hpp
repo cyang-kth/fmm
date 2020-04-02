@@ -78,7 +78,7 @@ public:
   CSVTrajectoryReader(const std::string &e_filename,
                       const std::string &id_name,
                       const std::string &geom_name,
-                      const std::string &timestamp_name);
+                      const std::string &timestamp_name="timestamp");
   void reset_cursor();
   Trajectory read_next_trajectory() override;
   bool has_next_trajectory() override;

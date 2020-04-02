@@ -23,7 +23,7 @@ struct STMATCHAlgorConfig {
   // factor multiplied to vmax*deltaT to limit the search of shortest path
   double factor;
   bool validate() const;
-  std::string to_string() const;
+  void print() const;
   static STMATCHAlgorConfig load_from_xml(
       const boost::property_tree::ptree &xml_data);
   static STMATCHAlgorConfig load_from_arg(

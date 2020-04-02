@@ -23,7 +23,7 @@ struct GPSConfig{
   std::string timestamp;
   bool gps_point = false; // The GPS data stores point or not
   bool validate() const;
-  std::string to_string() const;
+  void print() const;
   // Check gps format, returns 0 for GDAL shapefile,
   // 1 for trajectory CSV file, 2 for GPS point CSV file
   // -1 if not other format

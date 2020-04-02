@@ -9,21 +9,26 @@ namespace MM {
  */
 
 UBODTGenAppConfig::UBODTGenAppConfig(int argc, char **argv) {
-  if (argc == 2) {
+  spdlog::set_pattern("[%^%l%$][%s:%-3#] %v");
+  if (argc==2) {
     std::string configfile(argv[1]);
-    load_xml(configfile);
+    if (UTIL::check_file_extension(configfile,"xml,XML"))
+      load_xml(configfile);
+    else {
+      load_arg(argc,argv);
+    }
   } else {
-    load_arg(argc, argv);
+    load_arg(argc,argv);
   }
-  std::cout << "Set log level as " << LOG_LEVESLS[log_level] << "\n";
   spdlog::set_level((spdlog::level::level_enum) log_level);
-  spdlog::set_pattern("[%l][%s:%-3#] %v");
-};
+  if (!help_specified)
+    print();
+}
 
 void UBODTGenAppConfig::load_xml(const std::string &file) {
+  SPDLOG_INFO("Read configuration from xml file: {}",file);
   // Create empty property tree object
   boost::property_tree::ptree tree;
-  std::cout << "Read configuration from xml file: " << file << '\n';
   boost::property_tree::read_xml(file, tree);
   network_config = NetworkConfig::load_from_xml(tree);
   delta = tree.get("config.parameters.delta", 3000.0);
@@ -31,25 +36,34 @@ void UBODTGenAppConfig::load_xml(const std::string &file) {
   // 0-trace,1-debug,2-info,3-warn,4-err,5-critical,6-off
   log_level = tree.get("config.other.log_level", 2);
   use_omp = !(!tree.get_child_optional("config.other.use_omp"));
-};
+  SPDLOG_INFO("Read configuration from xml file done");
+}
 
 void UBODTGenAppConfig::load_arg(int argc, char **argv) {
-  std::cout << "Start reading ubodt configuration from arguments\n";
+  SPDLOG_INFO("Start reading ubodt configuration from arguments");
   cxxopts::Options options("config",
                            "Configuration parser of ubodt_gen");
   options.add_options()
-      ("network", "Network file name", cxxopts::value<std::string>())
-      ("network_id", "Network id name",
-       cxxopts::value<std::string>()->default_value("id"))
-      ("source", "Network source name",
-       cxxopts::value<std::string>()->default_value("source"))
-      ("target", "Network target name",
-       cxxopts::value<std::string>()->default_value("target"))
-      ("delta", "Upperbound distance",
-       cxxopts::value<double>()->default_value("3000.0"))
-      ("o,output", "Output file name", cxxopts::value<std::string>())
-      ("l,log_level", "Log level", cxxopts::value<int>()->default_value("2"));
-
+    ("network", "Network file name",
+    cxxopts::value<std::string>()->default_value(""))
+    ("network_id", "Network id name",
+    cxxopts::value<std::string>()->default_value("id"))
+    ("source", "Network source name",
+    cxxopts::value<std::string>()->default_value("source"))
+    ("target", "Network target name",
+    cxxopts::value<std::string>()->default_value("target"))
+    ("delta", "Upperbound distance",
+    cxxopts::value<double>()->default_value("3000.0"))
+    ("o,output", "Output file name",
+    cxxopts::value<std::string>()->default_value(""))
+    ("l,log_level", "Log level", cxxopts::value<int>()->default_value("2"))
+    ("h,help",   "Help information")
+    ("use_omp","Use parallel computing if specified")
+    ("projected","Data is projected or not");
+  if (argc==1) {
+    help_specified = true;
+    return;
+  }
   auto result = options.parse(argc, argv);
   // Output
   result_file = result["output"].as<std::string>();
@@ -57,18 +71,21 @@ void UBODTGenAppConfig::load_arg(int argc, char **argv) {
   log_level = result["log_level"].as<int>();
   delta = result["delta"].as<double>();
   use_omp = result.count("use_omp")>0;
-  std::cout<<"Finish with reading ubodt arg configuration\n";
-};
+  if (result.count("help")>0) {
+    help_specified = true;
+  }
+  SPDLOG_INFO("Finish with reading ubodt arg configuration");
+}
 
 void UBODTGenAppConfig::print() const {
-  std::cout << "UBODT Configuration: \n";
-  std::cout <<"---Network Config---\n"<< network_config.to_string() << "\n";
-  std::cout <<"---UBODT Config---\n";
-  std::cout << "  delta: " << delta << '\n';
-  std::cout << "  Output file:" << result_file << '\n';
-  std::cout << "  log_level:" << LOG_LEVESLS[log_level] << '\n';
-  std::cout << "use_omp" << (use_omp?"true":"false") << "\n";
-};
+  SPDLOG_INFO("----    Print configuration   ----");
+  network_config.print();
+  SPDLOG_INFO("Delta {}",delta);
+  SPDLOG_INFO("Output file {}",result_file);
+  SPDLOG_INFO("Log level {}",LOG_LEVESLS[log_level]);
+  SPDLOG_INFO("Use omp {}",(use_omp ? "true" : "false"));
+  SPDLOG_INFO("---- Print configuration done ----");
+}
 
 void UBODTGenAppConfig::print_help() {
   std::cout << "ubodt_gen argument lists:\n";
@@ -80,8 +97,9 @@ void UBODTGenAppConfig::print_help() {
   std::cout << "--delta (optional) <double>: upperbound (3000.0)\n";
   std::cout << "--log_level (optional) <int>: log level (2)\n";
   std::cout << "--use_omp: use OpenMP or not\n";
+  std::cout << "-h/--help: help information\n";
   std::cout << "For xml configuration, check example folder\n";
-};
+}
 
 bool UBODTGenAppConfig::validate() const {
   SPDLOG_INFO("Validating configuration for UBODT construction");
@@ -107,10 +125,10 @@ bool UBODTGenAppConfig::validate() const {
   }
   SPDLOG_INFO("Validating done.");
   return true;
-};
+}
 
 bool UBODTGenAppConfig::is_binary_output() const {
-  if (UTIL::check_file_extension(result_file,"bin")){
+  if (UTIL::check_file_extension(result_file,"bin")) {
     return true;
   }
   return false;

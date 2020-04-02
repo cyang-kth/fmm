@@ -50,11 +50,8 @@ void TransitionGraph::reset_layer(TGLayer *layer){
 const TGElement *TransitionGraph::find_optimal_candidate(const TGLayer &layer){
   const TGElement *opt_c=nullptr;
   double final_prob = -0.001;
-  for (auto c = layer.begin(); c!=layer.end(); ++c)
-  {
-    // One more step here to filter out these with equal final probability
-    if(final_prob < c->cumu_prob)
-    {
+  for (auto c = layer.begin(); c!=layer.end(); ++c) {
+    if(final_prob < c->cumu_prob) {
       final_prob = c->cumu_prob;
       opt_c = &(*c);
     }
@@ -63,14 +60,12 @@ const TGElement *TransitionGraph::find_optimal_candidate(const TGLayer &layer){
 }
 
 TGOpath TransitionGraph::backtrack(){
-  SPDLOG_TRACE("Backtrack on transition graph")
+  SPDLOG_TRACE("Backtrack on transition graph");
   TGElement* track_cand=nullptr;
   double final_prob = -0.001;
   std::vector<TGElement>& last_layer = layers.back();
-  for (auto c = last_layer.begin(); c!=last_layer.end(); ++c)
-  {
-    if(final_prob < c->cumu_prob)
-    {
+  for (auto c = last_layer.begin(); c!=last_layer.end(); ++c) {
+    if(final_prob < c->cumu_prob) {
       final_prob = c->cumu_prob;
       track_cand = &(*c);
     }
@@ -79,13 +74,12 @@ TGOpath TransitionGraph::backtrack(){
   if (final_prob>0) {
     opath.push_back(track_cand);
     // Iterate from tail to head to assign path
-    while ((track_cand=track_cand->prev)!=nullptr)
-    {
+    while ((track_cand=track_cand->prev)!=nullptr) {
       opath.push_back(track_cand);
     }
     std::reverse(opath.begin(), opath.end());
   }
-  SPDLOG_TRACE("Backtrack on transition graph done")
+  SPDLOG_TRACE("Backtrack on transition graph done");
   return opath;
 }
 

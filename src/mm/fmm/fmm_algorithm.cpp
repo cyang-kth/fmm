@@ -9,12 +9,9 @@
 
 namespace MM {
 
-std::string FMMAlgorConfig::to_string() const {
-  std::stringstream ss;
-  ss<<"k: "<< k << "\n";
-  ss<<"radius: "<< radius << "\n";
-  ss<<"gps_error: "<< gps_error << "\n";
-  return ss.str();
+void FMMAlgorConfig::print() const {
+  SPDLOG_INFO("FMMAlgorithmConfig");
+  SPDLOG_INFO("k {} radius {} gps_error {}",k,radius,gps_error);
 };
 
 FMMAlgorConfig FMMAlgorConfig::load_from_xml(
@@ -34,8 +31,7 @@ FMMAlgorConfig FMMAlgorConfig::load_from_arg(
 };
 
 bool FMMAlgorConfig::validate() const{
-  if (gps_error <= 0 || radius <= 0 || k <= 0)
-  {
+  if (gps_error <= 0 || radius <= 0 || k <= 0) {
     SPDLOG_CRITICAL("Invalid mm parameter k {} r {} gps error {}",
                     k,radius,gps_error);
     return false;
@@ -45,20 +41,20 @@ bool FMMAlgorConfig::validate() const{
 
 MatchResult FMM::match_traj(const MM::Trajectory &traj,
                                      const MM::FMMAlgorConfig &config) {
-  SPDLOG_TRACE("Count of points in trajectory {}", traj.geom.get_num_points())
-  SPDLOG_TRACE("Search candidates")
+  SPDLOG_TRACE("Count of points in trajectory {}", traj.geom.get_num_points());
+  SPDLOG_TRACE("Search candidates");
   Traj_Candidates tc = network_.search_tr_cs_knn(
       traj.geom, config.k, config.radius);
   SPDLOG_TRACE("Trajectory candidate {}", tc);
   if (tc.empty()) return MatchResult{};
-  SPDLOG_TRACE("Generate transition graph")
+  SPDLOG_TRACE("Generate transition graph");
   TransitionGraph tg(tc, config.gps_error);
-  SPDLOG_TRACE("Update cost in transition graph")
+  SPDLOG_TRACE("Update cost in transition graph");
   // The network will be used internally to update transition graph
   update_tg(&tg, traj, config);
-  SPDLOG_TRACE("Optimal path inference")
+  SPDLOG_TRACE("Optimal path inference");
   TGOpath tg_opath = tg.backtrack();
-  SPDLOG_TRACE("Optimal path size {}", tg_opath.size())
+  SPDLOG_TRACE("Optimal path size {}", tg_opath.size());
   MatchedCandidatePath matched_candidate_path(tg_opath.size());
   std::transform(tg_opath.begin(), tg_opath.end(),
                  matched_candidate_path.begin(),
@@ -77,11 +73,11 @@ MatchResult FMM::match_traj(const MM::Trajectory &traj,
   const std::vector<Edge> &edges = network_.get_edges();
   C_Path cpath = ubodt_.construct_complete_path(tg_opath,edges,
       &indices);
-  SPDLOG_TRACE("Cpath {}",cpath)
-  SPDLOG_TRACE("Complete path inference")
+  SPDLOG_TRACE("Cpath {}",cpath);
+  SPDLOG_TRACE("Complete path inference");
   LineString mgeom = network_.complete_path_to_geometry(
       traj.geom, cpath);
-  SPDLOG_TRACE("Complete path inference done")
+  SPDLOG_TRACE("Complete path inference done");
   return MatchResult{
       traj.id, matched_candidate_path, opath, cpath, indices, mgeom};
 }
@@ -96,7 +92,7 @@ double FMM::get_sp_dist(const MM::Candidate *ca, const MM::Candidate *cb) {
   } else {
     Record *r = ubodt_.look_up(ca->edge->target, cb->edge->source);
     // No sp path exist from O to D.
-    if (r == NULL) return ubodt_.get_delta();
+    if (r == nullptr) return ubodt_.get_delta();
     // calculate original SP distance
     sp_dist = r->cost + ca->edge->length - ca->offset + cb->offset;
   }
@@ -106,7 +102,7 @@ double FMM::get_sp_dist(const MM::Candidate *ca, const MM::Candidate *cb) {
 void FMM::update_tg(
     MM::TransitionGraph *tg,
     const MM::Trajectory &traj, const MM::FMMAlgorConfig &config) {
-  SPDLOG_TRACE("Update transition graph")
+  SPDLOG_TRACE("Update transition graph");
   std::vector<TGLayer> &layers = tg->get_layers();
   std::vector<double> eu_dists = ALGORITHM::cal_eu_dist(traj.geom);
   int N = layers.size();
@@ -114,7 +110,7 @@ void FMM::update_tg(
     update_layer(i, &(layers[i]), &(layers[i + 1]),
                  eu_dists[i]);
   }
-  SPDLOG_TRACE("Update transition graph done")
+  SPDLOG_TRACE("Update transition graph done");
 }
 
 void FMM::update_layer(int level,
@@ -128,8 +124,7 @@ void FMM::update_layer(int level,
     for (auto iter_b = lb_ptr->begin(); iter_b != lb_ptr->end(); ++iter_b) {
       double sp_dist = get_sp_dist(iter_a->c, iter_b->c);
       double tp = TransitionGraph::calc_tp(sp_dist, eu_dist);
-      if (iter_a->cumu_prob + tp * iter_b->ep >= iter_b->cumu_prob)
-      {
+      if (iter_a->cumu_prob + tp * iter_b->ep >= iter_b->cumu_prob) {
         iter_b->cumu_prob = iter_a->cumu_prob + tp * iter_b->ep;
         iter_b->prev = &(*iter_a);
         iter_b->tp = tp;
@@ -137,7 +132,7 @@ void FMM::update_layer(int level,
       }
     }
   }
-  SPDLOG_TRACE("Update layer done")
+  SPDLOG_TRACE("Update layer done");
 }
 
 }

@@ -12,17 +12,17 @@ namespace MM {
 UBODT::UBODT(int buckets_arg, int multiplier_arg) :
     buckets(buckets_arg), multiplier(multiplier_arg) {
   SPDLOG_TRACE("Intialization UBODT with buckets {} multiplier {}",
-               buckets, multiplier)
+               buckets, multiplier);
   hashtable = (Record **) malloc(sizeof(Record *) * buckets);
   for (int i = 0; i < buckets; i++) {
     hashtable[i] = nullptr;
   }
-  SPDLOG_TRACE("Intialization UBODT finished")
+  SPDLOG_TRACE("Intialization UBODT finished");
 }
 
 UBODT::~UBODT() {
   /* Clean hashtable */
-  SPDLOG_TRACE("Clean UBODT")
+  SPDLOG_TRACE("Clean UBODT");
   int i;
   for (i = 0; i < buckets; ++i) {
     Record *head = hashtable[i];
@@ -34,7 +34,7 @@ UBODT::~UBODT() {
   }
   // Destory hash table pointer
   free(hashtable);
-  SPDLOG_TRACE("Clean UBODT finished")
+  SPDLOG_TRACE("Clean UBODT finished");
 }
 
 Record *UBODT::look_up(NodeIndex source, NodeIndex target) const {
@@ -137,7 +137,7 @@ int UBODT::estimate_ubodt_rows(const std::string &filename) {
   int rc = stat(filename.c_str(), &stat_buf);
   if (rc == 0) {
     int file_bytes = stat_buf.st_size;
-    SPDLOG_TRACE("UBODT file size is {} bytes", file_bytes)
+    SPDLOG_TRACE("UBODT file size is {} bytes", file_bytes);
     std::string fn_extension = filename.substr(filename.find_last_of(".") + 1);
     std::transform(fn_extension.begin(),
                    fn_extension.end(),
@@ -177,7 +177,7 @@ std::shared_ptr<UBODT> UBODT::read_ubodt_file(const std::string &filename,
   } else if (UTIL::check_file_extension(filename,"csv,txt")) {
     return read_ubodt_csv(filename,multiplier);
   } else {
-    SPDLOG_CRITICAL("File format not support: {}",filename)
+    SPDLOG_CRITICAL("File format not support: {}",filename);
     std::exit(EXIT_FAILURE);
     return nullptr;
   }
@@ -189,17 +189,17 @@ std::shared_ptr<UBODT> UBODT::read_ubodt_file(const std::string &filename,
  */
 std::shared_ptr<UBODT> UBODT::read_ubodt_csv(const std::string &filename,
                                              int multiplier) {
-  SPDLOG_INFO("Reading UBODT file (CSV format) from {}", filename)
+  SPDLOG_INFO("Reading UBODT file (CSV format) from {}", filename);
   int rows = estimate_ubodt_rows(filename);
   int buckets = find_prime_number(rows / LOAD_FACTOR);
-  SPDLOG_TRACE("Estimated buckets {}", buckets)
+  SPDLOG_TRACE("Estimated buckets {}", buckets);
   int progress_step = 1000000;
   std::shared_ptr<UBODT> table = std::make_shared<UBODT>(buckets, multiplier);
   FILE *stream = fopen(filename.c_str(), "r");
   unsigned int NUM_ROWS = 0;
   char line[BUFFER_LINE];
   if (fgets(line, BUFFER_LINE, stream)) {
-    SPDLOG_TRACE("Header line skipped.")
+    SPDLOG_TRACE("Header line skipped.");
   }
   while (fgets(line, BUFFER_LINE, stream)) {
     ++NUM_ROWS;
@@ -217,14 +217,14 @@ std::shared_ptr<UBODT> UBODT::read_ubodt_csv(const std::string &filename,
     r->next = nullptr;
     table->insert(r);
     if (NUM_ROWS % progress_step == 0) {
-      SPDLOG_INFO("Read rows {}", NUM_ROWS)
+      SPDLOG_INFO("Read rows {}", NUM_ROWS);
     }
   }
   fclose(stream);
   double lf = NUM_ROWS / (double) buckets;
-  SPDLOG_TRACE("Estimated load factor #elements/#tablebuckets {}", lf)
+  SPDLOG_TRACE("Estimated load factor #elements/#tablebuckets {}", lf);
   if (lf > 10) { SPDLOG_WARN("Load factor is too large.") }
-  SPDLOG_INFO("Finish reading UBODT with rows {}", NUM_ROWS)
+  SPDLOG_INFO("Finish reading UBODT with rows {}", NUM_ROWS);
   return table;
 }
 
@@ -233,10 +233,10 @@ std::shared_ptr<UBODT> UBODT::read_ubodt_csv(const std::string &filename,
  */
 std::shared_ptr<UBODT> UBODT::read_ubodt_binary(const std::string &filename,
                                                  int multiplier) {
-  SPDLOG_INFO("Reading UBODT file (binary format) from {}", filename)
+  SPDLOG_INFO("Reading UBODT file (binary format) from {}", filename);
   int rows = estimate_ubodt_rows(filename);
   int progress_step = 1000000;
-  SPDLOG_TRACE("Estimated rows is {}", rows)
+  SPDLOG_TRACE("Estimated rows is {}", rows);
   int buckets = find_prime_number(rows / LOAD_FACTOR);
   std::shared_ptr<UBODT> table = std::make_shared<UBODT>(buckets, multiplier);
   unsigned int NUM_ROWS = 0;
@@ -258,12 +258,12 @@ std::shared_ptr<UBODT> UBODT::read_ubodt_binary(const std::string &filename,
     r->next = nullptr;
     table->insert(r);
     if (NUM_ROWS % progress_step == 0) {
-      SPDLOG_INFO("Read rows {}", NUM_ROWS)
+      SPDLOG_INFO("Read rows {}", NUM_ROWS);
     }
   }
   ifs.close();
   double lf = NUM_ROWS / (double) buckets;
-  SPDLOG_TRACE("Estimated load factor #elements/#tablebuckets {}", lf)
+  SPDLOG_TRACE("Estimated load factor #elements/#tablebuckets {}", lf);
   if (lf > 10) {
     SPDLOG_WARN("Load factor is too large.")
   }

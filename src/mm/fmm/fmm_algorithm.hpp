@@ -23,7 +23,7 @@ struct FMMAlgorConfig{
   double radius;
   double gps_error;
   bool validate () const;
-  std::string to_string() const;
+  void print() const;
   static FMMAlgorConfig load_from_xml(
       const boost::property_tree::ptree &xml_data);
   static FMMAlgorConfig load_from_arg(

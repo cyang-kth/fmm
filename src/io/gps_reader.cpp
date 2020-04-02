@@ -36,7 +36,7 @@ std::vector<Trajectory> ITrajectoryReader::read_all_trajectories() {
 /**
  *  According to the documentation at http://gdal.org/1.11/ogr/ogr_apitut.html
  *
- *  Note that OGRFeature::GetGeometryRef() and OGRFeature::GetGeomFieldRef()
+ *  Note that OGRFeature::GetGeometryRef() and OGRFeature::GetGeomFieldRef();
  *  return a pointer to the internal geometry owned by the OGRFeature.
  *  We don't actually need to delete the return geometry. However, the
  *  OGRLayer::GetNextFeature() method returns a copy of the feature that is
@@ -57,13 +57,12 @@ std::vector<Trajectory> ITrajectoryReader::read_all_trajectories() {
 GDALTrajectoryReader::GDALTrajectoryReader(const std::string &filename,
                                            const std::string &id_name,
                                            const std::string &timestamp_name) {
-  SPDLOG_INFO("Read trajectory from file {} with id column {}",
-              filename, id_name)
+  SPDLOG_INFO("Read trajectory from file {}",filename);
   OGRRegisterAll();
   poDS = (GDALDataset *) GDALOpenEx(filename.c_str(),
                                     GDAL_OF_VECTOR, NULL, NULL, NULL);
   if (poDS == NULL) {
-    SPDLOG_CRITICAL("Open data source fail")
+    SPDLOG_CRITICAL("Open data source fail");
     exit(1);
   }
   ogrlayer = poDS->GetLayer(0);
@@ -74,25 +73,25 @@ GDALTrajectoryReader::GDALTrajectoryReader(const std::string &filename,
   // This should be a local field rather than a new variable
   id_idx = ogrFDefn->GetFieldIndex(id_name.c_str());
   if (id_idx < 0) {
-    SPDLOG_CRITICAL("Id column {} not found", id_name)
+    SPDLOG_CRITICAL("Id column {} not found", id_name);
     GDALClose(poDS);
     std::exit(EXIT_FAILURE);
   }
   timestamp_idx = ogrFDefn->GetFieldIndex(timestamp_name.c_str());
   if (timestamp_idx < 0) {
-    SPDLOG_WARN("Timestamp column {} not found", timestamp_name)
+    SPDLOG_WARN("Timestamp column {} not found", timestamp_name);
   }
   if (wkbFlatten(ogrFDefn->GetGeomType()) != wkbLineString) {
     SPDLOG_CRITICAL("Geometry type is {}, which should be linestring",
-                    OGRGeometryTypeToName(ogrFDefn->GetGeomType()))
+                    OGRGeometryTypeToName(ogrFDefn->GetGeomType()));
     GDALClose(poDS);
     std::exit(EXIT_FAILURE);
   } else {
-    SPDLOG_INFO("Geometry type is {}",
-                OGRGeometryTypeToName(ogrFDefn->GetGeomType()))
+    SPDLOG_DEBUG("Geometry type is {}",
+                OGRGeometryTypeToName(ogrFDefn->GetGeomType()));
   }
-  SPDLOG_INFO("Total number of trajectories {}", NUM_FEATURES)
-  SPDLOG_INFO("Finish reading meta data")
+  SPDLOG_INFO("Total number of trajectories {}", NUM_FEATURES);
+  SPDLOG_INFO("Finish reading meta data");
 }
 // If there are still features not read
 bool GDALTrajectoryReader::has_next_trajectory() {
@@ -148,14 +147,14 @@ CSVTrajectoryReader::CSVTrajectoryReader(const std::string &e_filename,
   }
   if (id_idx < 0 || geom_idx < 0) {
     SPDLOG_CRITICAL("Id {} or Geometry column {} not found",
-                    id_name, geom_name)
+                    id_name, geom_name);
     std::exit(EXIT_FAILURE);
   }
   if (timestamp_idx < 0) {
-    SPDLOG_WARN("Timestamp column {} not found", timestamp_name)
+    SPDLOG_WARN("Timestamp column {} not found", timestamp_name);
   }
   SPDLOG_INFO("Id index {} Geometry index {} Timstamp index {}",
-              id_idx, geom_idx, timestamp_idx)
+              id_idx, geom_idx, timestamp_idx);
 }
 
 std::vector<double> CSVTrajectoryReader::string2time(
@@ -245,21 +244,21 @@ CSVPointReader::CSVPointReader(const std::string &e_filename,
   }
   if (id_idx < 0 || x_idx < 0 || y_idx < 0) {
     if (id_idx < 0) {
-      SPDLOG_CRITICAL("Id column {} not found", id_name)
+      SPDLOG_CRITICAL("Id column {} not found", id_name);
     }
     if (x_idx < 0) {
-      SPDLOG_CRITICAL("Geom column {} not found", x_name)
+      SPDLOG_CRITICAL("Geom column {} not found", x_name);
     }
     if (y_idx < 0) {
-      SPDLOG_CRITICAL("Geom column {} not found", y_name)
+      SPDLOG_CRITICAL("Geom column {} not found", y_name);
     }
     std::exit(EXIT_FAILURE);
   }
   if (timestamp_idx < 0) {
-    SPDLOG_WARN("Time stamp {} not found, will be estimated ", time_name)
+    SPDLOG_WARN("Time stamp {} not found, will be estimated ", time_name);
   }
   SPDLOG_INFO("Id index {} x index {} y index {} time index {}",
-              id_idx, x_idx, y_idx, timestamp_idx)
+              id_idx, x_idx, y_idx, timestamp_idx);
 }
 
 Trajectory CSVPointReader::read_next_trajectory() {

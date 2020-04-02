@@ -60,7 +60,7 @@ DummyIndex DummyGraph::get_internal_index(NodeIndex external_index) const {
 
 int DummyGraph::get_edge_index(NodeIndex source,NodeIndex target,double cost)
 const {
-  SPDLOG_TRACE("Dummy graph get edge index {} {} cost {}",source,target,cost)
+  SPDLOG_TRACE("Dummy graph get edge index {} {} cost {}",source,target,cost);
   EdgeDescriptor e;
   OutEdgeIterator out_i, out_end;
   NodeIndex source_idx = get_internal_index(source);
@@ -72,7 +72,7 @@ const {
                  target_idx, boost::target(e,g),
                  g[e].index,
                  g[e].length,
-                 std::abs(g[e].length - cost))
+                 std::abs(g[e].length - cost));
     if (target_idx == boost::target(e,g) &&
         (std::abs(g[e].length - cost) <= DOUBLE_MIN)) {
       return g[e].index;

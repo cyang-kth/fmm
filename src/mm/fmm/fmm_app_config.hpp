@@ -31,6 +31,8 @@ class FMMAppConfig
   // UBODT configurations
   std::string ubodt_file;
   bool use_omp = false;
+  bool projected = false;
+  bool help_specified = false;
   // 0-trace,1-debug,2-info,3-warn,4-err,5-critical,6-off
   int log_level = 2;
   int step = 100;

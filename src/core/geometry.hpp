@@ -8,8 +8,6 @@
 
 namespace MM {
 
-namespace bg = boost::geometry;
-
 typedef boost::geometry::model::point<double, 2,
     boost::geometry::cs::cartesian> Point; // Point for rtree box
 /**
@@ -19,44 +17,45 @@ class LineString {
 public:
   typedef boost::geometry::model::linestring<Point> linestring_t;
   inline double get_x(int i) const{
-    return bg::get<0>(line.at(i));
+    return boost::geometry::get<0>(line.at(i));
   };
   inline double get_y(int i) const{
-    return bg::get<1>(line.at(i));
+    return boost::geometry::get<1>(line.at(i));
   };
   inline void set_x(int i, double v){
-    bg::set<0>(line.at(i),v);
+    boost::geometry::set<0>(line.at(i),v);
   };
   inline void set_y(int i, double v){
-    bg::set<1>(line.at(i),v);
+    boost::geometry::set<1>(line.at(i),v);
   };
   inline void add_point(double x,double y){
-    bg::append(line, Point(x,y));
+    boost::geometry::append(line, Point(x,y));
   };
   inline void add_point(const Point& point){
-    bg::append(line, point);
+    boost::geometry::append(line, point);
   };
   inline Point get_point(int i) const{
-    return Point(bg::get<0>(line.at(i)),bg::get<1>(line.at(i)));
+    return Point(boost::geometry::get<0>(
+      line.at(i)),boost::geometry::get<1>(line.at(i)));
   };
   inline const Point &at(int i) const{
     return line.at(i);
   }
   inline int get_num_points() const{
-    return bg::num_points(line);
+    return boost::geometry::num_points(line);
   };
   inline bool is_empty(){
-    return bg::num_points(line)==0;
+    return boost::geometry::num_points(line)==0;
   };
   inline void clear(){
-    bg::clear(line);
+    boost::geometry::clear(line);
   };
   inline double get_length() const {
-    return bg::length(line);
+    return boost::geometry::length(line);
   };
   inline std::string export_wkt() const{
     std::ostringstream ss;
-    ss << bg::wkt(line);
+    ss << boost::geometry::wkt(line);
     return ss.str();
   };
   inline std::string export_json() const{
@@ -78,7 +77,17 @@ public:
   linestring_t &get_geometry(){
     return line;
   };
-
+  inline bool operator==(const LineString& rhs) const {
+    int N = get_num_points();
+    if (rhs.get_num_points()!=N)
+      return false;
+    bool result = true;
+    for (int i=0;i<N;++i){
+      if (boost::geometry::distance(get_point(i),rhs.get_point(i))>1e-6)
+        result = false;
+    }
+    return result;
+  };
   friend std::ostream& operator<<(std::ostream& os, const LineString& rhs);
 private:
   linestring_t line;

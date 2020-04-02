@@ -5,35 +5,35 @@
 
 namespace MM {
 
-std::string ResultConfig::to_string() const {
+void ResultConfig::print() const {
   std::stringstream ss;
-  ss << "Output file: " << file << "\n";
-  ss << "Output fields: ";
   if (output_config.write_ogeom)
-    ss << " ogeom ";
+    ss << "ogeom ";
   if (output_config.write_opath)
-    ss << " opath ";
+    ss << "opath ";
   if (output_config.write_pgeom)
-    ss << " pgeom ";
+    ss << "pgeom ";
   if (output_config.write_offset)
-    ss << " offset ";
+    ss << "offset ";
   if (output_config.write_error)
-    ss << " error ";
+    ss << "error ";
   if (output_config.write_spdist)
-    ss << " spdist ";
+    ss << "spdist ";
   if (output_config.write_cpath)
-    ss << " cpath ";
+    ss << "cpath ";
   if (output_config.write_tpath)
-    ss << " tpath ";
+    ss << "tpath ";
   if (output_config.write_mgeom)
-    ss << " mgeom ";
+    ss << "mgeom ";
   if (output_config.write_ep)
-    ss << " ep ";
+    ss << "ep ";
   if (output_config.write_tp)
-    ss << " tp ";
+    ss << "tp ";
   if (output_config.write_length)
-    ss << " length ";
-  return ss.str();
+    ss << "length ";
+  SPDLOG_INFO("ResultConfig");
+  SPDLOG_INFO("File: {}",file);
+  SPDLOG_INFO("Fields: {}",ss.str());
 };
 
 ResultConfig ResultConfig::load_from_xml(

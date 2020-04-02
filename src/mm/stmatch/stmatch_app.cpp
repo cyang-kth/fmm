@@ -28,11 +28,11 @@ void STMATCHApp::run() {
   int total_points = 0;
   int step_size = 100;
   if (config_.step > 0) step_size = config_.step;
-  SPDLOG_INFO("Progress report step {}", step_size)
+  SPDLOG_INFO("Progress report step {}", step_size);
   UTIL::TimePoint corrected_begin = std::chrono::steady_clock::now();
-  SPDLOG_INFO("Start to match trajectories")
+  SPDLOG_INFO("Start to match trajectories");
   if (config_.use_omp){
-    SPDLOG_INFO("Run map matching parallelly")
+    SPDLOG_INFO("Run map matching parallelly");
     int buffer_trajectories_size = 100000;
     while (reader.has_next_trajectory()) {
       std::vector<Trajectory> trajectories =
@@ -59,10 +59,10 @@ void STMATCHApp::run() {
       }
     }
   } else {
-    SPDLOG_INFO("Run map matching in single thread")
+    SPDLOG_INFO("Run map matching in single thread");
     while (reader.has_next_trajectory()) {
       if (progress % step_size == 0) {
-        SPDLOG_INFO("Progress {}", progress)
+        SPDLOG_INFO("Progress {}", progress);
       }
       Trajectory trajectory = reader.read_next_trajectory();
       int points_in_tr = trajectory.geom.get_num_points();
@@ -76,21 +76,21 @@ void STMATCHApp::run() {
       ++progress;
     }
   }
-  SPDLOG_INFO("MM process finished")
+  SPDLOG_INFO("MM process finished");
   UTIL::TimePoint end_time = std::chrono::steady_clock::now();
   double time_spent = std::chrono::duration_cast<std::chrono::milliseconds>(
       end_time - start_time).count() / 1000.;
   double time_spent_exclude_input = std::chrono::duration_cast<
       std::chrono::milliseconds>(end_time - corrected_begin).count() / 1000.;
-  SPDLOG_INFO("Time takes {}", time_spent)
-  SPDLOG_INFO("Time takes excluding input {}", time_spent_exclude_input)
+  SPDLOG_INFO("Time takes {}", time_spent);
+  SPDLOG_INFO("Time takes excluding input {}", time_spent_exclude_input);
   SPDLOG_INFO("Finish map match total points {} matched {}",
-              total_points, points_matched)
-  SPDLOG_INFO("Matched percentage: {}", points_matched / (double) total_points)
-  SPDLOG_INFO("Point match speed: {}", points_matched / time_spent)
+              total_points, points_matched);
+  SPDLOG_INFO("Matched percentage: {}", points_matched / (double) total_points);
+  SPDLOG_INFO("Point match speed: {}", points_matched / time_spent);
   SPDLOG_INFO("Point match speed (excluding input): {}",
-              points_matched / time_spent_exclude_input)
-  SPDLOG_INFO("Time takes {}", time_spent)
+              points_matched / time_spent_exclude_input);
+  SPDLOG_INFO("Time takes {}", time_spent);
 };
 
 }

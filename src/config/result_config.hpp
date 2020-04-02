@@ -45,7 +45,7 @@ struct ResultConfig{
   std::string file;
   OutputConfig output_config;
   bool validate() const;
-  std::string to_string() const;
+  void print() const;
   static std::set<std::string> string2set(const std::string &s);
   static ResultConfig load_from_xml(
     const boost::property_tree::ptree &xml_data);

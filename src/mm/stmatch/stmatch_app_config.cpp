@@ -6,23 +6,28 @@
 #include "util/debug.hpp"
 #include "util/util.hpp"
 
-namespace MM{
+namespace MM {
 
 STMATCHAppConfig::STMATCHAppConfig(int argc, char **argv){
+  spdlog::set_pattern("[%^%l%$][%s:%-3#] %v");
   if (argc==2) {
     std::string configfile(argv[1]);
-    load_xml(configfile);
+    if (UTIL::check_file_extension(configfile,"xml,XML"))
+      load_xml(configfile);
+    else {
+      load_arg(argc,argv);
+    }
   } else {
     load_arg(argc,argv);
   }
-  print();
-  std::cout<<"Set log level as "<<LOG_LEVESLS[log_level]<<"\n";
   spdlog::set_level((spdlog::level::level_enum) log_level);
-  spdlog::set_pattern("[%l][%s:%-3#] %v");
+  if (!help_specified)
+    print();
 };
 
 void STMATCHAppConfig::load_xml(const std::string &file){
-  std::cout<<"Start with reading stmatch xml configuration "<<file<<"\n";
+  SPDLOG_INFO("Start with reading stmatch xml configuration {}",
+    file);
   // Create empty property tree object
   boost::property_tree::ptree tree;
   boost::property_tree::read_xml(file, tree);
@@ -33,40 +38,57 @@ void STMATCHAppConfig::load_xml(const std::string &file){
   log_level = tree.get("config.other.log_level",2);
   step =  tree.get("config.other.step",100);
   use_omp = !(!tree.get_child_optional("config.other.use_omp"));
-  std::cout<<"Finish with reading stmatch xml configuration.\n";
+  projected = !(!tree.get_child_optional("config.other.projected"));
+  SPDLOG_INFO("Finish with reading stmatch xml configuration");
 };
 
 void STMATCHAppConfig::load_arg(int argc, char **argv){
-  std::cout<<"Start reading stmatch configuration from arguments\n";
+  SPDLOG_INFO("Start reading stmatch configuration from arguments");
   cxxopts::Options options("stmatch_config", "Configuration parser");
   options.add_options()
-      ("network","Network file name", cxxopts::value<std::string>())
-      ("network_id","Network id name",
-       cxxopts::value<std::string>()->default_value("id"))
-      ("source","Network source name",
-       cxxopts::value<std::string>()->default_value("source"))
-      ("target","Network target name",
-       cxxopts::value<std::string>()->default_value("target"))
-      ("gps","GPS file name", cxxopts::value<std::string>())
-      ("gps_id","GPS file id",
-       cxxopts::value<std::string>()->default_value("id"))
-      ("gps_geom","GPS file geom column name",
-       cxxopts::value<std::string>()->default_value("geom"))
-      ("k,candidates","Number of candidates",
-       cxxopts::value<int>()->default_value("8"))
-      ("r,radius","Search radius",
-       cxxopts::value<double>()->default_value("300.0"))
-      ("e,error","GPS error",
-       cxxopts::value<double>()->default_value("50.0"))
-      ("vmax","Maximum speed",
-       cxxopts::value<double>()->default_value("80.0"))
-      ("factor","Scale factor",
-       cxxopts::value<double>()->default_value("1.5"))
-      ("o,output","Output file name", cxxopts::value<std::string>())
-      ("m,output_fields","Output fields", cxxopts::value<std::string>())
-      ("l,log_level","Log level",cxxopts::value<int>()->default_value("2"))
-      ("step","Step report",cxxopts::value<int>()->default_value("100"));
-
+    ("network","Network file name",
+      cxxopts::value<std::string>()->default_value(""))
+    ("network_id","Network id name",
+    cxxopts::value<std::string>()->default_value("id"))
+    ("source","Network source name",
+    cxxopts::value<std::string>()->default_value("source"))
+    ("target","Network target name",
+    cxxopts::value<std::string>()->default_value("target"))
+    ("gps","GPS file name",
+      cxxopts::value<std::string>()->default_value(""))
+    ("gps_id","GPS file id",
+    cxxopts::value<std::string>()->default_value("id"))
+    ("gps_x","GPS x name",
+    cxxopts::value<std::string>()->default_value("x"))
+    ("gps_y","GPS y name",
+    cxxopts::value<std::string>()->default_value("y"))
+    ("gps_geom","GPS file geom column name",
+    cxxopts::value<std::string>()->default_value("geom"))
+    ("gps_timestamp",   "GPS file timestamp column name",
+    cxxopts::value<std::string>()->default_value("timestamp"))
+    ("k,candidates","Number of candidates",
+    cxxopts::value<int>()->default_value("8"))
+    ("r,radius","Search radius",
+    cxxopts::value<double>()->default_value("300.0"))
+    ("e,error","GPS error",
+    cxxopts::value<double>()->default_value("50.0"))
+    ("vmax","Maximum speed",
+    cxxopts::value<double>()->default_value("80.0"))
+    ("factor","Scale factor",
+    cxxopts::value<double>()->default_value("1.5"))
+    ("o,output","Output file name",
+      cxxopts::value<std::string>()->default_value(""))
+    ("m,output_fields","Output fields",
+      cxxopts::value<std::string>()->default_value(""))
+    ("l,log_level","Log level",cxxopts::value<int>()->default_value("2"))
+    ("s,step","Step report",cxxopts::value<int>()->default_value("100"))
+    ("h,help","Help information")
+    ("projected","Data projected or not")
+    ("use_omp","Use omp or not");
+  if (argc==1) {
+    help_specified = true;
+    return;
+  }
   auto result = options.parse(argc, argv);
   network_config = NetworkConfig::load_from_arg(result);
   gps_config = GPSConfig::load_from_arg(result);
@@ -75,18 +97,23 @@ void STMATCHAppConfig::load_arg(int argc, char **argv){
   log_level = result["log_level"].as<int>();
   step = result["step"].as<int>();
   use_omp = result.count("use_omp")>0;
-  std::cout<<"Finish with reading stmatch arg configuration\n";
+  projected = result.count("projected")>0;
+  if (result.count("help")>0){
+    help_specified = true;
+  }
+  SPDLOG_INFO("Finish with reading stmatch arg configuration");
 };
 
 void STMATCHAppConfig::print() const {
-  std::cout<<"---Network Config---\n"<< network_config.to_string() << "\n";
-  std::cout<<"---GPS Config---\n"<< gps_config.to_string() << "\n";
-  std::cout<<"---Result Config---\n"<< result_config.to_string() << "\n";
-  std::cout<<"---STMATCH Config---\n"<< stmatch_config.to_string() << "\n";
-  std::cout<<"---Others---\n";
-  std::cout<< "log_level: " << log_level << "\n";
-  std::cout<< "step: " << step << "\n";
-  std::cout<< "use_omp: " << (use_omp?"true":"false") << "\n";
+  SPDLOG_INFO("----   Print configuration    ----")
+  network_config.print();
+  gps_config.print();
+  result_config.print();
+  stmatch_config.print();
+  SPDLOG_INFO("Log level {}",LOG_LEVESLS[log_level])
+  SPDLOG_INFO("Step {}",step)
+  SPDLOG_INFO("Use omp {}",(use_omp ? "true" : "false"))
+  SPDLOG_INFO("---- Print configuration done ----")
 };
 
 void STMATCHAppConfig::print_help(){
@@ -97,10 +124,14 @@ void STMATCHAppConfig::print_help(){
   std::cout<<"--target (optional) <string>: Network target name (target)\n";
   std::cout<<"--gps (required) <string>: GPS file name\n";
   std::cout<<"--gps_id (optional) <string>: GPS id name (id)\n";
+  std::cout<<"--gps_x (optional) <string>: GPS x name (x)\n";
+  std::cout<<"--gps_y (optional) <string>: GPS y name (y)\n";
+  std::cout<<"--gps_timestamp (optional) <string>: "
+             "GPS timestamp name (timestamp)\n";
   std::cout<<"--gps_geom (optional) <string>: GPS geometry name (geom)\n";
   std::cout<<"-k/--candidates (optional) <int>: number of candidates (8)\n";
   std::cout<<"-r/--radius (optional) <double>: search "
-             "radius (unit meter) (300)\n";
+    "radius (unit meter) (300)\n";
   std::cout<<"-e/--error (optional) <double>: GPS error (unit meter) (50)\n";
   std::cout<<"-f/--factor (optional) <double>: scale factor (1.5)\n";
   std::cout<<"-v/--vmax (optional) <double>: Maximum speed (unit km/h) (80)\n";
@@ -115,16 +146,16 @@ void STMATCHAppConfig::print_help(){
   std::cout<<"For xml configuration, check example folder\n";
 }
 bool STMATCHAppConfig::validate() const {
-  if (!gps_config.validate()){
+  if (!gps_config.validate()) {
     return false;
   }
-  if (!result_config.validate()){
+  if (!result_config.validate()) {
     return false;
   }
-  if (!network_config.validate()){
+  if (!network_config.validate()) {
     return false;
   }
-  if (!stmatch_config.validate()){
+  if (!stmatch_config.validate()) {
     return false;
   }
   return true;

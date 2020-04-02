@@ -20,7 +20,7 @@ void UBODTGenApp::run() const {
   config_.print();
   std::chrono::steady_clock::time_point begin =
       std::chrono::steady_clock::now();
-  SPDLOG_INFO("Write UBODT to file {}", config_.result_file)
+  SPDLOG_INFO("Write UBODT to file {}", config_.result_file);
   bool binary = config_.is_binary_output();
   if (config_.use_omp){
     precompute_ubodt_omp(config_.result_file, config_.delta, binary);

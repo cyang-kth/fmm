@@ -36,7 +36,7 @@ public:
   std::vector<EdgeIndex> shortest_path_dijkstra(NodeIndex source,
                                                 NodeIndex target) const;
   // this function is used in AStar routing
-  inline double calc_heuristic_dist(
+  double calc_heuristic_dist(
     const Point &p1,const Point &p2) const;
   std::vector<EdgeIndex> shortest_path_astar(NodeIndex source,
                                              NodeIndex target) const;

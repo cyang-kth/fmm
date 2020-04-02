@@ -7,14 +7,10 @@
 
 namespace MM {
 
-std::string STMATCHAlgorConfig::to_string() const {
-  std::stringstream ss;
-  ss<<"k: "<< k << "\n";
-  ss<<"radius: "<< radius << "\n";
-  ss<<"gps_error: "<< gps_error << "\n";
-  ss<<"vmax: "<< vmax << "\n";
-  ss<<"factor: "<< factor << "\n";
-  return ss.str();
+void STMATCHAlgorConfig::print() const {
+  SPDLOG_INFO("STMATCHAlgorithmConfig");
+  SPDLOG_INFO("k {} radius {} gps_error {} vmax {} factor {}",
+      k,radius,gps_error,vmax,factor);
 };
 
 STMATCHAlgorConfig STMATCHAlgorConfig::load_from_xml(
@@ -38,8 +34,7 @@ STMATCHAlgorConfig STMATCHAlgorConfig::load_from_arg(
 };
 
 bool STMATCHAlgorConfig::validate() const{
-  if (gps_error <= 0 || radius <= 0 || k <= 0 || vmax <=0 || factor<=0 )
-  {
+  if (gps_error <= 0 || radius <= 0 || k <= 0 || vmax <=0 || factor<=0 ) {
     SPDLOG_CRITICAL("Invalid mm parameter k {} r {} gps error {} vmax {} f {}",
                     k,radius,gps_error,vmax,factor);
     return false;
@@ -50,24 +45,24 @@ bool STMATCHAlgorConfig::validate() const{
 // Procedure of HMM based map matching algorithm.
 MatchResult STMATCH::match_traj(const Trajectory &traj,
                                 const STMATCHAlgorConfig &config) {
-  SPDLOG_TRACE("Count of points in trajectory {}", traj.geom.get_num_points())
-  SPDLOG_TRACE("Search candidates")
+  SPDLOG_TRACE("Count of points in trajectory {}", traj.geom.get_num_points());
+  SPDLOG_TRACE("Search candidates");
   Traj_Candidates tc = network_.search_tr_cs_knn(
       traj.geom, config.k, config.radius);
   SPDLOG_TRACE("Trajectory candidate {}", tc);
   if (tc.empty()) return MatchResult{};
-  SPDLOG_TRACE("Generate dummy graph")
+  SPDLOG_TRACE("Generate dummy graph");
   DummyGraph dg(tc);
-  SPDLOG_TRACE("Generate composite_graph")
+  SPDLOG_TRACE("Generate composite_graph");
   CompositeGraph cg(graph_, dg);
-  SPDLOG_TRACE("Generate composite_graph")
+  SPDLOG_TRACE("Generate composite_graph");
   TransitionGraph tg(tc, config.gps_error);
-  SPDLOG_TRACE("Update cost in transition graph")
+  SPDLOG_TRACE("Update cost in transition graph");
   // The network will be used internally to update transition graph
   update_tg(&tg, cg, traj, config);
-  SPDLOG_TRACE("Optimal path inference")
+  SPDLOG_TRACE("Optimal path inference");
   TGOpath tg_opath = tg.backtrack();
-  SPDLOG_TRACE("Optimal path size {}", tg_opath.size())
+  SPDLOG_TRACE("Optimal path size {}", tg_opath.size());
   MatchedCandidatePath matched_candidate_path(tg_opath.size());
   std::transform(tg_opath.begin(), tg_opath.end(),
                  matched_candidate_path.begin(),
@@ -84,9 +79,9 @@ MatchResult STMATCH::match_traj(const Trajectory &traj,
                  });
   std::vector<int> indices;
   C_Path cpath = build_cpath(tg_opath, &indices);
-  SPDLOG_TRACE("Opath is {}",opath)
-  SPDLOG_TRACE("Indices is {}",indices)
-  SPDLOG_TRACE("Complete path is {}",cpath)
+  SPDLOG_TRACE("Opath is {}",opath);
+  SPDLOG_TRACE("Indices is {}",indices);
+  SPDLOG_TRACE("Complete path is {}",cpath);
   LineString mgeom = network_.complete_path_to_geometry(
       traj.geom, cpath);
   return MatchResult{
@@ -97,13 +92,13 @@ void STMATCH::update_tg(TransitionGraph *tg,
                         const CompositeGraph &cg,
                         const Trajectory &traj,
                         const STMATCHAlgorConfig &config) {
-  SPDLOG_TRACE("Update transition graph")
+  SPDLOG_TRACE("Update transition graph");
   std::vector<TGLayer> &layers = tg->get_layers();
   std::vector<double> eu_dists = ALGORITHM::cal_eu_dist(traj.geom);
   int N = layers.size();
   for (int i = 0; i < N - 1; ++i) {
     // Routing from current_layer to next_layer
-    SPDLOG_TRACE("Update layer {} ", i)
+    SPDLOG_TRACE("Update layer {} ", i);
     double delta = 0;
     if (traj.timestamps.size()!=N){
       delta = eu_dists[i]*config.factor*4;
@@ -114,7 +109,7 @@ void STMATCH::update_tg(TransitionGraph *tg,
     update_layer(i, &(layers[i]), &(layers[i + 1]),
                  cg, eu_dists[i], delta);
   }
-  SPDLOG_TRACE("Update transition graph done")
+  SPDLOG_TRACE("Update transition graph done");
 }
 
 void STMATCH::update_layer(int level, TGLayer *la_ptr, TGLayer *lb_ptr,
@@ -125,17 +120,17 @@ void STMATCH::update_layer(int level, TGLayer *la_ptr, TGLayer *lb_ptr,
   TGLayer &lb = *lb_ptr;
   for (auto iter = la_ptr->begin(); iter != la_ptr->end(); ++iter) {
     NodeIndex source = iter->c->index;
-    SPDLOG_TRACE("  Calculate distance from source {}", source)
+    SPDLOG_TRACE("  Calculate distance from source {}", source);
     // single source upper bound routing
     std::vector<NodeIndex> targets(lb.size());
     std::transform(lb.begin(), lb.end(), targets.begin(),
                    [](TGElement &a) {
                      return a.c->index;
                    });
-    SPDLOG_TRACE("  Upperbound shortest path {} ", delta)
+    SPDLOG_TRACE("  Upperbound shortest path {} ", delta);
     std::vector<double> distances = shortest_path_upperbound(
         level, cg, source, targets, delta);
-    SPDLOG_TRACE("  Update property of transition graph ")
+    SPDLOG_TRACE("  Update property of transition graph ");
     for (int i = 0; i < distances.size(); ++i) {
       double tp = TransitionGraph::calc_tp(distances[i], eu_dist);
       if (lb[i].cumu_prob < iter->cumu_prob + tp * lb[i].ep) {
@@ -146,7 +141,7 @@ void STMATCH::update_layer(int level, TGLayer *la_ptr, TGLayer *lb_ptr,
       }
     }
   }
-  SPDLOG_TRACE("Update layer done")
+  SPDLOG_TRACE("Update layer done");
 }
 
 /**
@@ -160,8 +155,8 @@ void STMATCH::update_layer(int level, TGLayer *la_ptr, TGLayer *lb_ptr,
 std::vector<double> STMATCH::shortest_path_upperbound(
     int level, const CompositeGraph &cg, NodeIndex source,
     const std::vector<NodeIndex> &targets, double delta) {
-  SPDLOG_TRACE("Upperbound shortest path source {}", source)
-  SPDLOG_TRACE("Upperbound shortest path targets {}", targets)
+  SPDLOG_TRACE("Upperbound shortest path source {}", source);
+  SPDLOG_TRACE("Upperbound shortest path targets {}", targets);
   std::unordered_set<NodeIndex> unreached_targets;
   for (auto &node:targets) {
     unreached_targets.insert(node);
@@ -177,12 +172,12 @@ std::vector<double> STMATCH::shortest_path_upperbound(
   while (!Q.empty() && !unreached_targets.empty()) {
     HeapNode node = Q.top();
     Q.pop();
-    SPDLOG_TRACE("  Node u {} dist {}", node.index, node.dist)
+    SPDLOG_TRACE("  Node u {} dist {}", node.index, node.dist);
     NodeIndex u = node.index;
     auto iter = unreached_targets.find(u);
     if (iter != unreached_targets.end()) {
       // Remove u
-      SPDLOG_TRACE("  Remove target {}", u)
+      SPDLOG_TRACE("  Remove target {}", u);
       unreached_targets.erase(iter);
     }
     if (node.dist > delta) break;
@@ -191,14 +186,14 @@ std::vector<double> STMATCH::shortest_path_upperbound(
          ++node_iter) {
       NodeIndex v = node_iter->v;
       temp_dist = node.dist + node_iter->cost;
-      SPDLOG_TRACE("  Examine node v {} temp dist {}", v, temp_dist)
+      SPDLOG_TRACE("  Examine node v {} temp dist {}", v, temp_dist);
       auto v_iter = dmap.find(v);
       if (v_iter != dmap.end()) {
         // dmap contains node v
         if (v_iter->second - temp_dist > 1e-6) {
           // a smaller distance is found for v
           SPDLOG_TRACE("    Update key {} {} in pdmap prev dist {}",
-                       v, temp_dist, v_iter->second)
+                       v, temp_dist, v_iter->second);
           pmap[v] = u;
           dmap[v] = temp_dist;
           Q.decrease_key(v, temp_dist);
@@ -207,7 +202,7 @@ std::vector<double> STMATCH::shortest_path_upperbound(
         // dmap does not contain v
         if (temp_dist <= delta) {
           SPDLOG_TRACE("    Insert key {} {} into pmap and dmap",
-                       v, temp_dist)
+                       v, temp_dist);
           Q.push(v, temp_dist);
           pmap.insert({v, u});
           dmap.insert({v, temp_dist});
@@ -216,7 +211,7 @@ std::vector<double> STMATCH::shortest_path_upperbound(
     }
   }
   // Update distances
-  SPDLOG_TRACE("  Update distances")
+  SPDLOG_TRACE("  Update distances");
   std::vector<double> distances;
   for (int i = 0; i < targets.size(); ++i) {
     if (dmap.find(targets[i]) != dmap.end()) {
@@ -225,12 +220,12 @@ std::vector<double> STMATCH::shortest_path_upperbound(
       distances.push_back(std::numeric_limits<double>::max());
     }
   }
-  SPDLOG_TRACE("  Distance value {}", distances)
+  SPDLOG_TRACE("  Distance value {}", distances);
   return distances;
 }
 
 C_Path STMATCH::build_cpath(const TGOpath &opath, std::vector<int> *indices) {
-  SPDLOG_DEBUG("Build cpath from optimal candidate path")
+  SPDLOG_DEBUG("Build cpath from optimal candidate path");
   C_Path cpath;
   if (!indices->empty()) indices->clear();
   if (opath.empty()) return cpath;
