@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<mm_config>
+<config>
   <input>
     <network>
       <file>data/edges.shp</file>
@@ -26,4 +26,4 @@
     <log_level>2</log_level>
     <use_omp/>
   </other>
-</mm_config>
+</config>

@@ -19,11 +19,11 @@ std::string STMATCHAlgorConfig::to_string() const {
 
 STMATCHAlgorConfig STMATCHAlgorConfig::load_from_xml(
     const boost::property_tree::ptree &xml_data){
-  int k = xml_data.get("mm_config.parameters.k", 8);
-  double radius = xml_data.get("mm_config.parameters.r", 300.0);
-  double gps_error = xml_data.get("mm_config.parameters.gps_error", 50.0);
-  double vmax = xml_data.get("mm_config.parameters.vmax", 80.0);;
-  double factor = xml_data.get("mm_config.parameters.factor", 1.5);;
+  int k = xml_data.get("config.parameters.k", 8);
+  double radius = xml_data.get("config.parameters.r", 300.0);
+  double gps_error = xml_data.get("config.parameters.gps_error", 50.0);
+  double vmax = xml_data.get("config.parameters.vmax", 80.0);;
+  double factor = xml_data.get("config.parameters.factor", 1.5);;
   return STMATCHAlgorConfig{k, radius, gps_error, vmax, factor};
 };
 
@@ -84,7 +84,9 @@ MatchResult STMATCH::match_traj(const Trajectory &traj,
                  });
   std::vector<int> indices;
   C_Path cpath = build_cpath(tg_opath, &indices);
-  SPDLOG_TRACE("Complete path inference")
+  SPDLOG_TRACE("Opath is {}",opath)
+  SPDLOG_TRACE("Indices is {}",indices)
+  SPDLOG_TRACE("Complete path is {}",cpath)
   LineString mgeom = network_.complete_path_to_geometry(
       traj.geom, cpath);
   return MatchResult{
@@ -228,7 +230,7 @@ std::vector<double> STMATCH::shortest_path_upperbound(
 }
 
 C_Path STMATCH::build_cpath(const TGOpath &opath, std::vector<int> *indices) {
-  SPDLOG_TRACE("Build cpath from optimal candidate path")
+  SPDLOG_DEBUG("Build cpath from optimal candidate path")
   C_Path cpath;
   if (!indices->empty()) indices->clear();
   if (opath.empty()) return cpath;
@@ -236,12 +238,12 @@ C_Path STMATCH::build_cpath(const TGOpath &opath, std::vector<int> *indices) {
   int N = opath.size();
   cpath.push_back(opath[0]->c->edge->id);
   int current_idx = 0;
+  SPDLOG_TRACE("Insert index {}", current_idx);
   indices->push_back(current_idx);
-  ++current_idx;
   for (int i = 0; i < N - 1; ++i) {
     const Candidate *a = opath[i]->c;
     const Candidate *b = opath[i + 1]->c;
-    // SPDLOG_TRACE("Check a {} b {}",a->edge->id,b->edge->id);
+    SPDLOG_TRACE("Check a {} b {}",a->edge->id,b->edge->id);
     if ((a->edge->id != b->edge->id) || (a->offset > b->offset)) {
       auto segs = graph_.shortest_path_dijkstra(a->edge->target,
                                                 b->edge->source);
@@ -250,19 +252,21 @@ C_Path STMATCH::build_cpath(const TGOpath &opath, std::vector<int> *indices) {
         indices->clear();
         return {};
       }
-      // SPDLOG_TRACE("Edges found {}",segs);
+      SPDLOG_TRACE("Edges found {}",segs);
       for (int e:segs) {
         cpath.push_back(edges[e].id);
         ++current_idx;
       }
       cpath.push_back(b->edge->id);
       ++current_idx;
+      SPDLOG_TRACE("Insert index {}", current_idx);
       indices->push_back(current_idx);
     } else {
+      SPDLOG_TRACE("Insert index {}", current_idx);
       indices->push_back(current_idx);
     }
   }
-  // SPDLOG_INFO("Build cpath from optimal candidate path done");
+  SPDLOG_DEBUG("Build cpath from optimal candidate path done");
   return cpath;
 }
 

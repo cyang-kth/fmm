@@ -15,6 +15,7 @@ STMATCHAppConfig::STMATCHAppConfig(int argc, char **argv){
   } else {
     load_arg(argc,argv);
   }
+  print();
   std::cout<<"Set log level as "<<LOG_LEVESLS[log_level]<<"\n";
   spdlog::set_level((spdlog::level::level_enum) log_level);
   spdlog::set_pattern("[%l][%s:%-3#] %v");
@@ -29,15 +30,15 @@ void STMATCHAppConfig::load_xml(const std::string &file){
   gps_config = GPSConfig::load_from_xml(tree);
   result_config = ResultConfig::load_from_xml(tree);
   stmatch_config = STMATCHAlgorConfig::load_from_xml(tree);
-  log_level = tree.get("mm_config.other.log_level",2);
-  step =  tree.get("mm_config.other.step",100);
-  use_omp = !(!tree.get_child_optional("mm_config.other.use_omp"));
+  log_level = tree.get("config.other.log_level",2);
+  step =  tree.get("config.other.step",100);
+  use_omp = !(!tree.get_child_optional("config.other.use_omp"));
   std::cout<<"Finish with reading stmatch xml configuration.\n";
 };
 
 void STMATCHAppConfig::load_arg(int argc, char **argv){
   std::cout<<"Start reading stmatch configuration from arguments\n";
-  cxxopts::Options options("mm_config", "Configuration parser of fmm");
+  cxxopts::Options options("stmatch_config", "Configuration parser");
   options.add_options()
       ("network","Network file name", cxxopts::value<std::string>())
       ("network_id","Network id name",

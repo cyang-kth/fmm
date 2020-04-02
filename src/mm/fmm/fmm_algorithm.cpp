@@ -19,9 +19,9 @@ std::string FMMAlgorConfig::to_string() const {
 
 FMMAlgorConfig FMMAlgorConfig::load_from_xml(
     const boost::property_tree::ptree &xml_data){
-  int k = xml_data.get("mm_config.parameters.k", 8);
-  double radius = xml_data.get("mm_config.parameters.r", 300.0);
-  double gps_error = xml_data.get("mm_config.parameters.gps_error", 50.0);
+  int k = xml_data.get("config.parameters.k", 8);
+  double radius = xml_data.get("config.parameters.r", 300.0);
+  double gps_error = xml_data.get("config.parameters.gps_error", 50.0);
   return FMMAlgorConfig{k, radius, gps_error};
 };
 

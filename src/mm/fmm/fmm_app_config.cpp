@@ -33,16 +33,16 @@ void FMMAppConfig::load_xml(const std::string &file){
   fmm_config = FMMAlgorConfig::load_from_xml(tree);
 
   // UBODT
-  ubodt_file = tree.get<std::string>("mm_config.input.ubodt.file");
-  log_level = tree.get("mm_config.other.log_level",2);
-  step =  tree.get("mm_config.other.step",100);
-  use_omp = !(!tree.get_child_optional("mm_config.other.use_omp"));
+  ubodt_file = tree.get<std::string>("config.input.ubodt.file");
+  log_level = tree.get("config.other.log_level",2);
+  step =  tree.get("config.other.step",100);
+  use_omp = !(!tree.get_child_optional("config.other.use_omp"));
   std::cout<<"Finish with reading FMM xml configuration.\n";
 };
 
 void FMMAppConfig::load_arg(int argc, char **argv){
   std::cout<<"Start reading FMM configuration from arguments\n";
-  cxxopts::Options options("mm_config", "Configuration parser of fmm");
+  cxxopts::Options options("fmm_config", "Configuration parser of fmm");
   options.add_options()
       ("ubodt","Ubodt file name", cxxopts::value<std::string>())
       ("network","Network file name", cxxopts::value<std::string>())

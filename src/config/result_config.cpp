@@ -39,49 +39,49 @@ std::string ResultConfig::to_string() const {
 ResultConfig ResultConfig::load_from_xml(
     const boost::property_tree::ptree &xml_data) {
   ResultConfig config;
-  config.file = xml_data.get<std::string>("mm_config.output.file");
-  if (xml_data.get_child_optional("mm_config.output.fields")) {
+  config.file = xml_data.get<std::string>("config.output.file");
+  if (xml_data.get_child_optional("config.output.fields")) {
     // Fields specified
     // close the default output fields (cpath,mgeom are true by default)
     config.output_config.write_cpath = false;
     config.output_config.write_mgeom = false;
-    if (xml_data.get_child_optional("mm_config.output.fields.ogeom")) {
+    if (xml_data.get_child_optional("config.output.fields.ogeom")) {
       config.output_config.write_ogeom = true;
     }
-    if (xml_data.get_child_optional("mm_config.output.fields.opath")) {
+    if (xml_data.get_child_optional("config.output.fields.opath")) {
       config.output_config.write_opath = true;
     }
-    if (xml_data.get_child_optional("mm_config.output.fields.cpath")) {
+    if (xml_data.get_child_optional("config.output.fields.cpath")) {
       config.output_config.write_cpath = true;
     }
-    if (xml_data.get_child_optional("mm_config.output.fields.tpath")) {
+    if (xml_data.get_child_optional("config.output.fields.tpath")) {
       config.output_config.write_tpath = true;
     }
-    if (xml_data.get_child_optional("mm_config.output.fields.mgeom")) {
+    if (xml_data.get_child_optional("config.output.fields.mgeom")) {
       config.output_config.write_mgeom = true;
     }
-    if (xml_data.get_child_optional("mm_config.output.fields.pgeom")) {
+    if (xml_data.get_child_optional("config.output.fields.pgeom")) {
       config.output_config.write_pgeom = true;
     }
-    if (xml_data.get_child_optional("mm_config.output.fields.offset")) {
+    if (xml_data.get_child_optional("config.output.fields.offset")) {
       config.output_config.write_offset = true;
     }
-    if (xml_data.get_child_optional("mm_config.output.fields.error")) {
+    if (xml_data.get_child_optional("config.output.fields.error")) {
       config.output_config.write_error = true;
     }
-    if (xml_data.get_child_optional("mm_config.output.fields.spdist")) {
+    if (xml_data.get_child_optional("config.output.fields.spdist")) {
       config.output_config.write_spdist = true;
     }
-    if (xml_data.get_child_optional("mm_config.output.fields.ep")) {
+    if (xml_data.get_child_optional("config.output.fields.ep")) {
       config.output_config.write_ep = true;
     }
-    if (xml_data.get_child_optional("mm_config.output.fields.tp")) {
+    if (xml_data.get_child_optional("config.output.fields.tp")) {
       config.output_config.write_tp = true;
     }
-    if (xml_data.get_child_optional("mm_config.output.fields.length")) {
+    if (xml_data.get_child_optional("config.output.fields.length")) {
       config.output_config.write_length = true;
     }
-    if (xml_data.get_child_optional("mm_config.output.fields.all")) {
+    if (xml_data.get_child_optional("config.output.fields.all")) {
       config.output_config.write_ogeom = true;
       config.output_config.write_opath = true;
       config.output_config.write_pgeom = true;

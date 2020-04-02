@@ -26,16 +26,16 @@ void UBODTGenAppConfig::load_xml(const std::string &file) {
   std::cout << "Read configuration from xml file: " << file << '\n';
   boost::property_tree::read_xml(file, tree);
   network_config = NetworkConfig::load_from_xml(tree);
-  delta = tree.get("ubodt_config.parameters.delta", 3000.0);
-  result_file = tree.get<std::string>("ubodt_config.output.file");
+  delta = tree.get("config.parameters.delta", 3000.0);
+  result_file = tree.get<std::string>("config.output.file");
   // 0-trace,1-debug,2-info,3-warn,4-err,5-critical,6-off
-  log_level = tree.get("ubodt_config.other.log_level", 2);
-  use_omp = tree.find("ubodt_config.other.use_omp")!=tree.not_found();
+  log_level = tree.get("config.other.log_level", 2);
+  use_omp = tree.find("config.other.use_omp")!=tree.not_found();
 };
 
 void UBODTGenAppConfig::load_arg(int argc, char **argv) {
   std::cout << "Start reading ubodt configuration from arguments\n";
-  cxxopts::Options options("ubodt_config",
+  cxxopts::Options options("config",
                            "Configuration parser of ubodt_gen");
   options.add_options()
       ("network", "Network file name", cxxopts::value<std::string>())

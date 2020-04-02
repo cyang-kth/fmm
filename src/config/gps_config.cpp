@@ -12,19 +12,22 @@ std::string GPSConfig::to_string() const{
   ss<<"X: "<< x << "\n";
   ss<<"Y: "<< y << "\n";
   ss<<"Timestamp: "<< timestamp << "\n";
+  ss<<"Format: "<< get_gps_format() << "\n";
   return ss.str();
 };
 
 GPSConfig GPSConfig::load_from_xml(
   const boost::property_tree::ptree &xml_data){
   GPSConfig config;
-  config.file = xml_data.get<std::string>("mm_config.input.gps.file");
-  config.id = xml_data.get("mm_config.input.gps.id", "id");
-  config.geom = xml_data.get("mm_config.input.gps.geom", "geom");
-  config.timestamp = xml_data.get("mm_config.input.gps.timestamp",
+  config.file = xml_data.get<std::string>("config.input.gps.file");
+  config.id = xml_data.get("config.input.gps.id", "id");
+  config.geom = xml_data.get("config.input.gps.geom", "geom");
+  config.timestamp = xml_data.get("config.input.gps.timestamp",
   "timestamp");
-  config.x = xml_data.get("mm_config.input.gps.x", "x");
-  config.y = xml_data.get("mm_config.input.gps.y", "y");
+  config.x = xml_data.get("config.input.gps.x", "x");
+  config.y = xml_data.get("config.input.gps.y", "y");
+  config.gps_point = !(!xml_data.get_child_optional(
+      "config.input.gps.gps_point"));
   return config;
 };
 
@@ -37,6 +40,8 @@ GPSConfig GPSConfig::load_from_arg(
   config.timestamp = arg_data["gps_timestamp"].as<std::string>();
   config.x = arg_data["gps_x"].as<std::string>();
   config.y = arg_data["gps_y"].as<std::string>();
+  if (arg_data.count("gps_point")>0)
+    config.gps_point = true;
   return config;
 };
 
