@@ -1,41 +1,88 @@
-## Structure
+## Road network and GPS trajectories
 
 - Input data
-    + ubodt_config.xml: configuration for precomputation
-    + fmm_config.xml: configuration for map matching
-    + data folder: GPS trajectory file (trips.shp) and network file (edges.shp)
+    + Road network data: data/edges.shp
+    + GPS data: data/trips.shp, data/trips.csv, data/gps.csv
 - Output data
     + ubodt.txt: an upper bounded origin-destination table in CSV format
     + mr.txt: the map matching result in CSV format
 
-## Road network and GPS trajectories
-
 ![input](input.png)
 
-## Run map matching
+### Command line examples
 
-To run the map matching, change to `example` folder
+:warning: For `fmm`, it takes an ubodt file that can be generated using the `ubodt_gen`.
 
-    cd example
+- Precompute UBODT
 
-### Step 1. Generate an upper-bounded origin destination table from the network shapefile.
+  ```bash
+  # XML configuration
+  ubodt_gen ubodt_config.xml
+  # Command line arguments
+  ubodt_gen --network data/edges.shp --output ubodt.txt --delta 3
+  ```
 
-Run UBODT generator with the provided configuration file:
+- Precompute UBODT parallelly
 
-    ubodt_gen ubodt_config.xml
+  ```bash
+  # XML configuration
+  ubodt_gen ubodt_config_omp.xml
+  # Command line arguments
+  ubodt_gen --network data/edges.shp --output ubodt.txt --delta 3 --use_omp
+  ```
 
-A new UBODT file `ubodt.txt` will be generated.
+- Matching GPS trajectory in shapefile using fmm
 
-### Step 2. Run map matching with UBODT
+  ```bash
+  # XML configuration
+  fmm fmm_config.xml
+  # Command line arguments
+  fmm --ubodt ubodt.txt --network data/edges.shp --gps data/trips.shp -k 4 -r 0.4 -e 0.5 --output mr.txt
+  ```
 
-Add `ubodt.txt` to the map matching configuration file `fmm_config.xml`.
+- Matching GPS trajectory in shapefile using stmatch
 
-Run the `fmm` application with:
+  ```bash
+  # XML configuration
+  # XML configuration
+  stmatch stmatch_config.xml
+  # Command line arguments
+  stmatch --network data/edges.shp --gps data/trips.shp -k 4 -r 0.4 -e 0.5 --output mr.txt
+  ```
 
-    fmm fmm_config.xml
+- Matching GPS trajectory in CSV file using fmm
 
-A matched result file will be generated as `mr.txt`, which is a CSV file and the `c_path` column contains the matched path information, for details see the [output section](https://fmm-wiki.github.io/docs/documentation/output/#output-of-fmm). 
+  ```bash
+  # XML configuration
+  fmm fmm_config_csv_trajectory.xml
+  # Command line arguments
+  fmm --ubodt ubodt.txt --network data/edges.shp --gps data/trips.csv -k 4 -r 0.4 -e 0.5 --output mr.txt
+  ```
 
-## Matching result
+- Matching GPS Points in CSV file using fmm  
 
-![output](output.png)
+  ```bash
+  # XML configuration
+  fmm fmm_config_csv_point.xml
+  # Command line arguments
+  fmm --ubodt ubodt.txt --network data/edges.shp --gps data/gps.csv --gps_point -k 4 -r 0.4 -e 0.5 --output mr.txt
+  ```
+
+- Parallel map matching
+
+  ```bash
+  # XML configuration
+  fmm fmm_config_omp.xml
+  # Command line arguments
+  fmm --ubodt ubodt.txt --network data/edges.shp --gps data/gps.csv --gps_point -k 4 -r 0.4 -e 0.5 --output mr.txt --use_omp
+  ```
+
+- Customized output fields
+  ```bash
+  # XML configuration
+  fmm fmm_config_output_fields.xml
+  # Command line arguments
+  fmm --ubodt ubodt.txt --network data/edges.shp --gps data/gps.csv --gps_point -k 4 -r 0.4 -e 0.5 --output mr.txt --output_fields opath,cpath,mgeom,tpath,spdist
+  ```
+
+### Jupyter notebook examples

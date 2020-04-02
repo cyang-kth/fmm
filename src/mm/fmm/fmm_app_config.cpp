@@ -76,13 +76,14 @@ void FMMAppConfig::load_arg(int argc, char **argv){
     cxxopts::value<double>()->default_value("300.0"))
     ("e,error","GPS error",
     cxxopts::value<double>()->default_value("50.0"))
-    ("output","Output file name",
+    ("o,output","Output file name",
     cxxopts::value<std::string>()->default_value(""))
     ("output_fields","Output fields",
     cxxopts::value<std::string>()->default_value(""))
     ("l,log_level","Log level",cxxopts::value<int>()->default_value("2"))
     ("step","Step report",cxxopts::value<int>()->default_value("100"))
     ("h,help",   "Help information")
+    ("gps_point","GPS point or not")
     ("use_omp","Use parallel computing if specified")
     ("projected","Data is projected or not");
   if (argc==1) {

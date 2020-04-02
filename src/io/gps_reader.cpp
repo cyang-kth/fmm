@@ -268,6 +268,7 @@ Trajectory CSVPointReader::read_next_trajectory() {
   std::vector<double> timestamps;
   bool on_same_trajectory = true;
   bool first_observation = true;
+  int trid = -1;
   int prev_id = -1;
   double prev_timestamp = -1.0;
   std::string line;
@@ -305,6 +306,7 @@ Trajectory CSVPointReader::read_next_trajectory() {
     }
     if (prev_id != id && !first_observation) {
       on_same_trajectory = false;
+      trid = prev_id;
     }
     first_observation = false;
     prev_id = id;
@@ -312,7 +314,10 @@ Trajectory CSVPointReader::read_next_trajectory() {
       prev_line = line;
     }
   }
-  return Trajectory{prev_id, geom, timestamps};
+  if (!has_next_trajectory()){
+    trid = prev_id;
+  }
+  return Trajectory{trid, geom, timestamps};
 }
 
 bool CSVPointReader::has_next_trajectory() {

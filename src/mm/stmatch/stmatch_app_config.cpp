@@ -83,6 +83,7 @@ void STMATCHAppConfig::load_arg(int argc, char **argv){
     ("l,log_level","Log level",cxxopts::value<int>()->default_value("2"))
     ("s,step","Step report",cxxopts::value<int>()->default_value("100"))
     ("h,help","Help information")
+    ("gps_point","GPS point or not")
     ("projected","Data projected or not")
     ("use_omp","Use omp or not");
   if (argc==1) {
