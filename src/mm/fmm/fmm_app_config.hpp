@@ -30,9 +30,10 @@ class FMMAppConfig
   FMMAlgorConfig fmm_config;
   // UBODT configurations
   std::string ubodt_file;
+  bool use_omp = false;
   // 0-trace,1-debug,2-info,3-warn,4-err,5-critical,6-off
-  int log_level;
-  int step = 1;
+  int log_level = 2;
+  int step = 100;
 }; // FMMAppConfig
 
 }

@@ -44,9 +44,9 @@ file(GLOB CoreGlob src/core/*.cpp)
 file(GLOB AlgorithmGlob src/algorithm/*.cpp)
 file(GLOB ConfigGlob src/config/*.cpp)
 file(GLOB IOGlob src/io/*.cpp)
-file(GLOB MMGlob src/mm/composite_graph.cpp src/mm/transition_graph.cpp)
 file(GLOB NetworkGlob src/network/*.cpp)
 file(GLOB UtilGlob src/util/*.cpp)
+file(GLOB MMGlob src/mm/*.cpp)
 file(GLOB FMMGlob src/mm/fmm/*.cpp)
 file(GLOB STMATCHGlob src/mm/stmatch/*.cpp)
 
@@ -54,39 +54,39 @@ add_library(CORE OBJECT ${CoreGlob})
 add_library(ALGORITHM OBJECT ${AlgorithmGlob})
 add_library(CONFIG OBJECT ${ConfigGlob})
 add_library(IO OBJECT ${IOGlob})
-add_library(MM OBJECT ${MMGlob})
 add_library(UTIL OBJECT ${UtilGlob})
 add_library(NETWORK OBJECT ${NetworkGlob})
-add_library(FMM OBJECT ${FMMGlob})
-add_library(STMATCH OBJECT ${STMATCHGlob})
+add_library(MM_OBJ OBJECT ${MMGlob})
+add_library(FMM_OBJ OBJECT ${FMMGlob})
+add_library(STMATCH_OBJ OBJECT ${STMATCHGlob})
 
 add_executable(fmm src/app/fmm.cpp
-        $<TARGET_OBJECTS:MM>
+        $<TARGET_OBJECTS:MM_OBJ>
         $<TARGET_OBJECTS:CORE>
         $<TARGET_OBJECTS:CONFIG>
         $<TARGET_OBJECTS:ALGORITHM>
         $<TARGET_OBJECTS:UTIL>
         $<TARGET_OBJECTS:IO>
         $<TARGET_OBJECTS:NETWORK>
-        $<TARGET_OBJECTS:FMM>)
+        $<TARGET_OBJECTS:FMM_OBJ>)
 target_link_libraries(fmm ${GDAL_LIBRARIES} ${Boost_LIBRARIES}
         ${OpenMP_CXX_LIBRARIES})
 
 add_executable(ubodt_gen src/app/ubodt_gen_app.cpp
-        $<TARGET_OBJECTS:MM>
+        $<TARGET_OBJECTS:MM_OBJ>
         $<TARGET_OBJECTS:CORE>
         $<TARGET_OBJECTS:CONFIG>
         $<TARGET_OBJECTS:ALGORITHM>
         $<TARGET_OBJECTS:UTIL>
         $<TARGET_OBJECTS:IO>
         $<TARGET_OBJECTS:NETWORK>
-        $<TARGET_OBJECTS:FMM>)
+        $<TARGET_OBJECTS:FMM_OBJ>)
 target_link_libraries(ubodt_gen ${GDAL_LIBRARIES} ${Boost_LIBRARIES}
         ${OpenMP_CXX_LIBRARIES})
 
 add_executable(stmatch src/app/stmatch.cpp
-        $<TARGET_OBJECTS:STMATCH>
-        $<TARGET_OBJECTS:MM>
+        $<TARGET_OBJECTS:MM_OBJ>
+        $<TARGET_OBJECTS:STMATCH_OBJ>
         $<TARGET_OBJECTS:CORE>
         $<TARGET_OBJECTS:CONFIG>
         $<TARGET_OBJECTS:ALGORITHM>

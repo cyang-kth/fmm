@@ -19,9 +19,9 @@ std::string FMMAlgorConfig::to_string() const {
 
 FMMAlgorConfig FMMAlgorConfig::load_from_xml(
     const boost::property_tree::ptree &xml_data){
-  int k = xml_data.get("fmm_config.parameters.k", 8);
-  double radius = xml_data.get("fmm_config.parameters.r", 300.0);
-  double gps_error = xml_data.get("fmm_config.parameters.gps_error", 50.0);
+  int k = xml_data.get("mm_config.parameters.k", 8);
+  double radius = xml_data.get("mm_config.parameters.r", 300.0);
+  double gps_error = xml_data.get("mm_config.parameters.gps_error", 50.0);
   return FMMAlgorConfig{k, radius, gps_error};
 };
 
@@ -64,7 +64,7 @@ MatchResult FMM::match_traj(const MM::Trajectory &traj,
                  matched_candidate_path.begin(),
                  [](const TGElement *a) {
                    return MatchedCandidate{
-                       a->c, a->ep, a->tp, a->sp_dist
+                       *(a->c), a->ep, a->tp, a->sp_dist
                    };
                  });
   O_Path opath(tg_opath.size());
@@ -77,9 +77,11 @@ MatchResult FMM::match_traj(const MM::Trajectory &traj,
   const std::vector<Edge> &edges = network_.get_edges();
   C_Path cpath = ubodt_.construct_complete_path(tg_opath,edges,
       &indices);
+  SPDLOG_TRACE("Cpath {}",cpath)
   SPDLOG_TRACE("Complete path inference")
   LineString mgeom = network_.complete_path_to_geometry(
       traj.geom, cpath);
+  SPDLOG_TRACE("Complete path inference done")
   return MatchResult{
       traj.id, matched_candidate_path, opath, cpath, indices, mgeom};
 }
@@ -130,6 +132,8 @@ void FMM::update_layer(int level,
       {
         iter_b->cumu_prob = iter_a->cumu_prob + tp * iter_b->ep;
         iter_b->prev = &(*iter_a);
+        iter_b->tp = tp;
+        iter_b->sp_dist = sp_dist;
       }
     }
   }

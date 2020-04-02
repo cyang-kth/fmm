@@ -30,6 +30,7 @@ void UBODTGenAppConfig::load_xml(const std::string &file) {
   result_file = tree.get<std::string>("ubodt_config.output.file");
   // 0-trace,1-debug,2-info,3-warn,4-err,5-critical,6-off
   log_level = tree.get("ubodt_config.other.log_level", 2);
+  use_omp = tree.find("ubodt_config.other.use_omp")!=tree.not_found();
 };
 
 void UBODTGenAppConfig::load_arg(int argc, char **argv) {
@@ -55,17 +56,18 @@ void UBODTGenAppConfig::load_arg(int argc, char **argv) {
   network_config =  NetworkConfig::load_from_arg(result);
   log_level = result["log_level"].as<int>();
   delta = result["delta"].as<double>();
+  use_omp = result.count("use_omp")>0;
+  std::cout<<"Finish with reading ubodt arg configuration\n";
 };
 
 void UBODTGenAppConfig::print() const {
-  std::cout << "------------------------------------------\n";
   std::cout << "UBODT Configuration: \n";
   std::cout <<"---Network Config---\n"<< network_config.to_string() << "\n";
   std::cout <<"---UBODT Config---\n";
   std::cout << "  delta: " << delta << '\n';
   std::cout << "  Output file:" << result_file << '\n';
   std::cout << "  log_level:" << LOG_LEVESLS[log_level] << '\n';
-  std::cout << "------------------------------------------\n";
+  std::cout << "use_omp" << (use_omp?"true":"false") << "\n";
 };
 
 void UBODTGenAppConfig::print_help() {
@@ -77,6 +79,7 @@ void UBODTGenAppConfig::print_help() {
   std::cout << "--target (optional) <string>: Network target name (target)\n";
   std::cout << "--delta (optional) <double>: upperbound (3000.0)\n";
   std::cout << "--log_level (optional) <int>: log level (2)\n";
+  std::cout << "--use_omp: use OpenMP or not\n";
   std::cout << "For xml configuration, check example folder\n";
 };
 

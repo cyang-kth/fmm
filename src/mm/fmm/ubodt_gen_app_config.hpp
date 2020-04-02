@@ -18,7 +18,9 @@ class UBODTGenAppConfig
   NetworkConfig network_config;
   double delta;
   std::string result_file;
-  int log_level;
+  // 0-trace,1-debug,2-info,3-warn,4-err,5-critical,6-off
+  int log_level = 2;
+  bool use_omp = false;
 }; // UBODT_Config
 
 }

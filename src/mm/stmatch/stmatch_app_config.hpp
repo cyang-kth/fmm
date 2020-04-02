@@ -28,9 +28,10 @@ class STMATCHAppConfig
   GPSConfig gps_config;
   ResultConfig result_config;
   STMATCHAlgorConfig stmatch_config;
+  bool use_omp = false;
   // 0-trace,1-debug,2-info,3-warn,4-err,5-critical,6-off
-  int log_level;
-  int step;
+  int log_level = 2;
+  int step = 100;
 }; // STMATCHAppConfig
 
 }

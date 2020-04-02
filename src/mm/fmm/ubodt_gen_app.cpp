@@ -8,6 +8,7 @@
 #include "network/network_graph.hpp"
 #include <boost/archive/binary_oarchive.hpp>
 #include "util/debug.hpp"
+#include <omp.h>
 
 namespace MM {
 
@@ -20,9 +21,12 @@ void UBODTGenApp::run() const {
   std::chrono::steady_clock::time_point begin =
       std::chrono::steady_clock::now();
   SPDLOG_INFO("Write UBODT to file {}", config_.result_file)
-
   bool binary = config_.is_binary_output();
-  precompute_ubodt(config_.result_file, config_.delta, binary);
+  if (config_.use_omp){
+    precompute_ubodt_omp(config_.result_file, config_.delta, binary);
+  } else {
+    precompute_ubodt(config_.result_file, config_.delta, binary);
+  }
   std::chrono::steady_clock::time_point end =
       std::chrono::steady_clock::now();
   double time_spent =

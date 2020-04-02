@@ -16,6 +16,7 @@ FMMAppConfig::FMMAppConfig(int argc, char **argv){
   } else {
     load_arg(argc,argv);
   }
+  print();
   std::cout<<"Set log level as "<<LOG_LEVESLS[log_level]<<"\n";
   spdlog::set_level((spdlog::level::level_enum) log_level);
   spdlog::set_pattern("[%l][%s:%-3#] %v");
@@ -35,6 +36,7 @@ void FMMAppConfig::load_xml(const std::string &file){
   ubodt_file = tree.get<std::string>("mm_config.input.ubodt.file");
   log_level = tree.get("mm_config.other.log_level",2);
   step =  tree.get("mm_config.other.step",100);
+  use_omp = !(!tree.get_child_optional("mm_config.other.use_omp"));
   std::cout<<"Finish with reading FMM xml configuration.\n";
 };
 
@@ -64,7 +66,9 @@ void FMMAppConfig::load_arg(int argc, char **argv){
       ("output","Output file name", cxxopts::value<std::string>())
       ("output_fields","Output fields", cxxopts::value<std::string>())
       ("l,log_level","Log level",cxxopts::value<int>()->default_value("2"))
-      ("step","Step report",cxxopts::value<int>()->default_value("100"));
+      ("step","Step report",cxxopts::value<int>()->default_value("100"))
+      ("h,help",   "Help information")
+      ("use_omp","Use parallel computing if specified");
 
   auto result = options.parse(argc, argv);
   ubodt_file = result["ubodt"].as<std::string>();
@@ -74,6 +78,7 @@ void FMMAppConfig::load_arg(int argc, char **argv){
   fmm_config = FMMAlgorConfig::load_from_arg(result);
   log_level = result["log_level"].as<int>();
   step = result["step"].as<int>();
+  use_omp = result.count("use_omp")>0;
   std::cout<<"Finish with reading FMM arg configuration\n";
 };
 
@@ -95,6 +100,9 @@ void FMMAppConfig::print_help(){
   std::cout<<"  opath,cpath,tpath,ogeom,mgeom,pgeom,\n";
   std::cout<<"  offset,error,spdist,tp,ep,length,all\n";
   std::cout<<"--log_level (optional) <int>: log level (2)\n";
+  std::cout<<"--step (optional) <int>: progress report step (100)\n";
+  std::cout<<"--use_omp: use OpenMP for multithreaded map matching\n";
+  std::cout<<"-h/--help:print help information\n";
   std::cout<<"For xml configuration, check example folder\n";
 };
 
@@ -103,6 +111,10 @@ void FMMAppConfig::print() const {
   std::cout<<"---GPS Config---\n"<< gps_config.to_string() << "\n";
   std::cout<<"---Result Config---\n"<< result_config.to_string() << "\n";
   std::cout<<"---FMM Config---\n"<< fmm_config.to_string() << "\n";
+  std::cout<<"---Others---\n";
+  std::cout<< "log_level: " << LOG_LEVESLS[log_level] << "\n";
+  std::cout<< "step: " << step << "\n";
+  std::cout<< "use_omp: " << (use_omp?"true":"false") << "\n";
 };
 
 bool FMMAppConfig::validate() const

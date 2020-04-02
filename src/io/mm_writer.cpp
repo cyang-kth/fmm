@@ -55,9 +55,9 @@ void CSVMatchResultWriter::write_result(const MatchResult &result) {
     if (!result.opt_candidate_path.empty()) {
       int N = result.opt_candidate_path.size();
       for (int i = 0; i < N - 1; ++i) {
-        buf << result.opt_candidate_path[i].c->dist << ",";
+        buf << result.opt_candidate_path[i].c.dist << ",";
       }
-      buf << result.opt_candidate_path[N - 1].c->dist;
+      buf << result.opt_candidate_path[N - 1].c.dist;
     }
   }
   if (config_.write_offset) {
@@ -65,9 +65,9 @@ void CSVMatchResultWriter::write_result(const MatchResult &result) {
     if (!result.opt_candidate_path.empty()) {
       int N = result.opt_candidate_path.size();
       for (int i = 0; i < N - 1; ++i) {
-        buf << result.opt_candidate_path[i].c->offset << ",";
+        buf << result.opt_candidate_path[i].c.offset << ",";
       }
-      buf << result.opt_candidate_path[N - 1].c->offset;
+      buf << result.opt_candidate_path[N - 1].c.offset;
     }
   }
   if (config_.write_spdist) {
@@ -86,7 +86,7 @@ void CSVMatchResultWriter::write_result(const MatchResult &result) {
       int N = result.opt_candidate_path.size();
       LineString pline;
       for (int i = 0; i < N; ++i) {
-        const Point &point = result.opt_candidate_path[i].c->point;
+        const Point &point = result.opt_candidate_path[i].c.point;
         pline.add_point(point);
       }
       buf << pline;
@@ -143,15 +143,18 @@ void CSVMatchResultWriter::write_result(const MatchResult &result) {
     buf << ";";
     if (!result.opt_candidate_path.empty()) {
       int N = result.opt_candidate_path.size();
+      SPDLOG_TRACE("Write length {}",N)
       for (int i = 0; i < N - 1; ++i) {
-        buf << result.opt_candidate_path[i].c->edge->length << ",";
+        // SPDLOG_TRACE("Write length {}",i)
+        buf << result.opt_candidate_path[i].c.edge->length << ",";
       }
-      buf << result.opt_candidate_path[N - 1].c->edge->length;
+      // SPDLOG_TRACE("Write length {}",N-1)
+      buf << result.opt_candidate_path[N - 1].c.edge->length;
     }
   }
   buf << '\n';
   // Ensure that fstream is called corrected in OpenMP
-#pragma omp critical
+  #pragma omp critical
   m_fstream << buf.rdbuf();
 }
 

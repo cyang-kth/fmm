@@ -178,6 +178,7 @@ std::shared_ptr<UBODT> UBODT::read_ubodt_file(const std::string &filename,
     return read_ubodt_csv(filename,multiplier);
   } else {
     SPDLOG_CRITICAL("File format not support: {}",filename)
+    std::exit(EXIT_FAILURE);
     return nullptr;
   }
 }

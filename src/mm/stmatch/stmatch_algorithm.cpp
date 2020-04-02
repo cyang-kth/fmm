@@ -19,11 +19,11 @@ std::string STMATCHAlgorConfig::to_string() const {
 
 STMATCHAlgorConfig STMATCHAlgorConfig::load_from_xml(
     const boost::property_tree::ptree &xml_data){
-  int k = xml_data.get("fmm_config.parameters.k", 8);
-  double radius = xml_data.get("fmm_config.parameters.r", 300.0);
-  double gps_error = xml_data.get("fmm_config.parameters.gps_error", 50.0);
-  double vmax = xml_data.get("fmm_config.parameters.vmax", 80.0);;
-  double factor = xml_data.get("fmm_config.parameters.factor", 1.5);;
+  int k = xml_data.get("mm_config.parameters.k", 8);
+  double radius = xml_data.get("mm_config.parameters.r", 300.0);
+  double gps_error = xml_data.get("mm_config.parameters.gps_error", 50.0);
+  double vmax = xml_data.get("mm_config.parameters.vmax", 80.0);;
+  double factor = xml_data.get("mm_config.parameters.factor", 1.5);;
   return STMATCHAlgorConfig{k, radius, gps_error, vmax, factor};
 };
 
@@ -73,7 +73,7 @@ MatchResult STMATCH::match_traj(const Trajectory &traj,
                  matched_candidate_path.begin(),
                  [](const TGElement *a) {
                    return MatchedCandidate{
-                       a->c, a->ep, a->tp, a->sp_dist
+                       *(a->c), a->ep, a->tp, a->sp_dist
                    };
                  });
   O_Path opath(tg_opath.size());
@@ -101,10 +101,14 @@ void STMATCH::update_tg(TransitionGraph *tg,
   int N = layers.size();
   for (int i = 0; i < N - 1; ++i) {
     // Routing from current_layer to next_layer
-    SPDLOG_TRACE("Update layer {} and timestamp {}", i,
-                 traj.timestamps[i])
-    double duration = traj.timestamps[i + 1] - traj.timestamps[i];
-    double delta = config.factor * config.vmax * duration;
+    SPDLOG_TRACE("Update layer {} ", i)
+    double delta = 0;
+    if (traj.timestamps.size()!=N){
+      delta = eu_dists[i]*config.factor*4;
+    } else {
+      double duration = traj.timestamps[i + 1] - traj.timestamps[i];
+      delta = config.factor * config.vmax * duration;
+    }
     update_layer(i, &(layers[i]), &(layers[i + 1]),
                  cg, eu_dists[i], delta);
   }
@@ -135,6 +139,8 @@ void STMATCH::update_layer(int level, TGLayer *la_ptr, TGLayer *lb_ptr,
       if (lb[i].cumu_prob < iter->cumu_prob + tp * lb[i].ep) {
         lb[i].cumu_prob = iter->cumu_prob + tp * lb[i].ep;
         lb[i].prev = &(*iter);
+        lb[i].tp = tp;
+        lb[i].sp_dist = distances[i];
       }
     }
   }

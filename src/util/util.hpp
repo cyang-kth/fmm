@@ -103,6 +103,8 @@ std::vector<T> string2vec(
   return vec;
 }
 
+std::vector<std::string> split_string(const std::string &str);
+
 /**
  *  Print the candidates of trajectory in a table with header of
  *  step;offset;distance;edge_id

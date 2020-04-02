@@ -40,7 +40,7 @@ namespace IO
 class ITrajectoryReader {
 public:
   virtual Trajectory read_next_trajectory() = 0;
-  virtual bool has_next_feature() = 0;
+  virtual bool has_next_trajectory() = 0;
   virtual bool has_timestamp() = 0;
   virtual void close() = 0;
   std::vector<Trajectory> read_next_N_trajectories(int N=1000);
@@ -59,7 +59,7 @@ public:
                        const std::string & id_name,
                        const std::string & timestamp_name);
   Trajectory read_next_trajectory() override;
-  bool has_next_feature() override;
+  bool has_next_trajectory() override;
   bool has_timestamp() override;
   void close() override;
   int get_num_trajectories();
@@ -81,7 +81,7 @@ public:
                       const std::string &timestamp_name);
   void reset_cursor();
   Trajectory read_next_trajectory() override;
-  bool has_next_feature() override;
+  bool has_next_trajectory() override;
   bool has_timestamp() override;
   void close() override;
   static std::vector<double> string2time(const std::string &str);
@@ -102,7 +102,7 @@ class CSVPointReader : public ITrajectoryReader {
        const std::string &y_name,
        const std::string &time_name);
   Trajectory read_next_trajectory() override;
-  bool has_next_feature() override;
+  bool has_next_trajectory() override;
   void reset_cursor();
   bool has_timestamp() override;
   void close() override;
@@ -122,8 +122,8 @@ class GPSReader {
   inline Trajectory read_next_trajectory(){
     return reader->read_next_trajectory();
   };
-  inline bool has_next_feature(){
-    return reader->has_next_feature();
+  inline bool has_next_trajectory(){
+    return reader->has_next_trajectory();
   };
 
   inline std::vector<Trajectory> read_next_N_trajectories(int N){

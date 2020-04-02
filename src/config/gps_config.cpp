@@ -18,13 +18,13 @@ std::string GPSConfig::to_string() const{
 GPSConfig GPSConfig::load_from_xml(
   const boost::property_tree::ptree &xml_data){
   GPSConfig config;
-  config.file = xml_data.get<std::string>("fmm_config.input.gps.file");
-  config.id = xml_data.get("fmm_config.input.gps.id", "id");
-  config.geom = xml_data.get("fmm_config.input.gps.geom", "geom");
-  config.timestamp = xml_data.get("fmm_config.input.gps.timestamp",
+  config.file = xml_data.get<std::string>("mm_config.input.gps.file");
+  config.id = xml_data.get("mm_config.input.gps.id", "id");
+  config.geom = xml_data.get("mm_config.input.gps.geom", "geom");
+  config.timestamp = xml_data.get("mm_config.input.gps.timestamp",
   "timestamp");
-  config.x = xml_data.get("fmm_config.input.gps.x", "x");
-  config.y = xml_data.get("fmm_config.input.gps.y", "y");
+  config.x = xml_data.get("mm_config.input.gps.x", "x");
+  config.y = xml_data.get("mm_config.input.gps.y", "y");
   return config;
 };
 

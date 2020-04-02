@@ -17,7 +17,7 @@ namespace IO {
 std::vector<Trajectory> ITrajectoryReader::read_next_N_trajectories(int N) {
   std::vector<Trajectory> trajectories;
   int i = 0;
-  while (i < N && has_next_feature()) {
+  while (i < N && has_next_trajectory()) {
     trajectories.push_back(read_next_trajectory());
     ++i;
   }
@@ -27,7 +27,7 @@ std::vector<Trajectory> ITrajectoryReader::read_next_N_trajectories(int N) {
 std::vector<Trajectory> ITrajectoryReader::read_all_trajectories() {
   std::vector<Trajectory> trajectories;
   int i = 0;
-  while (has_next_feature()) {
+  while (has_next_trajectory()) {
     trajectories.push_back(read_next_trajectory());
     ++i;
   }
@@ -95,7 +95,7 @@ GDALTrajectoryReader::GDALTrajectoryReader(const std::string &filename,
   SPDLOG_INFO("Finish reading meta data")
 }
 // If there are still features not read
-bool GDALTrajectoryReader::has_next_feature() {
+bool GDALTrajectoryReader::has_next_trajectory() {
   return _cursor < NUM_FEATURES;
 }
 
@@ -202,7 +202,7 @@ Trajectory CSVTrajectoryReader::read_next_trajectory() {
   return Trajectory{trid, geom, timestamps};
 }
 
-bool CSVTrajectoryReader::has_next_feature() {
+bool CSVTrajectoryReader::has_next_trajectory() {
   return ifs.peek() != EOF;
 }
 
@@ -272,7 +272,7 @@ Trajectory CSVPointReader::read_next_trajectory() {
   int prev_id = -1;
   double prev_timestamp = -1.0;
   std::string line;
-  while (on_same_trajectory && has_next_feature()) {
+  while (on_same_trajectory && has_next_trajectory()) {
     if (prev_line.empty()) {
       std::getline(ifs, line);
     } else {
@@ -316,7 +316,7 @@ Trajectory CSVPointReader::read_next_trajectory() {
   return Trajectory{prev_id, geom, timestamps};
 }
 
-bool CSVPointReader::has_next_feature() {
+bool CSVPointReader::has_next_trajectory() {
   return ifs.peek() != EOF;
 }
 

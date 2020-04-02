@@ -323,7 +323,6 @@ LineString Network::complete_path_to_geometry(
       }
     }
     append_segs_to_line(&line,lastlineseg,1);
-    // Free the memory
   }
   return line;
 }

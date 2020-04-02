@@ -10,7 +10,7 @@
 namespace MM{
 
 struct MatchedCandidate{
-  const Candidate *c;
+  Candidate c;
   double ep;
   double tp; // transition probability to previous matched candidate
   double sp_dist;

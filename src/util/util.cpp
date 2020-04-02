@@ -81,6 +81,17 @@ bool file_exists(const std::string &filename) {
   return file_exists(filename.c_str());
 }
 
+std::vector<std::string> split_string(const std::string &str) {
+  char delim = ',';
+  std::vector<std::string> result;
+  std::stringstream ss(str);
+  std::string intermediate;
+  while (getline(ss, intermediate, delim)) {
+    result.push_back(intermediate);
+  }
+  return result;
+}
+
 bool string2bool(const std::string &str) {
   return str == "true" || str == "t" || str == "1";
 }
@@ -160,7 +171,7 @@ bool check_file_extension(const std::string &filename,
   std::string fn_extension = filename.substr(
       filename.find_last_of('.') + 1);
   std::vector<std::string> extensions =
-      string2vec<std::string>(extension_list_str);
+      split_string(extension_list_str);
   for(const auto &extension:extensions){
     if (fn_extension==extension)
       result = true;

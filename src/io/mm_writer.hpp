@@ -19,6 +19,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <omp.h>
 
 namespace MM {
 

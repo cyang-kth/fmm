@@ -31,6 +31,7 @@ void STMATCHAppConfig::load_xml(const std::string &file){
   stmatch_config = STMATCHAlgorConfig::load_from_xml(tree);
   log_level = tree.get("mm_config.other.log_level",2);
   step =  tree.get("mm_config.other.step",100);
+  use_omp = !(!tree.get_child_optional("mm_config.other.use_omp"));
   std::cout<<"Finish with reading stmatch xml configuration.\n";
 };
 
@@ -72,6 +73,7 @@ void STMATCHAppConfig::load_arg(int argc, char **argv){
   stmatch_config = STMATCHAlgorConfig::load_from_arg(result);
   log_level = result["log_level"].as<int>();
   step = result["step"].as<int>();
+  use_omp = result.count("use_omp")>0;
   std::cout<<"Finish with reading stmatch arg configuration\n";
 };
 
@@ -80,7 +82,10 @@ void STMATCHAppConfig::print() const {
   std::cout<<"---GPS Config---\n"<< gps_config.to_string() << "\n";
   std::cout<<"---Result Config---\n"<< result_config.to_string() << "\n";
   std::cout<<"---STMATCH Config---\n"<< stmatch_config.to_string() << "\n";
-  std::cout<<"---Others---\n"<< "log_level" << log_level << "\n";
+  std::cout<<"---Others---\n";
+  std::cout<< "log_level: " << log_level << "\n";
+  std::cout<< "step: " << step << "\n";
+  std::cout<< "use_omp: " << (use_omp?"true":"false") << "\n";
 };
 
 void STMATCHAppConfig::print_help(){
@@ -103,6 +108,9 @@ void STMATCHAppConfig::print_help(){
   std::cout<<"  opath,cpath,tpath,ogeom,mgeom,pgeom,\n";
   std::cout<<"  offset,error,spdist,tp,ep,length,all\n";
   std::cout<<"--log_level (optional) <int>: log level (2)\n";
+  std::cout<<"--step (optional) <int>: progress report step (100)\n";
+  std::cout<<"--use_omp: use OpenMP for multithreaded map matching\n";
+  std::cout<<"-h/--help:print help information\n";
   std::cout<<"For xml configuration, check example folder\n";
 }
 bool STMATCHAppConfig::validate() const {

@@ -5,6 +5,7 @@
 #include "mm/fmm/fmm_app.hpp"
 #include "io/gps_reader.hpp"
 #include "io/mm_writer.hpp"
+#include <omp.h>
 
 namespace MM{
 
@@ -15,7 +16,6 @@ void FMMApp::run() {
   IO::GPSReader reader(config_.gps_config);
   IO::CSVMatchResultWriter writer(config_.result_config.file,
                                   config_.result_config.output_config);
-
   // Start map matching
   int progress = 0;
   int points_matched = 0;
@@ -25,22 +25,50 @@ void FMMApp::run() {
   SPDLOG_INFO("Progress report step {}", step_size)
   UTIL::TimePoint corrected_begin = std::chrono::steady_clock::now();
   SPDLOG_INFO("Start to match trajectories")
-  // The header is moved to constructor of result writer
-  // rw.write_header();
-  while (reader.has_next_feature()) {
-    if (progress % step_size == 0) {
-      SPDLOG_INFO("Progress {}", progress)
+  if (config_.use_omp){
+    SPDLOG_INFO("Run map matching parallelly")
+    int buffer_trajectories_size = 100000;
+    while (reader.has_next_trajectory()) {
+      std::vector<Trajectory> trajectories =
+        reader.read_next_N_trajectories(buffer_trajectories_size);
+      int trajectories_fetched = trajectories.size();
+      #pragma omp parallel for
+      for (int i = 0; i < trajectories_fetched; ++i) {
+        Trajectory &trajectory = trajectories[i];
+        int points_in_tr = trajectory.geom.get_num_points();
+        MM::MatchResult result = mm_model.match_traj(
+            trajectory, fmm_config);
+        writer.write_result(result);
+        #pragma omp critical
+        if (!result.cpath.empty()) {
+          points_matched += points_in_tr;
+        }
+        total_points += points_in_tr;
+        ++progress;
+        if (progress % step_size == 0) {
+          std::stringstream buf;
+          buf << "Progress " << progress << '\n';
+          std::cout << buf.rdbuf();
+        }
+      }
     }
-    Trajectory traj = reader.read_next_trajectory();
-    int points_in_tr = traj.geom.get_num_points();
-    MM::MatchResult result = mm_model.match_traj(
-        traj, fmm_config);
-    writer.write_result(result);
-    if (!result.cpath.empty()) {
-      points_matched += points_in_tr;
+  } else {
+    SPDLOG_INFO("Run map matching in single thread")
+    while (reader.has_next_trajectory()) {
+      if (progress % step_size == 0) {
+        SPDLOG_INFO("Progress {}", progress)
+      }
+      Trajectory trajectory = reader.read_next_trajectory();
+      int points_in_tr = trajectory.geom.get_num_points();
+      MM::MatchResult result = mm_model.match_traj(
+          trajectory, fmm_config);
+      writer.write_result(result);
+      if (!result.cpath.empty()) {
+        points_matched += points_in_tr;
+      }
+      total_points += points_in_tr;
+      ++progress;
     }
-    total_points += points_in_tr;
-    ++progress;
   }
   SPDLOG_INFO("MM process finished")
   UTIL::TimePoint end_time = std::chrono::steady_clock::now();

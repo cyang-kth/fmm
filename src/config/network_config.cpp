@@ -15,10 +15,10 @@ std::string NetworkConfig::to_string() const {
 
 NetworkConfig NetworkConfig::load_from_xml(
   const boost::property_tree::ptree &xml_data){
-  std::string file = xml_data.get<std::string>("fmm_config.input.network.file");
-  std::string id = xml_data.get("fmm_config.input.network.id", "id");
-  std::string source = xml_data.get("fmm_config.input.network.source","source");
-  std::string target = xml_data.get("fmm_config.input.network.target","target");
+  std::string file = xml_data.get<std::string>("mm_config.input.network.file");
+  std::string id = xml_data.get("mm_config.input.network.id", "id");
+  std::string source = xml_data.get("mm_config.input.network.source","source");
+  std::string target = xml_data.get("mm_config.input.network.target","target");
   return NetworkConfig{file,id,source,target};
 };
 
