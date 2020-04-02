@@ -8,21 +8,17 @@
 
 
 
-FMM is an open source map matching framework designed for maximizing performance, scalability and functionality. 
+FMM is an open source map matching framework which solves the problem of matching noisy GPS data to a road network. FMM is designed for maximizing performance, scalability and functionality. 
 
-### Why should I use FMM?
+### Features
 
-- High performance: C++ implementation with Rtree for spatial search, optimized routing, parallel computing. 
-- Python API supported: run map matching in jupyter-notebook and web demo
-- Scalibility: it has been tested on matching **millions of GPS points** to **country level** road network containing **millions of road edges**.  
-- Multiple input data format support: 
-  - Road network: ESRI shapefile or Geopackage，OSM can also be supported with [manual preprocessing](https://github.com/cyang-kth/osm_mapmatching). 
-  - GPS: CSV point, CSV Trajectory or Shapefile trajectory.
-- Customized output format: road edge matched to each point, observation error, distance traveled. 
-- Multiple map matching algorithms implemented: 
-  - FMM: suitable for small road network and dense GPS data
-  - STMatch: suitable for large road network with sparse GPS data
-- Cross platform support: Unix, Mac and Windows.  
+- **High performance**: C++ implementation using Rtree, optimized routing, parallel computing. 
+- **Python API**: jupyter-notebook and web demo
+- **Scalibility**: millions of GPS points and millions of road edges.  
+- **Multiple data format**: GPS data in CSV and Shapefile.  Road network in ESRI shapefile or Geopackage. OSM network can also be supported with [manual preprocessing](https://github.com/cyang-kth/osm_mapmatching). 
+- **Detailed matching information**: traversed path, geometry, individual matched edges, GPS error, etc. 
+- **Multiple algorithms**: FMM and STMatch
+- **Cross platform support**: Unix, Mac and Windows.  
 
 We encourage contribution with feature request, bug report or developping new map matching algorithms using the framework. 
 
