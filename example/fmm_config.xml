@@ -20,13 +20,6 @@
     <gps_error>0.5</gps_error>
   </parameters>
   <output>
-    <fields>
-      <all/>
-      <!-- <ogeom/> <error/> <opath/> <cpath/> -->
-    </fields>
     <file>mr.txt</file>
   </output>
-  <other>
-    <log_level>2</log_level>
-  </other>
 </config>

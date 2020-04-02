@@ -30,7 +30,7 @@ void UBODTGenAppConfig::load_xml(const std::string &file) {
   result_file = tree.get<std::string>("config.output.file");
   // 0-trace,1-debug,2-info,3-warn,4-err,5-critical,6-off
   log_level = tree.get("config.other.log_level", 2);
-  use_omp = tree.find("config.other.use_omp")!=tree.not_found();
+  use_omp = !(!tree.get_child_optional("config.other.use_omp"));
 };
 
 void UBODTGenAppConfig::load_arg(int argc, char **argv) {
