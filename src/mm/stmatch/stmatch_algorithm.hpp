@@ -36,6 +36,8 @@ class STMATCH {
       network_(network), graph_(graph) {
 
   };
+  std::string match_wkt(const std::string &wkt,
+      const STMATCHAlgorConfig &config);
   // Procedure of HMM based map matching algorithm.
   MatchResult match_traj(const Trajectory &traj,
                          const STMATCHAlgorConfig &config);

@@ -42,6 +42,15 @@ bool STMATCHAlgorConfig::validate() const{
   return true;
 }
 
+std::string STMATCH::match_wkt(const std::string &wkt,
+                      const STMATCHAlgorConfig &config){
+  LineString line = wkt2linestring(wkt);
+  std::vector<double> timestamps;
+  Trajectory traj{0,line,timestamps};
+  MatchResult result = match_traj(traj,config);
+  return result.mgeom.export_wkt();
+};
+
 // Procedure of HMM based map matching algorithm.
 MatchResult STMATCH::match_traj(const Trajectory &traj,
                                 const STMATCHAlgorConfig &config) {

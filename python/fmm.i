@@ -12,6 +12,7 @@
 #include "mm/fmm/fmm_algorithm.hpp"
 #include "mm/stmatch/stmatch_algorithm.hpp"
 #include "mm/fmm/ubodt.hpp"
+#include "mm/mm_result.hpp"
 using namespace MM;
 %}
 
@@ -32,3 +33,4 @@ namespace std {
 %include "mm/fmm/fmm_algorithm.hpp"
 %include "mm/stmatch/stmatch_algorithm.hpp"
 %include "mm/fmm/ubodt.hpp"
+%include "mm/mm_result.hpp"
