@@ -16,9 +16,6 @@
     <gps_error>0.5</gps_error>
   </parameters>
   <output>
-    <fields>
-      <all/>
-    </fields>
     <file>mr.txt</file>
   </output>
   <other>

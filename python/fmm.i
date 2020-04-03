@@ -10,45 +10,41 @@
 #include "network/network.hpp"
 #include "network/network_graph.hpp"
 #include "mm/fmm/fmm_algorithm.hpp"
+#include "mm/mm_result.hpp"
 #include "mm/stmatch/stmatch_algorithm.hpp"
 #include "mm/fmm/ubodt.hpp"
 using namespace MM;
 %}
 
-%typemap(in,numinputs=0) MatchResult& (MatchResult tmp) %{
-  $1 = &tmp;
+%template(IntVector) std::vector<int>;
+%template(UnsignedIntVector) std::vector<unsigned int>;
+%template(DoubleVector) std::vector<double>;
+%template(PyCandidateVector) std::vector<MM::PyCandidate>;
+// %template(DoubleVVector) vector<vector<double> >;
+// %template(DoubleVVVector) vector<vector<vector<double> > >;
+// %template(IntSet) set<int>;
+
+namespace MM{
+
+%typemap(in,numinputs=0) PyMatchResult& %{
+  $1 = new PyMatchResult;
 %}
 
-%typemap(argout) MatchResult& (PyObject* o) %{
+%typemap(argout) PyMatchResult& (PyObject* o) %{
   o = SWIG_NewPointerObj($1, $1_descriptor, SWIG_POINTER_OWN);
   $result = SWIG_Python_AppendOutput($result, o);
 %}
 
-%typemap(in,numinputs=0) PythonResult& (PythonResult tmp) %{
-  $1 = &tmp;
-%}
-
-%typemap(argout) PythonResult& (PyObject* o) %{
-  o = SWIG_NewPointerObj($1, $1_descriptor, SWIG_POINTER_OWN);
-  $result = SWIG_Python_AppendOutput($result, o);
-%}
-
-
-namespace std {
-   %template(IntVector) vector<int>;
-   %template(UnsignedIntVector) vector<unsigned int>;
-   %template(DoubleVector) vector<double>;
-   %template(MatchedCandidateVector) vector<MatchedCandidate>;
-   // %template(DoubleVVector) vector<vector<double> >;
-   // %template(DoubleVVVector) vector<vector<vector<double> > >;
-   // %template(IntSet) set<int>;
 }
+
+
 
 %include "core/gps.hpp"
 %include "core/geometry.hpp"
 %include "network/type.hpp"
 %include "network/network.hpp"
 %include "network/network_graph.hpp"
+%include "mm/mm_result.hpp"
 %include "mm/fmm/fmm_algorithm.hpp"
 %include "mm/stmatch/stmatch_algorithm.hpp"
 %include "mm/fmm/ubodt.hpp"

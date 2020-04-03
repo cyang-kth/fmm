@@ -5,6 +5,7 @@
 #include "network/network_graph.hpp"
 #include "mm/composite_graph.hpp"
 #include "mm/transition_graph.hpp"
+#include "mm/mm_result.hpp"
 
 #include <string>
 #include <boost/property_tree/ptree.hpp>
@@ -13,11 +14,6 @@
 #include "cxxopts/cxxopts.hpp"
 
 namespace MM {
-
-struct PythonResult{
-  int x;
-  int y;
-};
 
 struct STMATCHAlgorConfig {
   int k;
@@ -41,14 +37,10 @@ class STMATCH {
       network_(network), graph_(graph) {
 
   };
-  MatchResult match_wkt(const std::string &wkt,
-      const STMATCHAlgorConfig &config);
-  void match_wkt_test(const std::string &wkt,
-                      const STMATCHAlgorConfig &config,
-                      MatchResult &output);
-
-  void create_python_result(
-                      PythonResult &output);
+  void match_wkt(const std::string &wkt,const STMATCHAlgorConfig &config,
+                 PyMatchResult &output);
+  PyMatchResult match_wkt_test(
+    const std::string &wkt,const STMATCHAlgorConfig &config);
   // Procedure of HMM based map matching algorithm.
   MatchResult match_traj(const Trajectory &traj,
                          const STMATCHAlgorConfig &config);

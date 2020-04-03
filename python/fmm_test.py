@@ -8,7 +8,13 @@ config = STMATCHAlgorConfig()
 config.k = 4
 config.gps_error = 0.5
 config.radius = 0.4
-result = model.match_wkt_test(wkt,config)
+result = model.match_wkt(wkt,config)
 print type(result)
-result_2 = model.create_python_result()
-print type(result_2)
+print list(result.opath)
+print list(result.cpath)
+
+
+result2 = model.match_wkt_test(wkt,config)
+print type(result2)
+print list(result2.opath)
+print list(result2.cpath)

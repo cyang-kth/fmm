@@ -62,7 +62,7 @@ public:
     std::ostringstream ss;
     int N = get_num_points();
     if (N>0){
-      ss << "{\"type\":\"LineString\",\"coordinates\": [\n";
+      ss << "{\"type\":\"LineString\",\"coordinates\": [";
       for (int i=0;i<N;++i){
         ss << "[" << get_x(i) << "," << get_y(i) <<"]"
            << (i==N-1 ? "": ",");
