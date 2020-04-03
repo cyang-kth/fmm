@@ -1,41 +1,23 @@
-## Structure
+### Road network and GPS trajectories
 
 - Input data
-    + ubodt_config.xml: configuration for precomputation
-    + fmm_config.xml: configuration for map matching
-    + data folder: GPS trajectory file (trips.shp) and network file (edges.shp)
+    + Road network data: data/edges.shp
+    + GPS data: data/trips.shp, data/trips.csv, data/gps.csv
 - Output data
-    + ubodt.txt: an upper bounded origin-destination table in CSV format
-    + mr.txt: the map matching result in CSV format
+    + data/ubodt.txt: an upper bounded origin-destination table in CSV format
+    + data/mr.txt: the map matching result in CSV format
 
-## Road network and GPS trajectories
+<img src="data/input.png" width="400"/>
 
-![input](input.png)
+### Command line examples
 
-## Run map matching
+- [Command line examples](command_line_example)
 
-To run the map matching, change to `example` folder
+### Jupyter notebook examples
 
-    cd example
+- [fmm example](notebook/fmm_example.ipynb)
+- [stmatch example](notebook/stmatch_example.ipynb)
 
-### Step 1. Generate an upper-bounded origin destination table from the network shapefile.
+### Web demo
 
-Run UBODT generator with the provided configuration file:
-
-    ubodt_gen ubodt_config.xml
-
-A new UBODT file `ubodt.txt` will be generated.
-
-### Step 2. Run map matching with UBODT
-
-Add `ubodt.txt` to the map matching configuration file `fmm_config.xml`.
-
-Run the `fmm` application with:
-
-    fmm fmm_config.xml
-
-A matched result file will be generated as `mr.txt`, which is a CSV file and the `c_path` column contains the matched path information, for details see the [output section](https://fmm-wiki.github.io/docs/documentation/output/#output-of-fmm). 
-
-## Matching result
-
-![output](output.png)
+- [web_demo](web_demo)

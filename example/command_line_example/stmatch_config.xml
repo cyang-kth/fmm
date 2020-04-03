@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config>
+  <input>
+    <network>
+      <file>../data/edges.shp</file>
+      <id>id</id>
+    </network>
+    <gps>
+      <file>../data/trips.shp</file>
+      <id>id</id>
+    </gps>
+  </input>
+  <parameters>
+    <k>4</k>
+    <r>0.4</r>
+    <gps_error>0.5</gps_error>
+  </parameters>
+  <output>
+    <file>mr.txt</file>
+  </output>
+  <other>
+    <log_level>2</log_level>
+  </other>
+</config>

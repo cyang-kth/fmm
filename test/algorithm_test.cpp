@@ -1,6 +1,7 @@
 #define CATCH_CONFIG_MAIN
 #include "catch2/catch.hpp"
-#include "../src/algorithm.hpp"
+#include "util/debug.hpp"
+#include "algorithm/geom_algorithm.hpp"
 
 using namespace MM;
 using namespace MM::ALGORITHM;
@@ -84,19 +85,19 @@ TEST_CASE( "Algorithm are tested", "[algorithm]" ) {
     // Mode 1, export start to p
     mode = 1;
     // Test for the end node
-    LineString result_4 = cutoffseg(line.getLength(),line,mode);
+    LineString result_4 = cutoffseg(line.get_length(),line,mode);
     LineString expected_4 = wkt2linestring(
       "LineString(0 0,0 1,0 2,1 1,2 1,2 0)");
     REQUIRE(expected_4 == result_4);
 
     // Test for a vertex
-    LineString result_5 = cutoffseg(line.getLength()-1,line,mode);
+    LineString result_5 = cutoffseg(line.get_length()-1,line,mode);
     LineString expected_5 = wkt2linestring(
       "LineString(0 0,0 1,0 2,1 1,2 1)");
     REQUIRE(expected_5 == result_5);
 
     // Test for a  midpoint
-    LineString result_6 = cutoffseg(line.getLength()-0.5,line,mode);
+    LineString result_6 = cutoffseg(line.get_length()-0.5,line,mode);
     LineString expected_6 = wkt2linestring(
       "LineString(0 0,0 1,0 2,1 1,2 1,2 0.5)");
     REQUIRE(expected_6 == result_6);

@@ -8,15 +8,8 @@ set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 
 project(fmm_test)
 
-if (LOG_LEVEL)
-  message(STATUS "LOG_LEVEL defined ${LOG_LEVEL}")
-else()
-  message(STATUS "LOG_LEVEL OFF")
-  set(LOG_LEVEL "OFF")
-endif (LOG_LEVEL)
-
 set(CMAKE_BUILD_TYPE "Release")
-set(CMAKE_CXX_FLAGS "-O3 -DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_${LOG_LEVEL}")
+set(CMAKE_CXX_FLAGS "-O3 -DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_INFO")
 set(CMAKE_CXX_STANDARD 11)
 
 find_package(Boost 1.54.0 REQUIRED serialization)
@@ -36,16 +29,69 @@ else()
   message(FATAL_ERROR "GDAL Not Found!")
 endif (GDAL_FOUND)
 
-include_directories(../include)
+find_package(OpenMP REQUIRED)
+if(OPENMP_FOUND)
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+  message(STATUS "OpenMP_CXX_LIBRARIES found at ${OpenMP_CXX_LIBRARIES}")
+endif()
 
-# add_executable(algorithm_test algorithm_test.cpp)
-# target_link_libraries(algorithm_test ${GDAL_LIBRARIES} ${Boost_LIBRARIES})
 
-file(GLOB TEST_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
-foreach( test_file ${TEST_SOURCES} )
-  string( REPLACE ".cpp" "" filename ${test_file})
-  get_filename_component(test_name ${filename} NAME)
-  add_executable(${test_name} ${test_file})
-  target_link_libraries(${test_name} ${GDAL_LIBRARIES} ${Boost_LIBRARIES})
-  install(TARGETS ${test_name} DESTINATION bin)
-endforeach( test_file ${TEST_SOURCES} )
+include_directories(../third_party)
+include_directories(../src)
+
+file(GLOB CoreGlob ../src/core/*.cpp)
+file(GLOB AlgorithmGlob ../src/algorithm/*.cpp)
+file(GLOB ConfigGlob ../src/config/*.cpp)
+file(GLOB IOGlob ../src/io/*.cpp)
+file(GLOB NetworkGlob ../src/network/*.cpp)
+file(GLOB UtilGlob ../src/util/*.cpp)
+file(GLOB MMGlob ../src/mm/*.cpp)
+file(GLOB FMMGlob ../src/mm/fmm/*.cpp)
+
+add_library(CORE OBJECT ${CoreGlob})
+add_library(ALGORITHM OBJECT ${AlgorithmGlob})
+add_library(CONFIG OBJECT ${ConfigGlob})
+add_library(IO OBJECT ${IOGlob})
+add_library(UTIL OBJECT ${UtilGlob})
+add_library(NETWORK OBJECT ${NetworkGlob})
+add_library(MM_OBJ OBJECT ${MMGlob})
+add_library(FMM_OBJ OBJECT ${FMMGlob})
+
+add_executable(algorithm_test algorithm_test.cpp
+        $<TARGET_OBJECTS:CORE>
+        $<TARGET_OBJECTS:ALGORITHM>)
+target_link_libraries(algorithm_test ${GDAL_LIBRARIES} ${Boost_LIBRARIES})
+
+add_executable(fmm_test fmm_test.cpp
+        $<TARGET_OBJECTS:MM_OBJ>
+        $<TARGET_OBJECTS:CORE>
+        $<TARGET_OBJECTS:CONFIG>
+        $<TARGET_OBJECTS:ALGORITHM>
+        $<TARGET_OBJECTS:UTIL>
+        $<TARGET_OBJECTS:IO>
+        $<TARGET_OBJECTS:NETWORK>
+        $<TARGET_OBJECTS:FMM_OBJ>)
+target_link_libraries(fmm_test ${GDAL_LIBRARIES} ${Boost_LIBRARIES}
+        ${OpenMP_CXX_LIBRARIES})
+
+add_executable(network_graph_test network_graph_test.cpp
+        $<TARGET_OBJECTS:CORE>
+        $<TARGET_OBJECTS:CONFIG>
+        $<TARGET_OBJECTS:ALGORITHM>
+        $<TARGET_OBJECTS:UTIL>
+        $<TARGET_OBJECTS:IO>
+        $<TARGET_OBJECTS:NETWORK>)
+target_link_libraries(network_graph_test ${GDAL_LIBRARIES} ${Boost_LIBRARIES}
+        ${OpenMP_CXX_LIBRARIES})
+
+add_executable(network_test network_test.cpp
+        $<TARGET_OBJECTS:CORE>
+        $<TARGET_OBJECTS:CONFIG>
+        $<TARGET_OBJECTS:ALGORITHM>
+        $<TARGET_OBJECTS:UTIL>
+        $<TARGET_OBJECTS:IO>
+        $<TARGET_OBJECTS:NETWORK>)
+target_link_libraries(network_test ${GDAL_LIBRARIES} ${OpenMP_CXX_LIBRARIES})
+
+

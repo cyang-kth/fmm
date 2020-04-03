@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config>
+  <input>
+    <network>
+      <file>../data/edges.shp</file>
+      <id>id</id>
+      <source>source</source>
+      <target>target</target>
+    </network>
+  </input>
+  <parameters>
+    <delta>3</delta>
+  </parameters>
+  <output>
+    <file>../data/ubodt.txt</file>
+  </output>
+</config>

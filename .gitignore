@@ -82,3 +82,12 @@ _deps
 
 *.bin
 *.binary
+
+# bash file to sync file
+sync.sh
+
+
+# Jupyternotebook
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+*.pyc

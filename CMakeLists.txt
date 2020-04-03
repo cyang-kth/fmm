@@ -10,7 +10,7 @@ SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 project(fmm)
 
 set(CMAKE_BUILD_TYPE "Release")
-set(CMAKE_CXX_FLAGS "-O3 -DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE")
+set(CMAKE_CXX_FLAGS "-O3 -DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_INFO")
 set(CMAKE_CXX_STANDARD 11)
 
 find_package(GDAL 2.2 REQUIRED)
@@ -37,15 +37,62 @@ if(OPENMP_FOUND)
   message(STATUS "OpenMP_CXX_LIBRARIES found at ${OpenMP_CXX_LIBRARIES}")
 endif()
 
-include_directories(include)
+include_directories(third_party)
+include_directories(src)
 
-file(GLOB APP_SOURCES app/*.cpp)
-foreach( source_file ${APP_SOURCES} )
-  # I used a simple string replace, to cut off .cpp.
-  string( REPLACE ".cpp" "" filename ${source_file})
-  get_filename_component(appname ${filename} NAME)
-  add_executable(${appname} ${source_file})
-  target_link_libraries(${appname} ${GDAL_LIBRARIES} ${Boost_LIBRARIES}
-    ${OpenMP_CXX_LIBRARIES})
-  install(TARGETS ${appname} DESTINATION bin)
-endforeach( source_file ${APP_SOURCES} )
+file(GLOB CoreGlob src/core/*.cpp)
+file(GLOB AlgorithmGlob src/algorithm/*.cpp)
+file(GLOB ConfigGlob src/config/*.cpp)
+file(GLOB IOGlob src/io/*.cpp)
+file(GLOB NetworkGlob src/network/*.cpp)
+file(GLOB UtilGlob src/util/*.cpp)
+file(GLOB MMGlob src/mm/*.cpp)
+file(GLOB FMMGlob src/mm/fmm/*.cpp)
+file(GLOB STMATCHGlob src/mm/stmatch/*.cpp)
+
+add_library(CORE OBJECT ${CoreGlob})
+add_library(ALGORITHM OBJECT ${AlgorithmGlob})
+add_library(CONFIG OBJECT ${ConfigGlob})
+add_library(IO OBJECT ${IOGlob})
+add_library(UTIL OBJECT ${UtilGlob})
+add_library(NETWORK OBJECT ${NetworkGlob})
+add_library(MM_OBJ OBJECT ${MMGlob})
+add_library(FMM_OBJ OBJECT ${FMMGlob})
+add_library(STMATCH_OBJ OBJECT ${STMATCHGlob})
+
+add_executable(fmm src/app/fmm.cpp
+        $<TARGET_OBJECTS:MM_OBJ>
+        $<TARGET_OBJECTS:CORE>
+        $<TARGET_OBJECTS:CONFIG>
+        $<TARGET_OBJECTS:ALGORITHM>
+        $<TARGET_OBJECTS:UTIL>
+        $<TARGET_OBJECTS:IO>
+        $<TARGET_OBJECTS:NETWORK>
+        $<TARGET_OBJECTS:FMM_OBJ>)
+target_link_libraries(fmm ${GDAL_LIBRARIES} ${Boost_LIBRARIES}
+        ${OpenMP_CXX_LIBRARIES})
+
+add_executable(ubodt_gen src/app/ubodt_gen_app.cpp
+        $<TARGET_OBJECTS:MM_OBJ>
+        $<TARGET_OBJECTS:CORE>
+        $<TARGET_OBJECTS:CONFIG>
+        $<TARGET_OBJECTS:ALGORITHM>
+        $<TARGET_OBJECTS:UTIL>
+        $<TARGET_OBJECTS:IO>
+        $<TARGET_OBJECTS:NETWORK>
+        $<TARGET_OBJECTS:FMM_OBJ>)
+target_link_libraries(ubodt_gen ${GDAL_LIBRARIES} ${Boost_LIBRARIES}
+        ${OpenMP_CXX_LIBRARIES})
+
+add_executable(stmatch src/app/stmatch.cpp
+        $<TARGET_OBJECTS:MM_OBJ>
+        $<TARGET_OBJECTS:STMATCH_OBJ>
+        $<TARGET_OBJECTS:CORE>
+        $<TARGET_OBJECTS:CONFIG>
+        $<TARGET_OBJECTS:ALGORITHM>
+        $<TARGET_OBJECTS:UTIL>
+        $<TARGET_OBJECTS:IO>
+        $<TARGET_OBJECTS:NETWORK>)
+target_link_libraries(stmatch ${GDAL_LIBRARIES} ${OpenMP_CXX_LIBRARIES})
+
+install(TARGETS fmm ubodt_gen stmatch DESTINATION bin)

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config>
+  <input>
+    <ubodt>
+      <file>../data/ubodt.txt</file>
+    </ubodt>
+    <network>
+      <file>../data/edges.shp</file>
+      <id>id</id>
+    </network>
+    <gps>
+      <file>../data/gps.csv</file>
+      <id>id</id>
+      <x>x</x>
+      <y>y</y>
+      <gps_point/>
+    </gps>
+  </input>
+  <parameters>
+    <k>4</k>
+    <r>0.4</r>
+    <pf>0</pf>
+    <gps_error>0.5</gps_error>
+  </parameters>
+  <output>
+    <file>mr.txt</file>
+  </output>
+  <other>
+    <log_level>2</log_level>
+  </other>
+</config>

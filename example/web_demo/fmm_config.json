@@ -1,0 +1,17 @@
+{
+  "input": {
+    "network": {
+      "file": "network.shp",
+      "id": "ID"
+    },
+    "ubodt":{
+      "file": "ubodt.txt"
+    }
+  },
+  "model": "fmm",
+  "parameters": {
+    "k": 32,
+    "r": 0.01,
+    "e": 0.003
+  }
+}

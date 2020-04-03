@@ -6,28 +6,23 @@
 ------------------- |
 [![Wiki](https://img.shields.io/badge/link-wiki-blue.svg)](https://fmm-wiki.github.io/) |
 
-FMM is an implementation of the fast map matching algorithm introduced in this paper [Fast map matching, an algorithm integrating hidden Markov model with precomputation](http://www.tandfonline.com/doi/full/10.1080/13658816.2017.1400548), which acelerates the performance by precomputation. A post-print version of the paper can be downloaded from this [link](https://people.kth.se/~cyang/bib/fmm.pdf).
+FMM is an open source map matching framework which solves the problem of matching noisy GPS data to a road network. It is designed for maximizing performance, scalability and functionality.
 
-### Features of fmm
+### Features
 
-- Highly optimized code in C++ using Boost libraries (Graph and Rtree index)
-- Considerable map matching speed
-   - **25,000-45,000 points/sec** (single processor)
-   - **200,000 points/sec** (parallel matching with 8 processor)
-- Support GPS input in form of [Shapefile and CSV format](https://fmm-wiki.github.io/docs/documentation/input/)
-- Configuration passed by XML file or argument list
-- [Customized output fields](https://fmm-wiki.github.io/docs/documentation/output/#output-of-fmm) (matched point,traversed path, gps error, etc)
-- Support **city level** road network (100,000 edges tested) and **millions of GPS records**
-- Tested on Ubuntu, Windows and Mac platform (C++ program).
-- Python API (a preliminary version)
+- **High performance**: C++ implementation using Rtree, optimized routing, parallel computing.
+- **Python API**: [jupyter-notebook](example/notebook) and web demo
+- **Scalibility**: millions of GPS points and millions of road edges.  
+- **Multiple data format**: GPS data in CSV and Shapefile.  Road network in ESRI shapefile or Geopackage. OSM network can also be supported with [manual preprocessing](https://github.com/cyang-kth/osm_mapmatching).
+- **Detailed matching information**: traversed path, geometry, individual matched edges, GPS error, etc.
+- **Multiple algorithms**: FMM and STMatch
+- **Cross platform support**: Unix, Mac and Windows.
 
-### Get started with fmm
+We encourage contribution with feature request, bug report or developping new map matching algorithms using the framework.
 
-- Map matching with Shapefile or CSV: check the [example](https://github.com/cyang-kth/fmm/tree/master/example)
-- Map matching with OpenStreetMap: check the tutorial at [OSM map matching](https://github.com/cyang-kth/osm_mapmatching)
-- Interactive exploration of map matching: a web application under the `web_demo` folder is designed for map matching on OpenStreetMap and screenshots are shown below.
+### Demo
 
-<img src="img/demo1.gif" width="400"/> <img src="img/demo2.gif" width="400"/>
+Interactive web demo
 
 <img src="img/demo3.gif" width="400"/> <img src="img/demo4.gif" width="400"/>
 
@@ -36,10 +31,6 @@ FMM is an implementation of the fast map matching algorithm introduced in this p
 
 Check the [https://fmm-wiki.github.io/](https://fmm-wiki.github.io/) for details.
 
-### Acknowledgement
-
-Great acknowledgement is given to [Edi Buslovich](https://github.com/edibusl) for improving the installation instructions.
-
 ### Contact and citation
 
 Can Yang, Ph.D. student at KTH, Royal Institute of Technology in Sweden
@@ -47,6 +38,8 @@ Can Yang, Ph.D. student at KTH, Royal Institute of Technology in Sweden
 Email: cyang(at)kth.se
 
 Homepage: https://people.kth.se/~cyang/
+
+FMM originates from an implementation of this paper [Fast map matching, an algorithm integrating hidden Markov model with precomputation](http://www.tandfonline.com/doi/full/10.1080/13658816.2017.1400548). A post-print version of the paper can be downloaded at [link](https://people.kth.se/~cyang/bib/fmm.pdf). Substaintial new features have been added compared with the original paper.  
 
 Please cite fmm in your publications if it helps your research:
 
