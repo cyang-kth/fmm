@@ -137,6 +137,10 @@ int Network::get_node_count() const {
   return node_id_vec.size();
 }
 
+int Network::get_edge_count() const {
+  return edges.size();
+}
+
 // Get the edge vector
 const std::vector<Edge> &Network::get_edges() const
 {

@@ -53,6 +53,8 @@ public:
 
   int get_node_count() const;
 
+  int get_edge_count() const;
+
   // Get the edge vector
   const std::vector<Edge> &get_edges() const;
 

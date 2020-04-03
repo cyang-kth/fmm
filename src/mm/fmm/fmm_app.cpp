@@ -11,7 +11,7 @@ namespace MM{
 
 void FMMApp::run() {
   UTIL::TimePoint start_time = std::chrono::steady_clock::now();
-  FMM mm_model(network_, ng_, *ubodt_);
+  FMM mm_model(network_, ng_, ubodt_);
   const FMMAlgorConfig &fmm_config = config_.fmm_config;
   IO::GPSReader reader(config_.gps_config);
   IO::CSVMatchResultWriter writer(config_.result_config.file,

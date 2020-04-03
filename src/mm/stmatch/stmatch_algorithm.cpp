@@ -42,42 +42,35 @@ bool STMATCHAlgorConfig::validate() const{
   return true;
 }
 
-PyMatchResult STMATCH::match_wkt_test(
+PyMatchResult STMATCH::match_wkt(
   const std::string &wkt,const STMATCHAlgorConfig &config){
-  PyMatchResult result;
-  match_wkt(wkt, config, result);
-  return result;
-};
-
-void STMATCH::match_wkt(
-                    const std::string &wkt,
-                    const STMATCHAlgorConfig &config,
-                    PyMatchResult &output){
   LineString line = wkt2linestring(wkt);
   std::vector<double> timestamps;
   Trajectory traj{0,line,timestamps};
   MatchResult result = match_traj(traj,config);
+  PyMatchResult output;
   output.id = result.id;
   output.opath = result.opath;
   output.cpath = result.cpath;
-  // output.mgeom = result.mgeom;
-  // output.indices = result.indices;
-  // for (int i=0;i<result.opt_candidate_path.size();++i){
-  //   const MatchedCandidate &mc= result.opt_candidate_path[i];
-  //   output.candidates.push_back(
-  //     {i,
-  //      mc.c.edge->id,
-  //      graph_.get_node_id(mc.c.edge->source),
-  //      graph_.get_node_id(mc.c.edge->target),
-  //      mc.c.dist,
-  //      mc.c.offset,
-  //      mc.c.edge->length,
-  //      mc.ep,
-  //      mc.tp,
-  //      mc.sp_dist}
-  //   );
-  //   output.pgeom.add_point(mc.c.point);
-  // }
+  output.mgeom = result.mgeom;
+  output.indices = result.indices;
+  for (int i=0;i<result.opt_candidate_path.size();++i){
+    const MatchedCandidate &mc= result.opt_candidate_path[i];
+    output.candidates.push_back(
+      {i,
+       mc.c.edge->id,
+       graph_.get_node_id(mc.c.edge->source),
+       graph_.get_node_id(mc.c.edge->target),
+       mc.c.dist,
+       mc.c.offset,
+       mc.c.edge->length,
+       mc.ep,
+       mc.tp,
+       mc.sp_dist}
+    );
+    output.pgeom.add_point(mc.c.point);
+  }
+  return output;
 };
 
 // Procedure of HMM based map matching algorithm.

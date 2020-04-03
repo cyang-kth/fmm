@@ -6,6 +6,7 @@
 #include "mm/composite_graph.hpp"
 #include "mm/transition_graph.hpp"
 #include "mm/mm_result.hpp"
+#include "python/pyfmm.hpp"
 
 #include <string>
 #include <boost/property_tree/ptree.hpp>
@@ -37,9 +38,7 @@ class STMATCH {
       network_(network), graph_(graph) {
 
   };
-  void match_wkt(const std::string &wkt,const STMATCHAlgorConfig &config,
-                 PyMatchResult &output);
-  PyMatchResult match_wkt_test(
+  PyMatchResult match_wkt(
     const std::string &wkt,const STMATCHAlgorConfig &config);
   // Procedure of HMM based map matching algorithm.
   MatchResult match_traj(const Trajectory &traj,

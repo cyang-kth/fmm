@@ -9,6 +9,7 @@
 #include "network/network_graph.hpp"
 #include "mm/transition_graph.hpp"
 #include "mm/fmm/ubodt.hpp"
+#include "python/pyfmm.hpp"
 
 #include <string>
 #include <boost/property_tree/ptree.hpp>
@@ -33,12 +34,14 @@ struct FMMAlgorConfig{
 class FMM {
  public:
   FMM(const Network &network, const NetworkGraph &graph,
-      const UBODT &ubodt)
+      std::shared_ptr<UBODT> ubodt)
       : network_(network), graph_(graph), ubodt_(ubodt) {
   };
   // Procedure of HMM based map matching algorithm.
   MatchResult match_traj(const Trajectory &traj,
                          const FMMAlgorConfig &config);
+  PyMatchResult match_wkt(
+      const std::string &wkt,const FMMAlgorConfig &config);
  protected:
   double get_sp_dist(const Candidate *ca,
                      const Candidate *cb);
@@ -52,7 +55,7 @@ class FMM {
  private:
   const Network &network_;
   const NetworkGraph &graph_;
-  const UBODT &ubodt_;
+  std::shared_ptr<UBODT> ubodt_;
 };
 
 }

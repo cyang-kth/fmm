@@ -11,11 +11,11 @@ namespace MM {
 
 void FMMAlgorConfig::print() const {
   SPDLOG_INFO("FMMAlgorithmConfig");
-  SPDLOG_INFO("k {} radius {} gps_error {}",k,radius,gps_error);
+  SPDLOG_INFO("k {} radius {} gps_error {}", k, radius, gps_error);
 };
 
 FMMAlgorConfig FMMAlgorConfig::load_from_xml(
-    const boost::property_tree::ptree &xml_data){
+    const boost::property_tree::ptree &xml_data) {
   int k = xml_data.get("config.parameters.k", 8);
   double radius = xml_data.get("config.parameters.r", 300.0);
   double gps_error = xml_data.get("config.parameters.gps_error", 50.0);
@@ -23,24 +23,24 @@ FMMAlgorConfig FMMAlgorConfig::load_from_xml(
 };
 
 FMMAlgorConfig FMMAlgorConfig::load_from_arg(
-    const cxxopts::ParseResult &arg_data){
+    const cxxopts::ParseResult &arg_data) {
   int k = arg_data["candidates"].as<int>();
   double radius = arg_data["radius"].as<double>();
   double gps_error = arg_data["error"].as<double>();
   return FMMAlgorConfig{k, radius, gps_error};
 };
 
-bool FMMAlgorConfig::validate() const{
+bool FMMAlgorConfig::validate() const {
   if (gps_error <= 0 || radius <= 0 || k <= 0) {
     SPDLOG_CRITICAL("Invalid mm parameter k {} r {} gps error {}",
-                    k,radius,gps_error);
+                    k, radius, gps_error);
     return false;
   }
   return true;
 }
 
 MatchResult FMM::match_traj(const MM::Trajectory &traj,
-                                     const MM::FMMAlgorConfig &config) {
+                            const MM::FMMAlgorConfig &config) {
   SPDLOG_TRACE("Count of points in trajectory {}", traj.geom.get_num_points());
   SPDLOG_TRACE("Search candidates");
   Traj_Candidates tc = network_.search_tr_cs_knn(
@@ -71,9 +71,9 @@ MatchResult FMM::match_traj(const MM::Trajectory &traj,
                  });
   std::vector<int> indices;
   const std::vector<Edge> &edges = network_.get_edges();
-  C_Path cpath = ubodt_.construct_complete_path(tg_opath,edges,
-      &indices);
-  SPDLOG_TRACE("Cpath {}",cpath);
+  C_Path cpath = ubodt_->construct_complete_path(tg_opath, edges,
+                                                &indices);
+  SPDLOG_TRACE("Cpath {}", cpath);
   SPDLOG_TRACE("Complete path inference");
   LineString mgeom = network_.complete_path_to_geometry(
       traj.geom, cpath);
@@ -81,6 +81,37 @@ MatchResult FMM::match_traj(const MM::Trajectory &traj,
   return MatchResult{
       traj.id, matched_candidate_path, opath, cpath, indices, mgeom};
 }
+
+PyMatchResult FMM::match_wkt(
+    const std::string &wkt, const FMMAlgorConfig &config) {
+  LineString line = wkt2linestring(wkt);
+  std::vector<double> timestamps;
+  Trajectory traj{0, line, timestamps};
+  MatchResult result = match_traj(traj, config);
+  PyMatchResult output;
+  output.id = result.id;
+  output.opath = result.opath;
+  output.cpath = result.cpath;
+  output.mgeom = result.mgeom;
+  output.indices = result.indices;
+  for (int i = 0; i < result.opt_candidate_path.size(); ++i) {
+    const MatchedCandidate &mc = result.opt_candidate_path[i];
+    output.candidates.push_back(
+        {i,
+         mc.c.edge->id,
+         graph_.get_node_id(mc.c.edge->source),
+         graph_.get_node_id(mc.c.edge->target),
+         mc.c.dist,
+         mc.c.offset,
+         mc.c.edge->length,
+         mc.ep,
+         mc.tp,
+         mc.sp_dist}
+    );
+    output.pgeom.add_point(mc.c.point);
+  }
+  return output;
+};
 
 double FMM::get_sp_dist(const MM::Candidate *ca, const MM::Candidate *cb) {
   double sp_dist = 0;
@@ -90,9 +121,9 @@ double FMM::get_sp_dist(const MM::Candidate *ca, const MM::Candidate *cb) {
     // Transition on the same OD nodes
     sp_dist = ca->edge->length - ca->offset + cb->offset;
   } else {
-    Record *r = ubodt_.look_up(ca->edge->target, cb->edge->source);
+    Record *r = ubodt_->look_up(ca->edge->target, cb->edge->source);
     // No sp path exist from O to D.
-    if (r == nullptr) return ubodt_.get_delta();
+    if (r == nullptr) return ubodt_->get_delta();
     // calculate original SP distance
     sp_dist = r->cost + ca->edge->length - ca->offset + cb->offset;
   }

@@ -27,31 +27,6 @@ struct MatchResult {
   LineString mgeom;
 };
 
-// POD type for python map matching result
-
-struct PyCandidate{
-  int index;       // point index in trajectory
-  int edge_id;       // edge id
-  int source;
-  int target;
-  double error;
-  double offset;
-  double length;
-  double ep;
-  double tp;
-  double spdist;
-};
-
-struct PyMatchResult {
-  int id;
-  O_Path opath;
-  C_Path cpath;
-  // std::vector<PyCandidate> candidates;
-  std::vector<int> indices; // index of opath edge in cpath
-  // LineString mgeom;
-  // LineString pgeom;
-};
-
 };
 
 #endif //MM_INCLUDE_MM_MM_RESULT_HPP_
