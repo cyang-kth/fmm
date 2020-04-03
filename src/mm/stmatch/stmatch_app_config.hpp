@@ -27,7 +27,7 @@ class STMATCHAppConfig
   NetworkConfig network_config;
   GPSConfig gps_config;
   ResultConfig result_config;
-  STMATCHAlgorConfig stmatch_config;
+  STMATCHConfig stmatch_config;
   bool use_omp = false;
   bool projected = false;
   bool help_specified = false;

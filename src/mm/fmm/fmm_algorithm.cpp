@@ -9,28 +9,28 @@
 
 namespace MM {
 
-void FMMAlgorConfig::print() const {
+void FMMConfig::print() const {
   SPDLOG_INFO("FMMAlgorithmConfig");
   SPDLOG_INFO("k {} radius {} gps_error {}", k, radius, gps_error);
 };
 
-FMMAlgorConfig FMMAlgorConfig::load_from_xml(
+FMMConfig FMMConfig::load_from_xml(
     const boost::property_tree::ptree &xml_data) {
   int k = xml_data.get("config.parameters.k", 8);
   double radius = xml_data.get("config.parameters.r", 300.0);
   double gps_error = xml_data.get("config.parameters.gps_error", 50.0);
-  return FMMAlgorConfig{k, radius, gps_error};
+  return FMMConfig{k, radius, gps_error};
 };
 
-FMMAlgorConfig FMMAlgorConfig::load_from_arg(
+FMMConfig FMMConfig::load_from_arg(
     const cxxopts::ParseResult &arg_data) {
   int k = arg_data["candidates"].as<int>();
   double radius = arg_data["radius"].as<double>();
   double gps_error = arg_data["error"].as<double>();
-  return FMMAlgorConfig{k, radius, gps_error};
+  return FMMConfig{k, radius, gps_error};
 };
 
-bool FMMAlgorConfig::validate() const {
+bool FMMConfig::validate() const {
   if (gps_error <= 0 || radius <= 0 || k <= 0) {
     SPDLOG_CRITICAL("Invalid mm parameter k {} r {} gps error {}",
                     k, radius, gps_error);
@@ -40,7 +40,7 @@ bool FMMAlgorConfig::validate() const {
 }
 
 MatchResult FMM::match_traj(const MM::Trajectory &traj,
-                            const MM::FMMAlgorConfig &config) {
+                            const MM::FMMConfig &config) {
   SPDLOG_TRACE("Count of points in trajectory {}", traj.geom.get_num_points());
   SPDLOG_TRACE("Search candidates");
   Traj_Candidates tc = network_.search_tr_cs_knn(
@@ -83,7 +83,7 @@ MatchResult FMM::match_traj(const MM::Trajectory &traj,
 }
 
 PyMatchResult FMM::match_wkt(
-    const std::string &wkt, const FMMAlgorConfig &config) {
+    const std::string &wkt, const FMMConfig &config) {
   LineString line = wkt2linestring(wkt);
   std::vector<double> timestamps;
   Trajectory traj{0, line, timestamps};
@@ -132,7 +132,7 @@ double FMM::get_sp_dist(const MM::Candidate *ca, const MM::Candidate *cb) {
 
 void FMM::update_tg(
     MM::TransitionGraph *tg,
-    const MM::Trajectory &traj, const MM::FMMAlgorConfig &config) {
+    const MM::Trajectory &traj, const MM::FMMConfig &config) {
   SPDLOG_TRACE("Update transition graph");
   std::vector<TGLayer> &layers = tg->get_layers();
   std::vector<double> eu_dists = ALGORITHM::cal_eu_dist(traj.geom);

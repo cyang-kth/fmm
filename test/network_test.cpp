@@ -19,8 +19,8 @@ TEST_CASE( "Network is tested", "[network]" ) {
     NodeID nid2 = network.get_node_id(nidx);
     REQUIRE(nid == nid2);
     Point p = network.get_node_geom_from_idx(nidx);
-    REQUIRE(bg::get<0>(p) == 3.0);
-    REQUIRE(bg::get<1>(p) == 2.0);
+    REQUIRE(boost::geometry::get<0>(p) == 3.0);
+    REQUIRE(boost::geometry::get<1>(p) == 2.0);
     EdgeID edge_id = 5;
     EdgeIndex e_idx = network.get_edge_index(edge_id);
     EdgeID edge_id_2 = network.get_edge_id(e_idx);

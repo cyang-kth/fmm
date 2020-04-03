@@ -34,7 +34,7 @@ void FMMAppConfig::load_xml(const std::string &file){
   network_config = NetworkConfig::load_from_xml(tree);
   gps_config = GPSConfig::load_from_xml(tree);
   result_config = ResultConfig::load_from_xml(tree);
-  fmm_config = FMMAlgorConfig::load_from_xml(tree);
+  fmm_config = FMMConfig::load_from_xml(tree);
   // UBODT
   ubodt_file = tree.get<std::string>("config.input.ubodt.file");
   log_level = tree.get("config.other.log_level",2);
@@ -95,7 +95,7 @@ void FMMAppConfig::load_arg(int argc, char **argv){
   network_config = NetworkConfig::load_from_arg(result);
   gps_config = GPSConfig::load_from_arg(result);
   result_config = ResultConfig::load_from_arg(result);
-  fmm_config = FMMAlgorConfig::load_from_arg(result);
+  fmm_config = FMMConfig::load_from_arg(result);
   log_level = result["log_level"].as<int>();
   step = result["step"].as<int>();
   use_omp = result.count("use_omp")>0;

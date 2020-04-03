@@ -27,7 +27,7 @@ class FMMAppConfig
   NetworkConfig network_config;
   GPSConfig gps_config;
   ResultConfig result_config;
-  FMMAlgorConfig fmm_config;
+  FMMConfig fmm_config;
   // UBODT configurations
   std::string ubodt_file;
   bool use_omp = false;

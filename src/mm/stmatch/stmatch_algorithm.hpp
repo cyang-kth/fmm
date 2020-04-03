@@ -16,7 +16,7 @@
 
 namespace MM {
 
-struct STMATCHAlgorConfig {
+struct STMATCHConfig {
   int k;
   double radius;
   double gps_error;
@@ -26,9 +26,9 @@ struct STMATCHAlgorConfig {
   double factor;
   bool validate() const;
   void print() const;
-  static STMATCHAlgorConfig load_from_xml(
+  static STMATCHConfig load_from_xml(
       const boost::property_tree::ptree &xml_data);
-  static STMATCHAlgorConfig load_from_arg(
+  static STMATCHConfig load_from_arg(
       const cxxopts::ParseResult &arg_data);
 };
 
@@ -39,15 +39,15 @@ class STMATCH {
 
   };
   PyMatchResult match_wkt(
-    const std::string &wkt,const STMATCHAlgorConfig &config);
+    const std::string &wkt,const STMATCHConfig &config);
   // Procedure of HMM based map matching algorithm.
   MatchResult match_traj(const Trajectory &traj,
-                         const STMATCHAlgorConfig &config);
+                         const STMATCHConfig &config);
  protected:
   void update_tg(TransitionGraph *tg,
                  const CompositeGraph &cg,
                  const Trajectory &traj,
-                 const STMATCHAlgorConfig &config);
+                 const STMATCHConfig &config);
 
   void update_layer(int level, TGLayer *la_ptr, TGLayer *lb_ptr,
                     const CompositeGraph &cg,

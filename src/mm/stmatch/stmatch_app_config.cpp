@@ -34,7 +34,7 @@ void STMATCHAppConfig::load_xml(const std::string &file){
   network_config = NetworkConfig::load_from_xml(tree);
   gps_config = GPSConfig::load_from_xml(tree);
   result_config = ResultConfig::load_from_xml(tree);
-  stmatch_config = STMATCHAlgorConfig::load_from_xml(tree);
+  stmatch_config = STMATCHConfig::load_from_xml(tree);
   log_level = tree.get("config.other.log_level",2);
   step =  tree.get("config.other.step",100);
   use_omp = !(!tree.get_child_optional("config.other.use_omp"));
@@ -94,7 +94,7 @@ void STMATCHAppConfig::load_arg(int argc, char **argv){
   network_config = NetworkConfig::load_from_arg(result);
   gps_config = GPSConfig::load_from_arg(result);
   result_config = ResultConfig::load_from_arg(result);
-  stmatch_config = STMATCHAlgorConfig::load_from_arg(result);
+  stmatch_config = STMATCHConfig::load_from_arg(result);
   log_level = result["log_level"].as<int>();
   step = result["step"].as<int>();
   use_omp = result.count("use_omp")>0;
