@@ -14,6 +14,11 @@
 
 namespace MM {
 
+struct PythonResult{
+  int x;
+  int y;
+};
+
 struct STMATCHAlgorConfig {
   int k;
   double radius;
@@ -36,8 +41,14 @@ class STMATCH {
       network_(network), graph_(graph) {
 
   };
-  std::string match_wkt(const std::string &wkt,
+  MatchResult match_wkt(const std::string &wkt,
       const STMATCHAlgorConfig &config);
+  void match_wkt_test(const std::string &wkt,
+                      const STMATCHAlgorConfig &config,
+                      MatchResult &output);
+
+  void create_python_result(
+                      PythonResult &output);
   // Procedure of HMM based map matching algorithm.
   MatchResult match_traj(const Trajectory &traj,
                          const STMATCHAlgorConfig &config);

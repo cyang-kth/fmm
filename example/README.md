@@ -87,4 +87,5 @@
 
 ### Jupyter notebook examples
 
-- Map matching demo 
+- Run map matching with fmm
+- Run map matching with stmatch 

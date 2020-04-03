@@ -12,14 +12,33 @@
 #include "mm/fmm/fmm_algorithm.hpp"
 #include "mm/stmatch/stmatch_algorithm.hpp"
 #include "mm/fmm/ubodt.hpp"
-#include "mm/mm_result.hpp"
 using namespace MM;
 %}
+
+%typemap(in,numinputs=0) MatchResult& (MatchResult tmp) %{
+  $1 = &tmp;
+%}
+
+%typemap(argout) MatchResult& (PyObject* o) %{
+  o = SWIG_NewPointerObj($1, $1_descriptor, SWIG_POINTER_OWN);
+  $result = SWIG_Python_AppendOutput($result, o);
+%}
+
+%typemap(in,numinputs=0) PythonResult& (PythonResult tmp) %{
+  $1 = &tmp;
+%}
+
+%typemap(argout) PythonResult& (PyObject* o) %{
+  o = SWIG_NewPointerObj($1, $1_descriptor, SWIG_POINTER_OWN);
+  $result = SWIG_Python_AppendOutput($result, o);
+%}
+
 
 namespace std {
    %template(IntVector) vector<int>;
    %template(UnsignedIntVector) vector<unsigned int>;
    %template(DoubleVector) vector<double>;
+   %template(MatchedCandidateVector) vector<MatchedCandidate>;
    // %template(DoubleVVector) vector<vector<double> >;
    // %template(DoubleVVVector) vector<vector<vector<double> > >;
    // %template(IntSet) set<int>;
@@ -33,4 +52,3 @@ namespace std {
 %include "mm/fmm/fmm_algorithm.hpp"
 %include "mm/stmatch/stmatch_algorithm.hpp"
 %include "mm/fmm/ubodt.hpp"
-%include "mm/mm_result.hpp"

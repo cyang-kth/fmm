@@ -42,13 +42,27 @@ bool STMATCHAlgorConfig::validate() const{
   return true;
 }
 
-std::string STMATCH::match_wkt(const std::string &wkt,
+MatchResult STMATCH::match_wkt(const std::string &wkt,
                       const STMATCHAlgorConfig &config){
   LineString line = wkt2linestring(wkt);
   std::vector<double> timestamps;
   Trajectory traj{0,line,timestamps};
-  MatchResult result = match_traj(traj,config);
-  return result.mgeom.export_wkt();
+  return match_traj(traj,config);
+};
+
+void STMATCH::create_python_result(
+    PythonResult &output){
+  output.x = 1;
+  output.y = 2;
+};
+
+void STMATCH::match_wkt_test(const std::string &wkt,
+                    const STMATCHAlgorConfig &config,
+                    MatchResult &output){
+  LineString line = wkt2linestring(wkt);
+  std::vector<double> timestamps;
+  Trajectory traj{0,line,timestamps};
+  output = match_traj(traj,config);
 };
 
 // Procedure of HMM based map matching algorithm.
