@@ -6,16 +6,16 @@
 ------------------- |
 [![Wiki](https://img.shields.io/badge/link-wiki-blue.svg)](https://fmm-wiki.github.io/) |
 
-FMM is an open source map matching framework which solves the problem of matching noisy GPS data to a road network. It is designed for maximizing performance, scalability and functionality.
+FMM is an open source map matching framework in C++ and Python. It solves the problem of matching noisy GPS data to a road network. The design considers maximizing performance, scalability and functionality.
 
 ### Features
 
-- **High performance**: C++ implementation using Rtree, optimized routing, parallel computing.
-- **Python API**: [jupyter-notebook](example/notebook) and web demo
+- **High performance**: C++ implementation using Rtree, optimized routing, parallel computing (OpenMP).
+- **Python API**: [jupyter-notebook](example/notebook) and [web demo](example/web_demo)
 - **Scalibility**: millions of GPS points and millions of road edges.  
-- **Multiple data format**: GPS data in CSV and Shapefile.  Road network in ESRI shapefile or Geopackage. OSM network can also be supported with [manual preprocessing](https://github.com/cyang-kth/osm_mapmatching).
+- **Multiple data format**: GPS data in Point CSV, Trajectory CSV and Trajectory Shapefile. Road network in ESRI shapefile or Geopackage. OSM network can also be supported with [manual preprocessing](https://github.com/cyang-kth/osm_mapmatching).
 - **Detailed matching information**: traversed path, geometry, individual matched edges, GPS error, etc.
-- **Multiple algorithms**: FMM and STMatch
+- **Multiple algorithms**: FMM (for small and middle scale network) and STMatch (for large scale road network)
 - **Cross platform support**: Unix, Mac and Windows.
 
 We encourage contribution with feature request, bug report or developping new map matching algorithms using the framework.
@@ -26,8 +26,12 @@ Interactive web demo
 
 <img src="img/demo3.gif" width="400"/> <img src="img/demo4.gif" width="400"/>
 
+### Examples
 
-### Installation, examples and documentation.
+- [Command line examples](example/command_line_example)
+- [Jupyter-notebook](example/notebook)
+
+### Installation and documentation.
 
 Check the [https://fmm-wiki.github.io/](https://fmm-wiki.github.io/) for details.
 
