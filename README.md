@@ -26,9 +26,6 @@ Interactive web demo
 
 <img src="img/demo3.gif" width="400"/> <img src="img/demo4.gif" width="400"/>
 
-Jupyter-notebook  
-
-
 
 ### Installation, examples and documentation.
 
