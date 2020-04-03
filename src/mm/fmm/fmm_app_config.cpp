@@ -120,9 +120,10 @@ void FMMAppConfig::print_help(){
   std::cout<<"--gps_timestamp (optional) <string>: "
     "GPS timestamp name (timestamp)\n";
   std::cout<<"--gps_geom (optional) <string>: GPS geometry name (geom)\n";
-  std::cout<<"--candidates (optional) <int>: number of candidates (8)\n";
-  std::cout<<"--radius (optional) <double>: search radius (300)\n";
-  std::cout<<"--error (optional) <double>: GPS error (50)\n";
+  std::cout<<"-r/--radius (optional) <double>: search "
+             "radius (network data unit) (300)\n";
+  std::cout<<"-e/--error (optional) <double>: GPS error "
+             "(network data unit) (50)\n";
   std::cout<<"--output (required) <string>: Output file name\n";
   std::cout<<"--output_fields (optional) <string>: Output fields\n";
   std::cout<<"  opath,cpath,tpath,ogeom,mgeom,pgeom,\n";

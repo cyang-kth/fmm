@@ -132,10 +132,12 @@ void STMATCHAppConfig::print_help(){
   std::cout<<"--gps_geom (optional) <string>: GPS geometry name (geom)\n";
   std::cout<<"-k/--candidates (optional) <int>: number of candidates (8)\n";
   std::cout<<"-r/--radius (optional) <double>: search "
-    "radius (unit meter) (300)\n";
-  std::cout<<"-e/--error (optional) <double>: GPS error (unit meter) (50)\n";
+    "radius (network data unit) (300)\n";
+  std::cout<<"-e/--error (optional) <double>: GPS error "
+             "(network data unit) (50)\n";
   std::cout<<"-f/--factor (optional) <double>: scale factor (1.5)\n";
-  std::cout<<"-v/--vmax (optional) <double>: Maximum speed (unit km/h) (80)\n";
+  std::cout<<"-v/--vmax (optional) <double>: "
+             " Maximum speed (unit: network_data_unit/s) (30)\n";
   std::cout<<"-o/--output (required) <string>: Output file name\n";
   std::cout<<"-m/--output_fields (optional) <string>: Output fields\n";
   std::cout<<"  opath,cpath,tpath,ogeom,mgeom,pgeom,\n";

@@ -90,3 +90,4 @@ sync.sh
 # Jupyternotebook
 .ipynb_checkpoints
 */.ipynb_checkpoints/*
+*.pyc

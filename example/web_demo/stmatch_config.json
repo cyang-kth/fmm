@@ -1,0 +1,14 @@
+{
+  "input": {
+    "network": {
+      "file": "network.shp",
+      "id": "ID"
+    }
+  },
+  "model": "stmatch",
+  "parameters": {
+    "k": 32,
+    "r": 0.01,
+    "e": 0.003
+  }
+}

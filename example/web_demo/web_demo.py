@@ -11,7 +11,7 @@ import optparse
 import logging
 import flask
 from flask import jsonify
-from fmm import MapMatcher
+from mapmatcher import MapMatcher
 
 import numpy as np
 
@@ -32,16 +32,16 @@ def match_url():
     wkt = str(flask.request.args.get('wkt', ''))
     logging.info('WKT get in python: %s', wkt)
     starttime = time.time()
-    result = app.model.match_wkt(wkt)
+    mgeom_wkt = app.mapmatcher.match_wkt(wkt)
     # logging.info('Probs %s',probs)
     endtime = time.time()
     # logging.info('%s', result)
     # logging.info('Time cost: %s', result[2])
     # print "Result is ",result
     # print "Result geom is ",result.mgeom
-    if (result.mgeom!=""):
+    if (mgeom_wkt!=""):
         print "Matched"
-        response_json = {"wkt":str(result.mgeom),"state":1}
+        response_json = {"wkt":mgeom_wkt,"state":1}
         return jsonify(response_json)
     else:
         print "Not matched"
@@ -71,9 +71,9 @@ def start_from_terminal(app):
     parser.add_option(
         '-c', '--config',
         help="the model configuration file",action="store",dest="config_file",
-        type='string', default="config.xml")
+        type='string', default="config.json")
     opts, args = parser.parse_args()
-    app.model = MapMatcher(opts.config_file)
+    app.mapmatcher = MapMatcher(opts.config_file)
     if opts.debug:
         app.run(debug=True, host='0.0.0.0', port=opts.port)
     else:

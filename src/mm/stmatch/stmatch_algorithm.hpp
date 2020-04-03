@@ -17,6 +17,8 @@
 namespace MM {
 
 struct STMATCHConfig {
+  STMATCHConfig(int k_arg = 8, double r_arg = 300, double gps_error_arg = 50,
+      double vmax_arg = 30, double factor_arg = 1.5);
   int k;
   double radius;
   double gps_error;

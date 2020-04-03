@@ -7,14 +7,21 @@
 
 namespace MM {
 
+STMATCHConfig::STMATCHConfig(
+    int k_arg, double r_arg, double gps_error_arg,
+    double vmax_arg, double factor_arg) :
+    k(k_arg), radius(r_arg), gps_error(gps_error_arg),
+    vmax(vmax_arg), factor(factor_arg) {
+};
+
 void STMATCHConfig::print() const {
   SPDLOG_INFO("STMATCHAlgorithmConfig");
   SPDLOG_INFO("k {} radius {} gps_error {} vmax {} factor {}",
-      k,radius,gps_error,vmax,factor);
+              k, radius, gps_error, vmax, factor);
 };
 
 STMATCHConfig STMATCHConfig::load_from_xml(
-    const boost::property_tree::ptree &xml_data){
+    const boost::property_tree::ptree &xml_data) {
   int k = xml_data.get("config.parameters.k", 8);
   double radius = xml_data.get("config.parameters.r", 300.0);
   double gps_error = xml_data.get("config.parameters.gps_error", 50.0);
@@ -24,7 +31,7 @@ STMATCHConfig STMATCHConfig::load_from_xml(
 };
 
 STMATCHConfig STMATCHConfig::load_from_arg(
-    const cxxopts::ParseResult &arg_data){
+    const cxxopts::ParseResult &arg_data) {
   int k = arg_data["candidates"].as<int>();
   double radius = arg_data["radius"].as<double>();
   double gps_error = arg_data["error"].as<double>();
@@ -33,40 +40,40 @@ STMATCHConfig STMATCHConfig::load_from_arg(
   return STMATCHConfig{k, radius, gps_error, vmax, factor};
 };
 
-bool STMATCHConfig::validate() const{
-  if (gps_error <= 0 || radius <= 0 || k <= 0 || vmax <=0 || factor<=0 ) {
+bool STMATCHConfig::validate() const {
+  if (gps_error <= 0 || radius <= 0 || k <= 0 || vmax <= 0 || factor <= 0) {
     SPDLOG_CRITICAL("Invalid mm parameter k {} r {} gps error {} vmax {} f {}",
-                    k,radius,gps_error,vmax,factor);
+                    k, radius, gps_error, vmax, factor);
     return false;
   }
   return true;
 }
 
 PyMatchResult STMATCH::match_wkt(
-  const std::string &wkt,const STMATCHConfig &config){
+    const std::string &wkt, const STMATCHConfig &config) {
   LineString line = wkt2linestring(wkt);
   std::vector<double> timestamps;
-  Trajectory traj{0,line,timestamps};
-  MatchResult result = match_traj(traj,config);
+  Trajectory traj{0, line, timestamps};
+  MatchResult result = match_traj(traj, config);
   PyMatchResult output;
   output.id = result.id;
   output.opath = result.opath;
   output.cpath = result.cpath;
   output.mgeom = result.mgeom;
   output.indices = result.indices;
-  for (int i=0;i<result.opt_candidate_path.size();++i){
-    const MatchedCandidate &mc= result.opt_candidate_path[i];
+  for (int i = 0; i < result.opt_candidate_path.size(); ++i) {
+    const MatchedCandidate &mc = result.opt_candidate_path[i];
     output.candidates.push_back(
-      {i,
-       mc.c.edge->id,
-       graph_.get_node_id(mc.c.edge->source),
-       graph_.get_node_id(mc.c.edge->target),
-       mc.c.dist,
-       mc.c.offset,
-       mc.c.edge->length,
-       mc.ep,
-       mc.tp,
-       mc.sp_dist}
+        {i,
+         mc.c.edge->id,
+         graph_.get_node_id(mc.c.edge->source),
+         graph_.get_node_id(mc.c.edge->target),
+         mc.c.dist,
+         mc.c.offset,
+         mc.c.edge->length,
+         mc.ep,
+         mc.tp,
+         mc.sp_dist}
     );
     output.pgeom.add_point(mc.c.point);
   }
@@ -110,9 +117,9 @@ MatchResult STMATCH::match_traj(const Trajectory &traj,
                  });
   std::vector<int> indices;
   C_Path cpath = build_cpath(tg_opath, &indices);
-  SPDLOG_TRACE("Opath is {}",opath);
-  SPDLOG_TRACE("Indices is {}",indices);
-  SPDLOG_TRACE("Complete path is {}",cpath);
+  SPDLOG_TRACE("Opath is {}", opath);
+  SPDLOG_TRACE("Indices is {}", indices);
+  SPDLOG_TRACE("Complete path is {}", cpath);
   LineString mgeom = network_.complete_path_to_geometry(
       traj.geom, cpath);
   return MatchResult{
@@ -131,8 +138,8 @@ void STMATCH::update_tg(TransitionGraph *tg,
     // Routing from current_layer to next_layer
     SPDLOG_TRACE("Update layer {} ", i);
     double delta = 0;
-    if (traj.timestamps.size()!=N){
-      delta = eu_dists[i]*config.factor*4;
+    if (traj.timestamps.size() != N) {
+      delta = eu_dists[i] * config.factor * 4;
     } else {
       double duration = traj.timestamps[i + 1] - traj.timestamps[i];
       delta = config.factor * config.vmax * duration;
@@ -269,7 +276,7 @@ C_Path STMATCH::build_cpath(const TGOpath &opath, std::vector<int> *indices) {
   for (int i = 0; i < N - 1; ++i) {
     const Candidate *a = opath[i]->c;
     const Candidate *b = opath[i + 1]->c;
-    SPDLOG_TRACE("Check a {} b {}",a->edge->id,b->edge->id);
+    SPDLOG_TRACE("Check a {} b {}", a->edge->id, b->edge->id);
     if ((a->edge->id != b->edge->id) || (a->offset > b->offset)) {
       auto segs = graph_.shortest_path_dijkstra(a->edge->target,
                                                 b->edge->source);
@@ -278,7 +285,7 @@ C_Path STMATCH::build_cpath(const TGOpath &opath, std::vector<int> *indices) {
         indices->clear();
         return {};
       }
-      SPDLOG_TRACE("Edges found {}",segs);
+      SPDLOG_TRACE("Edges found {}", segs);
       for (int e:segs) {
         cpath.push_back(edges[e].id);
         ++current_idx;

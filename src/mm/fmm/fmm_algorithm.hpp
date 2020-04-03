@@ -20,6 +20,7 @@
 namespace MM {
 
 struct FMMConfig{
+  FMMConfig(int k_arg = 8, double r_arg = 300, double gps_error = 50);
   int k;
   double radius;
   double gps_error;

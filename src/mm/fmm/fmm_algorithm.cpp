@@ -9,6 +9,10 @@
 
 namespace MM {
 
+FMMConfig::FMMConfig(int k_arg, double r_arg, double gps_error) :
+    k(k_arg), radius(r_arg), gps_error(gps_error) {
+};
+
 void FMMConfig::print() const {
   SPDLOG_INFO("FMMAlgorithmConfig");
   SPDLOG_INFO("k {} radius {} gps_error {}", k, radius, gps_error);
@@ -72,7 +76,7 @@ MatchResult FMM::match_traj(const MM::Trajectory &traj,
   std::vector<int> indices;
   const std::vector<Edge> &edges = network_.get_edges();
   C_Path cpath = ubodt_->construct_complete_path(tg_opath, edges,
-                                                &indices);
+                                                 &indices);
   SPDLOG_TRACE("Cpath {}", cpath);
   SPDLOG_TRACE("Complete path inference");
   LineString mgeom = network_.complete_path_to_geometry(

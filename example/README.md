@@ -1,3 +1,14 @@
+### Road network and GPS trajectories
+
+- Input data
+    + Road network data: data/edges.shp
+    + GPS data: data/trips.shp, data/trips.csv, data/gps.csv
+- Output data
+    + data/ubodt.txt: an upper bounded origin-destination table in CSV format
+    + data/mr.txt: the map matching result in CSV format
+
+<img src="data/input.png" width="400"/>
+
 ### Command line examples
 
 ### Jupyter notebook examples
