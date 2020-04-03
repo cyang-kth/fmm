@@ -2,14 +2,14 @@
 <config>
   <input>
     <ubodt>
-      <file>ubodt.txt</file>
+      <file>../data/ubodt.txt</file>
     </ubodt>
     <network>
-      <file>data/edges.shp</file>
+      <file>../data/edges.shp</file>
       <id>id</id>
     </network>
     <gps>
-      <file>data/trips.shp</file>
+      <file>../data/trips.shp</file>
       <id>id</id>
     </gps>
   </input>
@@ -20,13 +20,9 @@
     <gps_error>0.5</gps_error>
   </parameters>
   <output>
-    <fields>
-      <opath/>
-      <cpath/>
-      <mgeom/>
-      <tpath/>
-      <spdist/>
-    </fields>
     <file>mr.txt</file>
   </output>
+  <other>
+    <use_omp/>
+  </other>
 </config>

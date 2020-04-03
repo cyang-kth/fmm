@@ -2,15 +2,18 @@
 <config>
   <input>
     <ubodt>
-      <file>ubodt.txt</file>
+      <file>../data/ubodt.txt</file>
     </ubodt>
     <network>
-      <file>data/edges.shp</file>
+      <file>../data/edges.shp</file>
       <id>id</id>
     </network>
     <gps>
-      <file>data/trips.shp</file>
+      <file>../data/gps.csv</file>
       <id>id</id>
+      <x>x</x>
+      <y>y</y>
+      <gps_point/>
     </gps>
   </input>
   <parameters>
@@ -23,6 +26,6 @@
     <file>mr.txt</file>
   </output>
   <other>
-    <use_omp/>
+    <log_level>2</log_level>
   </other>
 </config>

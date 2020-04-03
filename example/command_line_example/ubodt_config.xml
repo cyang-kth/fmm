@@ -2,7 +2,7 @@
 <config>
   <input>
     <network>
-      <file>data/edges.shp</file>
+      <file>../data/edges.shp</file>
       <id>id</id>
       <source>source</source>
       <target>target</target>
@@ -12,6 +12,6 @@
     <delta>3</delta>
   </parameters>
   <output>
-    <file>ubodt.txt</file>
+    <file>../data/ubodt.txt</file>
   </output>
 </config>
