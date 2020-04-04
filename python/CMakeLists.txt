@@ -54,7 +54,14 @@ ${STMATCHGlob})
 
 target_link_libraries(pyfmm ${GDAL_LIBRARIES}  ${Boost_LIBRARIES})
 # Add the target.
-swig_add_module(fmm python fmm.i)
+if (${CMAKE_VERSION} VERSION_LESS "3.8.0")
+  SWIG_ADD_MODULE(fmm python fmm.i)
+else()
+  SWIG_ADD_LIBRARY(fmm
+    LANGUAGE python
+    SOURCES fmm.i)
+endif()
+
 # -----------------------------------------------------------------------------
 # LINK
 # -----------------------------------------------------------------------------
