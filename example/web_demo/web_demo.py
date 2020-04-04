@@ -32,7 +32,10 @@ def match_url():
     wkt = str(flask.request.args.get('wkt', ''))
     logging.info('WKT get in python: %s', wkt)
     starttime = time.time()
-    mgeom_wkt = app.mapmatcher.match_wkt(wkt)
+    result = app.mapmatcher.match_wkt(wkt)
+    mgeom_wkt = ""
+    if (result.mgeom.get_num_points()>0):
+        mgeom_wkt = result.mgeom.export_wkt()
     # logging.info('Probs %s',probs)
     endtime = time.time()
     # logging.info('%s', result)

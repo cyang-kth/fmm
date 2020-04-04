@@ -91,8 +91,4 @@ class MapMatcher(object):
                     data["model"]))
 
     def match_wkt(self, wkt):
-        result = self.model.match_wkt(wkt,self.mm_config)
-        if (result.mgeom.get_num_points()>0):
-            return result.mgeom.export_wkt()
-        else:
-            return ""
+        return self.model.match_wkt(wkt,self.mm_config)
