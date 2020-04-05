@@ -1,7 +1,7 @@
 #include "mm/fmm/ubodt_gen_app_config.hpp"
 #include "util/util.hpp"
 #include "util/debug.hpp"
-
+#include "network_config.hpp"
 
 namespace MM {
 /**
@@ -30,7 +30,7 @@ void UBODTGenAppConfig::load_xml(const std::string &file) {
   // Create empty property tree object
   boost::property_tree::ptree tree;
   boost::property_tree::read_xml(file, tree);
-  network_config = NetworkConfig::load_from_xml(tree);
+  network_config = MM::CONFIG::NetworkConfig::load_from_xml(tree);
   delta = tree.get("config.parameters.delta", 3000.0);
   result_file = tree.get<std::string>("config.output.file");
   // 0-trace,1-debug,2-info,3-warn,4-err,5-critical,6-off
@@ -67,7 +67,7 @@ void UBODTGenAppConfig::load_arg(int argc, char **argv) {
   auto result = options.parse(argc, argv);
   // Output
   result_file = result["output"].as<std::string>();
-  network_config =  NetworkConfig::load_from_arg(result);
+  network_config =  MM::CONFIG::NetworkConfig::load_from_arg(result);
   log_level = result["log_level"].as<int>();
   delta = result["delta"].as<double>();
   use_omp = result.count("use_omp")>0;

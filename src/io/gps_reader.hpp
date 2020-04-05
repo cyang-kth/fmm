@@ -12,6 +12,7 @@
 
 #include "core/gps.hpp"
 #include "config/gps_config.hpp"
+#include "gps_config.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -106,7 +107,7 @@ class CSVPointReader : public ITrajectoryReader {
 
 class GPSReader {
  public:
-  GPSReader(const GPSConfig &config);
+  GPSReader(const MM::CONFIG::GPSConfig &config);
   inline Trajectory read_next_trajectory(){
     return reader->read_next_trajectory();
   };

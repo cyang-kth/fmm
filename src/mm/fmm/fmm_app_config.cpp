@@ -5,7 +5,9 @@
 #include "mm/fmm/fmm_app_config.hpp"
 #include "util/debug.hpp"
 #include "util/util.hpp"
-
+#include "result_config.hpp"
+#include "network_config.hpp"
+#include "gps_config.hpp"
 
 namespace MM {
 
@@ -31,9 +33,9 @@ void FMMAppConfig::load_xml(const std::string &file){
   // Create empty property tree object
   boost::property_tree::ptree tree;
   boost::property_tree::read_xml(file, tree);
-  network_config = NetworkConfig::load_from_xml(tree);
-  gps_config = GPSConfig::load_from_xml(tree);
-  result_config = ResultConfig::load_from_xml(tree);
+  network_config = MM::CONFIG::NetworkConfig::load_from_xml(tree);
+  gps_config = MM::CONFIG::GPSConfig::load_from_xml(tree);
+  result_config = CONFIG::ResultConfig::load_from_xml(tree);
   fmm_config = FMMConfig::load_from_xml(tree);
   // UBODT
   ubodt_file = tree.get<std::string>("config.input.ubodt.file");
@@ -92,9 +94,9 @@ void FMMAppConfig::load_arg(int argc, char **argv){
   }
   auto result = options.parse(argc, argv);
   ubodt_file = result["ubodt"].as<std::string>();
-  network_config = NetworkConfig::load_from_arg(result);
-  gps_config = GPSConfig::load_from_arg(result);
-  result_config = ResultConfig::load_from_arg(result);
+  network_config = MM::CONFIG::NetworkConfig::load_from_arg(result);
+  gps_config = MM::CONFIG::GPSConfig::load_from_arg(result);
+  result_config = CONFIG::ResultConfig::load_from_arg(result);
   fmm_config = FMMConfig::load_from_arg(result);
   log_level = result["log_level"].as<int>();
   step = result["step"].as<int>();

@@ -2,6 +2,7 @@
 #define MM_FMM_UBODT_CONFIG
 
 #include "config/network_config.hpp"
+#include "network_config.hpp"
 
 namespace MM{
 
@@ -15,7 +16,7 @@ class UBODTGenAppConfig
   bool validate() const;
   bool is_binary_output() const;
   static void print_help();
-  NetworkConfig network_config;
+  MM::CONFIG::NetworkConfig network_config;
   double delta;
   std::string result_file;
   // 0-trace,1-debug,2-info,3-warn,4-err,5-critical,6-off

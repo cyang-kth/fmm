@@ -16,6 +16,7 @@
 #include "util/debug.hpp"
 #include "network/network.hpp"
 #include "config/result_config.hpp"
+#include "result_config.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -38,12 +39,12 @@ class CSVMatchResultWriter : public MatchResultWriter {
    * @param network_ptr, a pointer to the network
    */
   CSVMatchResultWriter(const std::string &result_file,
-                       const OutputConfig &config_arg);
+                       const CONFIG::OutputConfig &config_arg);
   void write_header();
   void write_result(const MatchResult &result);
  private:
   std::ofstream m_fstream;
-  const OutputConfig &config_;
+  const CONFIG::OutputConfig &config_;
 }; // CSVMatchResultWriter
 
 };     //IO

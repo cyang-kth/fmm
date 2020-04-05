@@ -13,6 +13,7 @@
 
 namespace MM {
 
+namespace CONFIG {
 /**
  *  GPS configuration class for reading data from a file.
  */
@@ -56,8 +57,7 @@ struct GPSConfig{
    */
   static GPSConfig load_from_arg(const cxxopts::ParseResult &arg_data);
 };
-
-
+}
 
 }
 

@@ -5,6 +5,9 @@
 #include "mm/stmatch/stmatch_app_config.hpp"
 #include "util/debug.hpp"
 #include "util/util.hpp"
+#include "result_config.hpp"
+#include "network_config.hpp"
+#include "gps_config.hpp"
 
 namespace MM {
 
@@ -31,9 +34,9 @@ void STMATCHAppConfig::load_xml(const std::string &file){
   // Create empty property tree object
   boost::property_tree::ptree tree;
   boost::property_tree::read_xml(file, tree);
-  network_config = NetworkConfig::load_from_xml(tree);
-  gps_config = GPSConfig::load_from_xml(tree);
-  result_config = ResultConfig::load_from_xml(tree);
+  network_config = MM::CONFIG::NetworkConfig::load_from_xml(tree);
+  gps_config = MM::CONFIG::GPSConfig::load_from_xml(tree);
+  result_config = CONFIG::ResultConfig::load_from_xml(tree);
   stmatch_config = STMATCHConfig::load_from_xml(tree);
   log_level = tree.get("config.other.log_level",2);
   step =  tree.get("config.other.step",100);
@@ -91,9 +94,9 @@ void STMATCHAppConfig::load_arg(int argc, char **argv){
     return;
   }
   auto result = options.parse(argc, argv);
-  network_config = NetworkConfig::load_from_arg(result);
-  gps_config = GPSConfig::load_from_arg(result);
-  result_config = ResultConfig::load_from_arg(result);
+  network_config = MM::CONFIG::NetworkConfig::load_from_arg(result);
+  gps_config = MM::CONFIG::GPSConfig::load_from_arg(result);
+  result_config = CONFIG::ResultConfig::load_from_arg(result);
   stmatch_config = STMATCHConfig::load_from_arg(result);
   log_level = result["log_level"].as<int>();
   step = result["step"].as<int>();

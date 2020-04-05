@@ -12,6 +12,7 @@
 
 namespace MM{
 
+namespace CONFIG {
 /**
  *  Network configuration class for reading network from a file.
  */
@@ -44,6 +45,7 @@ struct NetworkConfig{
   static NetworkConfig load_from_arg(
     const cxxopts::ParseResult &arg_data);
 };
+}
 
 }
 

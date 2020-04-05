@@ -10,6 +10,7 @@
 #include "io/mm_writer.hpp"
 #include "util/util.hpp"
 #include "util/debug.hpp"
+#include "result_config.hpp"
 
 #include <sstream>
 
@@ -23,7 +24,7 @@ namespace IO {
  * @param network_ptr, a pointer to the network
  */
 CSVMatchResultWriter::CSVMatchResultWriter(const std::string &result_file,
-                                           const OutputConfig &config_arg) :
+                                           const CONFIG::OutputConfig &config_arg) :
     m_fstream(result_file), config_(config_arg) {
   write_header();
 }

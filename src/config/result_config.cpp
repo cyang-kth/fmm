@@ -3,9 +3,7 @@
 #include "util/debug.hpp"
 #include <set>
 
-namespace MM {
-
-void ResultConfig::print() const {
+void MM::CONFIG::ResultConfig::print() const {
   std::stringstream ss;
   if (output_config.write_ogeom)
     ss << "ogeom ";
@@ -36,7 +34,7 @@ void ResultConfig::print() const {
   SPDLOG_INFO("Fields: {}",ss.str());
 };
 
-ResultConfig ResultConfig::load_from_xml(
+MM::CONFIG::ResultConfig MM::CONFIG::ResultConfig::load_from_xml(
     const boost::property_tree::ptree &xml_data) {
   ResultConfig config;
   config.file = xml_data.get<std::string>("config.output.file");
@@ -99,7 +97,7 @@ ResultConfig ResultConfig::load_from_xml(
   return config;
 };
 
-ResultConfig ResultConfig::load_from_arg(
+MM::CONFIG::ResultConfig MM::CONFIG::ResultConfig::load_from_arg(
     const cxxopts::ParseResult &arg_data) {
   ResultConfig config;
   config.file = arg_data["output"].as<std::string>();
@@ -162,7 +160,7 @@ ResultConfig ResultConfig::load_from_arg(
   return config;
 };
 
-std::set<std::string> ResultConfig::string2set(
+std::set<std::string> MM::CONFIG::ResultConfig::string2set(
     const std::string &s) {
   char delim = ',';
   std::set<std::string> result;
@@ -173,7 +171,7 @@ std::set<std::string> ResultConfig::string2set(
   }
   return result;
 }
-bool ResultConfig::validate() const {
+bool MM::CONFIG::ResultConfig::validate() const {
   if (UTIL::file_exists(file))
   {
     SPDLOG_WARN("Overwrite existing result file {}",file);
@@ -186,4 +184,3 @@ bool ResultConfig::validate() const {
   return true;
 };
 
-}

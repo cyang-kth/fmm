@@ -9,6 +9,9 @@
 #include "config/network_config.hpp"
 #include "config/result_config.hpp"
 #include "mm/fmm/fmm_algorithm.hpp"
+#include "result_config.hpp"
+#include "network_config.hpp"
+#include "gps_config.hpp"
 
 namespace MM{
 
@@ -24,9 +27,9 @@ class FMMAppConfig
   bool validate() const;
   void print() const;
   static void print_help();
-  NetworkConfig network_config;
-  GPSConfig gps_config;
-  ResultConfig result_config;
+  MM::CONFIG::NetworkConfig network_config;
+  MM::CONFIG::GPSConfig gps_config;
+  CONFIG::ResultConfig result_config;
   FMMConfig fmm_config;
   // UBODT configurations
   std::string ubodt_file;

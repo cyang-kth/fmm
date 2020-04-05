@@ -13,6 +13,8 @@
 
 namespace MM{
 
+namespace CONFIG{
+
 struct OutputConfig {
   // Original geometry
   bool write_ogeom = false;
@@ -40,18 +42,18 @@ struct OutputConfig {
   // The length of the matched edge
   bool write_length = false;
 };
-
 struct ResultConfig{
   std::string file;
   OutputConfig output_config;
   bool validate() const;
   void print() const;
-  static std::set<std::string> string2set(const std::string &s);
+  static std::__1::set<std::string> string2set(const std::string &s);
   static ResultConfig load_from_xml(
     const boost::property_tree::ptree &xml_data);
   static ResultConfig load_from_arg(
     const cxxopts::ParseResult &arg_data);
 };
+}
 
 }
 

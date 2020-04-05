@@ -8,6 +8,7 @@
  */
 #include "io/gps_reader.hpp"
 #include "util/debug.hpp"
+#include "gps_config.hpp"
 #include <iostream>
 #include <string>
 
@@ -339,7 +340,7 @@ bool CSVPointReader::has_timestamp() {
   return timestamp_idx > 0;
 }
 
-GPSReader::GPSReader(const GPSConfig &config) {
+GPSReader::GPSReader(const MM::CONFIG::GPSConfig &config) {
   mode = config.get_gps_format();
   if (mode == 0) {
     reader = std::make_shared<GDALTrajectoryReader>
