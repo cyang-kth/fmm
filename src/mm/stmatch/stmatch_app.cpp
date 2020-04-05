@@ -4,8 +4,8 @@
 
 #include "mm/stmatch/stmatch_app.hpp"
 
+namespace FMM {
 namespace MM {
-
 STMATCHApp::STMATCHApp(const STMATCHAppConfig &config) :
     config_(config),
     network_(config_.network_config.file,
@@ -92,5 +92,5 @@ void STMATCHApp::run() {
               points_matched / time_spent_exclude_input);
   SPDLOG_INFO("Time takes {}", time_spent);
 };
-
+}
 }

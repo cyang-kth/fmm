@@ -5,7 +5,8 @@
 
 #include <limits>
 
-namespace MM {
+namespace FMM {
+namespace MM{
 
 STMATCHConfig::STMATCHConfig(
     int k_arg, double r_arg, double gps_error_arg,
@@ -302,5 +303,5 @@ C_Path STMATCH::build_cpath(const TGOpath &opath, std::vector<int> *indices) {
   SPDLOG_DEBUG("Build cpath from optimal candidate path done");
   return cpath;
 }
-
-} // MM
+}
+} // FMM

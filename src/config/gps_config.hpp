@@ -1,5 +1,6 @@
 /**
- * Configuration of the gps data
+ * Configuration of reading gps data
+ * @author Can Yang
  */
 
 #ifndef FMM_SRC_CONFIG_GPS_CONFIG_HPP_
@@ -11,8 +12,10 @@
 
 #include "cxxopts/cxxopts.hpp"
 
-namespace MM {
-
+namespace FMM {
+/**
+ * Classes related with configuration
+ */
 namespace CONFIG {
 /**
  *  GPS configuration class for reading data from a file.
@@ -57,8 +60,9 @@ struct GPSConfig{
    */
   static GPSConfig load_from_arg(const cxxopts::ParseResult &arg_data);
 };
-}
 
-}
+} // CONFIG
+
+} // FMM
 
 #endif //FMM_SRC_CONFIG_GPS_CONFIG_HPP_

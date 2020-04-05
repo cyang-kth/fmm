@@ -2,13 +2,16 @@
 // Created by Can Yang on 2020/4/3.
 //
 
-#ifndef FMM_SRC_PYTHON_PYFMM_HPP_
-#define FMM_SRC_PYTHON_PYFMM_HPP_
+#ifndef FMM_PYFMM_HPP_
+#define FMM_PYFMM_HPP_
 
 #include "network/type.hpp"
 
-namespace MM{
-
+namespace FMM{
+/**
+ * Data type for Python API
+ */
+namespace PYTHON{
 // POD type for python map matching result
 struct PyCandidate{
   int index;       // point index in trajectory
@@ -32,7 +35,7 @@ struct PyMatchResult {
   LineString mgeom;
   LineString pgeom;
 };
-
-}
+}; // PYTHON
+}; // FMM
 
 #endif //FMM_SRC_PYTHON_PYFMM_HPP_

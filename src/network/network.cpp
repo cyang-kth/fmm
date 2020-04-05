@@ -12,10 +12,10 @@
 #include <boost/geometry/index/rtree.hpp>
 #include <boost/function_output_iterator.hpp>
 
-namespace MM
+namespace FMM
 {
+namespace NETWORK{
 
-// This function is used for KNN sort
 bool Network::candidate_compare(const Candidate &a, const Candidate &b)
 {
   if (a.dist!=b.dist)
@@ -184,26 +184,12 @@ void Network::build_rtree_index() {
   }
   SPDLOG_DEBUG("Create boost rtree done");
 }
-/**
- *  Search for k nearest neighboring (KNN) candidates of a
- *  trajectory within a search radius
- *
- *  @param trajectory: input trajectory
- *  @param k: the number of coordindates
- *  @param r: the search radius
- *  @return Traj_Candidates: a 2D vector of Candidates containing
- *  the candidates selected for each point in a trajectory
- *
- */
+
 Traj_Candidates Network::search_tr_cs_knn(Trajectory &trajectory, std::size_t k,
                                           double radius) const {
   return search_tr_cs_knn(trajectory.geom,k,radius);
 }
 
-/**
- *  Search for k nearest neighboring (KNN) candidates of a
- *  linestring within a search radius
- */
 Traj_Candidates Network::search_tr_cs_knn(const LineString &geom, std::size_t k,
                                           double radius) const
 {
@@ -359,15 +345,6 @@ LineString Network::route2geometry(const std::vector<EdgeIndex> &path) const
   return line;
 }
 
-double Network::emission_prob(double dist,double gps_error) {
-  double a = dist / gps_error;
-  return exp(-0.5 * a * a);       // The unit should be in range of 0,1
-}
-
-double Network::emission_prob_to_dist(double eprob,double gps_error){
-  return sqrt(-2 * log(eprob))*gps_error;
-}
-
 void Network::append_segs_to_line(LineString *line,
                                   const LineString &segs, int offset)
 {
@@ -378,5 +355,5 @@ void Network::append_segs_to_line(LineString *line,
     }
   }
 }
-
+} // NETWORK
 } // MM

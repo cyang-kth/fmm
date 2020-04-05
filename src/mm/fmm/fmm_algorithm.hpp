@@ -17,8 +17,11 @@
 
 #include "cxxopts/cxxopts.hpp"
 
-namespace MM {
-
+namespace FMM {
+namespace MM{
+/**
+ * Configuration class for fmm algorithm
+ */
 struct FMMConfig{
   FMMConfig(int k_arg = 8, double r_arg = 300, double gps_error = 50);
   int k;
@@ -32,25 +35,49 @@ struct FMMConfig{
       const cxxopts::ParseResult &arg_data);
 };
 
+/**
+ * FMM algorithm/model
+ */
 class FMM {
  public:
   FMM(const Network &network, const NetworkGraph &graph,
       std::shared_ptr<UBODT> ubodt)
       : network_(network), graph_(graph), ubodt_(ubodt) {
   };
-  // Procedure of HMM based map matching algorithm.
+  /**
+   * Match a trajectory to the road network
+   * @param  traj   input trajector data
+   * @param  config configuration of stmatch algorithm
+   */
   MatchResult match_traj(const Trajectory &traj,
                          const FMMConfig &config);
+  /**
+   * Match a wkt linestring to the road network.
+   */
   PyMatchResult match_wkt(
       const std::string &wkt,const FMMConfig &config);
  protected:
+  /**
+   * Get shortest path distance between two candidates
+   * @param  ca
+   * @param  cb
+   * @return  shortest path value
+   */
   double get_sp_dist(const Candidate *ca,
                      const Candidate *cb);
-  // Update the transition graph
+  /**
+   * Update probabilities in a transition graph
+   */
   void update_tg(TransitionGraph *tg,
                  const Trajectory &traj,
                  const FMMConfig &config);
-
+  /**
+   * Update probabilities between two layers a and b in the transition graph
+   * @param level   the index of layer a
+   * @param la_ptr  layer a
+   * @param lb_ptr  layer b next to a
+   * @param eu_dist Euclidean distance between two observed point
+   */
   void update_layer(int level, TGLayer *la_ptr, TGLayer *lb_ptr,
                     double eu_dist);
  private:
@@ -58,7 +85,7 @@ class FMM {
   const NetworkGraph &graph_;
   std::shared_ptr<UBODT> ubodt_;
 };
-
+}
 }
 
 #endif //MM_SRC_MM_FMM_FMM_H_

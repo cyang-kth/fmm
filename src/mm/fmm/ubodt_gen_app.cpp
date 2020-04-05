@@ -10,8 +10,8 @@
 #include "util/debug.hpp"
 #include <omp.h>
 
-namespace MM {
-
+namespace FMM {
+namespace MM{
 void UBODTGenApp::run() const {
   if (!config_.validate()) {
     SPDLOG_CRITICAL("Validation fail, program stop");
@@ -205,5 +205,5 @@ void UBODTGenApp::write_result_binary(boost::archive::binary_oarchive &stream,
            << r.first_n << r.prev_n << r.next_e << r.cost;
   }
 }
-
+}
 }

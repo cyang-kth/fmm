@@ -10,18 +10,15 @@
 #include "boost/geometry/extensions/gis/io/wkb/read_wkb.hpp"
 #include "boost/geometry/extensions/gis/io/wkb/write_wkb.hpp"
 
-namespace MM {
+namespace FMM {
+
+namespace CORE {
 
 std::ostream& operator<<(std::ostream& os, const LineString& rhs){
   os<< std::setprecision(12) << boost::geometry::wkt(rhs.line);
   return os;
 };
 
-/**
- *  Convert an OGRLineString to Boost geometry, the caller is responsible to
- *  freeing the memory.
- *
- */
 LineString ogr2linestring(const OGRLineString *line){
   int binary_size = line->WkbSize();
   std::vector<unsigned char> wkb(binary_size);
@@ -65,5 +62,7 @@ OGRPoint *point2ogr(const Point &p, int srid){
   OGRGeometryFactory::createFromWkb(&wkb[0], NULL, &poGeometry);
   return (OGRPoint *) poGeometry;
 };
+
+}; // CORE
 
 }; // MM

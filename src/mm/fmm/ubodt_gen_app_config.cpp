@@ -3,7 +3,8 @@
 #include "util/debug.hpp"
 #include "network_config.hpp"
 
-namespace MM {
+namespace FMM {
+namespace MM{
 /**
  * Configuration class for UBODT
  */
@@ -133,5 +134,5 @@ bool UBODTGenAppConfig::is_binary_output() const {
   }
   return false;
 }
-
+}
 }

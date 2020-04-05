@@ -9,24 +9,30 @@
  * @version: 2020.01.31
  */
 
-#ifndef MM_TRANSITION_GRAPH_HPP
-#define MM_TRANSITION_GRAPH_HPP
+#ifndef FMM_TRANSITION_GRAPH_HPP
+#define FMM_TRANSITION_GRAPH_HPP
 
 #include "network/type.hpp"
 #include "mm/mm_result.hpp"
 
 #include <float.h>
 
-namespace MM
+namespace FMM
 {
 
+namespace MM{
+
+/**
+ * A node in the transition graph
+ */
 struct TGElement {
-  const Candidate *c;
-  TGElement *prev;
-  double ep;
-  double tp;
-  double cumu_prob;
-  double sp_dist;
+  const Candidate *c; /**< Candidate */
+  TGElement *prev; /**< previous optimal candidate */
+  double ep; /**< emission probability */
+  double tp; /**< transition probability from previous optimal candidate */
+  double cumu_prob; /**< current node's accumulative probability */
+  double sp_dist; /**< shorest path distance from previous optimal
+                       candidate to current node */
 };
 
 typedef std::vector<TGElement> TGLayer;
@@ -36,29 +42,61 @@ class TransitionGraph
 {
 public:
   /**
-   *  Constructor of a TransitionGraph
-   *  @param tc: a variational 2D vector
-   *  of candidates
-   *  @param traj: raw trajectory
-   *  @param ubodt: UBODT table
+   * Transition graph constructor.
+   *
+   * A transition graph is created to store the probability of
+   * emission and transition in HMM model where optimal path will be
+   * infered.
+   *
+   * @param tc        Trajectory candidates
+   * @param gps_error GPS error
    */
   TransitionGraph(const Traj_Candidates &tc, double gps_error);
 
+  /**
+   * Calculate transition probability
+   * @param  sp_dist Shortest path distance between two candidates
+   * @param  eu_dist Euclidean distance between two candidates
+   * @return transition probability in HMM
+   */
   static double calc_tp(double sp_dist,double eu_dist);
 
+  /**
+   * Calculate emission probability
+   * @param  dist  The actual gps error from observed point to matched point
+   * @param  error The GPS sensor's accuracy
+   * @return  emission probability in HMM
+   */
   static double calc_ep(double dist,double error);
 
-  // Reset the properties of a candidate set
+  /**
+   * Reset all the proability data stored in a layer of the transition graph
+   * @param layer A layer in the transition graph
+   */
   void reset_layer(TGLayer *layer);
 
+  /**
+   * Find the optimal candidate in a layer with
+   * the highest accumulative probability.
+   * @param  layer [description]
+   * @return  pointer to the optimal node in the transition graph
+   */
   const TGElement *find_optimal_candidate(const TGLayer &layer);
-
+  /**
+   * Backtrack the transition graph to find an optimal path
+   * @return An optimal path connecting the first layer with last layer and
+   * has the highest accumulative probability value.
+   */
   TGOpath backtrack();
-
+  /**
+   * Get a reference to the inner layers of the transition graph.
+   */
   std::vector<TGLayer> &get_layers();
 private:
   // candidates of a trajectory
   std::vector<TGLayer> layers;
 };
+
 }
-#endif /* MM_TRANSITION_GRAPH_HPP */
+}
+#endif /* FMM_TRANSITION_GRAPH_HPP */

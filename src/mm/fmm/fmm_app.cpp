@@ -7,6 +7,7 @@
 #include "io/mm_writer.hpp"
 #include <omp.h>
 
+namespace FMM{
 namespace MM{
 
 void FMMApp::run() {
@@ -86,5 +87,5 @@ void FMMApp::run() {
               points_matched / time_spent_exclude_input);
   SPDLOG_INFO("Time takes {}", time_spent);
 };
-
+}
 }

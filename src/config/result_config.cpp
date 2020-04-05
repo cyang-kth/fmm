@@ -3,7 +3,7 @@
 #include "util/debug.hpp"
 #include <set>
 
-void MM::CONFIG::ResultConfig::print() const {
+void FMM::CONFIG::ResultConfig::print() const {
   std::stringstream ss;
   if (output_config.write_ogeom)
     ss << "ogeom ";
@@ -34,7 +34,7 @@ void MM::CONFIG::ResultConfig::print() const {
   SPDLOG_INFO("Fields: {}",ss.str());
 };
 
-MM::CONFIG::ResultConfig MM::CONFIG::ResultConfig::load_from_xml(
+FMM::CONFIG::ResultConfig FMM::CONFIG::ResultConfig::load_from_xml(
     const boost::property_tree::ptree &xml_data) {
   ResultConfig config;
   config.file = xml_data.get<std::string>("config.output.file");
@@ -97,9 +97,9 @@ MM::CONFIG::ResultConfig MM::CONFIG::ResultConfig::load_from_xml(
   return config;
 };
 
-MM::CONFIG::ResultConfig MM::CONFIG::ResultConfig::load_from_arg(
+FMM::CONFIG::ResultConfig FMM::CONFIG::ResultConfig::load_from_arg(
     const cxxopts::ParseResult &arg_data) {
-  MM::CONFIG::ResultConfig config;
+  FMM::CONFIG::ResultConfig config;
   config.file = arg_data["output"].as<std::string>();
   if (arg_data.count("output_fields") > 0) {
     config.output_config.write_cpath = false;
@@ -160,7 +160,7 @@ MM::CONFIG::ResultConfig MM::CONFIG::ResultConfig::load_from_arg(
   return config;
 };
 
-std::set<std::string> MM::CONFIG::ResultConfig::string2set(
+std::set<std::string> FMM::CONFIG::ResultConfig::string2set(
     const std::string &s) {
   char delim = ',';
   std::set<std::string> result;
@@ -171,7 +171,7 @@ std::set<std::string> MM::CONFIG::ResultConfig::string2set(
   }
   return result;
 }
-bool MM::CONFIG::ResultConfig::validate() const {
+bool FMM::CONFIG::ResultConfig::validate() const {
   if (UTIL::file_exists(file))
   {
     SPDLOG_WARN("Overwrite existing result file {}",file);
@@ -183,4 +183,3 @@ bool MM::CONFIG::ResultConfig::validate() const {
   }
   return true;
 };
-

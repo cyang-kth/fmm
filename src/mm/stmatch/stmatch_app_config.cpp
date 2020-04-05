@@ -9,8 +9,8 @@
 #include "network_config.hpp"
 #include "gps_config.hpp"
 
-namespace MM {
-
+namespace FMM {
+namespace MM{
 STMATCHAppConfig::STMATCHAppConfig(int argc, char **argv){
   spdlog::set_pattern("[%^%l%$][%s:%-3#] %v");
   if (argc==2) {
@@ -166,6 +166,5 @@ bool STMATCHAppConfig::validate() const {
   }
   return true;
 };
-
-
+}
 }

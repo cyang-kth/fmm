@@ -1,7 +1,9 @@
 #include "mm/composite_graph.hpp"
 #include "util/debug.hpp"
 
-namespace MM {
+namespace FMM {
+
+namespace MM{
 
 DummyGraph::DummyGraph(){}
 
@@ -14,7 +16,7 @@ DummyGraph::DummyGraph(const Traj_Candidates &traj_candidates){
   std::unordered_map<EdgeIndex,const Candidate*> *cur_cmap = &cb;
   for (int i=0; i<N; ++i) {
     const Point_Candidates &pcs = traj_candidates[i];
-    for (const MM::Candidate &c:pcs) {
+    for (const FMM::Candidate &c:pcs) {
       NodeIndex n = c.index;
       add_edge(c.edge->source, n, c.edge->index, c.offset);
       add_edge(n,c.edge->target, c.edge->index, c.edge->length - c.offset);
@@ -50,7 +52,7 @@ bool DummyGraph::containNodeIndex(NodeIndex external_index) const {
   return internal_index_map.find(external_index)!=internal_index_map.end();
 }
 
-NodeIndex DummyGraph::get_external_index(NodeIndex inner_index) const {
+NodeIndex DummyGraph::get_external_index(DummyIndex inner_index) const {
   return external_index_vec[inner_index];
 }
 
@@ -171,5 +173,5 @@ std::vector<CompEdgeProperty> CompositeGraph::out_edges(NodeIndex u) const {
 bool CompositeGraph::check_dummy_node(NodeIndex u) const {
   return u>=num_vertices;
 }
-
-}//MM
+} // MM
+}//FMM

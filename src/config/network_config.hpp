@@ -10,7 +10,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 
-namespace MM{
+namespace FMM{
 
 namespace CONFIG {
 /**
@@ -45,8 +45,9 @@ struct NetworkConfig{
   static NetworkConfig load_from_arg(
     const cxxopts::ParseResult &arg_data);
 };
-}
 
-}
+} // CONFIG
+
+} // FMM
 
 #endif //FMM_SRC_CONFIG_NETWORK_CONFIG_HPP_

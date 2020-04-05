@@ -58,7 +58,7 @@ std::ostream &operator<<(std::ostream &os, const MM::Point &geom) {
 
 } // namespace std
 
-namespace MM {
+namespace FMM {
 
 namespace UTIL {
 
@@ -198,4 +198,4 @@ std::string get_file_directory(const std::string &fn){
 };
 
 } // Util
-} // MM
+} // FMM

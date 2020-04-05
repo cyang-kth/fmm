@@ -17,25 +17,30 @@
  * @author: Can Yang
  * @version: 2018.03.09
  */
-#ifndef MM_NETWORK_GRAPH_HPP
-#define MM_NETWORK_GRAPH_HPP
+#ifndef FMM_NETWORK_GRAPH_HPP
+#define FMM_NETWORK_GRAPH_HPP
 
 #include "network/heap.hpp"
 #include "network/graph.hpp"
 #include "network/network.hpp"
 
-namespace MM {
-
+namespace FMM {
+namespace NETWORK{
+/**
+ * Graph class of the network
+ */
 class NetworkGraph
 {
 public:
   /**
-   *  Construct a network graph from a network object
+   *  Construct a network graph from a network
    */
   explicit NetworkGraph(const Network &network_arg);
   std::vector<EdgeIndex> shortest_path_dijkstra(NodeIndex source,
                                                 NodeIndex target) const;
-  // this function is used in AStar routing
+  /**
+   * Calculate heuristic distance, which is used in Astar routing. 
+   */
   double calc_heuristic_dist(
     const Point &p1,const Point &p2) const;
   std::vector<EdgeIndex> shortest_path_astar(NodeIndex source,
@@ -80,6 +85,6 @@ protected:
   const Network &network;
   unsigned int num_vertices=0;
 }; // NetworkGraph
-
-} // MM
-#endif /* MM_NETWORK_GRAPH_HPP */
+}; // NETWORK
+} // FMM
+#endif /* FMM_NETWORK_GRAPH_HPP */

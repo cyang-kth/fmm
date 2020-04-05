@@ -1,6 +1,6 @@
 #include "mm/fmm/fmm_app.hpp"
 
-using namespace MM;
+using namespace FMM;
 
 int main(int argc, char **argv){
   FMMAppConfig config(argc,argv);

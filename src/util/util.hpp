@@ -6,8 +6,8 @@
  * @version: 2017.11.11
  */
 
-#ifndef MM_UTIL_HPP
-#define MM_UTIL_HPP
+#ifndef FMM_UTIL_HPP
+#define FMM_UTIL_HPP
 
 #include "network/type.hpp"
 
@@ -35,18 +35,21 @@ std::ostream &operator<<(std::ostream &os,
   return os;
 }
 
-std::ostream &operator<<(std::ostream &os, const MM::Traj_Candidates &tr_cs);
+std::ostream &operator<<(std::ostream &os, const FMM::Traj_Candidates &tr_cs);
 
-std::ostream &operator<<(std::ostream &os, const MM::OptCandidatePath &opath);
+std::ostream &operator<<(std::ostream &os, const FMM::OptCandidatePath &opath);
 
-std::ostream &operator<<(std::ostream &os, const MM::Point &geom);
+std::ostream &operator<<(std::ostream &os, const FMM::Point &geom);
 
 } // namespace std
 
-namespace MM {
+namespace FMM {
 
 inline double meter2degree(double dist_meter);
 
+/**
+ * Utility functions
+ */
 namespace UTIL {
 
 typedef std::chrono::steady_clock::time_point TimePoint;
@@ -138,5 +141,5 @@ double get_duration(
     const std::chrono::time_point<std::chrono::system_clock> &end_time);
 
 } // Util
-} // MM
-#endif /* MM_UTIL_HPP */
+} // FMM
+#endif /* FMM_UTIL_HPP */

@@ -7,8 +7,8 @@
 #include "util/util.hpp"
 #include "util/debug.hpp"
 
-namespace MM {
-
+namespace FMM {
+namespace MM{
 FMMConfig::FMMConfig(int k_arg, double r_arg, double gps_error) :
     k(k_arg), radius(r_arg), gps_error(gps_error) {
 };
@@ -169,5 +169,5 @@ void FMM::update_layer(int level,
   }
   SPDLOG_TRACE("Update layer done");
 }
-
+}
 }

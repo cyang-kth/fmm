@@ -8,11 +8,11 @@
  */
 #include "io/gps_reader.hpp"
 #include "util/debug.hpp"
-#include "gps_config.hpp"
+#include "config/gps_config.hpp"
 #include <iostream>
 #include <string>
 
-namespace MM {
+namespace FMM {
 namespace IO {
 
 std::vector<Trajectory> ITrajectoryReader::read_next_N_trajectories(int N) {
@@ -108,7 +108,8 @@ Trajectory GDALTrajectoryReader::read_next_trajectory() {
   OGRFeature *ogrFeature = ogrlayer->GetNextFeature();
   int trid = ogrFeature->GetFieldAsInteger(id_idx);
   OGRGeometry *rawgeometry = ogrFeature->GetGeometryRef();
-  LineString linestring = ogr2linestring((OGRLineString *) rawgeometry);
+  FMM::CORE::LineString linestring =
+      FMM::CORE::ogr2linestring((OGRLineString *) rawgeometry);
   OGRFeature::DestroyFeature(ogrFeature);
   ++_cursor;
   return Trajectory{trid, linestring};
@@ -183,7 +184,7 @@ Trajectory CSVTrajectoryReader::read_next_trajectory() {
   int trid = 0;
   int index = 0;
   std::string intermediate;
-  LineString geom;
+  FMM::CORE::LineString geom;
   std::vector<double> timestamps;
   while (std::getline(ss, intermediate, delim)) {
     if (index == id_idx) {
@@ -265,7 +266,7 @@ CSVPointReader::CSVPointReader(const std::string &e_filename,
 Trajectory CSVPointReader::read_next_trajectory() {
   // Read the geom idx column into a trajectory
   std::string intermediate;
-  LineString geom;
+  FMM::CORE::LineString geom;
   std::vector<double> timestamps;
   bool on_same_trajectory = true;
   bool first_observation = true;
@@ -340,7 +341,7 @@ bool CSVPointReader::has_timestamp() {
   return timestamp_idx > 0;
 }
 
-GPSReader::GPSReader(const MM::CONFIG::GPSConfig &config) {
+GPSReader::GPSReader(const FMM::CONFIG::GPSConfig &config) {
   mode = config.get_gps_format();
   if (mode == 0) {
     reader = std::make_shared<GDALTrajectoryReader>
@@ -358,4 +359,4 @@ GPSReader::GPSReader(const MM::CONFIG::GPSConfig &config) {
 };
 
 } // IO
-} // MM
+} // FMM

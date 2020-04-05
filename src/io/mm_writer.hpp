@@ -7,8 +7,8 @@
  * @version: 2017.11.11
  */
 
-#ifndef MM_MM_WRITER_HPP
-#define MM_MM_WRITER_HPP
+#ifndef FMM_MM_WRITER_HPP
+#define FMM_MM_WRITER_HPP
 
 #include "mm/mm_result.hpp"
 #include "network/type.hpp"
@@ -16,37 +16,58 @@
 #include "util/debug.hpp"
 #include "network/network.hpp"
 #include "config/result_config.hpp"
-#include "result_config.hpp"
 
 #include <iostream>
 #include <fstream>
 #include <omp.h>
 
-namespace MM {
+namespace FMM {
 
 namespace IO {
 
+/**
+ * An interface defined for writing the map match result
+ */
 class MatchResultWriter {
  public:
-  virtual void write_result(const MatchResult &result) = 0;
+  /**
+   * Write the match result to a file
+   * @param result the match result of a trajectory
+   */
+  virtual void write_result(const FMM::MM::MatchResult &result) = 0;
 };
 
+/**
+ * A writer class for writing matche result to a CSV file.
+ */
 class CSVMatchResultWriter : public MatchResultWriter {
  public:
   /**
    * Constructor
-   * @param result_file, the path to an output file
-   * @param network_ptr, a pointer to the network
+   *
+   * The output fields are defined only once and later all the match result
+   * will be exported according to that configuration.
+   *
+   * @param result_file the filename to write result
+   * @param config_arg the fields that will be exported
+   *
    */
   CSVMatchResultWriter(const std::string &result_file,
                        const CONFIG::OutputConfig &config_arg);
+  /**
+   * Write a header line for the fields exported
+   */
   void write_header();
-  void write_result(const MatchResult &result);
+  /**
+   * Write match result
+   * @param result A map match result
+   */
+  void write_result(const FMM::MM::MatchResult &result);
  private:
   std::ofstream m_fstream;
   const CONFIG::OutputConfig &config_;
 }; // CSVMatchResultWriter
 
 };     //IO
-} //MM
-#endif // MM_MM_WRITER_HPP
+} //FMM
+#endif // FMM_MM_WRITER_HPP

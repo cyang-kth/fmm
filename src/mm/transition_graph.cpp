@@ -13,6 +13,8 @@
 #include "network/type.hpp"
 #include "util/debug.hpp"
 
+namespace FMM
+{
 namespace MM
 {
 
@@ -86,5 +88,5 @@ TGOpath TransitionGraph::backtrack(){
 std::vector<TGLayer> &TransitionGraph::get_layers(){
   return layers;
 }
-
 } // MM
+} // FMM

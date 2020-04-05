@@ -1,6 +1,6 @@
 #include "mm/fmm/ubodt_gen_app.hpp"
 
-using namespace MM;
+using namespace FMM;
 
 int main(int argc, char **argv){
   UBODTGenAppConfig config(argc,argv);

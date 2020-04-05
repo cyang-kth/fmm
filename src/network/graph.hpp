@@ -1,5 +1,5 @@
-#ifndef MM_GRAPH_TYPE_HPP
-#define MM_GRAPH_TYPE_HPP
+#ifndef FMM_GRAPH_TYPE_HPP
+#define FMM_GRAPH_TYPE_HPP
 
 #include <boost/graph/graph_traits.hpp>
 #include <boost/graph/adjacency_list.hpp>
@@ -7,7 +7,8 @@
 
 #include "network/type.hpp"
 
-namespace MM{
+namespace FMM{
+namespace NETWORK{
 
 struct EdgeProperty
 {
@@ -18,8 +19,6 @@ struct EdgeProperty
 typedef boost::adjacency_list <boost::vecS, boost::vecS, boost::directedS,
                                boost::no_property, EdgeProperty> Graph_T;
 
-// The EdgeDescriptor is different from EdgeIndex, it can be used
-// to access the edge property of a graph as g[e].property
 typedef Graph_T::edge_descriptor EdgeDescriptor;
 typedef boost::graph_traits<Graph_T>::vertex_iterator NodeIterator;
 typedef boost::graph_traits<Graph_T>::out_edge_iterator OutEdgeIterator;
@@ -27,7 +26,7 @@ typedef boost::graph_traits<Graph_T>::out_edge_iterator OutEdgeIterator;
 // Data types used for routing
 typedef std::unordered_map<NodeIndex,NodeIndex> PredecessorMap;
 typedef std::unordered_map<NodeIndex,double> DistanceMap;
-
+}
 }
 
-#endif // MM_GRAPH_TYPE_HPP
+#endif // FMM_GRAPH_TYPE_HPP

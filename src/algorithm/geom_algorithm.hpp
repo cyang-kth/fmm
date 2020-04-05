@@ -1,5 +1,5 @@
 /**
- * Algorithms for geoprocessing
+ * Algorithms for geoprocessing.
  *
  * Updated by Can Yang 2020-04-05
  * Updated by Diaolin 18.01.17
@@ -7,18 +7,22 @@
  * @version: 2017.11.11
  */
 
-#ifndef MM_GEOM_ALGORITHM_HPP
-#define MM_GEOM_ALGORITHM_HPP
+#ifndef FMM_GEOM_ALGORITHM_HPP
+#define FMM_GEOM_ALGORITHM_HPP
 
 #include "core/geometry.hpp"
 
-namespace MM {
+namespace FMM {
+/**
+ * Algorithms for geoprocessing.
+ */
 namespace ALGORITHM {
+using LineString = FMM::CORE::LineString;
 /**
  * Calculate segment length of a trajectory
  * @param trajectory a trajectory as input
- * @return A vector of double values with size of N-1. N is the number of points
- * in trajectory.
+ * @return A vector of double values with size of N-1.
+ * N is the number of points in trajectory.
  */
 std::vector<double> cal_eu_dist(const LineString &trajectory);
 
@@ -113,7 +117,8 @@ std::vector<double> calc_length_to_end_vec(const LineString &geom);
  * @param offset the distance from p1 to p'
  */
 void closest_point_on_segment(double x, double y, double x1, double y1,
-                              double x2, double y2, double *dist, double *offset);
+                              double x2, double y2,
+                              double *dist, double *offset);
 
 /**
  *
@@ -145,8 +150,8 @@ void closest_point_on_segment(double x, double y, double x1, double y1,
  * @param px x coordinate of p
  * @param py y coordinate of p
  * @param linestring input line
- * @param result_dist the projected distance
- * @param result_offset the offset distance
+ * @param result_dist the projected distance, the pointer will be updated
+ * @param result_offset the offset distance, the pointer will be updated
  */
 void linear_referencing(double px, double py,
                         const LineString &linestring, double *result_dist,
@@ -211,5 +216,5 @@ LineString cutoffseg_unique(const LineString &linestring,
 LineString cutoffseg(const LineString &linestring, double offset, int mode);
 
 } // ALGORITHM
-} // MM
-#endif /* MM_ALGORITHM_HPP */
+} // FMM
+#endif /* FMM_ALGORITHM_HPP */

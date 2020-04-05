@@ -4,7 +4,11 @@
 #include "fmm_app_config.hpp"
 #include "fmm_algorithm.hpp"
 
-namespace MM {
+namespace FMM {
+namespace MM{
+/**
+ * Class of fmm command line program
+ */
 class FMMApp {
  public:
   FMMApp(const FMMAppConfig &config) :
@@ -15,6 +19,9 @@ class FMMApp {
                config_.network_config.target),
       ng_(network_),
       ubodt_(UBODT::read_ubodt_file(config_.ubodt_file)){};
+  /**
+   * Run the fmm program
+   */
   void run();
  private:
   const FMMAppConfig &config_;
@@ -22,6 +29,7 @@ class FMMApp {
   NetworkGraph ng_;
   std::shared_ptr<UBODT> ubodt_;
 };
+}
 }
 
 #endif

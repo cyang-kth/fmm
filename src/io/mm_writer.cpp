@@ -10,21 +10,16 @@
 #include "io/mm_writer.hpp"
 #include "util/util.hpp"
 #include "util/debug.hpp"
-#include "result_config.hpp"
+#include "config/result_config.hpp"
 
 #include <sstream>
 
-namespace MM {
+namespace FMM {
 
 namespace IO {
 
-/**
- * Constructor
- * @param result_file, the path to an output file
- * @param network_ptr, a pointer to the network
- */
-CSVMatchResultWriter::CSVMatchResultWriter(const std::string &result_file,
-                                           const CONFIG::OutputConfig &config_arg) :
+CSVMatchResultWriter::CSVMatchResultWriter(
+    const std::string &result_file, const CONFIG::OutputConfig &config_arg) :
     m_fstream(result_file), config_(config_arg) {
   write_header();
 }
@@ -45,7 +40,7 @@ void CSVMatchResultWriter::write_header() {
   m_fstream << header << '\n';
 }
 
-void CSVMatchResultWriter::write_result(const MatchResult &result) {
+void CSVMatchResultWriter::write_result(const FMM::MM::MatchResult &result) {
   std::stringstream buf;
   buf << result.id;
   if (config_.write_opath) {
@@ -85,9 +80,9 @@ void CSVMatchResultWriter::write_result(const MatchResult &result) {
     buf << ";";
     if (!result.opt_candidate_path.empty()) {
       int N = result.opt_candidate_path.size();
-      LineString pline;
+      FMM::CORE::LineString pline;
       for (int i = 0; i < N; ++i) {
-        const Point &point = result.opt_candidate_path[i].c.point;
+        const FMM::CORE::Point &point = result.opt_candidate_path[i].c.point;
         pline.add_point(point);
       }
       buf << pline;
@@ -159,5 +154,5 @@ void CSVMatchResultWriter::write_result(const MatchResult &result) {
   m_fstream << buf.rdbuf();
 }
 
-}    //IO
+} //IO
 } //MM

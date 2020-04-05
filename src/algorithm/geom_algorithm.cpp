@@ -4,7 +4,7 @@
 #include <cmath>
 #include <cstdlib>
 
-namespace MM {
+namespace FMM {
 namespace ALGORITHM {
 
 std::vector<double> cal_eu_dist(const LineString &trajectory) {
@@ -424,4 +424,4 @@ LineString cutoffseg(const LineString &linestring, double offset, int mode) {
 }
 
 } // ALGORITHM
-} // MM
+} // FMM

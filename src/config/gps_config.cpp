@@ -2,7 +2,7 @@
 #include "util/util.hpp"
 #include "util/debug.hpp"
 
-void MM::CONFIG::GPSConfig::print() const{
+void FMM::CONFIG::GPSConfig::print() const{
   int format = get_gps_format();
   if (format==0) {
     SPDLOG_INFO("GPS format: GDAL trajectory");
@@ -25,7 +25,7 @@ void MM::CONFIG::GPSConfig::print() const{
   }
 };
 
-MM::CONFIG::GPSConfig MM::CONFIG::GPSConfig::load_from_xml(
+FMM::CONFIG::GPSConfig FMM::CONFIG::GPSConfig::load_from_xml(
   const boost::property_tree::ptree &xml_data){
   GPSConfig config;
   config.file = xml_data.get<std::string>("config.input.gps.file");
@@ -40,7 +40,7 @@ MM::CONFIG::GPSConfig MM::CONFIG::GPSConfig::load_from_xml(
   return config;
 };
 
-MM::CONFIG::GPSConfig MM::CONFIG::GPSConfig::load_from_arg(
+FMM::CONFIG::GPSConfig FMM::CONFIG::GPSConfig::load_from_arg(
   const cxxopts::ParseResult &arg_data){
   GPSConfig config;
   config.file = arg_data["gps"].as<std::string>();
@@ -54,7 +54,7 @@ MM::CONFIG::GPSConfig MM::CONFIG::GPSConfig::load_from_arg(
   return config;
 };
 
-int MM::CONFIG::GPSConfig::get_gps_format() const {
+int FMM::CONFIG::GPSConfig::get_gps_format() const {
   std::string fn_extension = file.substr(
       file.find_last_of(".") + 1);
   if (fn_extension == "csv" || fn_extension == "txt") {
@@ -71,7 +71,7 @@ int MM::CONFIG::GPSConfig::get_gps_format() const {
   }
 };
 
-bool MM::CONFIG::GPSConfig::validate() const {
+bool FMM::CONFIG::GPSConfig::validate() const {
   if (!UTIL::file_exists(file))
   {
     SPDLOG_CRITICAL("GPS file {} not found",file);

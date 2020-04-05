@@ -9,8 +9,8 @@
 #include <unordered_map>
 #include <queue>
 
-namespace MM {
-
+namespace FMM {
+namespace NETWORK{
 NetworkGraph::NetworkGraph(const Network &network_arg) : network(network_arg) {
   const std::vector<Edge> &edges = network.get_edges();
   SPDLOG_INFO("Construct graph from network edges start");
@@ -247,5 +247,5 @@ void NetworkGraph::single_source_upperbound_dijkstra(NodeIndex s,
     }
   }
 }
-
+} // NETWORK
 } // MM

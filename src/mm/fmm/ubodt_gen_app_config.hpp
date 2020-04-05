@@ -4,19 +4,50 @@
 #include "config/network_config.hpp"
 #include "network_config.hpp"
 
+namespace FMM{
 namespace MM{
-
+/**
+ * Configuration of ubodt_gen command line program
+ */
 class UBODTGenAppConfig
 {
  public:
+  /**
+   * Constructor of Configuration of ubodt_gen command line program
+   * @param argc number of argument
+   * @param argv argument data
+   */
   UBODTGenAppConfig(int argc, char **argv);
+  /**
+   * Load configuration from xml file
+   * @param file input xml configuration file
+   */
   void load_xml(const std::string &file);
+  /**
+   * Load configuration from arguments
+   * @param argc number of argument
+   * @param argv argument data
+   */
   void load_arg(int argc, char **argv);
+  /**
+   * Print information
+   */
   void print() const;
+  /**
+   * Check the validity of the configuration
+   * @return true if valid otherwise false
+   */
   bool validate() const;
+  /**
+   * Check if the output is in binary format
+   * @return true if binary and otherwise false
+   */
   bool is_binary_output() const;
+  /**
+   * Print help information
+   */
   static void print_help();
-  MM::CONFIG::NetworkConfig network_config;
+  CONFIG::NetworkConfig network_config;
   double delta;
   std::string result_file;
   // 0-trace,1-debug,2-info,3-warn,4-err,5-critical,6-off
@@ -24,7 +55,7 @@ class UBODTGenAppConfig
   bool use_omp = false;
   bool help_specified;
 }; // UBODT_Config
-
+}
 }
 
 #endif

@@ -6,8 +6,8 @@
  * @version: 2017.11.11
  */
 
-#ifndef MM_NETWORK_HPP
-#define MM_NETWORK_HPP
+#ifndef FMM_NETWORK_HPP
+#define FMM_NETWORK_HPP
 
 #include "network/type.hpp"
 #include "core/gps.hpp"
@@ -24,41 +24,39 @@
 #include <boost/geometry/index/rtree.hpp>
 #include <boost/function_output_iterator.hpp>
 
-namespace MM
+namespace FMM
 {
-
-class Network
-{
-public:
+/**
+ * Classes related with network and graph
+ */
+namespace NETWORK {
+class Network {
+ public:
   // Rtree data types
   typedef boost::geometry::model::box<Point> boost_box;
-  typedef std::pair<boost_box,Edge*> Item;
+  typedef std::pair<boost_box, Edge *> Item;
   typedef boost::geometry::index::rtree<
-      Item,boost::geometry::index::quadratic<16> > Rtree;
+      Item, boost::geometry::index::quadratic<16> > Rtree;
   /**
    *  Constructor of Network
    *
-   *  A vector of network edges will be constructed
-   *
    *  @param filename: the path to a network file in ESRI shapefile format
-   *  @param id_name: the name of the id attribute
-   *  @param source_name: the name of the source attribute
-   *  @param target_name: the name of the target attribute
+   *  @param id_name: the name of the id field
+   *  @param source_name: the name of the source field
+   *  @param target_name: the name of the target field
    *
    */
   Network(const std::string &filename,
-          const std::string &id_name="id",
-          const std::string &source_name="source",
-          const std::string &target_name="target");   // Network constructor
+          const std::string &id_name = "id",
+          const std::string &source_name = "source",
+          const std::string &target_name = "target");   // Network constructor
 
   int get_node_count() const;
 
   int get_edge_count() const;
 
-  // Get the edge vector
   const std::vector<Edge> &get_edges() const;
 
-  // Get the ID attribute of an edge according to its index
   EdgeID get_edge_id(EdgeIndex index) const;
 
   EdgeIndex get_edge_index(EdgeID id) const;
@@ -74,9 +72,9 @@ public:
    *  trajectory within a search radius
    *
    *  @param trajectory: input trajectory
-   *  @param k: the number of coordindates
-   *  @param r: the search radius
-   *  @return Traj_Candidates: a 2D vector of Candidates containing
+   *  @param k: the number of candidates
+   *  @param radius: the search radius
+   *  @return a 2D vector of Candidates containing
    *  the candidates selected for each point in a trajectory
    *
    */
@@ -91,7 +89,10 @@ public:
                                    double radius) const;
 
   const LineString &get_edge_geom(int edge_id) const;
-
+  /**
+   * Extract the geometry of a complete path, whose two end segment will be
+   * clipped according to the input trajectory
+   */
   LineString complete_path_to_geometry(const LineString &traj,
                                        const C_Path &complete_path) const;
 
@@ -103,26 +104,8 @@ public:
 
   LineString route2geometry(const std::vector<EdgeIndex> &path) const;
 
-  // std::vector<int> edge_idx2id(std::vector<int> &idx_path){
-  //   std::vector<int> path2(idx_path.size());
-  //   std::transform(cpath2.begin(), cpath2.end(), path2.begin(),
-  //     [&network](int i) -> int {return network.get_edge_id(i);});
-  //   std::vector<int> path3(opath.size());
-  //   std::transform(opath.begin(), opath.end(), path3.begin(),
-  //     [&network](int i) -> int {return network.get_edge_id(i);});
-  // };
-
-  /**
-   * Calculate the emission probability
-   * @param  dist:the distance a GPS point to a candidate point
-   * @return  the emission probability
-   */
-  static double emission_prob(double dist,double gps_error);
-
-  static double emission_prob_to_dist(double eprob,double gps_error);
-
   static bool candidate_compare(const Candidate &a, const Candidate &b);
-private:
+ private:
   /**
    * Concatenate a linestring segs to a linestring line, used in the
    * function complete_path_to_geometry
@@ -132,7 +115,7 @@ private:
    * @param offset: the number of points skipped in segs.
    */
   static void append_segs_to_line(LineString *line, const LineString &segs,
-                                  int offset=0);
+                                  int offset = 0);
   // Construct a Rtree using the vector of edges
   void build_rtree_index();
   int srid;   // Spatial reference id
@@ -144,5 +127,6 @@ private:
   EdgeIndexMap edge_map;
   std::vector<Point> vertex_points;
 }; // Network
-} // MM
-#endif /* MM_NETWORK_HPP */
+} // NETWORK
+} // FMM
+#endif /* FMM_NETWORK_HPP */

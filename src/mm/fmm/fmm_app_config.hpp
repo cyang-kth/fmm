@@ -13,10 +13,10 @@
 #include "network_config.hpp"
 #include "gps_config.hpp"
 
+namespace FMM{
 namespace MM{
-
 /**
- * Configuration class for map matching
+ * Configuration class fmm command line program
  */
 class FMMAppConfig
 {
@@ -40,7 +40,7 @@ class FMMAppConfig
   int log_level = 2;
   int step = 100;
 }; // FMMAppConfig
-
+}
 }
 
 
