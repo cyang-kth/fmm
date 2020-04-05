@@ -4,7 +4,7 @@
 
 namespace FMM {
 namespace NETWORK{
-unsigned int NodeTree::insert_point(Point &p){
+unsigned int NodeTree::insert_point(FMM::CORE::Point &p){
   unsigned int id = size;
   rtree.insert(std::make_pair(p,id));
   size+=1;
@@ -12,7 +12,7 @@ unsigned int NodeTree::insert_point(Point &p){
 };
 
 // Id is the node returned within distance of radius
-int NodeTree::query_point_radius(Point &p,double radius,
+int NodeTree::query_point_radius(FMM::CORE::Point &p,double radius,
                                  unsigned int *id){
   std::vector<NodeItem> returned_values;
   rtree.query(boost::geometry::index::nearest(p,1),

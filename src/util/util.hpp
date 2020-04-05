@@ -22,6 +22,9 @@
 #include <vector>
 #include <ctime>
 
+/**
+ * Utility functions for writing data to std stream
+ */
 namespace std {
 
 template<typename T>

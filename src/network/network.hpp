@@ -24,16 +24,18 @@
 #include <boost/geometry/index/rtree.hpp>
 #include <boost/function_output_iterator.hpp>
 
-namespace FMM
-{
+namespace FMM {
 /**
  * Classes related with network and graph
  */
 namespace NETWORK {
+/**
+ * Road network class
+ */
 class Network {
  public:
   // Rtree data types
-  typedef boost::geometry::model::box<Point> boost_box;
+  typedef boost::geometry::model::box<FMM::CORE::Point> boost_box;
   typedef std::pair<boost_box, Edge *> Item;
   typedef boost::geometry::index::rtree<
       Item, boost::geometry::index::quadratic<16> > Rtree;
@@ -50,9 +52,15 @@ class Network {
           const std::string &id_name = "id",
           const std::string &source_name = "source",
           const std::string &target_name = "target");   // Network constructor
-
+  /**
+   * Get number of nodes in the network
+   * @return
+   */
   int get_node_count() const;
-
+  /**
+   * Get number of edges in the network
+   * @return
+   */
   int get_edge_count() const;
 
   const std::vector<Edge> &get_edges() const;
@@ -65,7 +73,7 @@ class Network {
 
   NodeIndex get_node_index(NodeID id) const;
 
-  Point get_node_geom_from_idx(NodeIndex index) const;
+  FMM::CORE::Point get_node_geom_from_idx(NodeIndex index) const;
 
   /**
    *  Search for k nearest neighboring (KNN) candidates of a
@@ -78,31 +86,44 @@ class Network {
    *  the candidates selected for each point in a trajectory
    *
    */
-  Traj_Candidates search_tr_cs_knn(Trajectory &trajectory, std::size_t k,
+  Traj_Candidates search_tr_cs_knn(FMM::CORE::Trajectory &trajectory,
+                                   std::size_t k,
                                    double radius) const;
 
   /**
    *  Search for k nearest neighboring (KNN) candidates of a
    *  linestring within a search radius
    */
-  Traj_Candidates search_tr_cs_knn(const LineString &geom, std::size_t k,
+  Traj_Candidates search_tr_cs_knn(const FMM::CORE::LineString &geom,
+                                   std::size_t k,
                                    double radius) const;
 
-  const LineString &get_edge_geom(int edge_id) const;
+  const FMM::CORE::LineString &get_edge_geom(int edge_id) const;
   /**
    * Extract the geometry of a complete path, whose two end segment will be
    * clipped according to the input trajectory
+   * @param traj input trajectory
+   * @param complete_path complete path
    */
-  LineString complete_path_to_geometry(const LineString &traj,
-                                       const C_Path &complete_path) const;
+  FMM::CORE::LineString complete_path_to_geometry(
+      const FMM::CORE::LineString &traj,
+      const C_Path &complete_path) const;
 
-  const std::vector<Point> &get_vertex_points() const;
+  const std::vector<FMM::CORE::Point> &get_vertex_points() const;
 
-  const Point &get_vertex_point(NodeIndex u) const;
-
-  LineString route2geometry(const std::vector<EdgeID> &path) const;
-
-  LineString route2geometry(const std::vector<EdgeIndex> &path) const;
+  const FMM::CORE::Point &get_vertex_point(NodeIndex u) const;
+  /**
+   * Extract the geometry of a route in the network
+   * @param path a route stored with edge ID
+   * @return the geometry of the route
+   */
+  FMM::CORE::LineString route2geometry(const std::vector<EdgeID> &path) const;
+  /**
+   * Extract the geometry of a route in the network
+   * @param path a route stored with edge Index
+   * @return the geometry of the route
+   */
+  FMM::CORE::LineString route2geometry(const std::vector<EdgeIndex> &path) const;
 
   static bool candidate_compare(const Candidate &a, const Candidate &b);
  private:
@@ -114,9 +135,12 @@ class Network {
    * @param segs: segs that will be appended to line
    * @param offset: the number of points skipped in segs.
    */
-  static void append_segs_to_line(LineString *line, const LineString &segs,
+  static void append_segs_to_line(FMM::CORE::LineString *line,
+                                  const FMM::CORE::LineString &segs,
                                   int offset = 0);
-  // Construct a Rtree using the vector of edges
+  /**
+   * Build rtree for the network
+   */
   void build_rtree_index();
   int srid;   // Spatial reference id
   Rtree rtree;   // Network rtree structure
@@ -125,7 +149,7 @@ class Network {
   unsigned int num_vertices;
   NodeIndexMap node_map;
   EdgeIndexMap edge_map;
-  std::vector<Point> vertex_points;
+  std::vector<FMM::CORE::Point> vertex_points;
 }; // Network
 } // NETWORK
 } // FMM

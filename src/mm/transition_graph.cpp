@@ -13,10 +13,9 @@
 #include "network/type.hpp"
 #include "util/debug.hpp"
 
-namespace FMM
-{
-namespace MM
-{
+using namespace FMM;
+using namespace FMM::CORE;
+using namespace FMM::NETWORK;
 
 TransitionGraph::TransitionGraph(const Traj_Candidates &tc, double gps_error){
   for (auto cs = tc.begin(); cs!=tc.end(); ++cs) {
@@ -88,5 +87,3 @@ TGOpath TransitionGraph::backtrack(){
 std::vector<TGLayer> &TransitionGraph::get_layers(){
   return layers;
 }
-} // MM
-} // FMM

@@ -12,7 +12,9 @@ namespace FMM{
  * Data type for Python API
  */
 namespace PYTHON{
-// POD type for python map matching result
+/**
+ * POD Candidate data type used in Python API
+ */
 struct PyCandidate{
   int index;       // point index in trajectory
   int edge_id;       // edge id
@@ -26,6 +28,9 @@ struct PyCandidate{
   double spdist;
 };
 
+/**
+ * POD Match result type used in Python API
+ */
 struct PyMatchResult {
   int id;
   O_Path opath;

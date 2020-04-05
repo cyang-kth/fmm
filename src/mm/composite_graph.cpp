@@ -1,9 +1,9 @@
 #include "mm/composite_graph.hpp"
 #include "util/debug.hpp"
 
-namespace FMM {
-
-namespace MM{
+using namespace FMM;
+using namespace FMM::CORE;
+using namespace FMM::NETWORK;
 
 DummyGraph::DummyGraph(){}
 
@@ -173,5 +173,3 @@ std::vector<CompEdgeProperty> CompositeGraph::out_edges(NodeIndex u) const {
 bool CompositeGraph::check_dummy_node(NodeIndex u) const {
   return u>=num_vertices;
 }
-} // MM
-}//FMM

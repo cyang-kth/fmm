@@ -12,9 +12,9 @@
 #include <boost/geometry/index/rtree.hpp>
 #include <boost/function_output_iterator.hpp>
 
-namespace FMM
-{
-namespace NETWORK{
+using namespace FMM;
+using namespace FMM::CORE;
+using namespace FMM::NETWORK;
 
 bool Network::candidate_compare(const Candidate &a, const Candidate &b)
 {
@@ -355,5 +355,4 @@ void Network::append_segs_to_line(LineString *line,
     }
   }
 }
-} // NETWORK
-} // MM
+

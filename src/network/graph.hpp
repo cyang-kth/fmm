@@ -10,21 +10,44 @@
 namespace FMM{
 namespace NETWORK{
 
+/**
+ *  Road edge property.
+ */
 struct EdgeProperty
 {
   EdgeIndex index;
   double length;
 };
 
+/**
+ *  Boost graph type
+ */
 typedef boost::adjacency_list <boost::vecS, boost::vecS, boost::directedS,
                                boost::no_property, EdgeProperty> Graph_T;
 
+/**
+ * Boost graph edge type
+ */
 typedef Graph_T::edge_descriptor EdgeDescriptor;
+/**
+ * Boost graph node iterator
+ */
 typedef boost::graph_traits<Graph_T>::vertex_iterator NodeIterator;
+/**
+ * Boost graph out edge iterator
+ */
 typedef boost::graph_traits<Graph_T>::out_edge_iterator OutEdgeIterator;
 
-// Data types used for routing
+/**
+ * Predecessor Map. It stores for each node, the previous node
+ * visited, which is part of the shortest path routing result.
+ */
 typedef std::unordered_map<NodeIndex,NodeIndex> PredecessorMap;
+
+/**
+ * Distance map. It stores for each node, the distance visited from a source
+ * node, which is part of the shortest path routing result.
+ */
 typedef std::unordered_map<NodeIndex,double> DistanceMap;
 }
 }

@@ -38,6 +38,12 @@ struct TGElement {
 typedef std::vector<TGElement> TGLayer;
 typedef std::vector<const TGElement*> TGOpath;
 
+/**
+ * Transition graph class in HMM.
+ *
+ * The class stores the underlying transition graph of a HMM, which stores
+ * the probabilities of candidates matched to a trajectories.
+ */
 class TransitionGraph
 {
 public:

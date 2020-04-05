@@ -14,6 +14,9 @@
 
 namespace FMM {
 namespace NETWORK{
+/**
+ * Node in the heap structure
+ */
 struct HeapNode
 {
   NodeIndex index;
