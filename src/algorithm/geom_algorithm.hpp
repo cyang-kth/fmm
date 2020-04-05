@@ -136,19 +136,6 @@ void closest_point_on_segment(double x, double y, double x1, double y1,
                               double *offset, double *closest_x,
                               double *closest_y);
 
-
-/**
- * A linear referencing function
- * Given a point p (px,py) and a polyline, return the projected distance
- * (p to p') and offset distance (the distance along the polyline from its start
- * to the projected point p'); in the passed variables
- * @param x,y         Coordinates of the point to be queried
- * @param linestring    input linestring
- * @param result_dist   output projected distance
- * @param result_offset output offset distance from the start of the
- * polyline
- */
-
 /**
  * A linear referencing function
  *

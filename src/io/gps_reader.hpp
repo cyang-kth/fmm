@@ -21,22 +21,10 @@ namespace MM
 {
 namespace IO
 {
-/**
- *  According to the documentation at http://gdal.org/1.11/ogr/ogr_apitut.html
- *
- *  Note that OGRFeature::GetGeometryRef() and OGRFeature::GetGeomFieldRef()
- *  return a pointer to the internal geometry owned by the OGRFeature.
- *  We don't actually need to delete the return geometry. However, the
- *  OGRLayer::GetNextFeature() method returns a copy of the feature that is
- *  now owned by us. So at the end of use we must free the feature.
- *
- *  It implies that when we delete the feature, the geometry returned by
- *  OGRFeature::GetGeometryRef() is also deleted. Therefore, we need to
- *  create a copy of the geometry and free it with
- *      OGRGeometryFactory::destroyGeometry(geometry_pointer);
- *
- */
 
+/**
+ * Trajectory Reader Interface.
+ */
 class ITrajectoryReader {
 public:
   virtual Trajectory read_next_trajectory() = 0;

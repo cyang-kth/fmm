@@ -11,23 +11,49 @@
 
 #include "cxxopts/cxxopts.hpp"
 
-namespace MM{
+namespace MM {
 
+/**
+ *  GPS configuration class for reading data from a file.
+ */
 struct GPSConfig{
-  std::string file;
-  std::string id;
-  std::string geom;
-  std::string x;
-  std::string y;
-  std::string timestamp;
-  bool gps_point = false; // The GPS data stores point or not
+  std::string file; /**< filename */
+  std::string id; /**< id field/column name */
+  std::string geom; /**< geometry field/column name */
+  std::string x; /**< x field/column name */
+  std::string y; /**< y field/column name */
+  std::string timestamp; /**< timestamp field/column name */
+  bool gps_point = false; /**< gps point stored or not */
+  /**
+   * Validate the GPS configuration for file existence, parameter validation
+   * @return true if validate success, otherwise false returned
+   */
   bool validate() const;
+  /**
+   * Print members of the GPS configuration.
+   */
   void print() const;
-  // Check gps format, returns 0 for GDAL shapefile,
-  // 1 for trajectory CSV file, 2 for GPS point CSV file
-  // -1 if not other format
+  /**
+   * Find the GPS format.
+   *
+   * @return 0 for GDAL trajectory file, 1 for CSV trajectory file
+   * and 2 for CSV point file, otherwise -1 is returned for unknown
+   * format.
+   */
   int get_gps_format() const;
+  /**
+   * Load GPSConfig from XML data.
+   *
+   * @param xml_data
+   * @return
+   */
   static GPSConfig load_from_xml(const boost::property_tree::ptree &xml_data);
+  /**
+   * Load GPSConfig from argument parsed data.
+   *
+   * @param arg_data
+   * @return
+   */
   static GPSConfig load_from_arg(const cxxopts::ParseResult &arg_data);
 };
 

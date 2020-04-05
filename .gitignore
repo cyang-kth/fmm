@@ -6,6 +6,10 @@ dist/
 test/bin/
 test/log/
 
+# Doc files
+
+docs/html
+
 # Mac
 
 **/.DS_Store
