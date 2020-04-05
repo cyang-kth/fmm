@@ -1,6 +1,6 @@
-//
-// Created by Can Yang on 2020/3/26.
-//
+/**
+ * Configuration of the gps data
+ */
 
 #ifndef FMM_SRC_CONFIG_GPS_CONFIG_HPP_
 #define FMM_SRC_CONFIG_GPS_CONFIG_HPP_
@@ -10,7 +10,6 @@
 #include <boost/property_tree/xml_parser.hpp>
 
 #include "cxxopts/cxxopts.hpp"
-
 
 namespace MM{
 

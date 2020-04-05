@@ -286,8 +286,8 @@ LineString Network::complete_path_to_geometry(
                                   &dist,&firstoffset);
     ALGORITHM::linear_referencing(traj.get_x(Npts-1),traj.get_y(Npts-1),
                                   firstseg,&dist,&lastoffset);
-    LineString firstlineseg= ALGORITHM::cutoffseg_unique(firstoffset,
-                                                         lastoffset,firstseg);
+    LineString firstlineseg= ALGORITHM::cutoffseg_unique(firstseg, firstoffset,
+                                                         lastoffset);
     append_segs_to_line(&line,firstlineseg,0);
   } else {
     const LineString &firstseg = get_edge_geom(complete_path[0]);
@@ -299,8 +299,8 @@ LineString Network::complete_path_to_geometry(
                                   &dist,&firstoffset);
     ALGORITHM::linear_referencing(traj.get_x(Npts-1),traj.get_y(Npts-1),
                                   lastseg,&dist,&lastoffset);
-    LineString firstlineseg= ALGORITHM::cutoffseg(firstoffset, firstseg, 0);
-    LineString lastlineseg= ALGORITHM::cutoffseg(lastoffset, lastseg, 1);
+    LineString firstlineseg= ALGORITHM::cutoffseg(firstseg, firstoffset, 0);
+    LineString lastlineseg= ALGORITHM::cutoffseg(lastseg, lastoffset, 1);
     append_segs_to_line(&line,firstlineseg,0);
     if (NCsegs>2) {
       for(int i=1; i<NCsegs-1; ++i) {
