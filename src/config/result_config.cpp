@@ -99,7 +99,7 @@ MM::CONFIG::ResultConfig MM::CONFIG::ResultConfig::load_from_xml(
 
 MM::CONFIG::ResultConfig MM::CONFIG::ResultConfig::load_from_arg(
     const cxxopts::ParseResult &arg_data) {
-  ResultConfig config;
+  MM::CONFIG::ResultConfig config;
   config.file = arg_data["output"].as<std::string>();
   if (arg_data.count("output_fields") > 0) {
     config.output_config.write_cpath = false;

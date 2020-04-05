@@ -16,7 +16,7 @@ MM::CONFIG::NetworkConfig MM::CONFIG::NetworkConfig::load_from_xml(
   std::string id = xml_data.get("config.input.network.id", "id");
   std::string source = xml_data.get("config.input.network.source","source");
   std::string target = xml_data.get("config.input.network.target","target");
-  return MM::MM::CONFIG::NetworkConfig{file, id, source, target};
+  return MM::CONFIG::NetworkConfig{file, id, source, target};
 };
 
 MM::CONFIG::NetworkConfig MM::CONFIG::NetworkConfig::load_from_arg(
@@ -25,7 +25,7 @@ MM::CONFIG::NetworkConfig MM::CONFIG::NetworkConfig::load_from_arg(
   std::string id = arg_data["network_id"].as<std::string>();
   std::string source = arg_data["source"].as<std::string>();
   std::string target = arg_data["target"].as<std::string>();
-  return MM::MM::CONFIG::NetworkConfig{file, id, source, target};
+  return MM::CONFIG::NetworkConfig{file, id, source, target};
 };
 
 bool MM::CONFIG::NetworkConfig::validate() const {
