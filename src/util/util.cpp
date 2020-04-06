@@ -1,10 +1,3 @@
-/**
- * Content
- * Utility functions
- *
- * @author: Can Yang
- * @version: 2017.11.11
- */
 #include "util/util.hpp"
 
 #include <iostream>
