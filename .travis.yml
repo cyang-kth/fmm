@@ -1,0 +1,17 @@
+# C++ project
+language: cpp
+sudo: required
+dist: xenial
+install:
+  - sudo apt-get -y install libboost-dev libboost-serialization-dev gdal-bin libgdal-dev make cmake
+script:
+  - mkdir -p build
+  - cd build
+  - cmake ..
+  - make
+  - ./fmm
+  - ./stmatch
+  - ./ubodt_gen
+branches:
+  only:
+  - master
