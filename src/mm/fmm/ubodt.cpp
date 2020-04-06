@@ -52,10 +52,6 @@ Record *UBODT::look_up(NodeIndex source, NodeIndex target) const {
   return r;
 }
 
-/**
- *  Return a shortest path (SP) containing edges from source to target.
- *  In case that SP is not found, empty is returned.
- */
 std::vector<EdgeIndex> UBODT::look_sp_path(NodeIndex source,
                                            NodeIndex target) const {
   std::vector<EdgeIndex> edges;
@@ -71,17 +67,6 @@ std::vector<EdgeIndex> UBODT::look_sp_path(NodeIndex source,
   return edges;
 }
 
-/**
- * Construct the complete path (a vector of edge ID) from an optimal path
- * (a vector of candidates)
- *
- * @param  path, an optimal path
- * @param  edges, a vector of edges
- * @return  a complete path (spatially contiguous).
- * If there is a large gap in the optimal
- * path implying complete path cannot be found in UBDOT,
- * an empty path is returned
- */
 C_Path UBODT::construct_complete_path(const TGOpath &path,
                                       const std::vector<Edge> &edges,
                                       std::vector<int> *indices) const {
@@ -125,7 +110,7 @@ unsigned int UBODT::cal_bucket_index(NodeIndex source, NodeIndex target) const {
   return (source * multiplier + target) % buckets;
 }
 
-// Insert a Record into the hash table
+
 void UBODT::insert(Record *r) {
   //int h = (r->source*multiplier+r->target)%buckets ;
   int h = cal_bucket_index(r->source, r->target);
@@ -185,10 +170,7 @@ std::shared_ptr<UBODT> UBODT::read_ubodt_file(const std::string &filename,
   }
 }
 
-/**
- * Read ubodt from a csv file, the caller takes the ownership.
- * The ubodt is stored on heap memory.
- */
+
 std::shared_ptr<UBODT> UBODT::read_ubodt_csv(const std::string &filename,
                                              int multiplier) {
   SPDLOG_INFO("Reading UBODT file (CSV format) from {}", filename);
@@ -230,9 +212,6 @@ std::shared_ptr<UBODT> UBODT::read_ubodt_csv(const std::string &filename,
   return table;
 }
 
-/**
- * Read ubodt from a binary file, the caller takes the ownership.
- */
 std::shared_ptr<UBODT> UBODT::read_ubodt_binary(const std::string &filename,
                                                  int multiplier) {
   SPDLOG_INFO("Reading UBODT file (binary format) from {}", filename);

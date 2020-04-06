@@ -1,3 +1,12 @@
+/**
+ * Fast map matching.
+ *
+ * Definition of geometry
+ *
+ * @author: Can Yang
+ * @version: 2017.11.11
+ */
+
 #ifndef FMM_GEOMTYPES_HPP
 #define FMM_GEOMTYPES_HPP
 
@@ -24,6 +33,10 @@ typedef boost::geometry::model::point<double, 2,
  */
 class LineString {
 public:
+  /**
+   * This is the boost geometry linestring class, stored inside the
+   * LineString class.
+   */
   typedef boost::geometry::model::linestring<Point> linestring_t;
   /**
    * Get the x coordinate of i-th point in the line

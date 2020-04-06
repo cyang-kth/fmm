@@ -1,3 +1,12 @@
+/**
+ * Fast map matching.
+ *
+ * stmatch command line program main function
+ *
+ * @author: Can Yang
+ * @version: 2017.11.11
+ */
+
 #include "mm/stmatch/stmatch_app.hpp"
 
 using namespace FMM;

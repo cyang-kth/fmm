@@ -1,5 +1,15 @@
-#ifndef MM_SRC_MM_FMM_FMM_APP_H_
-#define MM_SRC_MM_FMM_FMM_APP_H_
+/**
+ * Fast map matching.
+ *
+ * fmm command line program
+ *
+ * @author: Can Yang
+ * @version: 2020.01.31
+ */
+
+
+#ifndef FMM_FMM_APP_H_
+#define FMM_FMM_APP_H_
 
 #include "fmm_app_config.hpp"
 #include "fmm_algorithm.hpp"
@@ -11,6 +21,11 @@ namespace MM{
  */
 class FMMApp {
  public:
+  /**
+   * Create FMMApp from configuration data
+   * @param config Configuration of the FMMApp defining network, graph
+   * and UBODT.
+   */
   FMMApp(const FMMAppConfig &config) :
       config_(config),
       network_(config_.network_config.file,

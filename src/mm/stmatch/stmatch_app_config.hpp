@@ -1,6 +1,11 @@
-//
-// Created by Can Yang on 2020/4/1.
-//
+/**
+ * Fast map matching.
+ *
+ * Stmatch command line program configuration.
+ *
+ * @author: Can Yang
+ * @version: 2020.01.31
+ */
 
 #ifndef FMM_STMATCH_APP_CONFIG_HPP_
 #define FMM_STMATCH_APP_CONFIG_HPP_

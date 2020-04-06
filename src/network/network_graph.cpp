@@ -74,7 +74,7 @@ std::vector<EdgeIndex> NetworkGraph::shortest_path_dijkstra(
          out_i != out_end; ++out_i) {
       EdgeDescriptor e = *out_i;
       NodeIndex v = boost::target(e, g);
-      temp_dist = node.dist + g[e].length;
+      temp_dist = node.value + g[e].length;
       auto iter = dmap.find(v);
       if (iter != dmap.end()) {
         // dmap contains node v
@@ -222,12 +222,12 @@ void NetworkGraph::single_source_upperbound_dijkstra(NodeIndex s,
     HeapNode node = Q.top();
     Q.pop();
     NodeIndex u = node.index;
-    if (node.dist > delta) break;
+    if (node.value > delta) break;
     for (boost::tie(out_i, out_end) = boost::out_edges(u, g);
          out_i != out_end; ++out_i) {
       EdgeDescriptor e = *out_i;
       NodeIndex v = boost::target(e, g);
-      temp_dist = node.dist + g[e].length;
+      temp_dist = node.value + g[e].length;
       auto iter = dmap->find(v);
       if (iter != dmap->end()) {
         // dmap contains node v

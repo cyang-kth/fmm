@@ -1,3 +1,12 @@
+/**
+ * Fast map matching.
+ *
+ * Node rtree
+ *
+ * @author: Can Yang
+ * @version: 2017.11.11
+ */
+
 #ifndef FMM_RTREE_HPP /* Currently not used */
 #define FMM_RTREE_HPP
 

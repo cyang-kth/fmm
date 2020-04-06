@@ -4,10 +4,8 @@
 #include <cmath>
 #include <cstdlib>
 
-namespace FMM {
-namespace ALGORITHM {
-
-std::vector<double> cal_eu_dist(const LineString &trajectory) {
+std::vector<double> FMM::ALGORITHM::cal_eu_dist(
+    const FMM::CORE::LineString &trajectory) {
   int N = trajectory.get_num_points();
   std::vector<double> lengths(N - 1);
   double x0 = trajectory.get_x(0);
@@ -24,8 +22,9 @@ std::vector<double> cal_eu_dist(const LineString &trajectory) {
   return lengths;
 }
 
-void append_segs_to_line(LineString *line, const LineString &segs,
-                         int offset) {
+void FMM::ALGORITHM::append_segs_to_line(
+    FMM::CORE::LineString *line, const FMM::CORE::LineString &segs,
+    int offset) {
   int Npoints = segs.get_num_points();
   for (int i = 0; i < Npoints; ++i) {
     if (i >= offset) {
@@ -34,8 +33,9 @@ void append_segs_to_line(LineString *line, const LineString &segs,
   }
 }
 
-LineString reverse_geometry(const LineString &rhs) {
-  LineString line;
+FMM::CORE::LineString FMM::ALGORITHM::reverse_geometry(
+    const FMM::CORE::LineString &rhs) {
+  FMM::CORE::LineString line;
   int Npoints = rhs.get_num_points();
   for (int i = Npoints - 1; i >= 0; --i) {
     line.add_point(rhs.get_x(i), rhs.get_y(i));
@@ -43,9 +43,10 @@ LineString reverse_geometry(const LineString &rhs) {
   return line;
 }
 
-std::vector<LineString> split_line(const LineString &line, double delta) {
-  // SPDLOG_INFO("LineString {}", line.exportToWkt());
-  std::vector<LineString> segments;
+std::vector<FMM::CORE::LineString> FMM::ALGORITHM::split_line(
+    const FMM::CORE::LineString &line, double delta) {
+  // SPDLOG_INFO("FMM::CORE::LineString {}", line.exportToWkt());
+  std::vector<FMM::CORE::LineString> segments;
   if (line.get_length() <= delta) {
     segments.push_back(line);
     return segments;
@@ -55,7 +56,7 @@ std::vector<LineString> split_line(const LineString &line, double delta) {
     return segments;
   }
   double length_visited = 0;
-  LineString interpolated_line;
+  FMM::CORE::LineString interpolated_line;
   int i = 1;       // Point in line
   double cx = line.get_x(0);
   double cy = line.get_y(0);
@@ -91,9 +92,9 @@ std::vector<LineString> split_line(const LineString &line, double delta) {
   return segments;
 }
 
-LineString interpolate_line_distances(const LineString &line,
-                                      const std::vector<double> &distances) {
-  LineString interpolated_line;
+FMM::CORE::LineString FMM::ALGORITHM::interpolate_line_distances(
+    const FMM::CORE::LineString &line, const std::vector<double> &distances) {
+  FMM::CORE::LineString interpolated_line;
   int Npoints = line.get_num_points();
   int distance_count = distances.size();
   double length_visited = 0;
@@ -123,8 +124,8 @@ LineString interpolate_line_distances(const LineString &line,
   return interpolated_line;
 }
 
-LineString interpolate_line_distance(const LineString &line,
-                                     double distance) {
+FMM::CORE::LineString FMM::ALGORITHM::interpolate_line_distance(
+    const FMM::CORE::LineString &line, double distance) {
   double length = line.get_length();
   int k = (int) ceil(length / distance);
   std::vector<double> distances;
@@ -134,7 +135,8 @@ LineString interpolate_line_distance(const LineString &line,
   return interpolate_line_distances(line, distances);
 }
 
-LineString interpolate_line_kpoints(const LineString &line, int k) {
+FMM::CORE::LineString FMM::ALGORITHM::interpolate_line_kpoints(
+    const FMM::CORE::LineString &line, int k) {
   double length = line.get_length();
   std::vector<double> distances;
   for (int i = 0; i < k; ++i) {
@@ -146,8 +148,9 @@ LineString interpolate_line_kpoints(const LineString &line, int k) {
   return interpolate_line_distances(line, distances);
 }
 
-void boundingbox_geometry(const LineString &linestring,
-                          double *x1, double *y1, double *x2, double *y2) {
+void FMM::ALGORITHM::boundingbox_geometry(
+    const FMM::CORE::LineString &linestring, double *x1, double *y1,
+    double *x2, double *y2) {
   int Npoints = linestring.get_num_points();
   *x1 = DBL_MAX;
   *y1 = DBL_MAX;
@@ -164,7 +167,8 @@ void boundingbox_geometry(const LineString &linestring,
   }
 }
 
-std::vector<double> calc_length_to_end_vec(const LineString &geom) {
+std::vector<double> FMM::ALGORITHM::calc_length_to_end_vec(
+    const FMM::CORE::LineString &geom) {
   int N = geom.get_num_points();
   if (N < 2) return std::vector<double>();
   std::vector<double> result(N - 1);
@@ -187,9 +191,9 @@ std::vector<double> calc_length_to_end_vec(const LineString &geom) {
   return result;
 }
 
-void closest_point_on_segment(double x, double y, double x1, double y1,
-                              double x2, double y2,
-                              double *dist, double *offset) {
+void FMM::ALGORITHM::closest_point_on_segment(
+    double x, double y, double x1, double y1, double x2, double y2,
+    double *dist, double *offset) {
   double L2 = (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1);
   if (L2 == 0.0) {
     *dist = std::sqrt((x - x1) * (x - x1) + (y - y1) * (y - y1));
@@ -210,10 +214,11 @@ void closest_point_on_segment(double x, double y, double x1, double y1,
   *dist = std::sqrt((prj_x - x) * (prj_x - x) + (prj_y - y) * (prj_y - y));
 } // closest_point_on_segment
 
-void closest_point_on_segment(double x, double y, double x1, double y1,
-                              double x2, double y2, double *dist,
-                              double *offset, double *closest_x,
-                              double *closest_y) {
+void FMM::ALGORITHM::closest_point_on_segment(
+    double x, double y, double x1, double y1,
+    double x2, double y2, double *dist,
+    double *offset, double *closest_x,
+    double *closest_y) {
   double L2 = (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1);
   if (L2 == 0.0) {
     *dist = std::sqrt((x - x1) * (x - x1) + (y - y1) * (y - y1));
@@ -238,9 +243,9 @@ void closest_point_on_segment(double x, double y, double x1, double y1,
   *closest_y = prj_y;
 } // closest_point_on_segment
 
-void linear_referencing(double px, double py,
-                        const LineString &linestring, double *result_dist,
-                        double *result_offset) {
+void FMM::ALGORITHM::linear_referencing(
+    double px, double py, const FMM::CORE::LineString &linestring,
+    double *result_dist, double *result_offset) {
   int Npoints = linestring.get_num_points();
   double min_dist = DBL_MAX;
   double final_offset = DBL_MAX;
@@ -268,9 +273,10 @@ void linear_referencing(double px, double py,
   *result_offset = final_offset;
 } // linear_referencing
 
-void linear_referencing(double px, double py, const LineString &linestring,
-                        double *result_dist, double *result_offset,
-                        double *proj_x, double *proj_y) {
+void FMM::ALGORITHM::linear_referencing(
+    double px, double py, const FMM::CORE::LineString &linestring,
+    double *result_dist, double *result_offset,
+    double *proj_x, double *proj_y) {
   int Npoints = linestring.get_num_points();
   double min_dist = DBL_MAX;
   double temp_x = 0, temp_y = 0;
@@ -302,8 +308,9 @@ void linear_referencing(double px, double py, const LineString &linestring,
   *result_offset = final_offset;
 } // linear_referencing
 
-void locate_point_by_offset(const LineString &linestring, double offset,
-                            double *x, double *y) {
+void FMM::ALGORITHM::locate_point_by_offset(
+    const FMM::CORE::LineString &linestring, double offset,
+    double *x, double *y) {
   int Npoints = linestring.get_num_points();
   if (offset <= 0.0) {
     *x = linestring.get_x(0);
@@ -341,9 +348,9 @@ void locate_point_by_offset(const LineString &linestring, double offset,
   }
 } // calculate_offset_point
 
-LineString cutoffseg_unique(const LineString &linestring,
-                            double offset1, double offset2) {
-  LineString cutoffline;
+FMM::CORE::LineString FMM::ALGORITHM::cutoffseg_unique(
+    const FMM::CORE::LineString &linestring, double offset1, double offset2) {
+  FMM::CORE::LineString cutoffline;
   SPDLOG_TRACE("Offset1 {} Offset2 {}", offset1, offset2);
   int Npoints = linestring.get_num_points();
   if (Npoints == 2) {
@@ -410,7 +417,8 @@ LineString cutoffseg_unique(const LineString &linestring,
   return cutoffline;
 } //cutoffseg_twoparameters
 
-LineString cutoffseg(const LineString &linestring, double offset, int mode) {
+FMM::CORE::LineString FMM::ALGORITHM::cutoffseg(
+    const FMM::CORE::LineString &linestring, double offset, int mode) {
   double L = linestring.get_length();
   double offset1, offset2;
   if (mode == 0) {
@@ -420,8 +428,5 @@ LineString cutoffseg(const LineString &linestring, double offset, int mode) {
     offset1 = 0;
     offset2 = offset;
   }
-  return cutoffseg_unique(linestring, offset1, offset2);
+  return FMM::ALGORITHM::cutoffseg_unique(linestring, offset1, offset2);
 }
-
-} // ALGORITHM
-} // FMM

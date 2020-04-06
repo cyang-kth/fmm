@@ -1,9 +1,7 @@
 /**
- * Content
- * Definition of a TransitionGraph, which is a wrapper of trajectory
- * candidates, raw trajectory and UBODT.
- * This class is designed for optimal path inference where
- * Viterbi algorithm is implemented.
+ * Fast map matching.
+ *
+ * Definition of a TransitionGraph.
  *
  * @author: Can Yang
  * @version: 2020.01.31
@@ -23,7 +21,7 @@ TransitionGraph::TransitionGraph(const Traj_Candidates &tc, double gps_error){
     TGLayer layer;
     for (auto iter = cs->begin(); iter!=cs->end(); ++iter) {
       double ep = calc_ep(iter->dist,gps_error);
-      layer.push_back(TGElement{&(*iter),nullptr,ep,0});
+      layer.push_back(TGNode{&(*iter),nullptr,ep,0});
     }
     layers.push_back(layer);
   }
@@ -49,8 +47,8 @@ void TransitionGraph::reset_layer(TGLayer *layer){
   }
 }
 
-const TGElement *TransitionGraph::find_optimal_candidate(const TGLayer &layer){
-  const TGElement *opt_c=nullptr;
+const TGNode *TransitionGraph::find_optimal_candidate(const TGLayer &layer){
+  const TGNode *opt_c=nullptr;
   double final_prob = -0.001;
   for (auto c = layer.begin(); c!=layer.end(); ++c) {
     if(final_prob < c->cumu_prob) {
@@ -63,9 +61,9 @@ const TGElement *TransitionGraph::find_optimal_candidate(const TGLayer &layer){
 
 TGOpath TransitionGraph::backtrack(){
   SPDLOG_TRACE("Backtrack on transition graph");
-  TGElement* track_cand=nullptr;
+  TGNode* track_cand=nullptr;
   double final_prob = -0.001;
-  std::vector<TGElement>& last_layer = layers.back();
+  std::vector<TGNode>& last_layer = layers.back();
   for (auto c = last_layer.begin(); c!=last_layer.end(); ++c) {
     if(final_prob < c->cumu_prob) {
       final_prob = c->cumu_prob;

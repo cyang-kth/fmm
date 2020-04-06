@@ -19,14 +19,13 @@ namespace FMM {
  * Algorithms for geoprocessing.
  */
 namespace ALGORITHM {
-using LineString = FMM::CORE::LineString;
 /**
  * Calculate segment length of a trajectory
  * @param trajectory a trajectory as input
  * @return A vector of double values with size of N-1.
  * N is the number of points in trajectory.
  */
-std::vector<double> cal_eu_dist(const LineString &trajectory);
+std::vector<double> cal_eu_dist(const FMM::CORE::LineString &trajectory);
 
 /**
  * Concatenate a linestring segs to a linestring line, used in the
@@ -36,7 +35,8 @@ std::vector<double> cal_eu_dist(const LineString &trajectory);
  * @param segs: segs that will be appended to line
  * @param offset: the number of points skipped in segs.
  */
-void append_segs_to_line(LineString *line, const LineString &segs,
+void append_segs_to_line(FMM::CORE::LineString *line,
+                         const FMM::CORE::LineString &segs,
                          int offset = 0);
 
 /**
@@ -45,7 +45,7 @@ void append_segs_to_line(LineString *line, const LineString &segs,
  * @param rhs the input linestring
  * @return A linestring containing points in the reverse order.
  */
-LineString reverse_geometry(const LineString &rhs);
+FMM::CORE::LineString reverse_geometry(const FMM::CORE::LineString &rhs);
 
 /**
  * Interpolate a linestring at a fixed distance threshold and return the result
@@ -55,7 +55,8 @@ LineString reverse_geometry(const LineString &rhs);
  * @param delta the distance threshold to split the line
  * @return A vector of linestring
  */
-std::vector<LineString> split_line(const LineString &line, double delta);
+std::vector<FMM::CORE::LineString> split_line(
+    const FMM::CORE::LineString &line, double delta);
 
 /**
  * Interpolate a linestring according to a vector of distances to
@@ -64,8 +65,8 @@ std::vector<LineString> split_line(const LineString &line, double delta);
  * @param distances a vector of distance values to the start point
  * @return a linestring containing the interpolated points
  */
-LineString interpolate_line_distances(const LineString &line,
-                                      const std::vector<double> &distances);
+FMM::CORE::LineString interpolate_line_distances(
+    const FMM::CORE::LineString &line, const std::vector<double> &distances);
 
 /**
  * Interpolate a linestring according to a distance step value
@@ -73,8 +74,8 @@ LineString interpolate_line_distances(const LineString &line,
  * @param distance the distance step value
  * @return a linestring containing the interpolated points
  */
-LineString interpolate_line_distance(const LineString &line,
-                                     double distance);
+FMM::CORE::LineString interpolate_line_distance(
+    const FMM::CORE::LineString &line, double distance);
 
 /**
  * Interpolate k points in a linestring with equal distance
@@ -82,10 +83,11 @@ LineString interpolate_line_distance(const LineString &line,
  * @param k interpolate k points in equal distances
  * @return a linestring containing the interpolated points
  */
-LineString interpolate_line_kpoints(const LineString &line, int k);
+FMM::CORE::LineString interpolate_line_kpoints(
+    const FMM::CORE::LineString &line, int k);
 
 /**
- * Compute the boundary of an LineString and returns the result in
+ * Compute the boundary of an FMM::CORE::LineString and returns the result in
  * the passed x1,y1,x2,y2 variables.
  *
  * @param linestring input line
@@ -94,7 +96,7 @@ LineString interpolate_line_kpoints(const LineString &line, int k);
  * @param x2 the top right point x coordinate
  * @param y2 the top right point y coordinate
  */
-void boundingbox_geometry(const LineString &linestring,
+void boundingbox_geometry(const FMM::CORE::LineString &linestring,
                           double *x1, double *y1, double *x2, double *y2);
 
 /**
@@ -103,7 +105,7 @@ void boundingbox_geometry(const LineString &linestring,
  * @param geom input linestring
  * @return a vector of distance values
  */
-std::vector<double> calc_length_to_end_vec(const LineString &geom);
+std::vector<double> calc_length_to_end_vec(const FMM::CORE::LineString &geom);
 
 /**
  * Calculate the closest point p' on a segment p1 (x1,y1) p2 (x2,y2) to a
@@ -156,7 +158,8 @@ void closest_point_on_segment(double x, double y, double x1, double y1,
  * @param result_offset the offset distance, the pointer will be updated
  */
 void linear_referencing(double px, double py,
-                        const LineString &linestring, double *result_dist,
+                        const FMM::CORE::LineString &linestring,
+                        double *result_dist,
                         double *result_offset);
 
 /**
@@ -173,7 +176,8 @@ void linear_referencing(double px, double py,
  * @param proj_x x coordinate of p'
  * @param proj_y y coordinate of p'
  */
-void linear_referencing(double px, double py, const LineString &linestring,
+void linear_referencing(double px, double py,
+                        const FMM::CORE::LineString &linestring,
                         double *result_dist, double *result_offset,
                         double *proj_x, double *proj_y);
 
@@ -188,8 +192,8 @@ void linear_referencing(double px, double py, const LineString &linestring,
  * @param x the x coordinate of p
  * @param y the y coordinate of p
  */
-void locate_point_by_offset(const LineString &linestring, double offset,
-                            double *x, double *y); // calculate_offset_point
+void locate_point_by_offset(const FMM::CORE::LineString &linestring,
+                            double offset, double *x, double *y);
 
 /**
  * Cut a linestring at two offset values
@@ -199,8 +203,8 @@ void locate_point_by_offset(const LineString &linestring, double offset,
  * @return a linestring containing only the part covering starting offset to
  * ending offset
  */
-LineString cutoffseg_unique(const LineString &linestring,
-                            double offset1, double offset2);
+FMM::CORE::LineString cutoffseg_unique(
+    const FMM::CORE::LineString &linestring, double offset1, double offset2);
 
 /**
  * Added by Diao 18.01.17
@@ -215,7 +219,8 @@ LineString cutoffseg_unique(const LineString &linestring,
  * @param mode cutting mode value
  * @return a linestring that is cut from input linestring
  */
-LineString cutoffseg(const LineString &linestring, double offset, int mode);
+FMM::CORE::LineString cutoffseg(
+    const FMM::CORE::LineString &linestring, double offset, int mode);
 
 } // ALGORITHM
 } // FMM

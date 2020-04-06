@@ -1,5 +1,6 @@
 /**
- * Content
+ * Fast map matching.
+ *
  * Definition of a TransitionGraph, which is a wrapper of trajectory
  * candidates, raw trajectory and UBODT.
  * This class is designed for optimal path inference where
@@ -25,9 +26,9 @@ namespace MM{
 /**
  * A node in the transition graph
  */
-struct TGElement {
+struct TGNode {
   const Candidate *c; /**< Candidate */
-  TGElement *prev; /**< previous optimal candidate */
+  TGNode *prev; /**< previous optimal candidate */
   double ep; /**< emission probability */
   double tp; /**< transition probability from previous optimal candidate */
   double cumu_prob; /**< current node's accumulative probability */
@@ -35,8 +36,14 @@ struct TGElement {
                        candidate to current node */
 };
 
-typedef std::vector<TGElement> TGLayer;
-typedef std::vector<const TGElement*> TGOpath;
+/**
+ * A layer of nodes in the transition graph.
+ */
+typedef std::vector<TGNode> TGLayer;
+/**
+ * The optimal path of nodes in the transition graph
+ */
+typedef std::vector<const TGNode*> TGOpath;
 
 /**
  * Transition graph class in HMM.
@@ -87,7 +94,7 @@ public:
    * @param  layer [description]
    * @return  pointer to the optimal node in the transition graph
    */
-  const TGElement *find_optimal_candidate(const TGLayer &layer);
+  const TGNode *find_optimal_candidate(const TGLayer &layer);
   /**
    * Backtrack the transition graph to find an optimal path
    * @return An optimal path connecting the first layer with last layer and

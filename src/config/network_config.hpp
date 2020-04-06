@@ -36,15 +36,17 @@ struct NetworkConfig{
   void print() const;
   /**
    * Load NetworkConfig from xml data
-   * @param  xml_data [description]
-   * @return          [description]
+   * @param  xml_data XML data read from a file
+   * @return NetworkConfig object containing information stored in the
+   * xml file.
    */
   static NetworkConfig load_from_xml(
     const boost::property_tree::ptree &xml_data);
   /**
    * Load NetworkConfig from argument parsed data
-   * @param  xml_data [description]
-   * @return          [description]
+   * @param  arg_data Argument data parsed from command line
+   * @return NetworkConfig object containing information parsed from
+   * command line argument.
    */
   static NetworkConfig load_from_arg(
     const cxxopts::ParseResult &arg_data);

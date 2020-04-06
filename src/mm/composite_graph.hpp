@@ -1,3 +1,13 @@
+/**
+ * Fast map matching.
+ *
+ * Composition graph
+ *
+ * @author: Can Yang
+ * @version: 2020.01.31
+ */
+
+
 #ifndef FMM_COMPOSITEGRAPH_HPP
 #define FMM_COMPOSITEGRAPH_HPP
 
@@ -16,7 +26,7 @@ typedef unsigned int DummyIndex;
  * A graph containing dummy nodes and edges used in map matching.
  * It connects candidate node (dummy node) matched to GPS observations
  * with the nodes in the original road network. The connected edges
- * are dummy edges. 
+ * are dummy edges.
  */
 class DummyGraph {
  public:
@@ -95,6 +105,14 @@ class DummyGraph {
    */
   void print_node_index_map() const;
  protected:
+  /**
+   * Add an edge to the dummy graph
+   * @param source source node index
+   * @param target target node index
+   * @param edge_index Edge index. It will be the same edge index where
+   * the dummy edge is located.
+   * @param cost cost of the edge
+   */
   void add_edge(NETWORK::NodeIndex source, NETWORK::NodeIndex target,
                 NETWORK::EdgeIndex edge_index, double cost);
  private:

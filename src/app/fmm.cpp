@@ -1,3 +1,12 @@
+/**
+ * Fast map matching.
+ *
+ * fmm command line program main function
+ *
+ * @author: Can Yang
+ * @version: 2017.11.11
+ */
+
 #include "mm/fmm/fmm_app.hpp"
 
 using namespace FMM;

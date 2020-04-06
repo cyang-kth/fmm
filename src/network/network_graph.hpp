@@ -1,6 +1,7 @@
 /**
- * Content
- * An optimizated network graph class
+ * Fast map matching.
+ *
+ * Network graph class
  *
  * The optimization is achieved by recording the output
  * of routing in two variables predecessor map and distance map
@@ -43,7 +44,7 @@ class NetworkGraph {
    * @return a vector of edge index representing the path from source to target
    */
   std::vector<EdgeIndex> shortest_path_dijkstra(
-      NETWORK::NodeIndex source, NETWORK::NodeIndex target) const;
+      NodeIndex source, NodeIndex target) const;
   /**
    * Calculate heuristic distance from p1 to p2,which is used in Astar routing.
    * @param p1
@@ -58,8 +59,8 @@ class NetworkGraph {
    * @param target
    * @return a vector of edge index representing the path from source to target
    */
-  std::vector<EdgeIndex> shortest_path_astar(NETWORK::NodeIndex source,
-                                             NETWORK::NodeIndex target) const;
+  std::vector<EdgeIndex> shortest_path_astar(NodeIndex source,
+                                             NodeIndex target) const;
   /**
    * Backtrack the routing result to find a path from source to target
    * @param source
@@ -68,8 +69,8 @@ class NetworkGraph {
    * @param dmap distance map
    * @return a vector of edge index representing the path from source to target
    */
-  std::vector<EdgeIndex> back_track(NETWORK::NodeIndex source,
-                                    NETWORK::NodeIndex target,
+  std::vector<EdgeIndex> back_track(NodeIndex source,
+                                    NodeIndex target,
                                     const PredecessorMap &pmap,
                                     const DistanceMap &dmap) const;
   /**
@@ -79,7 +80,7 @@ class NetworkGraph {
    * @param pmap predecessor map updated to store the routing result
    * @param dmap distance map updated to store the routing result
    */
-  void single_source_upperbound_dijkstra(NETWORK::NodeIndex source,
+  void single_source_upperbound_dijkstra(NodeIndex source,
                                          double delta,
                                          PredecessorMap *pmap,
                                          DistanceMap *dmap) const;
@@ -87,7 +88,7 @@ class NetworkGraph {
    *  Find the edge ID given a pair of nodes and its cost,
    *  if not found, return -1
    */
-  int get_edge_index(NETWORK::NodeIndex source, NETWORK::NodeIndex target,
+  int get_edge_index(NodeIndex source, NodeIndex target,
                      double cost) const;
   /**
    * Get the edge ID from edge index
@@ -104,7 +105,7 @@ class NetworkGraph {
    * @param cost
    * @return edge ID
    */
-  inline int get_edge_id(NETWORK::NodeIndex source, NETWORK::NodeIndex target,
+  inline int get_edge_id(NodeIndex source, NodeIndex target,
                          double cost) const {
     return network.get_edge_id(get_edge_index(source, target, cost));
   };
@@ -113,7 +114,7 @@ class NetworkGraph {
    * @param idx
    * @return node ID
    */
-  inline int get_node_id(NETWORK::NodeIndex idx) const {
+  inline int get_node_id(NodeIndex idx) const {
     return network.get_node_id(idx);
   };
   /**
@@ -121,7 +122,7 @@ class NetworkGraph {
    * @param id node ID
    * @return node index
    */
-  inline NETWORK::NodeIndex get_node_index(NodeID id) const {
+  inline NodeIndex get_node_index(NodeID id) const {
     return network.get_node_index(id);
   };
   /**
@@ -129,7 +130,7 @@ class NetworkGraph {
    * @param u
    * @return node point
    */
-  inline const FMM::CORE::Point &get_vertex_point(NETWORK::NodeIndex u) const {
+  inline const FMM::CORE::Point &get_vertex_point(NodeIndex u) const {
     return network.get_vertex_point(u);
   };
   /**
@@ -143,20 +144,22 @@ class NetworkGraph {
   const Graph_T &get_boost_graph() const;
   /**
    * Get inner network reference
-   * @return
+   * @return reference to the road network
    */
   const Network &get_network();
   /**
    * Get number of vertices in the graph
-   * @return
+   * @return number of vertices
    */
   unsigned int get_num_vertices() const;
  protected:
-  // Boost graph type definition
-  Graph_T g;   // The member storing a boost graph
+  Graph_T g; /**< The member storing a boost graph */
+  /**
+   * A value used in checking edge from source,target and cost
+   */
   static constexpr double DOUBLE_MIN = 1.e-6;
-  const Network &network;
-  unsigned int num_vertices = 0;
+  const Network &network; /**< Road network */
+  unsigned int num_vertices = 0; /**< number of vertices  */
 }; // NetworkGraph
 }; // NETWORK
 } // FMM

@@ -1,5 +1,6 @@
 /**
- * Content
+ * Fast map matching.
+ *
  * Definition of Data types used in the FMM algorithm
  *
  * @author: Can Yang
@@ -25,8 +26,17 @@ typedef unsigned int NodeIndex; /**< Node Index in the network, range
 typedef unsigned int EdgeIndex; /**< Edge Index in the network, range
                                  from [0,num_edges-1 ]*/
 
+/**
+ * Vector of node id
+ */
 typedef std::vector<NodeID> NodeIDVec;
+/**
+ * Map of node index
+ */
 typedef std::unordered_map<NodeID,NodeIndex> NodeIndexMap;
+/**
+ * Map of edge index
+ */
 typedef std::unordered_map<EdgeID,EdgeIndex> EdgeIndexMap;
 
 /**

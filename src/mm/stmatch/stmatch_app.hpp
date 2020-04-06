@@ -1,5 +1,14 @@
-#ifndef FMM_SRC_FMM_STMATCH_STMATCH_APP_H_
-#define FMM_SRC_FMM_STMATCH_STMATCH_APP_H_
+/**
+ * Fast map matching.
+ *
+ * Stmatch command line program.
+ *
+ * @author: Can Yang
+ * @version: 2020.01.31
+ */
+
+#ifndef FMM_STMATCH_APP_H_
+#define FMM_STMATCH_APP_H_
 
 #include "mm/stmatch/stmatch_app_config.hpp"
 #include "mm/stmatch/stmatch_algorithm.hpp"
@@ -13,6 +22,10 @@ namespace MM{
  */
 class STMATCHApp {
 public:
+  /**
+   * Create stmatch command application from configuration
+   * @param config configuration of the command line app
+   */
   STMATCHApp(const STMATCHAppConfig &config);
   /**
    * Run the stmatch program
