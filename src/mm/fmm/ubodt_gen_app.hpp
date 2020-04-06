@@ -1,6 +1,11 @@
-//
-// Created by Can Yang on 2020/4/1.
-//
+/**
+ * Fast map matching.
+ *
+ * ubodg_gen command line program 
+ *
+ * @author: Can Yang
+ * @version: 2020.01.31
+ */
 
 #ifndef FMM_SRC_MM_FMM_UBODT_GEN_APP_HPP_
 #define FMM_SRC_MM_FMM_UBODT_GEN_APP_HPP_

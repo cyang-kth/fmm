@@ -67,7 +67,7 @@ MatchResult FastMapMatch::match_traj(const Trajectory &traj,
   MatchedCandidatePath matched_candidate_path(tg_opath.size());
   std::transform(tg_opath.begin(), tg_opath.end(),
                  matched_candidate_path.begin(),
-                 [](const TGElement *a) {
+                 [](const TGNode *a) {
                    return MatchedCandidate{
                        *(a->c), a->ep, a->tp, a->sp_dist
                    };
@@ -75,7 +75,7 @@ MatchResult FastMapMatch::match_traj(const Trajectory &traj,
   O_Path opath(tg_opath.size());
   std::transform(tg_opath.begin(), tg_opath.end(),
                  opath.begin(),
-                 [](const TGElement *a) {
+                 [](const TGNode *a) {
                    return a->c->edge->id;
                  });
   std::vector<int> indices;

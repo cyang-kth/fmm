@@ -65,10 +65,6 @@ namespace FMM {
 
 namespace UTIL {
 
-double meter2degree(double dist_meter) {
-  return dist_meter / 1.11321e+5;
-}
-
 bool file_exists(const char *filename) {
   struct stat buf;
   if (stat(filename, &buf) != -1) {

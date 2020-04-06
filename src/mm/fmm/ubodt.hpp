@@ -1,6 +1,11 @@
-//
-// Created by Can Yang on 2020/3/22.
-//
+/**
+ * Fast map matching.
+ *
+ * Upperbounded origin destination table 
+ *
+ * @author: Can Yang
+ * @version: 2020.01.31
+ */
 
 #ifndef FMM_UBODT_H_
 #define FMM_UBODT_H_
@@ -13,7 +18,7 @@ namespace FMM {
 namespace MM {
 
 /**
- * Record type of the upper bounded origin destination table
+ * %Record type of the upper bounded origin destination table
  */
 struct Record {
   NETWORK::NodeIndex source; /**< source node*/
@@ -66,7 +71,7 @@ class UBODT {
    * @param path an optimal path
    * @param edges a vector of edges
    * @param indices the index of each optimal edge in the complete path
-   * @return  a complete path (topologically connected).
+   * @return a complete path (topologically connected).
    * If there is a large gap in the optimal
    * path implying complete path cannot be found in UBDOT,
    * an empty path is returned
@@ -129,11 +134,14 @@ class UBODT {
   /**
    * Find a large prime number according to input value
    * @param  value input value
-   * @return  a large prime number 
+   * @return  a large prime number
    */
   static int find_prime_number(double value);
-  constexpr static double LOAD_FACTOR = 2.0;
-  static const int BUFFER_LINE = 1024;
+  constexpr static double LOAD_FACTOR = 2.0; /**< factor measuring the
+                                              average number of elements in
+                                              a bucket. */
+  static const int BUFFER_LINE = 1024; /**< Number of characters to store in
+                                            a line */
  private:
   const long long multiplier;   // multiplier to get a unique ID
   const int buckets;   // number of buckets

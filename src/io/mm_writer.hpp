@@ -1,5 +1,6 @@
 /**
- * Content
+ * Fast map matching.
+ * 
  * Definition of MatchResultWriter Class, which contains functions for
  * writing the results.
  *

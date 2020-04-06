@@ -108,7 +108,7 @@ MatchResult STMATCH::match_traj(const Trajectory &traj,
   MatchedCandidatePath matched_candidate_path(tg_opath.size());
   std::transform(tg_opath.begin(), tg_opath.end(),
                  matched_candidate_path.begin(),
-                 [](const TGElement *a) {
+                 [](const TGNode *a) {
                    return MatchedCandidate{
                        *(a->c), a->ep, a->tp, a->sp_dist
                    };
@@ -116,7 +116,7 @@ MatchResult STMATCH::match_traj(const Trajectory &traj,
   O_Path opath(tg_opath.size());
   std::transform(tg_opath.begin(), tg_opath.end(),
                  opath.begin(),
-                 [](const TGElement *a) {
+                 [](const TGNode *a) {
                    return a->c->edge->id;
                  });
   std::vector<int> indices;
@@ -166,7 +166,7 @@ void STMATCH::update_layer(int level, TGLayer *la_ptr, TGLayer *lb_ptr,
     // single source upper bound routing
     std::vector<NodeIndex> targets(lb.size());
     std::transform(lb.begin(), lb.end(), targets.begin(),
-                   [](TGElement &a) {
+                   [](TGNode &a) {
                      return a.c->index;
                    });
     SPDLOG_TRACE("  Upperbound shortest path {} ", delta);
@@ -186,14 +186,6 @@ void STMATCH::update_layer(int level, TGLayer *la_ptr, TGLayer *lb_ptr,
   SPDLOG_TRACE("Update layer done");
 }
 
-/**
- * Return distances from source to all targets and with an upper bound of
- * delta to stop the search
- * @param  source  source node index
- * @param  targets a vector of N target node indices
- * @param  delta   upperbound of search
- * @return         a vector of N indices
- */
 std::vector<double> STMATCH::shortest_path_upperbound(
     int level, const CompositeGraph &cg, NodeIndex source,
     const std::vector<NodeIndex> &targets, double delta) {
@@ -214,7 +206,7 @@ std::vector<double> STMATCH::shortest_path_upperbound(
   while (!Q.empty() && !unreached_targets.empty()) {
     HeapNode node = Q.top();
     Q.pop();
-    SPDLOG_TRACE("  Node u {} dist {}", node.index, node.dist);
+    SPDLOG_TRACE("  Node u {} dist {}", node.index, node.value);
     NodeIndex u = node.index;
     auto iter = unreached_targets.find(u);
     if (iter != unreached_targets.end()) {
@@ -222,12 +214,12 @@ std::vector<double> STMATCH::shortest_path_upperbound(
       SPDLOG_TRACE("  Remove target {}", u);
       unreached_targets.erase(iter);
     }
-    if (node.dist > delta) break;
+    if (node.value > delta) break;
     std::vector<CompEdgeProperty> out_edges = cg.out_edges(u);
     for (auto node_iter = out_edges.begin(); node_iter != out_edges.end();
          ++node_iter) {
       NodeIndex v = node_iter->v;
-      temp_dist = node.dist + node_iter->cost;
+      temp_dist = node.value + node_iter->cost;
       SPDLOG_TRACE("  Examine node v {} temp dist {}", v, temp_dist);
       auto v_iter = dmap.find(v);
       if (v_iter != dmap.end()) {

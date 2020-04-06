@@ -1,7 +1,5 @@
 /**
- * Content
- * Definition of a TrajectoryReader which is a wrapper of
- * the standard shapefile reader in GDAL.
+ *  Implementation of GPS reader classes
  *
  * @author: Can Yang
  * @version: 2017.11.11
@@ -12,8 +10,9 @@
 #include <iostream>
 #include <string>
 
-namespace FMM {
-namespace IO {
+using namespace FMM;
+using namespace FMM::CORE;
+using namespace FMM::IO;
 
 std::vector<Trajectory> ITrajectoryReader::read_next_N_trajectories(int N) {
   std::vector<Trajectory> trajectories;
@@ -34,27 +33,7 @@ std::vector<Trajectory> ITrajectoryReader::read_all_trajectories() {
   }
   return trajectories;
 }
-/**
- *  According to the documentation at http://gdal.org/1.11/ogr/ogr_apitut.html
- *
- *  Note that OGRFeature::GetGeometryRef() and OGRFeature::GetGeomFieldRef();
- *  return a pointer to the internal geometry owned by the OGRFeature.
- *  We don't actually need to delete the return geometry. However, the
- *  OGRLayer::GetNextFeature() method returns a copy of the feature that is
- *  now owned by us. So at the end of use we must free the feature.
- *
- *  It implies that when we delete the feature, the geometry returned by
- *  OGRFeature::GetGeometryRef() is also deleted. Therefore, we need to
- *  create a copy of the geometry and free it with
- *      OGRGeometryFactory::destroyGeometry(geometry_pointer);
- *
- */
 
-/**
- *  Constructor of TrajectoryReader
- *  @param filename, a GPS ESRI shapefile path
- *  @param id_name, the ID column name in the GPS shapefile
- */
 GDALTrajectoryReader::GDALTrajectoryReader(const std::string &filename,
                                            const std::string &id_name,
                                            const std::string &timestamp_name) {
@@ -94,7 +73,7 @@ GDALTrajectoryReader::GDALTrajectoryReader(const std::string &filename,
   SPDLOG_INFO("Total number of trajectories {}", NUM_FEATURES);
   SPDLOG_INFO("Finish reading meta data");
 }
-// If there are still features not read
+
 bool GDALTrajectoryReader::has_next_trajectory() {
   return _cursor < NUM_FEATURES;
 }
@@ -103,7 +82,6 @@ bool GDALTrajectoryReader::has_timestamp() {
   return timestamp_idx > 0;
 }
 
-// Read the next trajectory in the shapefile
 Trajectory GDALTrajectoryReader::read_next_trajectory() {
   OGRFeature *ogrFeature = ogrlayer->GetNextFeature();
   int trid = ogrFeature->GetFieldAsInteger(id_idx);
@@ -115,7 +93,6 @@ Trajectory GDALTrajectoryReader::read_next_trajectory() {
   return Trajectory{trid, linestring};
 }
 
-// Get the number of trajectories in the file
 int GDALTrajectoryReader::get_num_trajectories() {
   return NUM_FEATURES;
 }
@@ -358,5 +335,3 @@ GPSReader::GPSReader(const FMM::CONFIG::GPSConfig &config) {
   }
 };
 
-} // IO
-} // FMM

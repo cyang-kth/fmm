@@ -1,5 +1,6 @@
 /**
- * Content
+ * Fast map matching.
+ * 
  * Definition of input trajectory format
  *
  * @author: Can Yang

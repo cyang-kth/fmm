@@ -1,3 +1,12 @@
+/**
+ * Fast map matching.
+ * 
+ * ubodg_gen command line program main function
+ *
+ * @author: Can Yang
+ * @version: 2017.11.11
+ */
+
 #include "mm/fmm/ubodt_gen_app.hpp"
 
 using namespace FMM;

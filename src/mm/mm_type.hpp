@@ -1,6 +1,12 @@
-//
-// Created by Can Yang on 2020/3/8.
-//
+/**
+ * Fast map matching.
+ *
+ * Definition of map matching types
+ *
+ * @author: Can Yang
+ * @version: 2020.01.31
+ */
+
 
 #ifndef FMM_INCLUDE_FMM_FMM_RESULT_HPP_
 #define FMM_INCLUDE_FMM_FMM_RESULT_HPP_
@@ -41,8 +47,6 @@ each point in the trajectory */
 typedef std::vector<FMM::NETWORK::EdgeID> C_Path; /**< Complete path, ids of
 a sequence of topologically connected edges.*/
 
-typedef std::vector<FMM::NETWORK::EdgeIndex> C_PathIndex;
-
 /**
  * A candidate matched to a point
  */
@@ -53,13 +57,17 @@ struct MatchedCandidate {
   double sp_dist; /**< shortest path distance to previous matched candidate */
 };
 
+/**
+ * A vector of candidates, used for representing the matching result of
+ * a trajectory.
+ */
 typedef std::vector<MatchedCandidate> MatchedCandidatePath;
 
 /**
  * Map matched result representation
  */
 struct MatchResult {
-  int id; /**< */
+  int id; /**< id of the trajectory to be matched */
   MatchedCandidatePath opt_candidate_path; /**< A vector of candidate matched
   to each point of a trajectory. It is stored in order to export more
   detailed map matching information. */

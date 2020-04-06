@@ -1,3 +1,13 @@
+/**
+ * Fast map matching.
+ *
+ * Boost graph types
+ *
+ * @author: Can Yang
+ * @version: 2017.11.11
+ */
+
+
 #ifndef FMM_GRAPH_TYPE_HPP
 #define FMM_GRAPH_TYPE_HPP
 
@@ -15,8 +25,8 @@ namespace NETWORK{
  */
 struct EdgeProperty
 {
-  EdgeIndex index;
-  double length;
+  EdgeIndex index; /**< Index of the edge */
+  double length; /**< length of the edge */
 };
 
 /**

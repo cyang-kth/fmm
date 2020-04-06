@@ -1,3 +1,11 @@
+/**
+ * Fast map matching.
+ *
+ * Stmatch algorithm implementation and configuration
+ *
+ * @author: Can Yang
+ * @version: 2020.01.31
+ */
 #ifndef FMM_STMATCH_ALGORITHM_HPP
 #define FMM_STMATCH_ALGORITHM_HPP
 
@@ -21,6 +29,16 @@ namespace MM{
  * Configuration of stmatch algorithm
  */
 struct STMATCHConfig {
+  /**
+   * Constructor of stmatch algorithm configuration
+   * @param k_arg the number of candidates
+   * @param r_arg the search radius, in map unit, which is the same as
+   * GPS data and network data.
+   * @param gps_error_arg the gps error, in map unit
+   * @param vmax_arg the maximum speed of the vehicle in map unit/second
+   * @param factor_arg a factor multiplied with vmax*deltaT to constrain the
+   * search in stmatch.
+   */
   STMATCHConfig(int k_arg = 8, double r_arg = 300, double gps_error_arg = 50,
       double vmax_arg = 30, double factor_arg = 1.5);
   int k; /**< number of candidates */
@@ -62,6 +80,9 @@ class STMATCH {
   };
   /**
    * Match a wkt linestring to the road network.
+   * @param wkt WKT representation of a trajectory
+   * @param config Map matching configuration
+   * @return Map matching result in POD format used in Python API
    */
   PYTHON::PyMatchResult match_wkt(
     const std::string &wkt,const STMATCHConfig &config);
@@ -69,12 +90,17 @@ class STMATCH {
    * Match a trajectory to the road network
    * @param  traj   input trajector data
    * @param  config configuration of stmatch algorithm
+   * @return map matching result
    */
   MatchResult match_traj(const CORE::Trajectory &traj,
                          const STMATCHConfig &config);
  protected:
   /**
    * Update probabilities in a transition graph
+   * @param tg transition graph
+   * @param cg composition graph
+   * @param traj raw trajectory
+   * @param config map match configuration
    */
   void update_tg(TransitionGraph *tg,
                  const CompositeGraph &cg,
@@ -97,13 +123,6 @@ class STMATCH {
   /**
    * Return distances from source to all targets and with an upper bound of
    * delta to stop the search
-   * @param  source  source node index
-   * @param  targets a vector of N target node indices
-   * @param  delta   upperbound of search
-   * @return         a vector of N indices
-   */
-  /**
-   * Perform a single source shortest path query with an upperbound
    * @param  level   The source node's level in transiton graph, used for
    * logging.
    * @param  cg      Composition graph

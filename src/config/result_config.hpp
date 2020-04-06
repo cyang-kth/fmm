@@ -53,8 +53,8 @@ struct OutputConfig {
  * Result Configuration class, defining output file and output fields
  */
 struct ResultConfig {
-  std::string file;
-  OutputConfig output_config;
+  std::string file; /**< Output file to write the result */
+  OutputConfig output_config; /**< Output fields to export */
   /**
    * Check the validation of the configuration
    * @return true if valid otherwise false
