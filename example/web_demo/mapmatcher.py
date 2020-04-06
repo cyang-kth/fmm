@@ -1,7 +1,7 @@
 import os
 import json
 from fmm import Network, NetworkGraph
-from fmm import FMM, FMMConfig, UBODT
+from fmm import FastMapMatch, FastMapMatchConfig, UBODT
 from fmm import STMATCH, STMATCHConfig
 
 class MapMatcherConfig(object):
@@ -53,7 +53,7 @@ class MapMatcherConfig(object):
             if (not data["input"]["ubodt"].has_key("file")):
                 raise Exception("Ubodt file is missing.")
             self.ubodt_file = str(data["input"]["ubodt"]["file"])
-            self.mm_config = FMMConfig()
+            self.mm_config = FastMapMatchConfig()
             if data.has_key("parameters"):
                 if data["parameters"].has_key("k"):
                     self.mm_config.k = data["parameters"]["k"]
@@ -83,7 +83,7 @@ class MapMatcher(object):
         elif (config.model_tag=="fmm"):
             self.ubodt = UBODT.read_ubodt_file(
                 config.ubodt_file)
-            self.model = FMM(self.network, self.graph, self.ubodt)
+            self.model = FastMapMatch(self.network, self.graph, self.ubodt)
             self.mm_config = config.mm_config
         else:
             raise Exception(

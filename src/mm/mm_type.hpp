@@ -19,9 +19,9 @@ namespace MM {
  */
 struct Candidate
 {
-  NETWORK::NodeIndex index; /**< The index is defined for a specific candidate
-                        the index starting from N where N is the numeber
-                        of vertices in the graph */
+  FMM::NETWORK::NodeIndex index; /**< The index is defined for a specific
+                        candidate the index starting from N where N is the
+                        numeber of vertices in the graph */
   double offset; /**< offset distance from the start of polyline to p' */
   double dist; /**< distance from original point p to map matched point p' */
   NETWORK::Edge *edge;  /**< candidate edge */
@@ -35,13 +35,13 @@ typedef std::vector<Point_Candidates> Traj_Candidates;
 typedef std::vector<const Candidate*> OptCandidatePath;
 /**< Optimal candidates*/
 
-typedef std::vector<NETWORK::EdgeID> O_Path; /**< Optimal path, edge id matched to
+typedef std::vector<FMM::NETWORK::EdgeID> O_Path; /**< Optimal path, edge id matched to
 each point in the trajectory */
 
-typedef std::vector<NETWORK::EdgeID> C_Path; /**< Complete path, ids of
+typedef std::vector<FMM::NETWORK::EdgeID> C_Path; /**< Complete path, ids of
 a sequence of topologically connected edges.*/
 
-typedef std::vector<NETWORK::EdgeIndex> C_PathIndex;
+typedef std::vector<FMM::NETWORK::EdgeIndex> C_PathIndex;
 
 /**
  * A candidate matched to a point

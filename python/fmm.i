@@ -4,6 +4,8 @@
 %include "std_shared_ptr.i"
 %shared_ptr(FMM::MM::UBODT)
 
+
+
 %{
 /* Put header files here or function declarations like below */
 #include "core/geometry.hpp"
@@ -29,7 +31,9 @@ using namespace FMM::MM;
 // %template(DoubleVVVector) vector<vector<vector<double> > >;
 // %template(IntSet) set<int>;
 
+
 %include "core/geometry.hpp"
+%include "mm/mm_type.hpp"
 %include "network/type.hpp"
 %include "network/network.hpp"
 %include "python/pyfmm.hpp"
