@@ -2,9 +2,8 @@
   <img src="img/fmm_social.jpg">
 </div>
 
-**`FMM-Wiki`** |
-------------------- |
-[![Wiki](https://img.shields.io/badge/link-wiki-blue.svg)](https://fmm-wiki.github.io/) |
+[![Wiki](https://img.shields.io/badge/wiki-website-blue.svg)](https://fmm-wiki.github.io/)
+[![Documentation](https://img.shields.io/badge/docs-doxygen-blue.svg)](https://cyang-kth.github.io/fmm/)
 
 FMM is an open source map matching framework in C++ and Python. It solves the problem of matching noisy GPS data to a road network. The design considers maximizing performance, scalability and functionality.
 
@@ -31,9 +30,13 @@ Interactive web demo
 - [Command line examples](example/command_line_example)
 - [Jupyter-notebook](example/notebook)
 
-### Installation and documentation.
+### Installation, tutorial and API.
 
-Check the [https://fmm-wiki.github.io/](https://fmm-wiki.github.io/) for details.
+Check [https://fmm-wiki.github.io/](https://fmm-wiki.github.io/).
+
+### Code docs for developer
+
+Check [https://cyang-kth.github.io/fmm/](https://cyang-kth.github.io/fmm/)
 
 ### Contact and citation
 
