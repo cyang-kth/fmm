@@ -10,7 +10,8 @@
 #include "boost/geometry/extensions/gis/io/wkb/read_wkb.hpp"
 #include "boost/geometry/extensions/gis/io/wkb/write_wkb.hpp"
 
-std::ostream& FMM::CORE::operator<<(std::ostream& os, const LineString& rhs){
+std::ostream& FMM::CORE::operator<<(std::ostream& os,
+    const FMM::CORE::LineString& rhs){
   os<< std::setprecision(12) << boost::geometry::wkt(rhs.line);
   return os;
 };

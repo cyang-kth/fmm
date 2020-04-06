@@ -196,6 +196,8 @@ private:
   linestring_t line;
 }; // LineString
 
+std::ostream& operator<<(std::ostream& os,const FMM::CORE::LineString& rhs);
+
 /**
  * Convert a OGRLineString to a linestring
  * @param line a pointer to OGRLineString
