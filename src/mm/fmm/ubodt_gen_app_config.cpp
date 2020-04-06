@@ -2,12 +2,11 @@
 #include "util/util.hpp"
 #include "util/debug.hpp"
 
-
-namespace MM {
-/**
- * Configuration class for UBODT
- */
-
+using namespace FMM;
+using namespace FMM::CORE;
+using namespace FMM::NETWORK;
+using namespace FMM::MM;
+using namespace FMM::CONFIG;
 UBODTGenAppConfig::UBODTGenAppConfig(int argc, char **argv) {
   spdlog::set_pattern("[%^%l%$][%s:%-3#] %v");
   if (argc==2) {
@@ -82,7 +81,7 @@ void UBODTGenAppConfig::print() const {
   network_config.print();
   SPDLOG_INFO("Delta {}",delta);
   SPDLOG_INFO("Output file {}",result_file);
-  SPDLOG_INFO("Log level {}",LOG_LEVESLS[log_level]);
+  SPDLOG_INFO("Log level {}",UTIL::LOG_LEVESLS[log_level]);
   SPDLOG_INFO("Use omp {}",(use_omp ? "true" : "false"));
   SPDLOG_INFO("---- Print configuration done ----");
 }
@@ -114,7 +113,7 @@ bool UBODTGenAppConfig::validate() const {
     SPDLOG_CRITICAL("Output folder {} not exists", output_folder);
     return false;
   }
-  if (log_level < 0 || log_level > LOG_LEVESLS.size()) {
+  if (log_level < 0 || log_level > UTIL::LOG_LEVESLS.size()) {
     SPDLOG_CRITICAL("Invalid log_level {}, which should be 0 - 6", log_level);
     SPDLOG_INFO("0-trace,1-debug,2-info,3-warn,4-err,5-critical,6-off");
     return false;
@@ -132,6 +131,4 @@ bool UBODTGenAppConfig::is_binary_output() const {
     return true;
   }
   return false;
-}
-
 }

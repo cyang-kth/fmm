@@ -5,7 +5,11 @@
 
 #include <limits>
 
-namespace MM {
+using namespace FMM;
+using namespace FMM::CORE;
+using namespace FMM::NETWORK;
+using namespace FMM::MM;
+using namespace FMM::PYTHON;
 
 STMATCHConfig::STMATCHConfig(
     int k_arg, double r_arg, double gps_error_arg,
@@ -302,5 +306,3 @@ C_Path STMATCH::build_cpath(const TGOpath &opath, std::vector<int> *indices) {
   SPDLOG_DEBUG("Build cpath from optimal candidate path done");
   return cpath;
 }
-
-} // MM

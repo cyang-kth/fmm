@@ -1,21 +1,29 @@
-#ifndef MM_SRC_MM_STMATCH_STMATCH_APP_H_
-#define MM_SRC_MM_STMATCH_STMATCH_APP_H_
+#ifndef FMM_SRC_FMM_STMATCH_STMATCH_APP_H_
+#define FMM_SRC_FMM_STMATCH_STMATCH_APP_H_
 
 #include "mm/stmatch/stmatch_app_config.hpp"
 #include "mm/stmatch/stmatch_algorithm.hpp"
 #include "io/gps_reader.hpp"
 #include "io/mm_writer.hpp"
 
-namespace MM {
+namespace FMM {
+namespace MM{
+/**
+ * Class of stmatch command line program
+ */
 class STMATCHApp {
 public:
   STMATCHApp(const STMATCHAppConfig &config);
+  /**
+   * Run the stmatch program
+   */
   void run();
  private:
   const STMATCHAppConfig &config_;
-  Network network_;
-  NetworkGraph ng_;
+  NETWORK::Network network_;
+  NETWORK::NetworkGraph ng_;
 };
+}
 }
 
 #endif

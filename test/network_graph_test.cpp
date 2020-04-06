@@ -3,7 +3,10 @@
 #include "util/debug.hpp"
 #include "network/network_graph.hpp"
 
-using namespace MM;
+using namespace FMM;
+using namespace FMM::CORE;
+using namespace FMM::NETWORK;
+using namespace FMM::MM;
 using namespace std;
 
 TEST_CASE( "Network graph is tested", "[network_graph]" ) {

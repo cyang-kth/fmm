@@ -7,8 +7,10 @@
 #include <fstream>
 #include <boost/archive/binary_iarchive.hpp>
 
-namespace MM {
-
+using namespace FMM;
+using namespace FMM::CORE;
+using namespace FMM::NETWORK;
+using namespace FMM::MM;
 UBODT::UBODT(int buckets_arg, int multiplier_arg) :
     buckets(buckets_arg), multiplier(multiplier_arg) {
   SPDLOG_TRACE("Intialization UBODT with buckets {} multiplier {}",
@@ -269,6 +271,4 @@ std::shared_ptr<UBODT> UBODT::read_ubodt_binary(const std::string &filename,
   }
   SPDLOG_INFO("Finish reading UBODT with rows {}", NUM_ROWS)
   return table;
-}
-
 }

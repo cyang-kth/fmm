@@ -6,10 +6,10 @@
  * @version: 2017.11.11
  */
 
-#ifndef MM_UTIL_HPP
-#define MM_UTIL_HPP
+#ifndef FMM_UTIL_HPP
+#define FMM_UTIL_HPP
 
-#include "network/type.hpp"
+#include "mm/mm_type.hpp"
 
 #include <ogrsf_frmts.h> // C++ API for GDAL
 #include <cfloat>
@@ -22,6 +22,9 @@
 #include <vector>
 #include <ctime>
 
+/**
+ * Utility functions for writing data to std stream
+ */
 namespace std {
 
 template<typename T>
@@ -35,18 +38,24 @@ std::ostream &operator<<(std::ostream &os,
   return os;
 }
 
-std::ostream &operator<<(std::ostream &os, const MM::Traj_Candidates &tr_cs);
+std::ostream &operator<<(std::ostream &os,
+    const FMM::MM::Traj_Candidates &tr_cs);
 
-std::ostream &operator<<(std::ostream &os, const MM::OptCandidatePath &opath);
+std::ostream &operator<<(std::ostream &os,
+    const FMM::MM::OptCandidatePath &opath);
 
-std::ostream &operator<<(std::ostream &os, const MM::Point &geom);
+std::ostream &operator<<(std::ostream &os,
+    const FMM::CORE::Point &geom);
 
 } // namespace std
 
-namespace MM {
+namespace FMM {
 
 inline double meter2degree(double dist_meter);
 
+/**
+ * Utility functions
+ */
 namespace UTIL {
 
 typedef std::chrono::steady_clock::time_point TimePoint;
@@ -105,24 +114,6 @@ std::vector<T> string2vec(
 
 std::vector<std::string> split_string(const std::string &str);
 
-/**
- *  Print the candidates of trajectory in a table with header of
- *  step;offset;distance;edge_id
- */
-void print_traj_candidates(Traj_Candidates &tr_cs);
-
-void print_traj_candidates_summary(Traj_Candidates &tr_cs);
-
-/**
- * Print the number of candidates for each point of trajectory
- */
-void print_traj_candidates_count(Traj_Candidates &tr_cs);
-
-/**
- * Print the OGRLineString in WKT format
- */
-void print_geometry(LineString &geom);
-
 // Get current timestamp
 std::chrono::time_point<std::chrono::system_clock> get_current_time();
 
@@ -138,5 +129,5 @@ double get_duration(
     const std::chrono::time_point<std::chrono::system_clock> &end_time);
 
 } // Util
-} // MM
-#endif /* MM_UTIL_HPP */
+} // FMM
+#endif /* FMM_UTIL_HPP */

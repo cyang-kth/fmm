@@ -3,12 +3,8 @@
 #include "util/debug.hpp"
 #include <set>
 
-namespace MM {
-
-void ResultConfig::print() const {
+void FMM::CONFIG::ResultConfig::print() const {
   std::stringstream ss;
-  if (output_config.write_ogeom)
-    ss << "ogeom ";
   if (output_config.write_opath)
     ss << "opath ";
   if (output_config.write_pgeom)
@@ -36,7 +32,7 @@ void ResultConfig::print() const {
   SPDLOG_INFO("Fields: {}",ss.str());
 };
 
-ResultConfig ResultConfig::load_from_xml(
+FMM::CONFIG::ResultConfig FMM::CONFIG::ResultConfig::load_from_xml(
     const boost::property_tree::ptree &xml_data) {
   ResultConfig config;
   config.file = xml_data.get<std::string>("config.output.file");
@@ -45,9 +41,6 @@ ResultConfig ResultConfig::load_from_xml(
     // close the default output fields (cpath,mgeom are true by default)
     config.output_config.write_cpath = false;
     config.output_config.write_mgeom = false;
-    if (xml_data.get_child_optional("config.output.fields.ogeom")) {
-      config.output_config.write_ogeom = true;
-    }
     if (xml_data.get_child_optional("config.output.fields.opath")) {
       config.output_config.write_opath = true;
     }
@@ -82,7 +75,6 @@ ResultConfig ResultConfig::load_from_xml(
       config.output_config.write_length = true;
     }
     if (xml_data.get_child_optional("config.output.fields.all")) {
-      config.output_config.write_ogeom = true;
       config.output_config.write_opath = true;
       config.output_config.write_pgeom = true;
       config.output_config.write_offset = true;
@@ -99,9 +91,9 @@ ResultConfig ResultConfig::load_from_xml(
   return config;
 };
 
-ResultConfig ResultConfig::load_from_arg(
+FMM::CONFIG::ResultConfig FMM::CONFIG::ResultConfig::load_from_arg(
     const cxxopts::ParseResult &arg_data) {
-  ResultConfig config;
+  FMM::CONFIG::ResultConfig config;
   config.file = arg_data["output"].as<std::string>();
   if (arg_data.count("output_fields") > 0) {
     config.output_config.write_cpath = false;
@@ -116,9 +108,6 @@ ResultConfig ResultConfig::load_from_arg(
     }
     if (dict.find("mgeom") != dict.end()) {
       config.output_config.write_mgeom = true;
-    }
-    if (dict.find("ogeom") != dict.end()) {
-      config.output_config.write_ogeom = true;
     }
     if (dict.find("tpath") != dict.end()) {
       config.output_config.write_tpath = true;
@@ -145,7 +134,6 @@ ResultConfig ResultConfig::load_from_arg(
       config.output_config.write_length = true;
     }
     if (dict.find("all") != dict.end()) {
-      config.output_config.write_ogeom = true;
       config.output_config.write_opath = true;
       config.output_config.write_pgeom = true;
       config.output_config.write_offset = true;
@@ -162,7 +150,7 @@ ResultConfig ResultConfig::load_from_arg(
   return config;
 };
 
-std::set<std::string> ResultConfig::string2set(
+std::set<std::string> FMM::CONFIG::ResultConfig::string2set(
     const std::string &s) {
   char delim = ',';
   std::set<std::string> result;
@@ -173,7 +161,7 @@ std::set<std::string> ResultConfig::string2set(
   }
   return result;
 }
-bool ResultConfig::validate() const {
+bool FMM::CONFIG::ResultConfig::validate() const {
   if (UTIL::file_exists(file))
   {
     SPDLOG_WARN("Overwrite existing result file {}",file);
@@ -185,5 +173,3 @@ bool ResultConfig::validate() const {
   }
   return true;
 };
-
-}

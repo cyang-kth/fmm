@@ -6,21 +6,29 @@
  * @version: 2017.11.11
  */
 
-#ifndef MM_GPS_HPP
-#define MM_GPS_HPP
+#ifndef FMM_GPS_HPP
+#define FMM_GPS_HPP
 
 #include "core/geometry.hpp"
 
 #include <vector>
 
-namespace MM {
+namespace FMM {
 
+namespace CORE{
+
+/**
+ * %Trajectory class
+ *
+ * A GPS trajectory represented with id, geometry and timestamps
+ */
 struct Trajectory{
-  int id;
-  LineString geom;
-  std::vector<double> timestamps;
+  int id; /**< Id of the trajectory */
+  LineString geom; /**< Geometry of the trajectory */
+  std::vector<double> timestamps; /**< Timestamps of the trajectory */
 };
 
+} // CORE
 
-} // MM
-#endif /* MM_GPS_HPP */
+} // FMM
+#endif /* FMM_GPS_HPP */

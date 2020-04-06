@@ -6,14 +6,17 @@
  */
 
 
-#ifndef MM_HEAP_HPP
-#define MM_HEAP_HPP
+#ifndef FMM_HEAP_HPP
+#define FMM_HEAP_HPP
 
 #include "network/type.hpp"
 #include "fiboheap/fiboheap.h"
 
-namespace MM {
-
+namespace FMM {
+namespace NETWORK{
+/**
+ * Node in the heap structure
+ */
 struct HeapNode
 {
   NodeIndex index;
@@ -24,10 +27,9 @@ struct HeapNode
   };
 };
 
-// This class is a wrapper of the fiboheap to facilitate calling of
-// insert, pop and update functions.
-// The node type is a template
-
+/**
+ * Heap data structure used in the routing query
+ */
 class Heap{
 public:
   inline void push(NodeIndex index, double dist){
@@ -67,7 +69,7 @@ private:
   FibHeap<HeapNode> heap;
   std::unordered_map<NodeIndex,HeapNodeHandle> handle_data;
 }; // Heap
-
-}; //MM
+}; // NETWORK
+}; //FMM
 
 #endif

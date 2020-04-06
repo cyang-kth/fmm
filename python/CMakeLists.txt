@@ -35,24 +35,22 @@ set_source_files_properties(fmm.i PROPERTIES SWIG_FLAGS "")
 file(GLOB CoreGlob ../src/core/*.cpp)
 file(GLOB AlgorithmGlob ../src/algorithm/*.cpp)
 file(GLOB ConfigGlob ../src/config/*.cpp)
-file(GLOB IOGlob ../src/io/*.cpp)
 file(GLOB NetworkGlob ../src/network/*.cpp)
 file(GLOB UtilGlob ../src/util/*.cpp)
 file(GLOB MMGlob ../src/mm/*.cpp)
-file(GLOB FMMGlob ../src/mm/fmm/*.cpp)
-file(GLOB STMATCHGlob ../src/mm/stmatch/*.cpp)
+file(GLOB FMMGlob ../src/mm/fmm/fmm_algorithm.cpp ../src/mm/fmm/ubodt.cpp)
+file(GLOB STMATCHGlob ../src/mm/stmatch/stmatch_algorithm.cpp)
 
 add_library(pyfmm SHARED ${CoreGlob}
 ${AlgorithmGlob}
 ${ConfigGlob}
-${IOGlob}
 ${UtilGlob}
 ${NetworkGlob}
 ${MMGlob}
 ${FMMGlob}
 ${STMATCHGlob})
 
-target_link_libraries(pyfmm ${GDAL_LIBRARIES}  ${Boost_LIBRARIES})
+target_link_libraries(pyfmm ${GDAL_LIBRARIES} ${Boost_LIBRARIES})
 # Add the target.
 if (${CMAKE_VERSION} VERSION_LESS "3.8.0")
   SWIG_ADD_MODULE(fmm python fmm.i)

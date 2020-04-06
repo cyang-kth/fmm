@@ -2,7 +2,9 @@
 
 #include <boost/geometry/index/rtree.hpp>
 
-namespace MM {
+using namespace FMM;
+using namespace FMM::CORE;
+using namespace FMM::NETWORK;
 
 unsigned int NodeTree::insert_point(Point &p){
   unsigned int id = size;
@@ -29,6 +31,4 @@ int NodeTree::query_point_radius(Point &p,double radius,
 
 int NodeTree::getSize(){
   return size;
-};
-
 };

@@ -1,30 +1,54 @@
-#ifndef MM_RTREE_HPP /* Currently not used */
-#define MM_RTREE_HPP
+#ifndef FMM_RTREE_HPP /* Currently not used */
+#define FMM_RTREE_HPP
 
 #include <boost/geometry/index/rtree.hpp>
 
 #include "core/geometry.hpp"
 
-namespace MM {
-
-typedef std::pair<Point, unsigned int> NodeItem; // Item stored in rtree
+namespace FMM {
+namespace NETWORK{
+/**
+ * Node Rtree item class
+ */
+typedef std::pair<FMM::CORE::Point, unsigned int> NodeItem;
+/**
+ * Boost node Rtree
+ */
 typedef boost::geometry::index::rtree<
     NodeItem,boost::geometry::index::quadratic<16> > BoostNodeRtree;
 
+/**
+ * NodeRtree wrapper for the boost node rtree.
+ */
 class NodeTree {
 public:
-  unsigned int insert_point(Point &p);
-
-  // Id is the node returned within distance of radius
-  int query_point_radius(Point &p,double radius,
+  /**
+   * Insert a point into the rtree
+   * @param p point to be inserted
+   * @return index of the point
+   */
+  unsigned int insert_point(FMM::CORE::Point &p);
+  /**
+   * Query a point within distance of r to a given point p in the rtree
+   * @param p the queried point
+   * @param radius search radius
+   * @param id the id will be updated as the id of the point found in the
+   * rtree
+   * @return 0 if a node is found, otherwise -1 is returned
+   */
+  int query_point_radius(FMM::CORE::Point &p,double radius,
                          unsigned int *id);
+  /**
+   * Get the number of nodes in the rtree
+   * @return number of nodes
+   */
   int getSize();
 private:
   BoostNodeRtree rtree;
   unsigned int size=0;
 };
-
+};
 };
 
 
-#endif // MM_RTREE_HPP
+#endif // FMM_RTREE_HPP

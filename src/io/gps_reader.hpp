@@ -7,8 +7,8 @@
  * @version: 2017.11.11
  */
 
-#ifndef MM_GPS_READER_HPP
-#define MM_GPS_READER_HPP
+#ifndef FMM_GPS_READER_HPP
+#define FMM_GPS_READER_HPP
 
 #include "core/gps.hpp"
 #include "config/gps_config.hpp"
@@ -17,43 +17,67 @@
 #include <fstream>
 #include <string>
 
-namespace MM
-{
-namespace IO
+namespace FMM
 {
 /**
- *  According to the documentation at http://gdal.org/1.11/ogr/ogr_apitut.html
- *
- *  Note that OGRFeature::GetGeometryRef() and OGRFeature::GetGeomFieldRef()
- *  return a pointer to the internal geometry owned by the OGRFeature.
- *  We don't actually need to delete the return geometry. However, the
- *  OGRLayer::GetNextFeature() method returns a copy of the feature that is
- *  now owned by us. So at the end of use we must free the feature.
- *
- *  It implies that when we delete the feature, the geometry returned by
- *  OGRFeature::GetGeometryRef() is also deleted. Therefore, we need to
- *  create a copy of the geometry and free it with
- *      OGRGeometryFactory::destroyGeometry(geometry_pointer);
- *
+ * Classes related with input and output
  */
-
+namespace IO
+{
+using Trajectory = FMM::CORE::Trajectory;
+/**
+ * Trajectory Reader Interface.
+ */
 class ITrajectoryReader {
 public:
+  /**
+   * Read the next trajectory in the class
+   * @return a trajectory
+   */
   virtual Trajectory read_next_trajectory() = 0;
+  /**
+   * Check if the file contains a trajectory that is not read
+   */
   virtual bool has_next_trajectory() = 0;
+  /**
+   * Check if the file contains timestamp information
+   */
   virtual bool has_timestamp() = 0;
+  /**
+   * Close the file
+   */
   virtual void close() = 0;
+  /**
+   * Read the next N trajectories in the file.
+   *
+   * The size of the vector can be smaller than N if there are fewer than
+   * N trajectories in the file
+   *
+   * @param N the number of trajectories to read
+   * @return a vector of trajectories.
+   */
   std::vector<Trajectory> read_next_N_trajectories(int N=1000);
+  /**
+   * Read all the remaining trajectories in a file
+   * @return a vector of trajectories
+   */
   std::vector<Trajectory> read_all_trajectories();
 };
 
+/**
+ *  Trajectory Reader Class for Shapefile.
+ *
+ *  Each feauture in the file should store a linestring representing
+ *  a trajectory.
+ */
 class GDALTrajectoryReader : public ITrajectoryReader
 {
 public:
   /**
-   *  Constructor of TrajectoryReader
-   *  @param filename, a GPS ESRI shapefile path
-   *  @param id_name, the ID column name in the GPS shapefile
+   *  Constructor of GDALTrajectoryReader
+   *  @param filename a GPS ESRI shapefile path
+   *  @param id_name the ID field name
+   *  @param timestamp_name the timestamp field name
    */
   GDALTrajectoryReader(const std::string & filename,
                        const std::string & id_name,
@@ -62,6 +86,9 @@ public:
   bool has_next_trajectory() override;
   bool has_timestamp() override;
   void close() override;
+  /**
+   * Get the number of trajectories in the file
+   */
   int get_num_trajectories();
 private:
   int NUM_FEATURES=0;
@@ -73,6 +100,12 @@ private:
 }; // TrajectoryReader
 
 
+/**
+ * Trajectory Reader class for CSV trajectory file.
+ *
+ * Each row in the trajectory file should store a linestring representing
+ * a trajectory.
+ */
 class CSVTrajectoryReader : public ITrajectoryReader {
 public:
   CSVTrajectoryReader(const std::string &e_filename,
@@ -84,6 +117,11 @@ public:
   bool has_next_trajectory() override;
   bool has_timestamp() override;
   void close() override;
+  /**
+   * Convert a string into a vector of timestamps
+   * @param str input string, a list of double values separated by ,
+   * @return a vector of timestamps
+   */
   static std::vector<double> string2time(const std::string &str);
  private:
   std::fstream ifs;
@@ -93,8 +131,21 @@ public:
   char delim = ';';
 }; // TrajectoryCSVReader
 
+/**
+ * Trajectory Reader class for CSV point file.
+ *
+ * Each row in the file represent a GPS point with id;x;y;timestamp
+ */
 class CSVPointReader : public ITrajectoryReader {
  public:
+  /**
+   *
+   * @param e_filename file name
+   * @param id_name id column name
+   * @param x_name x column name
+   * @param y_name y column name
+   * @param time_name timestamp name
+   */
   CSVPointReader(
        const std::string &e_filename,
        const std::string &id_name,
@@ -116,20 +167,27 @@ class CSVPointReader : public ITrajectoryReader {
   char delim = ';';
 }; // CSVTemporalTrajectoryReader
 
+/**
+ * %GPSReader class, a wrapper makes it easier to read data from
+ * a file.
+ */
 class GPSReader {
  public:
-  GPSReader(const GPSConfig &config);
+  /**
+   * Constructor
+   * @param config configuration of GPS data, the file format will be
+   * determined from it automatically.
+   */
+  GPSReader(const FMM::CONFIG::GPSConfig &config);
   inline Trajectory read_next_trajectory(){
     return reader->read_next_trajectory();
   };
   inline bool has_next_trajectory(){
     return reader->has_next_trajectory();
   };
-
   inline std::vector<Trajectory> read_next_N_trajectories(int N){
     return reader->read_next_N_trajectories(N);
   };
-
   inline std::vector<Trajectory> read_all_trajectories(){
     return reader->read_all_trajectories();
   };
@@ -141,6 +199,6 @@ class GPSReader {
 };
 
 } // IO
-} // MM
+} // FMM
 
-#endif // MM_READER_HPP
+#endif // FMM_READER_HPP

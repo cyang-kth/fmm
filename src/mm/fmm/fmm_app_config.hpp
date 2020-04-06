@@ -10,10 +10,10 @@
 #include "config/result_config.hpp"
 #include "mm/fmm/fmm_algorithm.hpp"
 
+namespace FMM{
 namespace MM{
-
 /**
- * Configuration class for map matching
+ * Configuration class fmm command line program
  */
 class FMMAppConfig
 {
@@ -24,20 +24,19 @@ class FMMAppConfig
   bool validate() const;
   void print() const;
   static void print_help();
-  NetworkConfig network_config;
-  GPSConfig gps_config;
-  ResultConfig result_config;
-  FMMConfig fmm_config;
+  CONFIG::NetworkConfig network_config;
+  CONFIG::GPSConfig gps_config;
+  CONFIG::ResultConfig result_config;
+  FastMapMatchConfig fmm_config;
   // UBODT configurations
   std::string ubodt_file;
   bool use_omp = false;
-  bool projected = false;
   bool help_specified = false;
   // 0-trace,1-debug,2-info,3-warn,4-err,5-critical,6-off
   int log_level = 2;
   int step = 100;
 }; // FMMAppConfig
-
+}
 }
 
 

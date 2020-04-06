@@ -1,30 +1,57 @@
-//
-// Created by Can Yang on 2020/3/26.
-//
+/**
+ * Fast map matching.
+ *
+ * Network configuration class
+ *
+ * @author Can Yang
+ */
 
-#ifndef FMM_SRC_CONFIG_NETWORK_CONFIG_HPP_
-#define FMM_SRC_CONFIG_NETWORK_CONFIG_HPP_
+#ifndef FMM_NETWORK_CONFIG_HPP_
+#define FMM_NETWORK_CONFIG_HPP_
 
 #include <string>
 #include "cxxopts/cxxopts.hpp"
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 
-namespace MM{
+namespace FMM{
 
+namespace CONFIG {
+/**
+ *  Network configuration class for reading network from a file.
+ */
 struct NetworkConfig{
-  std::string file;
-  std::string id;
-  std::string source;
-  std::string target;
+  std::string file; /**< filename */
+  std::string id; /**< id field/column name */
+  std::string source; /**< source field/column name */
+  std::string target; /**< target field/column name */
+  /**
+   * Validate the GPS configuration for file existence.
+   * @return if file exists returns true, otherwise return false
+   */
   bool validate() const;
+  /**
+   * Print informaiton
+   */
   void print() const;
+  /**
+   * Load NetworkConfig from xml data
+   * @param  xml_data [description]
+   * @return          [description]
+   */
   static NetworkConfig load_from_xml(
     const boost::property_tree::ptree &xml_data);
+  /**
+   * Load NetworkConfig from argument parsed data
+   * @param  xml_data [description]
+   * @return          [description]
+   */
   static NetworkConfig load_from_arg(
     const cxxopts::ParseResult &arg_data);
 };
 
-}
+} // CONFIG
 
-#endif //FMM_SRC_CONFIG_NETWORK_CONFIG_HPP_
+} // FMM
+
+#endif //FMM_NETWORK_CONFIG_HPP_

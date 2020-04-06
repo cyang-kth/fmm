@@ -8,9 +8,11 @@
 #include "core/gps.hpp"
 #include "io/gps_reader.hpp"
 
-using namespace MM;
-using namespace MM::IO;
-using namespace std;
+using namespace FMM;
+using namespace FMM::IO;
+using namespace FMM::CORE;
+using namespace FMM::NETWORK;
+using namespace FMM::MM;
 
 TEST_CASE( "fmm is tested", "[fmm]" ) {
   spdlog::set_level((spdlog::level::level_enum) 0);
@@ -23,8 +25,8 @@ TEST_CASE( "fmm is tested", "[fmm]" ) {
   SECTION( "ubodt_csv_test" ) {
     const Trajectory &trajectory = trajectories[0];
     auto ubodt = UBODT::read_ubodt_csv("../data/ubodt.txt",multiplier);
-    FMM model(network,graph,ubodt);
-    FMMConfig config{4,0.4,0.5};
+    FastMapMatch model(network,graph,ubodt);
+    FastMapMatchConfig config{4,0.4,0.5};
     MatchResult result = model.match_traj(trajectory,config);
     LineString expected_mgeom = wkt2linestring(
       "LINESTRING(2 0.250988700565,2 1,2 2,3 2,4 2,4 2.45776836158)");
