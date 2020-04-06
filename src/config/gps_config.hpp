@@ -1,5 +1,8 @@
 /**
+ * Fast map matching.
+ *
  * Configuration of reading gps data
+ * 
  * @author Can Yang
  */
 

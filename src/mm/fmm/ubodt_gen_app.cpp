@@ -10,8 +10,10 @@
 #include "util/debug.hpp"
 #include <omp.h>
 
-namespace FMM {
-namespace MM{
+using namespace FMM;
+using namespace FMM::CORE;
+using namespace FMM::NETWORK;
+using namespace FMM::MM;
 void UBODTGenApp::run() const {
   if (!config_.validate()) {
     SPDLOG_CRITICAL("Validation fail, program stop");
@@ -124,7 +126,8 @@ void UBODTGenApp::precompute_ubodt_omp(
    * @param pmap   predecessor map
    * @param dmap   distance map
    */
-void UBODTGenApp::write_result_csv(std::ostream &stream, NodeIndex s,
+void UBODTGenApp::write_result_csv(
+    std::ostream &stream, NodeIndex s,
                                    PredecessorMap &pmap, DistanceMap &dmap) const {
   std::vector<Record> source_map;
   for (auto iter = pmap.begin(); iter != pmap.end(); ++iter) {
@@ -204,6 +207,4 @@ void UBODTGenApp::write_result_binary(boost::archive::binary_oarchive &stream,
     stream << r.source << r.target
            << r.first_n << r.prev_n << r.next_e << r.cost;
   }
-}
-}
 }

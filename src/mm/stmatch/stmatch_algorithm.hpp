@@ -5,7 +5,7 @@
 #include "network/network_graph.hpp"
 #include "mm/composite_graph.hpp"
 #include "mm/transition_graph.hpp"
-#include "mm/mm_result.hpp"
+#include "mm/mm_type.hpp"
 #include "python/pyfmm.hpp"
 
 #include <string>
@@ -50,27 +50,27 @@ struct STMATCHConfig {
 };
 
 /**
- * STMATCH algorithm/model
+ * %STMATCH algorithm/model
  */
 class STMATCH {
  public:
   /**
    * Create a stmatch model from network and graph
    */
-  STMATCH(const Network &network, const NetworkGraph &graph) :
+  STMATCH(const NETWORK::Network &network, const NETWORK::NetworkGraph &graph) :
       network_(network), graph_(graph) {
   };
   /**
    * Match a wkt linestring to the road network.
    */
-  PyMatchResult match_wkt(
+  PYTHON::PyMatchResult match_wkt(
     const std::string &wkt,const STMATCHConfig &config);
   /**
    * Match a trajectory to the road network
    * @param  traj   input trajector data
    * @param  config configuration of stmatch algorithm
    */
-  MatchResult match_traj(const Trajectory &traj,
+  MatchResult match_traj(const CORE::Trajectory &traj,
                          const STMATCHConfig &config);
  protected:
   /**
@@ -78,7 +78,7 @@ class STMATCH {
    */
   void update_tg(TransitionGraph *tg,
                  const CompositeGraph &cg,
-                 const Trajectory &traj,
+                 const CORE::Trajectory &traj,
                  const STMATCHConfig &config);
   /**
    * Update probabilities between two layers a and b in the transition graph
@@ -115,8 +115,8 @@ class STMATCH {
    */
   std::vector<double> shortest_path_upperbound(
       int level,
-      const CompositeGraph &cg, NodeIndex source,
-      const std::vector<NodeIndex> &targets, double delta);
+      const CompositeGraph &cg, NETWORK::NodeIndex source,
+      const std::vector<NETWORK::NodeIndex> &targets, double delta);
 
   /**
    * Create a topologically connected path according to each matched
@@ -128,8 +128,8 @@ class STMATCH {
    */
   C_Path build_cpath(const TGOpath &tg_opath, std::vector<int> *indices);
  private:
-  const Network &network_;
-  const NetworkGraph &graph_;
+  const NETWORK::Network &network_;
+  const NETWORK::NetworkGraph &graph_;
 };// STMATCH
 }
 } // FMM

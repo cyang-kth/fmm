@@ -9,9 +9,6 @@
 #include "config/network_config.hpp"
 #include "config/result_config.hpp"
 #include "mm/fmm/fmm_algorithm.hpp"
-#include "result_config.hpp"
-#include "network_config.hpp"
-#include "gps_config.hpp"
 
 namespace FMM{
 namespace MM{
@@ -27,14 +24,13 @@ class FMMAppConfig
   bool validate() const;
   void print() const;
   static void print_help();
-  MM::CONFIG::NetworkConfig network_config;
-  MM::CONFIG::GPSConfig gps_config;
+  CONFIG::NetworkConfig network_config;
+  CONFIG::GPSConfig gps_config;
   CONFIG::ResultConfig result_config;
-  FMMConfig fmm_config;
+  FastMapMatchConfig fmm_config;
   // UBODT configurations
   std::string ubodt_file;
   bool use_omp = false;
-  bool projected = false;
   bool help_specified = false;
   // 0-trace,1-debug,2-info,3-warn,4-err,5-critical,6-off
   int log_level = 2;

@@ -1,4 +1,6 @@
 /**
+ * Fast map matching.
+ * 
  * Algorithms for geoprocessing.
  *
  * Updated by Can Yang 2020-04-05
@@ -201,7 +203,7 @@ LineString cutoffseg_unique(const LineString &linestring,
                             double offset1, double offset2);
 
 /**
- * added by Diao 18.01.17
+ * Added by Diao 18.01.17
  * modified by Can 18.01.19
  * modified by Can 18.03.14
  *

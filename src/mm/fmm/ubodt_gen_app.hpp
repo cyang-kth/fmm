@@ -51,8 +51,8 @@ class UBODTGenApp {
 
  private:
   const UBODTGenAppConfig &config_;
-  Network network_;
-  NetworkGraph graph_;
+  NETWORK::Network network_;
+  NETWORK::NetworkGraph graph_;
   /**
    * Write the routing result to a binary stream
    * @param stream output binary stream
@@ -61,9 +61,9 @@ class UBODTGenApp {
    * @param dmap   distance map
    */
   void write_result_binary(boost::archive::binary_oarchive &stream,
-                           NodeIndex s,
-                           PredecessorMap &pmap,
-                           DistanceMap &dmap) const;
+                           NETWORK::NodeIndex s,
+                           NETWORK::PredecessorMap &pmap,
+                           NETWORK::DistanceMap &dmap) const;
   /**
    * Write the routing result to a csv stream
    * @param stream output csv stream
@@ -72,8 +72,9 @@ class UBODTGenApp {
    * @param dmap   distance map
    */
   void write_result_csv(std::ostream &stream,
-                        NodeIndex s,
-                        PredecessorMap &pmap, DistanceMap &dmap) const;
+                        NETWORK::NodeIndex s,
+                        NETWORK::PredecessorMap &pmap,
+                        NETWORK::DistanceMap &dmap) const;
 };
 }
 }

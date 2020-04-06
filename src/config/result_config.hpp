@@ -1,6 +1,10 @@
-//
-// Created by Can Yang on 2020/3/26.
-//
+/**
+ * Fast map matching.
+ *
+ * Result configuration class
+ *
+ * @author Can Yang
+ */
 
 #ifndef FMM_SRC_CONFIG_RESULT_CONFIG_HPP_
 #define FMM_SRC_CONFIG_RESULT_CONFIG_HPP_

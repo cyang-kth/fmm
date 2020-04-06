@@ -2,7 +2,6 @@
 #define MM_FMM_UBODT_CONFIG
 
 #include "config/network_config.hpp"
-#include "network_config.hpp"
 
 namespace FMM{
 namespace MM{

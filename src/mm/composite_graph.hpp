@@ -19,7 +19,7 @@ typedef unsigned int DummyIndex;
  * are dummy edges. 
  */
 class DummyGraph {
-public:
+ public:
   /**
    * Default constructor of dummy graph
    */
@@ -38,13 +38,13 @@ public:
    * Get the inner graph data
    * @return A pointer to the inner boost graph.
    */
-  Graph_T *get_graph_ptr();
+  NETWORK::Graph_T *get_graph_ptr();
 
   /**
    * Get a const reference to the inner graph data
    * @return A pointer to the inner boost graph.
    */
-  const Graph_T &get_boost_graph() const;
+  const NETWORK::Graph_T &get_boost_graph() const;
 
   /**
    * Get the number of vertices in the dummy graph
@@ -60,7 +60,7 @@ public:
    * @param  external_index The NodeIndex of a node
    * @return true if a node is contained
    */
-  bool containNodeIndex(NodeIndex external_index) const;
+  bool containNodeIndex(NETWORK::NodeIndex external_index) const;
 
   /**
    * Get the NodeIndex of a node according to the inner index of the
@@ -68,7 +68,7 @@ public:
    * @param  inner_index an inner index of the dummy graph
    * @return a node index of the node in the original network graph
    */
-  NodeIndex get_external_index(DummyIndex inner_index) const;
+  NETWORK::NodeIndex get_external_index(DummyIndex inner_index) const;
 
   /**
    * Get the internal index of a node in dummy graph
@@ -79,7 +79,7 @@ public:
    * @return  a internal index
    *
    */
-  DummyIndex get_internal_index(NodeIndex external_index) const;
+  DummyIndex get_internal_index(NETWORK::NodeIndex external_index) const;
   /**
    * Get the edge index in the original network graph.
    * @param  source source NodeIndex in the original network graph
@@ -88,26 +88,27 @@ public:
    * @return  the corresponding edge index in the origin network graph. If
    * edge is not found, -1 is returned.
    */
-  int get_edge_index(NodeIndex source,NodeIndex target,double cost) const;
+  int get_edge_index(NETWORK::NodeIndex source,
+                     NETWORK::NodeIndex target, double cost) const;
   /**
    * Print the mapping from dummy index to node index
    */
   void print_node_index_map() const;
-protected:
-  void add_edge(NodeIndex source, NodeIndex target,
-                EdgeIndex edge_index, double cost);
-private:
+ protected:
+  void add_edge(NETWORK::NodeIndex source, NETWORK::NodeIndex target,
+                NETWORK::EdgeIndex edge_index, double cost);
+ private:
   static constexpr double DOUBLE_MIN = 1e-6;
-  Graph_T g;
-  std::vector<NodeIndex> external_index_vec;
-  std::unordered_map<NodeIndex,DummyIndex> internal_index_map;
+  NETWORK::Graph_T g;
+  std::vector<NETWORK::NodeIndex> external_index_vec;
+  std::unordered_map<NETWORK::NodeIndex, DummyIndex> internal_index_map;
 };
 
 /**
  * Property of an edge in the composite graph
  */
 struct CompEdgeProperty {
-  NodeIndex v; /**< Target node index */
+  NETWORK::NodeIndex v; /**< Target node index */
   double cost; /**< Cost of an edge */
 };
 
@@ -115,13 +116,14 @@ struct CompEdgeProperty {
  * Composite Graph as a wrapper of network graph and dummy graph.
  */
 class CompositeGraph {
-public:
+ public:
   /**
    * Constructor
    * @param g  A network graph
    * @param dg A dummy graph
    */
-  CompositeGraph(const NetworkGraph &g,const DummyGraph &dg);
+  CompositeGraph(const NETWORK::NetworkGraph &g,
+                 const DummyGraph &dg);
   /**
    * Get the starting node index corresponding to the
    * the first dummy node in the dummy graph.
@@ -131,22 +133,24 @@ public:
    * Get edge index from node index u,v and cost. If
    * edge is not found, -1 is returned.
    */
-  int get_edge_index(NodeIndex u, NodeIndex v, double cost) const;
+  int get_edge_index(NETWORK::NodeIndex u,
+                     NETWORK::NodeIndex v, double cost) const;
   /**
    * Get edge id from node index u,v and cost
    */
-  EdgeID get_edge_id(NodeIndex u, NodeIndex v, double cost) const;
+  NETWORK::EdgeID get_edge_id(NETWORK::NodeIndex u,
+                     NETWORK::NodeIndex v, double cost) const;
   /**
    * Get out edges leaving a node u in the composite graph
    */
-  std::vector<CompEdgeProperty> out_edges(NodeIndex u) const;
+  std::vector<CompEdgeProperty> out_edges(NETWORK::NodeIndex u) const;
   /**
    * Check if a node u is dummy node, namely representing
    * a candidate point
    */
-  bool check_dummy_node(NodeIndex u) const;
-private:
-  const NetworkGraph &g_;
+  bool check_dummy_node(NETWORK::NodeIndex u) const;
+ private:
+  const NETWORK::NetworkGraph &g_;
   const DummyGraph &dg_;
   unsigned int num_vertices;
 };

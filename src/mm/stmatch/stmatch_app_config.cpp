@@ -5,12 +5,12 @@
 #include "mm/stmatch/stmatch_app_config.hpp"
 #include "util/debug.hpp"
 #include "util/util.hpp"
-#include "result_config.hpp"
-#include "network_config.hpp"
-#include "gps_config.hpp"
+using namespace FMM;
+using namespace FMM::CORE;
+using namespace FMM::NETWORK;
+using namespace FMM::MM;
+using namespace FMM::CONFIG;
 
-namespace FMM {
-namespace MM{
 STMATCHAppConfig::STMATCHAppConfig(int argc, char **argv){
   spdlog::set_pattern("[%^%l%$][%s:%-3#] %v");
   if (argc==2) {
@@ -34,14 +34,13 @@ void STMATCHAppConfig::load_xml(const std::string &file){
   // Create empty property tree object
   boost::property_tree::ptree tree;
   boost::property_tree::read_xml(file, tree);
-  network_config = MM::CONFIG::NetworkConfig::load_from_xml(tree);
-  gps_config = MM::CONFIG::GPSConfig::load_from_xml(tree);
+  network_config = NetworkConfig::load_from_xml(tree);
+  gps_config = GPSConfig::load_from_xml(tree);
   result_config = CONFIG::ResultConfig::load_from_xml(tree);
   stmatch_config = STMATCHConfig::load_from_xml(tree);
   log_level = tree.get("config.other.log_level",2);
   step =  tree.get("config.other.step",100);
   use_omp = !(!tree.get_child_optional("config.other.use_omp"));
-  projected = !(!tree.get_child_optional("config.other.projected"));
   SPDLOG_INFO("Finish with reading stmatch xml configuration");
 };
 
@@ -87,21 +86,19 @@ void STMATCHAppConfig::load_arg(int argc, char **argv){
     ("s,step","Step report",cxxopts::value<int>()->default_value("100"))
     ("h,help","Help information")
     ("gps_point","GPS point or not")
-    ("projected","Data projected or not")
     ("use_omp","Use omp or not");
   if (argc==1) {
     help_specified = true;
     return;
   }
   auto result = options.parse(argc, argv);
-  network_config = MM::CONFIG::NetworkConfig::load_from_arg(result);
-  gps_config = MM::CONFIG::GPSConfig::load_from_arg(result);
+  network_config = NetworkConfig::load_from_arg(result);
+  gps_config = GPSConfig::load_from_arg(result);
   result_config = CONFIG::ResultConfig::load_from_arg(result);
   stmatch_config = STMATCHConfig::load_from_arg(result);
   log_level = result["log_level"].as<int>();
   step = result["step"].as<int>();
   use_omp = result.count("use_omp")>0;
-  projected = result.count("projected")>0;
   if (result.count("help")>0){
     help_specified = true;
   }
@@ -114,7 +111,7 @@ void STMATCHAppConfig::print() const {
   gps_config.print();
   result_config.print();
   stmatch_config.print();
-  SPDLOG_INFO("Log level {}",LOG_LEVESLS[log_level])
+  SPDLOG_INFO("Log level {}",UTIL::LOG_LEVESLS[log_level])
   SPDLOG_INFO("Step {}",step)
   SPDLOG_INFO("Use omp {}",(use_omp ? "true" : "false"))
   SPDLOG_INFO("---- Print configuration done ----")
@@ -166,5 +163,4 @@ bool STMATCHAppConfig::validate() const {
   }
   return true;
 };
-}
-}
+

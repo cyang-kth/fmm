@@ -4,6 +4,7 @@
 using namespace FMM;
 using namespace FMM::CORE;
 using namespace FMM::NETWORK;
+using namespace FMM::MM;
 
 DummyGraph::DummyGraph(){}
 
@@ -16,7 +17,7 @@ DummyGraph::DummyGraph(const Traj_Candidates &traj_candidates){
   std::unordered_map<EdgeIndex,const Candidate*> *cur_cmap = &cb;
   for (int i=0; i<N; ++i) {
     const Point_Candidates &pcs = traj_candidates[i];
-    for (const FMM::Candidate &c:pcs) {
+    for (const Candidate &c:pcs) {
       NodeIndex n = c.index;
       add_edge(c.edge->source, n, c.edge->index, c.offset);
       add_edge(n,c.edge->target, c.edge->index, c.edge->length - c.offset);

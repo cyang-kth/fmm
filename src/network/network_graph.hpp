@@ -25,13 +25,12 @@
 #include "network/network.hpp"
 
 namespace FMM {
-namespace NETWORK{
+namespace NETWORK {
 /**
  * Graph class of the network
  */
-class NetworkGraph
-{
-public:
+class NetworkGraph {
+ public:
   /**
    *  Construct a network graph from a network
    *  @param network_arg network data
@@ -43,8 +42,8 @@ public:
    * @param target
    * @return a vector of edge index representing the path from source to target
    */
-  std::vector<EdgeIndex> shortest_path_dijkstra(NodeIndex source,
-                                                NodeIndex target) const;
+  std::vector<EdgeIndex> shortest_path_dijkstra(
+      NETWORK::NodeIndex source, NETWORK::NodeIndex target) const;
   /**
    * Calculate heuristic distance from p1 to p2,which is used in Astar routing.
    * @param p1
@@ -52,15 +51,15 @@ public:
    * @return the Euclidean distance from p1 to p2
    */
   double calc_heuristic_dist(
-    const Point &p1,const Point &p2) const;
+      const CORE::Point &p1, const CORE::Point &p2) const;
   /**
    * AStar Shortest path query from source to target
    * @param source
    * @param target
    * @return a vector of edge index representing the path from source to target
    */
-  std::vector<EdgeIndex> shortest_path_astar(NodeIndex source,
-                                             NodeIndex target) const;
+  std::vector<EdgeIndex> shortest_path_astar(NETWORK::NodeIndex source,
+                                             NETWORK::NodeIndex target) const;
   /**
    * Backtrack the routing result to find a path from source to target
    * @param source
@@ -69,9 +68,10 @@ public:
    * @param dmap distance map
    * @return a vector of edge index representing the path from source to target
    */
-  std::vector<EdgeIndex> back_track(NodeIndex source, NodeIndex target,
+  std::vector<EdgeIndex> back_track(NETWORK::NodeIndex source,
+                                    NETWORK::NodeIndex target,
                                     const PredecessorMap &pmap,
-                                    const DistanceMap&dmap) const;
+                                    const DistanceMap &dmap) const;
   /**
    * Single source shortest path query with an uppper bound
    * @param source source node queried
@@ -79,7 +79,7 @@ public:
    * @param pmap predecessor map updated to store the routing result
    * @param dmap distance map updated to store the routing result
    */
-  void single_source_upperbound_dijkstra(NodeIndex source,
+  void single_source_upperbound_dijkstra(NETWORK::NodeIndex source,
                                          double delta,
                                          PredecessorMap *pmap,
                                          DistanceMap *dmap) const;
@@ -87,7 +87,7 @@ public:
    *  Find the edge ID given a pair of nodes and its cost,
    *  if not found, return -1
    */
-  int get_edge_index(NodeIndex source, NodeIndex target,
+  int get_edge_index(NETWORK::NodeIndex source, NETWORK::NodeIndex target,
                      double cost) const;
   /**
    * Get the edge ID from edge index
@@ -104,16 +104,16 @@ public:
    * @param cost
    * @return edge ID
    */
-  inline int get_edge_id(NodeIndex source, NodeIndex target,
+  inline int get_edge_id(NETWORK::NodeIndex source, NETWORK::NodeIndex target,
                          double cost) const {
-    return network.get_edge_id(get_edge_index(source,target,cost));
+    return network.get_edge_id(get_edge_index(source, target, cost));
   };
   /**
    * Get node ID from a node index
    * @param idx
    * @return node ID
    */
-  inline int get_node_id(NodeIndex idx) const{
+  inline int get_node_id(NETWORK::NodeIndex idx) const {
     return network.get_node_id(idx);
   };
   /**
@@ -121,7 +121,7 @@ public:
    * @param id node ID
    * @return node index
    */
-  inline NodeIndex get_node_index(NodeID id) const{
+  inline NETWORK::NodeIndex get_node_index(NodeID id) const {
     return network.get_node_index(id);
   };
   /**
@@ -129,7 +129,7 @@ public:
    * @param u
    * @return node point
    */
-  inline const FMM::CORE::Point &get_vertex_point(NodeIndex u) const {
+  inline const FMM::CORE::Point &get_vertex_point(NETWORK::NodeIndex u) const {
     return network.get_vertex_point(u);
   };
   /**
@@ -151,12 +151,12 @@ public:
    * @return
    */
   unsigned int get_num_vertices() const;
-protected:
+ protected:
   // Boost graph type definition
   Graph_T g;   // The member storing a boost graph
   static constexpr double DOUBLE_MIN = 1.e-6;
   const Network &network;
-  unsigned int num_vertices=0;
+  unsigned int num_vertices = 0;
 }; // NetworkGraph
 }; // NETWORK
 } // FMM

@@ -7,13 +7,14 @@
 #include "io/mm_writer.hpp"
 #include <omp.h>
 
-namespace FMM{
-namespace MM{
-
+using namespace FMM;
+using namespace FMM::CORE;
+using namespace FMM::NETWORK;
+using namespace FMM::MM;
 void FMMApp::run() {
   UTIL::TimePoint start_time = std::chrono::steady_clock::now();
-  FMM mm_model(network_, ng_, ubodt_);
-  const FMMConfig &fmm_config = config_.fmm_config;
+  FastMapMatch mm_model(network_, ng_, ubodt_);
+  const FastMapMatchConfig &fmm_config = config_.fmm_config;
   IO::GPSReader reader(config_.gps_config);
   IO::CSVMatchResultWriter writer(config_.result_config.file,
                                   config_.result_config.output_config);
@@ -87,5 +88,3 @@ void FMMApp::run() {
               points_matched / time_spent_exclude_input);
   SPDLOG_INFO("Time takes {}", time_spent);
 };
-}
-}

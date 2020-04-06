@@ -1,6 +1,7 @@
 #include "mm/stmatch/stmatch_app.hpp"
 
 using namespace FMM;
+using namespace FMM::MM;
 
 int main(int argc, char **argv){
   STMATCHAppConfig config(argc,argv);

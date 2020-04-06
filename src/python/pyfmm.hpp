@@ -5,7 +5,7 @@
 #ifndef FMM_PYFMM_HPP_
 #define FMM_PYFMM_HPP_
 
-#include "network/type.hpp"
+#include "mm/mm_type.hpp"
 
 namespace FMM{
 /**
@@ -33,12 +33,12 @@ struct PyCandidate{
  */
 struct PyMatchResult {
   int id;
-  O_Path opath;
-  C_Path cpath;
+  MM::O_Path opath;
+  MM::C_Path cpath;
   std::vector<PyCandidate> candidates;
   std::vector<int> indices; // index of opath edge in cpath
-  LineString mgeom;
-  LineString pgeom;
+  CORE::LineString mgeom;
+  CORE::LineString pgeom;
 };
 }; // PYTHON
 }; // FMM

@@ -5,8 +5,6 @@
 
 void FMM::CONFIG::ResultConfig::print() const {
   std::stringstream ss;
-  if (output_config.write_ogeom)
-    ss << "ogeom ";
   if (output_config.write_opath)
     ss << "opath ";
   if (output_config.write_pgeom)
@@ -43,9 +41,6 @@ FMM::CONFIG::ResultConfig FMM::CONFIG::ResultConfig::load_from_xml(
     // close the default output fields (cpath,mgeom are true by default)
     config.output_config.write_cpath = false;
     config.output_config.write_mgeom = false;
-    if (xml_data.get_child_optional("config.output.fields.ogeom")) {
-      config.output_config.write_ogeom = true;
-    }
     if (xml_data.get_child_optional("config.output.fields.opath")) {
       config.output_config.write_opath = true;
     }
@@ -80,7 +75,6 @@ FMM::CONFIG::ResultConfig FMM::CONFIG::ResultConfig::load_from_xml(
       config.output_config.write_length = true;
     }
     if (xml_data.get_child_optional("config.output.fields.all")) {
-      config.output_config.write_ogeom = true;
       config.output_config.write_opath = true;
       config.output_config.write_pgeom = true;
       config.output_config.write_offset = true;
@@ -115,9 +109,6 @@ FMM::CONFIG::ResultConfig FMM::CONFIG::ResultConfig::load_from_arg(
     if (dict.find("mgeom") != dict.end()) {
       config.output_config.write_mgeom = true;
     }
-    if (dict.find("ogeom") != dict.end()) {
-      config.output_config.write_ogeom = true;
-    }
     if (dict.find("tpath") != dict.end()) {
       config.output_config.write_tpath = true;
     }
@@ -143,7 +134,6 @@ FMM::CONFIG::ResultConfig FMM::CONFIG::ResultConfig::load_from_arg(
       config.output_config.write_length = true;
     }
     if (dict.find("all") != dict.end()) {
-      config.output_config.write_ogeom = true;
       config.output_config.write_opath = true;
       config.output_config.write_pgeom = true;
       config.output_config.write_offset = true;

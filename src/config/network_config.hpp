@@ -1,9 +1,13 @@
-//
-// Created by Can Yang on 2020/3/26.
-//
+/**
+ * Fast map matching.
+ *
+ * Network configuration class
+ *
+ * @author Can Yang
+ */
 
-#ifndef FMM_SRC_CONFIG_NETWORK_CONFIG_HPP_
-#define FMM_SRC_CONFIG_NETWORK_CONFIG_HPP_
+#ifndef FMM_NETWORK_CONFIG_HPP_
+#define FMM_NETWORK_CONFIG_HPP_
 
 #include <string>
 #include "cxxopts/cxxopts.hpp"
@@ -50,4 +54,4 @@ struct NetworkConfig{
 
 } // FMM
 
-#endif //FMM_SRC_CONFIG_NETWORK_CONFIG_HPP_
+#endif //FMM_NETWORK_CONFIG_HPP_

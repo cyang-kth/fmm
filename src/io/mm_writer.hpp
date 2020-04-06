@@ -10,7 +10,7 @@
 #ifndef FMM_MM_WRITER_HPP
 #define FMM_MM_WRITER_HPP
 
-#include "mm/mm_result.hpp"
+#include "mm/mm_type.hpp"
 #include "network/type.hpp"
 #include "util/util.hpp"
 #include "util/debug.hpp"

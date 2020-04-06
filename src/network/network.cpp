@@ -14,6 +14,7 @@
 
 using namespace FMM;
 using namespace FMM::CORE;
+using namespace FMM::MM;
 using namespace FMM::NETWORK;
 
 bool Network::candidate_compare(const Candidate &a, const Candidate &b)

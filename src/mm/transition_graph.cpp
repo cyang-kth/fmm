@@ -16,6 +16,7 @@
 using namespace FMM;
 using namespace FMM::CORE;
 using namespace FMM::NETWORK;
+using namespace FMM::MM;
 
 TransitionGraph::TransitionGraph(const Traj_Candidates &tc, double gps_error){
   for (auto cs = tc.begin(); cs!=tc.end(); ++cs) {

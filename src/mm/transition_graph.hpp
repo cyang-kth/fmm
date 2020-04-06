@@ -13,7 +13,7 @@
 #define FMM_TRANSITION_GRAPH_HPP
 
 #include "network/type.hpp"
-#include "mm/mm_result.hpp"
+#include "mm/mm_type.hpp"
 
 #include <float.h>
 

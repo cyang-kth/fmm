@@ -20,8 +20,8 @@ public:
   void run();
  private:
   const STMATCHAppConfig &config_;
-  Network network_;
-  NetworkGraph ng_;
+  NETWORK::Network network_;
+  NETWORK::NetworkGraph ng_;
 };
 }
 }

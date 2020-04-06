@@ -9,9 +9,6 @@
 #include "config/network_config.hpp"
 #include "config/result_config.hpp"
 #include "mm/stmatch/stmatch_algorithm.hpp"
-#include "result_config.hpp"
-#include "network_config.hpp"
-#include "gps_config.hpp"
 
 namespace FMM {
 namespace MM{
@@ -55,8 +52,8 @@ class STMATCHAppConfig
    * Check the validity of the configuration
    */
   bool validate() const;
-  FMM::CONFIG::NetworkConfig network_config; /**< Network data configuraiton */
-  FMM::CONFIG::GPSConfig gps_config; /**< GPS data configuraiton */
+  CONFIG::NetworkConfig network_config; /**< Network data configuraiton */
+  CONFIG::GPSConfig gps_config; /**< GPS data configuraiton */
   CONFIG::ResultConfig result_config; /**< Result configuraiton */
   STMATCHConfig stmatch_config; /**< Map matching configuraiton */
   bool use_omp = false; /**< If true, parallel map matching performed */

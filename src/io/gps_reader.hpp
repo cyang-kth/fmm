@@ -168,7 +168,7 @@ class CSVPointReader : public ITrajectoryReader {
 }; // CSVTemporalTrajectoryReader
 
 /**
- * GPSReader class, a wrapper makes it easier to read data from
+ * %GPSReader class, a wrapper makes it easier to read data from
  * a file.
  */
 class GPSReader {

@@ -7,34 +7,39 @@
 #include "util/util.hpp"
 #include "util/debug.hpp"
 
-namespace FMM {
-namespace MM{
-FMMConfig::FMMConfig(int k_arg, double r_arg, double gps_error) :
+using namespace FMM;
+using namespace FMM::CORE;
+using namespace FMM::NETWORK;
+using namespace FMM::PYTHON;
+using namespace FMM::MM;
+
+FastMapMatchConfig::FastMapMatchConfig(int k_arg, double r_arg,
+    double gps_error) :
     k(k_arg), radius(r_arg), gps_error(gps_error) {
 };
 
-void FMMConfig::print() const {
+void FastMapMatchConfig::print() const {
   SPDLOG_INFO("FMMAlgorithmConfig");
   SPDLOG_INFO("k {} radius {} gps_error {}", k, radius, gps_error);
 };
 
-FMMConfig FMMConfig::load_from_xml(
+FastMapMatchConfig FastMapMatchConfig::load_from_xml(
     const boost::property_tree::ptree &xml_data) {
   int k = xml_data.get("config.parameters.k", 8);
   double radius = xml_data.get("config.parameters.r", 300.0);
   double gps_error = xml_data.get("config.parameters.gps_error", 50.0);
-  return FMMConfig{k, radius, gps_error};
+  return FastMapMatchConfig{k, radius, gps_error};
 };
 
-FMMConfig FMMConfig::load_from_arg(
+FastMapMatchConfig FastMapMatchConfig::load_from_arg(
     const cxxopts::ParseResult &arg_data) {
   int k = arg_data["candidates"].as<int>();
   double radius = arg_data["radius"].as<double>();
   double gps_error = arg_data["error"].as<double>();
-  return FMMConfig{k, radius, gps_error};
+  return FastMapMatchConfig{k, radius, gps_error};
 };
 
-bool FMMConfig::validate() const {
+bool FastMapMatchConfig::validate() const {
   if (gps_error <= 0 || radius <= 0 || k <= 0) {
     SPDLOG_CRITICAL("Invalid mm parameter k {} r {} gps error {}",
                     k, radius, gps_error);
@@ -43,8 +48,8 @@ bool FMMConfig::validate() const {
   return true;
 }
 
-MatchResult FMM::match_traj(const MM::Trajectory &traj,
-                            const MM::FMMConfig &config) {
+MatchResult FastMapMatch::match_traj(const Trajectory &traj,
+                       const FastMapMatchConfig &config) {
   SPDLOG_TRACE("Count of points in trajectory {}", traj.geom.get_num_points());
   SPDLOG_TRACE("Search candidates");
   Traj_Candidates tc = network_.search_tr_cs_knn(
@@ -86,8 +91,8 @@ MatchResult FMM::match_traj(const MM::Trajectory &traj,
       traj.id, matched_candidate_path, opath, cpath, indices, mgeom};
 }
 
-PyMatchResult FMM::match_wkt(
-    const std::string &wkt, const FMMConfig &config) {
+PyMatchResult FastMapMatch::match_wkt(
+    const std::string &wkt, const FastMapMatchConfig &config) {
   LineString line = wkt2linestring(wkt);
   std::vector<double> timestamps;
   Trajectory traj{0, line, timestamps};
@@ -117,7 +122,7 @@ PyMatchResult FMM::match_wkt(
   return output;
 };
 
-double FMM::get_sp_dist(const MM::Candidate *ca, const MM::Candidate *cb) {
+double FastMapMatch::get_sp_dist(const Candidate *ca, const Candidate *cb) {
   double sp_dist = 0;
   if (ca->edge->id == cb->edge->id && ca->offset <= cb->offset) {
     sp_dist = cb->offset - ca->offset;
@@ -134,9 +139,9 @@ double FMM::get_sp_dist(const MM::Candidate *ca, const MM::Candidate *cb) {
   return sp_dist;
 }
 
-void FMM::update_tg(
-    MM::TransitionGraph *tg,
-    const MM::Trajectory &traj, const MM::FMMConfig &config) {
+void FastMapMatch::update_tg(
+    TransitionGraph *tg,
+    const Trajectory &traj, const FastMapMatchConfig &config) {
   SPDLOG_TRACE("Update transition graph");
   std::vector<TGLayer> &layers = tg->get_layers();
   std::vector<double> eu_dists = ALGORITHM::cal_eu_dist(traj.geom);
@@ -148,9 +153,9 @@ void FMM::update_tg(
   SPDLOG_TRACE("Update transition graph done");
 }
 
-void FMM::update_layer(int level,
-                       MM::TGLayer *la_ptr,
-                       MM::TGLayer *lb_ptr,
+void FastMapMatch::update_layer(int level,
+                       TGLayer *la_ptr,
+                       TGLayer *lb_ptr,
                        double eu_dist) {
   SPDLOG_TRACE("Update layer");
   TGLayer &lb = *lb_ptr;
@@ -168,6 +173,4 @@ void FMM::update_layer(int level,
     }
   }
   SPDLOG_TRACE("Update layer done");
-}
-}
 }

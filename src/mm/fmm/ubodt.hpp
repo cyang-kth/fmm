@@ -16,11 +16,11 @@ namespace MM {
  * Record type of the upper bounded origin destination table
  */
 struct Record {
-  NodeIndex source; /**< source node*/
-  NodeIndex target; /**< target node*/
-  NodeIndex first_n; /**< next node visited from source to target */
-  NodeIndex prev_n; /**< last node visited before target */
-  EdgeIndex next_e; /**< next edge visited from source to target */
+  NETWORK::NodeIndex source; /**< source node*/
+  NETWORK::NodeIndex target; /**< target node*/
+  NETWORK::NodeIndex first_n; /**< next node visited from source to target */
+  NETWORK::NodeIndex prev_n; /**< last node visited before target */
+  NETWORK::EdgeIndex next_e; /**< next edge visited from source to target */
   double cost; /**< distance from source to target */
   Record *next; /**< the next record stored in hashtable */
 };
@@ -47,7 +47,7 @@ class UBODT {
    * @return  A row in the ubodt if the od pair is found, otherwise nullptr
    * is returned.
    */
-  Record *look_up(NodeIndex source, NodeIndex target) const;
+  Record *look_up(NETWORK::NodeIndex source, NETWORK::NodeIndex target) const;
 
   /**
    * Look up a shortest path (SP) containing edges from source to target.
@@ -56,7 +56,8 @@ class UBODT {
    * @param  target target node
    * @return  a shortest path connecting source to target
    */
-  std::vector<EdgeIndex> look_sp_path(NodeIndex source, NodeIndex target) const;
+  std::vector<NETWORK::EdgeIndex> look_sp_path(NETWORK::NodeIndex source,
+      NETWORK::NodeIndex target) const;
 
   /**
    * Construct the complete path (a vector of edge ID) from an optimal path
@@ -71,7 +72,7 @@ class UBODT {
    * an empty path is returned
    */
   C_Path construct_complete_path(const TGOpath &path,
-                                 const std::vector<Edge> &edges,
+                                 const std::vector<NETWORK::Edge> &edges,
                                  std::vector<int> *indices) const;
   /**
    * Get the upperbound of the UBODT
@@ -84,7 +85,8 @@ class UBODT {
    * @param  target destination/target node
    * @return  bucket index
    */
-  unsigned int cal_bucket_index(NodeIndex source, NodeIndex target) const;
+  unsigned int cal_bucket_index(NETWORK::NodeIndex source,
+      NETWORK::NodeIndex target) const;
 
   /**
    *  Insert a record into the hash table

@@ -1,14 +1,12 @@
 #include "mm/fmm/ubodt_gen_app_config.hpp"
 #include "util/util.hpp"
 #include "util/debug.hpp"
-#include "network_config.hpp"
 
-namespace FMM {
-namespace MM{
-/**
- * Configuration class for UBODT
- */
-
+using namespace FMM;
+using namespace FMM::CORE;
+using namespace FMM::NETWORK;
+using namespace FMM::MM;
+using namespace FMM::CONFIG;
 UBODTGenAppConfig::UBODTGenAppConfig(int argc, char **argv) {
   spdlog::set_pattern("[%^%l%$][%s:%-3#] %v");
   if (argc==2) {
@@ -31,7 +29,7 @@ void UBODTGenAppConfig::load_xml(const std::string &file) {
   // Create empty property tree object
   boost::property_tree::ptree tree;
   boost::property_tree::read_xml(file, tree);
-  network_config = MM::CONFIG::NetworkConfig::load_from_xml(tree);
+  network_config = NetworkConfig::load_from_xml(tree);
   delta = tree.get("config.parameters.delta", 3000.0);
   result_file = tree.get<std::string>("config.output.file");
   // 0-trace,1-debug,2-info,3-warn,4-err,5-critical,6-off
@@ -68,7 +66,7 @@ void UBODTGenAppConfig::load_arg(int argc, char **argv) {
   auto result = options.parse(argc, argv);
   // Output
   result_file = result["output"].as<std::string>();
-  network_config =  MM::CONFIG::NetworkConfig::load_from_arg(result);
+  network_config =  NetworkConfig::load_from_arg(result);
   log_level = result["log_level"].as<int>();
   delta = result["delta"].as<double>();
   use_omp = result.count("use_omp")>0;
@@ -83,7 +81,7 @@ void UBODTGenAppConfig::print() const {
   network_config.print();
   SPDLOG_INFO("Delta {}",delta);
   SPDLOG_INFO("Output file {}",result_file);
-  SPDLOG_INFO("Log level {}",LOG_LEVESLS[log_level]);
+  SPDLOG_INFO("Log level {}",UTIL::LOG_LEVESLS[log_level]);
   SPDLOG_INFO("Use omp {}",(use_omp ? "true" : "false"));
   SPDLOG_INFO("---- Print configuration done ----");
 }
@@ -115,7 +113,7 @@ bool UBODTGenAppConfig::validate() const {
     SPDLOG_CRITICAL("Output folder {} not exists", output_folder);
     return false;
   }
-  if (log_level < 0 || log_level > LOG_LEVESLS.size()) {
+  if (log_level < 0 || log_level > UTIL::LOG_LEVESLS.size()) {
     SPDLOG_CRITICAL("Invalid log_level {}, which should be 0 - 6", log_level);
     SPDLOG_INFO("0-trace,1-debug,2-info,3-warn,4-err,5-critical,6-off");
     return false;
@@ -133,6 +131,4 @@ bool UBODTGenAppConfig::is_binary_output() const {
     return true;
   }
   return false;
-}
-}
 }

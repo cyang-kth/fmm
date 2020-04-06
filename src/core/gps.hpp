@@ -18,7 +18,7 @@ namespace FMM {
 namespace CORE{
 
 /**
- * Trajectory class
+ * %Trajectory class
  *
  * A GPS trajectory represented with id, geometry and timestamps
  */

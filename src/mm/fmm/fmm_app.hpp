@@ -4,7 +4,7 @@
 #include "fmm_app_config.hpp"
 #include "fmm_algorithm.hpp"
 
-namespace FMM {
+namespace FMM{
 namespace MM{
 /**
  * Class of fmm command line program
@@ -25,8 +25,8 @@ class FMMApp {
   void run();
  private:
   const FMMAppConfig &config_;
-  Network network_;
-  NetworkGraph ng_;
+  NETWORK::Network network_;
+  NETWORK::NetworkGraph ng_;
   std::shared_ptr<UBODT> ubodt_;
 };
 }

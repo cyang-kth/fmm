@@ -22,25 +22,26 @@ namespace MM{
 /**
  * Configuration class for fmm algorithm
  */
-struct FMMConfig{
-  FMMConfig(int k_arg = 8, double r_arg = 300, double gps_error = 50);
+struct FastMapMatchConfig{
+  FastMapMatchConfig(int k_arg = 8, double r_arg = 300, double gps_error = 50);
   int k;
   double radius;
   double gps_error;
   bool validate () const;
   void print() const;
-  static FMMConfig load_from_xml(
+  static FastMapMatchConfig load_from_xml(
       const boost::property_tree::ptree &xml_data);
-  static FMMConfig load_from_arg(
+  static FastMapMatchConfig load_from_arg(
       const cxxopts::ParseResult &arg_data);
 };
 
 /**
- * FMM algorithm/model
+ * %FMM algorithm/model
  */
-class FMM {
+class FastMapMatch {
  public:
-  FMM(const Network &network, const NetworkGraph &graph,
+  FastMapMatch(const NETWORK::Network &network,
+      const  NETWORK::NetworkGraph &graph,
       std::shared_ptr<UBODT> ubodt)
       : network_(network), graph_(graph), ubodt_(ubodt) {
   };
@@ -49,13 +50,13 @@ class FMM {
    * @param  traj   input trajector data
    * @param  config configuration of stmatch algorithm
    */
-  MatchResult match_traj(const Trajectory &traj,
-                         const FMMConfig &config);
+  MatchResult match_traj(const CORE::Trajectory &traj,
+                         const FastMapMatchConfig &config);
   /**
    * Match a wkt linestring to the road network.
    */
-  PyMatchResult match_wkt(
-      const std::string &wkt,const FMMConfig &config);
+  PYTHON::PyMatchResult match_wkt(
+      const std::string &wkt,const FastMapMatchConfig &config);
  protected:
   /**
    * Get shortest path distance between two candidates
@@ -69,8 +70,8 @@ class FMM {
    * Update probabilities in a transition graph
    */
   void update_tg(TransitionGraph *tg,
-                 const Trajectory &traj,
-                 const FMMConfig &config);
+                 const CORE::Trajectory &traj,
+                 const FastMapMatchConfig &config);
   /**
    * Update probabilities between two layers a and b in the transition graph
    * @param level   the index of layer a
@@ -81,8 +82,8 @@ class FMM {
   void update_layer(int level, TGLayer *la_ptr, TGLayer *lb_ptr,
                     double eu_dist);
  private:
-  const Network &network_;
-  const NetworkGraph &graph_;
+  const NETWORK::Network &network_;
+  const NETWORK::NetworkGraph &graph_;
   std::shared_ptr<UBODT> ubodt_;
 };
 }

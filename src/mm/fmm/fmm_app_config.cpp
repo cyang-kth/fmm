@@ -5,12 +5,12 @@
 #include "mm/fmm/fmm_app_config.hpp"
 #include "util/debug.hpp"
 #include "util/util.hpp"
-#include "result_config.hpp"
-#include "network_config.hpp"
-#include "gps_config.hpp"
 
-namespace FMM {
-namespace MM{
+using namespace FMM::CORE;
+using namespace FMM::NETWORK;
+using namespace FMM::CONFIG;
+using namespace FMM::MM;
+
 FMMAppConfig::FMMAppConfig(int argc, char **argv){
   spdlog::set_pattern("[%^%l%$][%s:%-3#] %v");
   if (argc==2) {
@@ -33,16 +33,15 @@ void FMMAppConfig::load_xml(const std::string &file){
   // Create empty property tree object
   boost::property_tree::ptree tree;
   boost::property_tree::read_xml(file, tree);
-  network_config = MM::CONFIG::NetworkConfig::load_from_xml(tree);
-  gps_config = MM::CONFIG::GPSConfig::load_from_xml(tree);
+  network_config = NetworkConfig::load_from_xml(tree);
+  gps_config = GPSConfig::load_from_xml(tree);
   result_config = CONFIG::ResultConfig::load_from_xml(tree);
-  fmm_config = FMMConfig::load_from_xml(tree);
+  fmm_config = FastMapMatchConfig::load_from_xml(tree);
   // UBODT
   ubodt_file = tree.get<std::string>("config.input.ubodt.file");
   log_level = tree.get("config.other.log_level",2);
   step =  tree.get("config.other.step",100);
   use_omp = !(!tree.get_child_optional("config.other.use_omp"));
-  projected = !(!tree.get_child_optional("config.other.projected"));
   SPDLOG_INFO("Finish with reading FMM xml configuration");
 };
 
@@ -86,22 +85,20 @@ void FMMAppConfig::load_arg(int argc, char **argv){
     ("step","Step report",cxxopts::value<int>()->default_value("100"))
     ("h,help",   "Help information")
     ("gps_point","GPS point or not")
-    ("use_omp","Use parallel computing if specified")
-    ("projected","Data is projected or not");
+    ("use_omp","Use parallel computing if specified");
   if (argc==1) {
     help_specified = true;
     return;
   }
   auto result = options.parse(argc, argv);
   ubodt_file = result["ubodt"].as<std::string>();
-  network_config = MM::CONFIG::NetworkConfig::load_from_arg(result);
-  gps_config = MM::CONFIG::GPSConfig::load_from_arg(result);
+  network_config = NetworkConfig::load_from_arg(result);
+  gps_config = GPSConfig::load_from_arg(result);
   result_config = CONFIG::ResultConfig::load_from_arg(result);
-  fmm_config = FMMConfig::load_from_arg(result);
+  fmm_config = FastMapMatchConfig::load_from_arg(result);
   log_level = result["log_level"].as<int>();
   step = result["step"].as<int>();
   use_omp = result.count("use_omp")>0;
-  projected = result.count("projected")>0;
   if (result.count("help")>0) {
     help_specified = true;
   }
@@ -143,7 +140,7 @@ void FMMAppConfig::print() const {
   gps_config.print();
   result_config.print();
   fmm_config.print();
-  SPDLOG_INFO("Log level {}",LOG_LEVESLS[log_level]);
+  SPDLOG_INFO("Log level {}",UTIL::LOG_LEVESLS[log_level]);
   SPDLOG_INFO("Step {}",step);
   SPDLOG_INFO("Use omp {}",(use_omp ? "true" : "false"));
   SPDLOG_INFO("---- Print configuration done ----");
@@ -152,7 +149,7 @@ void FMMAppConfig::print() const {
 bool FMMAppConfig::validate() const
 {
   SPDLOG_DEBUG("Validating configuration");
-  if (log_level<0 || log_level>LOG_LEVESLS.size()) {
+  if (log_level<0 || log_level>UTIL::LOG_LEVESLS.size()) {
     SPDLOG_CRITICAL("Invalid log_level {}, which should be 0 - 6",log_level);
     SPDLOG_CRITICAL("0-trace,1-debug,2-info,3-warn,4-err,5-critical,6-off");
     return false;
@@ -176,5 +173,3 @@ bool FMMAppConfig::validate() const
   SPDLOG_DEBUG("Validating done");
   return true;
 };
-}
-}
