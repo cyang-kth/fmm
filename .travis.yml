@@ -3,6 +3,7 @@ language: cpp
 sudo: required
 dist: xenial
 install:
+  - sudo add-apt-repository ppa:ubuntugis/ppa && sudo apt update
   - sudo apt-get -y install libboost-dev libboost-serialization-dev gdal-bin libgdal-dev make cmake
 script:
   - mkdir -p build
