@@ -16,7 +16,7 @@
 #include <osmium/osm/node.hpp>
 #include <osmium/osm/way.hpp>
 #include <osmium/visitor.hpp>
-#include <include/osmium/geom/ogr.hpp>
+#include <osmium/geom/ogr.hpp>
 
 using namespace FMM;
 using namespace FMM::CORE;
@@ -51,12 +51,13 @@ public:
   };
   void way(const osmium::Way& way){
     std::unique_ptr<OGRLineString> line = factory.create_linestring(way);
-    if (!way.nodes.empty()) {
+    if (!way.nodes().empty()) {
       EdgeID eid= way.id();
-      int source = way.nodes.front().ref();
-      int target = way.nodes.back().ref();
+      int source = way.nodes().front().ref();
+      int target = way.nodes().back().ref();
       LineString geom = ogr2linestring(line.get());
-      network->add_edge(eid,source,target,geom);
+      SPDLOG_INFO("Read road edge {} {} {}",eid, source, target);
+      network.add_edge(eid,source,target,geom);
     }
   };
 private:
@@ -65,7 +66,7 @@ private:
 };
 
 void Network::add_edge(EdgeID edge_id, NodeID source, NodeID target,
-                       const FMM::CORE::LineString){
+                       const FMM::CORE::LineString &geom){
   NodeIndex s_idx, t_idx;
   if (node_map.find(source) == node_map.end()) {
     s_idx = node_id_vec.size();
@@ -85,8 +86,8 @@ void Network::add_edge(EdgeID edge_id, NodeID source, NodeID target,
     t_idx = node_map[target];
   }
   EdgeIndex index = edges.size();
-  edges.push_back({index, id, s_idx, t_idx, geom.get_length(), geom});
-  edge_map.insert({id, index});
+  edges.push_back({index, edge_id, s_idx, t_idx, geom.get_length(), geom});
+  edge_map.insert({edge_id, index});
 };
 
 void Network::read_osm_file(const std::string &filename) {

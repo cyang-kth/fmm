@@ -8,10 +8,35 @@ set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 project(fmm)
-
+find_package(Threads)
 set(CMAKE_BUILD_TYPE "Release")
 set(CMAKE_CXX_FLAGS "-O3 -DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_INFO")
 set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build")
+
+include_directories(third_party)
+include_directories(third_party/libosmium/include)
+include_directories(third_party/protozero/include)
+include_directories(src)
+
+list(APPEND CMAKE_MODULE_PATH
+     "${CMAKE_CURRENT_SOURCE_DIR}/third_party/libosmium/cmake")
+
+if(NOT OSMIUM_INCLUDE_DIR)
+  set(OSMIUM_INCLUDE_DIR "third_party/libosmium/include")
+endif()
+if(NOT PROTOZERO_INCLUDE_DIR)
+  set(PROTOZERO_INCLUDE_DIR "third_party/protozero/include")
+endif()
+
+find_package(Osmium REQUIRED COMPONENTS io)
+if(OSMIUM_FOUND)
+  message(STATUS "OSMium found at ${OSMIUM_INCLUDE_DIRS}")
+  message(STATUS "OSMium library found at ${OSMIUM_LIBRARIES}")
+  include_directories(${OSMIUM_INCLUDE_DIR})
+else()
+  message(WARNING "Libosmium not found!\n")
+endif()
 
 find_package(GDAL 2.2 REQUIRED)
 if (GDAL_FOUND)
@@ -37,8 +62,6 @@ if(OPENMP_FOUND)
   message(STATUS "OpenMP_CXX_LIBRARIES found at ${OpenMP_CXX_LIBRARIES}")
 endif()
 
-include_directories(third_party)
-include_directories(src)
 
 file(GLOB CoreGlob src/core/*.cpp)
 file(GLOB AlgorithmGlob src/algorithm/*.cpp)
@@ -69,7 +92,9 @@ add_executable(fmm src/app/fmm.cpp
         $<TARGET_OBJECTS:IO>
         $<TARGET_OBJECTS:NETWORK>
         $<TARGET_OBJECTS:FMM_OBJ>)
-target_link_libraries(fmm ${GDAL_LIBRARIES} ${Boost_LIBRARIES}
+target_link_libraries(fmm ${GDAL_LIBRARIES}
+        ${OSMIUM_LIBRARIES}
+        ${Boost_LIBRARIES}
         ${OpenMP_CXX_LIBRARIES})
 
 add_executable(ubodt_gen src/app/ubodt_gen_app.cpp
@@ -81,7 +106,10 @@ add_executable(ubodt_gen src/app/ubodt_gen_app.cpp
         $<TARGET_OBJECTS:IO>
         $<TARGET_OBJECTS:NETWORK>
         $<TARGET_OBJECTS:FMM_OBJ>)
-target_link_libraries(ubodt_gen ${GDAL_LIBRARIES} ${Boost_LIBRARIES}
+target_link_libraries(ubodt_gen
+        ${GDAL_LIBRARIES}
+        ${Boost_LIBRARIES}
+        ${OSMIUM_LIBRARIES}
         ${OpenMP_CXX_LIBRARIES})
 
 add_executable(stmatch src/app/stmatch.cpp
@@ -93,6 +121,9 @@ add_executable(stmatch src/app/stmatch.cpp
         $<TARGET_OBJECTS:UTIL>
         $<TARGET_OBJECTS:IO>
         $<TARGET_OBJECTS:NETWORK>)
-target_link_libraries(stmatch ${GDAL_LIBRARIES} ${OpenMP_CXX_LIBRARIES})
+target_link_libraries(stmatch
+        ${OSMIUM_LIBRARIES}
+        ${GDAL_LIBRARIES}
+        ${OpenMP_CXX_LIBRARIES})
 
 install(TARGETS fmm ubodt_gen stmatch DESTINATION bin)
