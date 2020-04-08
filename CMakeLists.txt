@@ -8,16 +8,11 @@ set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 project(fmm)
-find_package(Threads)
+
 set(CMAKE_BUILD_TYPE "Release")
 set(CMAKE_CXX_FLAGS "-O3 -DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_INFO")
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build")
-
-include_directories(third_party)
-include_directories(third_party/libosmium/include)
-include_directories(third_party/protozero/include)
-include_directories(src)
 
 list(APPEND CMAKE_MODULE_PATH
      "${CMAKE_CURRENT_SOURCE_DIR}/third_party/libosmium/cmake")
@@ -62,6 +57,15 @@ if(OPENMP_FOUND)
   message(STATUS "OpenMP_CXX_LIBRARIES found at ${OpenMP_CXX_LIBRARIES}")
 endif()
 
+find_package(SWIG REQUIRED)
+include(${SWIG_USE_FILE})
+find_package(PythonLibs 2.7 REQUIRED)
+include_directories(${PYTHON_INCLUDE_DIRS})
+
+include_directories(third_party)
+include_directories(third_party/libosmium/include)
+include_directories(third_party/protozero/include)
+include_directories(src)
 
 file(GLOB CoreGlob src/core/*.cpp)
 file(GLOB AlgorithmGlob src/algorithm/*.cpp)
@@ -125,5 +129,41 @@ target_link_libraries(stmatch
         ${OSMIUM_LIBRARIES}
         ${GDAL_LIBRARIES}
         ${OpenMP_CXX_LIBRARIES})
+
+# Build the python binding
+
+file(GLOB PYTHONFMMGlob src/mm/fmm/fmm_algorithm.cpp src/mm/fmm/ubodt.cpp)
+file(GLOB PYTHONSTMATCHGlob src/mm/stmatch/stmatch_algorithm.cpp)
+
+add_library(PYTHONFMM_OBJ OBJECT ${PYTHONFMMGlob})
+add_library(PYTHONSTMATCH_OBJ OBJECT ${PYTHONSTMATCHGlob})
+
+set_source_files_properties(python/fmm.i PROPERTIES CPLUSPLUS ON)
+set_source_files_properties(python/fmm.i PROPERTIES SWIG_FLAGS "")
+add_library(pyfmm SHARED
+$<TARGET_OBJECTS:MM_OBJ>
+$<TARGET_OBJECTS:PYTHONFMM_OBJ>
+$<TARGET_OBJECTS:PYTHONSTMATCH_OBJ>
+$<TARGET_OBJECTS:CORE>
+$<TARGET_OBJECTS:CONFIG>
+$<TARGET_OBJECTS:ALGORITHM>
+$<TARGET_OBJECTS:UTIL>
+$<TARGET_OBJECTS:NETWORK>)
+
+target_link_libraries(pyfmm ${GDAL_LIBRARIES} ${Boost_LIBRARIES}
+${OSMIUM_LIBRARIES})
+# Add the target.
+if (${CMAKE_VERSION} VERSION_LESS "3.8.0")
+  SWIG_ADD_MODULE(fmm python python/fmm.i)
+else()
+  SWIG_ADD_LIBRARY(fmm
+    LANGUAGE python
+    SOURCES python/fmm.i)
+endif()
+
+swig_link_libraries(fmm
+        ${PYTHON_LIBRARIES} ${GDAL_LIBRARIES}  ${Boost_LIBRARIES}
+        ${OSMIUM_LIBRARIES}
+        pyfmm)
 
 install(TARGETS fmm ubodt_gen stmatch DESTINATION bin)
