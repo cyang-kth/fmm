@@ -1,3 +1,10 @@
+if (POLICY CMP0078)
+    cmake_policy(SET CMP0078 NEW)
+endif()
+if (POLICY CMP0086)
+    cmake_policy(SET CMP0086 NEW)
+endif()
+
 find_package(SWIG REQUIRED)
 include(${SWIG_USE_FILE})
 find_package(PythonLibs 2.7 REQUIRED)
@@ -22,6 +29,7 @@ set_source_files_properties(
 ${PROJECT_SOURCE_DIR}/python/fmm.i PROPERTIES CPLUSPLUS ON)
 set_source_files_properties(
 ${PROJECT_SOURCE_DIR}/python/fmm.i PROPERTIES SWIG_FLAGS "")
+
 add_library(pyfmmlib SHARED
 $<TARGET_OBJECTS:MM_OBJ>
 $<TARGET_OBJECTS:PYTHONFMM_OBJ>
@@ -31,6 +39,8 @@ $<TARGET_OBJECTS:CONFIG>
 $<TARGET_OBJECTS:ALGORITHM>
 $<TARGET_OBJECTS:UTIL>
 $<TARGET_OBJECTS:NETWORK>)
+
+set_property(TARGET pyfmmlib PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 target_link_libraries(pyfmmlib ${GDAL_LIBRARIES} ${Boost_LIBRARIES}
 ${OSMIUM_LIBRARIES})
