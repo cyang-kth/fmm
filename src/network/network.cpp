@@ -17,6 +17,8 @@
 #include <osmium/osm/way.hpp>
 #include <osmium/visitor.hpp>
 #include <osmium/geom/ogr.hpp>
+#include <osmium/index/map/sparse_mem_array.hpp>
+#include <osmium/handler/node_locations_for_ways.hpp>
 
 using namespace FMM;
 using namespace FMM::CORE;
@@ -37,7 +39,7 @@ Network::Network(const std::string &filename,
                  const std::string &target_name) {
   if (FMM::UTIL::check_file_extension(filename, "shp")) {
     read_ogr_file(filename,id_name,source_name,target_name);
-  } else if (FMM::UTIL::check_file_extension(filename, "pbf")) {
+  } else if (FMM::UTIL::check_file_extension(filename, "osm,pbf,bz2,o5m")) {
     read_osm_file(filename);
   } else {
     SPDLOG_CRITICAL("Network file not supported {}",filename);
@@ -50,14 +52,20 @@ public:
   OSMHandler(Network *network_arg) : network(*network_arg){
   };
   void way(const osmium::Way& way){
-    std::unique_ptr<OGRLineString> line = factory.create_linestring(way);
-    if (!way.nodes().empty()) {
-      EdgeID eid= way.id();
-      int source = way.nodes().front().ref();
-      int target = way.nodes().back().ref();
-      LineString geom = ogr2linestring(line.get());
-      SPDLOG_INFO("Read road edge {} {} {}",eid, source, target);
-      network.add_edge(eid,source,target,geom);
+    if (way.nodes().size()>1) {
+      try{
+        EdgeID eid= way.id();
+        int source = way.nodes().front().ref();
+        int target = way.nodes().back().ref();
+        // SPDLOG_INFO("Read road edge {} {} {} nodes {}",
+        //              eid, source, target, way.nodes().size());
+        std::unique_ptr<OGRLineString> line = factory.create_linestring(way);
+        LineString geom = ogr2linestring(line.get());
+        network.add_edge(eid,source,target,geom);
+      } catch (const std::exception& e) { // caught by reference to base
+        std::cout << " a standard exception was caught, with message '"
+                  << e.what() << "'\n";
+      }
     }
   };
 private:
@@ -91,11 +99,20 @@ void Network::add_edge(EdgeID edge_id, NodeID source, NodeID target,
 };
 
 void Network::read_osm_file(const std::string &filename) {
-  auto otypes = osmium::osm_entity_bits::way;
+  SPDLOG_INFO("Read osm network {} ", filename);
+  auto otypes = osmium::osm_entity_bits::node|osmium::osm_entity_bits::way;
   osmium::io::Reader reader{filename, otypes};
+  namespace map = osmium::index::map;
+  using index_type =
+    map::SparseMemArray<osmium::unsigned_object_id_type, osmium::Location>;
+  using location_handler_type
+    = osmium::handler::NodeLocationsForWays<index_type>;
+  index_type index;
+  location_handler_type location_handler{index};
   OSMHandler handler(this);
-  osmium::apply(reader, handler);
+  osmium::apply(reader, location_handler, handler);
   reader.close();
+  SPDLOG_INFO("Read osm network done with edges read {}",edges.size());
 };
 
 void Network::read_ogr_file(const std::string &filename,
