@@ -130,6 +130,8 @@ target_link_libraries(stmatch
         ${GDAL_LIBRARIES}
         ${OpenMP_CXX_LIBRARIES})
 
+add_subdirectory(test EXCLUDE_FROM_ALL)
+
 # Build the python binding
 
 file(GLOB PYTHONFMMGlob src/mm/fmm/fmm_algorithm.cpp src/mm/fmm/ubodt.cpp)
