@@ -1,10 +1,3 @@
-if (POLICY CMP0078)
-    cmake_policy(SET CMP0078 NEW)
-endif()
-if (POLICY CMP0086)
-    cmake_policy(SET CMP0086 NEW)
-endif()
-
 find_package(SWIG REQUIRED)
 include(${SWIG_USE_FILE})
 find_package(PythonLibs 2.7 REQUIRED)
@@ -40,14 +33,15 @@ $<TARGET_OBJECTS:ALGORITHM>
 $<TARGET_OBJECTS:UTIL>
 $<TARGET_OBJECTS:NETWORK>)
 
-set_property(TARGET pyfmmlib PROPERTY POSITION_INDEPENDENT_CODE ON)
-
+# set_property(TARGET pyfmmlib PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_link_libraries(pyfmmlib ${GDAL_LIBRARIES} ${Boost_LIBRARIES}
 ${OSMIUM_LIBRARIES})
 # Add the target.
 if (${CMAKE_VERSION} VERSION_LESS "3.8.0")
+  message(STATUS "Using swig add module")
   SWIG_ADD_MODULE(pyfmm python ${PROJECT_SOURCE_DIR}/python/fmm.i)
 else()
+  message(STATUS "Using swig add library")
   SWIG_ADD_LIBRARY(pyfmm
     LANGUAGE python
     SOURCES ${PROJECT_SOURCE_DIR}/python/fmm.i)

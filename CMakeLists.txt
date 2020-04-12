@@ -1,5 +1,15 @@
 cmake_minimum_required( VERSION 3.5.1)
 
+if (POLICY CMP0074)
+    cmake_policy(SET CMP0074 NEW)
+endif()
+if (POLICY CMP0078)
+    cmake_policy(SET CMP0078 NEW)
+endif()
+if (POLICY CMP0086)
+    cmake_policy(SET CMP0086 NEW)
+endif()
+
 # Prevent in source build
 set(CMAKE_DISABLE_SOURCE_CHANGES  ON)
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
@@ -48,6 +58,7 @@ find_package(Boost 1.54.0 REQUIRED serialization)
 if (Boost_FOUND)
   message(STATUS "Boost headers found at ${Boost_INCLUDE_DIR}")
   message(STATUS "Boost library found at ${Boost_LIBRARIES}")
+  message(STATUS "Boost library version ${Boost_LIB_VERSION}")
 else()
   message(FATAL_ERROR "Boost Not Found!")
 endif (Boost_FOUND)
