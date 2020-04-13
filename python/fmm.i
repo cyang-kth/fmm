@@ -3,8 +3,10 @@
 %include "std_vector.i"
 %include "std_shared_ptr.i"
 %shared_ptr(FMM::MM::UBODT)
-
-
+%ignore FMM::NETWORK::Network::route2geometry(std::vector<EdgeIndex> const &) const;
+%ignore operator<<(std::ostream& os, const LineString& rhs);
+%ignore FMM::MM::STMATCHConfig::print() const;
+%ignore FMM::MM::FastMapMatchConfig::print() const;
 
 %{
 /* Put header files here or function declarations like below */
@@ -23,6 +25,8 @@ using namespace FMM::NETWORK;
 using namespace FMM::MM;
 %}
 
+
+
 %template(IntVector) std::vector<int>;
 %template(UnsignedIntVector) std::vector<unsigned int>;
 %template(DoubleVector) std::vector<double>;
@@ -30,7 +34,6 @@ using namespace FMM::MM;
 // %template(DoubleVVector) vector<vector<double> >;
 // %template(DoubleVVVector) vector<vector<vector<double> > >;
 // %template(IntSet) set<int>;
-
 
 %include "core/geometry.hpp"
 %include "mm/mm_type.hpp"
