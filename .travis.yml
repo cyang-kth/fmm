@@ -10,7 +10,7 @@ script:
   - mkdir -p build
   - cd build
   - cmake ..
-  - make
+  - make -j 4
   - ./fmm
   - ./stmatch
   - ./ubodt_gen
