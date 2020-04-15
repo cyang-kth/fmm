@@ -62,7 +62,7 @@ class UBODTGenAppConfig
   int log_level = 2; /**< Level level. 0-trace,1-debug,2-info,3-warn,4-err,
                          5-critical,6-off */
   bool use_omp = false; /**< If true, parallel computing performed */
-  bool help_specified; /**< Help is specified or not */
+  bool help_specified = false; /**< Help is specified or not */
 }; // UBODT_Config
 }
 }
