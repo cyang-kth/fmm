@@ -5,8 +5,6 @@
 
 #include <unordered_map>
 #include <unordered_set>
-#include <vector>
-#include <stdio.h>
 
 #include <osmium/handler.hpp>
 #include <osmium/io/any_input.hpp>
@@ -25,25 +23,29 @@ using namespace FMM::NETWORK;
 /** Helper class to filter out OSM ways that are not roads */
 class way_filter {
 protected:
-  /** key -- value pairs; if any of the keys is present with any of the corresponding values, this item is skipped */
+  /** key -- value pairs; if any of the keys is present with any
+   * of the corresponding values, this item is skipped */
   std::unordered_map<std::string, std::unordered_set<std::string> > exclude_tags;
-  /** key -- value pairs; all of the keys here need to be present with any of the values given -- if no value given, the key
+  /** key -- value pairs; all of the keys here need to be present
+   * with any of the values given -- if no value given, the key
    * has to be present with any value */
   std::unordered_map<std::string, std::unordered_set<std::string> > include_tags;
 
 public:
   /** test if the given way matches the filters */
   bool operator () (const osmium::Way& way) const {
-		/* test include_tags first -- note that this is an O(n*m) operation where n is the size of include_tags, and 
-		 * m is the number of tags the way has; since the size of include_tags will be typically small (1),
-		 * this will not be a practical problem*/
+		/* test include_tags first -- note that this is an O(n*m) operation
+     * where n is the size of include_tags, and m is the number of tags
+     * the way has; since the size of include_tags will be typically
+     * small (1), this will not be a practical problem */
 		for(const auto& p : include_tags) {
 			const char* value = way.get_value_by_key(p.first.c_str());
 			if(!value) return false;
-			if(p.second.size() && p.second.count(std::string(value)) == 0) return false;
+			if(p.second.size() && p.second.count(std::string(value)) == 0)
+        return false;
 		}
 		/* test exclude_tags next -- iterate over all tags for the way for this */
-		for(const osmium::Tag& tag : way.tags()) {
+    if(exclude_tags.size()) for(const osmium::Tag& tag : way.tags()) {
 			const auto& it = exclude_tags.find(std::string(tag.key()));
 			if(it != exclude_tags.end()) {
 				if(it->second.count(std::string(tag.value())) > 0) return false;
@@ -53,23 +55,46 @@ public:
 	}
   
   /** create default filter to include roads */
-  way_filter() {
-    /* must be highway */
-    include_tags.insert(std::make_pair(std::string("highway"),std::unordered_set<std::string>()));
-    /* exclude ways unsuitable for cars */
-    exclude_tags.insert(std::make_pair(std::string("highway"),std::unordered_set<std::string>{"steps","corridor",
-      "pedestrian","proposed","construction","abandoned","platform","raceway","track","bus_guideway","escape",
-      "footway","bridleway","path","cycleway","elevator","platform"}));
-    
-    /* exclude unsuitable surface */
-    exclude_tags.insert(std::make_pair(std::string("surface"),std::unordered_set<std::string>{"wood","unpaved","bricks",
-      "grass","sand","dirt","gravel","ground","dirt/sand","grass_paver","mud","rocky","sett","pebblestone","pebblestones"}));
-    /* exclude any way that marks an area (not typical for highways anyway */
-    exclude_tags.insert(std::make_pair(std::string("area"),std::unordered_set<std::string>{"yes"}));
-    /* exclude private roads */
-    exclude_tags.insert(std::make_pair(std::string("service"),std::unordered_set<std::string>{"private"}));
-    exclude_tags.insert(std::make_pair(std::string("access"),std::unordered_set<std::string>{"private","no"}));
-    
+  explicit way_filter(bool do_filter = true) {
+    /* filtering can be turned off by setting 
+     * do_filter == false
+     * in this case, this filter will always return true */
+    if(do_filter) {
+      /* must be highway */
+      include_tags.insert(std::make_pair(std::string("highway"),
+        std::unordered_set<std::string>()));
+      
+      /* filtering identical to drive+service option in osmnx:
+filters['drive_service'] = ('["area"!~"yes"]["highway"!~"cycleway|footway|path|pedestrian|steps|track|corridor|'
+                                'elevator|escalator|proposed|construction|bridleway|abandoned|platform|raceway"]'
+                                '["motor_vehicle"!~"no"]["motorcar"!~"no"]{}'
+                                '["service"!~"parking|parking_aisle|private|emergency_access"]').format(
+        settings.default_access)
+default_access = '["access"!~"private"]'
+      */
+      exclude_tags.insert(std::make_pair(std::string("area"),
+        std::unordered_set<std::string>{"yes"}));
+      exclude_tags.insert(std::make_pair(std::string("highway"),
+        std::unordered_set<std::string>{"cycleway","footway","path",
+          "pedestrian","steps","track","corridor","elevator","escalator",
+          "proposed","construction","bridleway","abandoned","platform",
+          "raceway"}));
+      exclude_tags.insert(std::make_pair(std::string("motor_vehicle"),
+        std::unordered_set<std::string>{"no"}));
+      exclude_tags.insert(std::make_pair(std::string("motorcar"),
+        std::unordered_set<std::string>{"no"}));
+      exclude_tags.insert(std::make_pair(std::string("service"),
+        std::unordered_set<std::string>{"parking","parking_aisle",
+          "private","emergency_access"}));
+      exclude_tags.insert(std::make_pair(std::string("access"),
+        std::unordered_set<std::string>{"private"}));
+      /* exclude unsuitable surface -- removed to match osmnx filter
+      exclude_tags.insert(std::make_pair(std::string("surface"),
+        std::unordered_set<std::string>{"wood","unpaved","bricks",
+          "grass","sand","dirt","gravel","ground","dirt/sand",
+          "grass_paver","mud","rocky","sett","pebblestone",
+          "pebblestones"})); */
+    }
   }
 };
 
@@ -95,7 +120,11 @@ protected:
   /** filter used to select which ways to include */
   const way_filter wf;
   
-  /** Function to determine if an OSM way's direction. Returns 0 for two-way, 1 for one-way following the nodes' order, -1 for reversed case. */
+  /** Function to determine if an OSM way's direction.
+   * 
+   * \returns 0 for two-way, 1 for one-way following the nodes' order,
+   *  -1 for reversed case.
+   */
   static int is_oneway(const osmium::Way& way)  {
 		int oneway = 0;
 		const char* value = way.get_value_by_key("oneway");
@@ -116,14 +145,18 @@ protected:
   
 public:
   /** Initialize a new instance based on the way_filter provided */
-  OSMHandler() { }
+  explicit OSMHandler(bool do_filter = false):wf(do_filter) { }
   
-  /** Function to handle a node read from OSM data (part of the osmium::handler::Handler interface) */
+  /** Function to handle a node read from OSM data
+   * (part of the osmium::handler::Handler interface) */
   void node(const osmium::Node& node) {
+    /* we need to store coordinates for all nodes, since we do not know
+     * which ones are in the ways to use */
     node_coords[node.id()] = node.location();
   }
   
-  /** Function to handle a way read from OSM data (part of the osmium::handler::Handler interface) */
+  /** Function to handle a way read from OSM data
+   * (part of the osmium::handler::Handler interface) */
   void way(const osmium::Way& way) {
     /* filter out ways that are not roads */
     if(!wf(way)) return;
@@ -310,7 +343,13 @@ void Network::read_osm_file(const std::string &filename) {
   SPDLOG_INFO("Read osm network {} ", filename);
   auto otypes = osmium::osm_entity_bits::node|osmium::osm_entity_bits::way;
   osmium::io::Reader reader{filename, otypes};
-  OSMHandler handler;
+  
+  /* TODO: this could be set from configuration options!
+   * If set to false, all OSM ways in the input will be
+   * added to the network */
+  bool do_filter = true;
+  
+  OSMHandler handler(do_filter);
   osmium::apply(reader, handler);
   reader.close();
   handler.generate_simplified_graph(*this);
