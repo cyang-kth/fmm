@@ -47,32 +47,6 @@ Network::Network(const std::string &filename,
   }
 };
 
-class OSMHandler : public osmium::handler::Handler {
-public:
-  OSMHandler(Network *network_arg) : network(*network_arg){
-  };
-  void way(const osmium::Way& way){
-    if (way.nodes().size()>1) {
-      try{
-        EdgeID eid= way.id();
-        int source = way.nodes().front().ref();
-        int target = way.nodes().back().ref();
-        // SPDLOG_INFO("Read road edge {} {} {} nodes {}",
-        //              eid, source, target, way.nodes().size());
-        std::unique_ptr<OGRLineString> line = factory.create_linestring(way);
-        LineString geom = ogr2linestring(line.get());
-        network.add_edge(eid,source,target,geom);
-      } catch (const std::exception& e) { // caught by reference to base
-        std::cout << " a standard exception was caught, with message '"
-                  << e.what() << "'\n";
-      }
-    }
-  };
-private:
-  Network &network;
-  osmium::geom::OGRFactory<> factory;
-};
-
 void Network::add_edge(EdgeID edge_id, NodeID source, NodeID target,
                        const FMM::CORE::LineString &geom){
   NodeIndex s_idx, t_idx;
@@ -96,23 +70,6 @@ void Network::add_edge(EdgeID edge_id, NodeID source, NodeID target,
   EdgeIndex index = edges.size();
   edges.push_back({index, edge_id, s_idx, t_idx, geom.get_length(), geom});
   edge_map.insert({edge_id, index});
-};
-
-void Network::read_osm_file(const std::string &filename) {
-  SPDLOG_INFO("Read osm network {} ", filename);
-  auto otypes = osmium::osm_entity_bits::node|osmium::osm_entity_bits::way;
-  osmium::io::Reader reader{filename, otypes};
-  namespace map = osmium::index::map;
-  using index_type =
-    map::SparseMemArray<osmium::unsigned_object_id_type, osmium::Location>;
-  using location_handler_type
-    = osmium::handler::NodeLocationsForWays<index_type>;
-  index_type index;
-  location_handler_type location_handler{index};
-  OSMHandler handler(this);
-  osmium::apply(reader, location_handler, handler);
-  reader.close();
-  SPDLOG_INFO("Read osm network done with edges read {}",edges.size());
 };
 
 void Network::read_ogr_file(const std::string &filename,
