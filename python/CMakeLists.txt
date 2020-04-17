@@ -39,15 +39,15 @@ ${OSMIUM_LIBRARIES})
 # Add the target.
 if (${CMAKE_VERSION} VERSION_LESS "3.8.0")
   message(STATUS "Using swig add module")
-  SWIG_ADD_MODULE(pyfmm python ${PROJECT_SOURCE_DIR}/python/fmm.i)
+  SWIG_ADD_MODULE(fmm python ${PROJECT_SOURCE_DIR}/python/fmm.i)
 else()
   message(STATUS "Using swig add library")
-  SWIG_ADD_LIBRARY(pyfmm
+  SWIG_ADD_LIBRARY(fmm
     LANGUAGE python
     SOURCES ${PROJECT_SOURCE_DIR}/python/fmm.i)
 endif()
 
-swig_link_libraries(pyfmm
+swig_link_libraries(fmm
         ${PYTHON_LIBRARIES}
         ${GDAL_LIBRARIES}
         ${Boost_LIBRARIES}
