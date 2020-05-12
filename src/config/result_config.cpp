@@ -4,7 +4,7 @@
 #include <set>
 
 void FMM::CONFIG::ResultConfig::print() const {
-  std::stringstream ss;
+  std::ostringstream ss;
   if (output_config.write_opath)
     ss << "opath ";
   if (output_config.write_pgeom)
@@ -160,7 +160,8 @@ std::set<std::string> FMM::CONFIG::ResultConfig::string2set(
     result.insert(intermediate);
   }
   return result;
-}
+};
+
 bool FMM::CONFIG::ResultConfig::validate() const {
   if (UTIL::file_exists(file))
   {
@@ -172,4 +173,19 @@ bool FMM::CONFIG::ResultConfig::validate() const {
     return false;
   }
   return true;
+};
+
+void FMM::CONFIG::ResultConfig::register_arg(cxxopts::Options &options){
+  options.add_options()
+  ("o,output","Output file name",
+  cxxopts::value<std::string>()->default_value(""))
+  ("output_fields","Output fields",
+  cxxopts::value<std::string>()->default_value(""));
+};
+
+void FMM::CONFIG::ResultConfig::register_help(std::ostringstream &oss){
+  oss<<"--output (required) <string>: Output file name\n";
+  oss<<"--output_fields (optional) <string>: Output fields\n";
+  oss<<"  opath,cpath,tpath,mgeom,pgeom,\n";
+  oss<<"  offset,error,spdist,tp,ep,length,all\n";
 };

@@ -42,29 +42,23 @@ void UBODTGenAppConfig::load_arg(int argc, char **argv) {
   SPDLOG_INFO("Start reading ubodt configuration from arguments");
   cxxopts::Options options("config",
                            "Configuration parser of ubodt_gen");
+  // Register options
+  NetworkConfig::register_arg(options);
   options.add_options()
-    ("network", "Network file name",
-    cxxopts::value<std::string>()->default_value(""))
-    ("network_id", "Network id name",
-    cxxopts::value<std::string>()->default_value("id"))
-    ("source", "Network source name",
-    cxxopts::value<std::string>()->default_value("source"))
-    ("target", "Network target name",
-    cxxopts::value<std::string>()->default_value("target"))
     ("delta", "Upperbound distance",
     cxxopts::value<double>()->default_value("3000.0"))
     ("o,output", "Output file name",
     cxxopts::value<std::string>()->default_value(""))
     ("l,log_level", "Log level", cxxopts::value<int>()->default_value("2"))
     ("h,help",   "Help information")
-    ("use_omp","Use parallel computing if specified")
-    ("projected","Data is projected or not");
+    ("use_omp","Use parallel computing if specified");
   if (argc==1) {
     help_specified = true;
     return;
   }
+  // Parse options
   auto result = options.parse(argc, argv);
-  // Output
+  // Read options
   result_file = result["output"].as<std::string>();
   network_config =  NetworkConfig::load_from_arg(result);
   log_level = result["log_level"].as<int>();
@@ -87,17 +81,16 @@ void UBODTGenAppConfig::print() const {
 }
 
 void UBODTGenAppConfig::print_help() {
-  std::cout << "ubodt_gen argument lists:\n";
-  std::cout << "--network (required) <string>: Network file name\n";
-  std::cout << "--output (required) <string>: Output file name\n";
-  std::cout << "--id (optional) <string>: Network id name (id)\n";
-  std::cout << "--source (optional) <string>: Network source name (source)\n";
-  std::cout << "--target (optional) <string>: Network target name (target)\n";
-  std::cout << "--delta (optional) <double>: upperbound (3000.0)\n";
-  std::cout << "--log_level (optional) <int>: log level (2)\n";
-  std::cout << "--use_omp: use OpenMP or not\n";
-  std::cout << "-h/--help: help information\n";
-  std::cout << "For xml configuration, check example folder\n";
+  std::ostringstream oss;
+  oss << "ubodt_gen argument lists:\n";
+  NetworkConfig::register_help(oss);
+  oss << "--delta (optional) <double>: upperbound (3000.0)\n";
+  oss << "-o/--output (required) <string>: Output file name\n";
+  oss << "-l/--log_level (optional) <int>: log level (2)\n";
+  oss << "--use_omp: use OpenMP or not\n";
+  oss << "-h/--help: help information\n";
+  oss << "For xml configuration, check example folder\n";
+  std::cout<<oss.str();
 }
 
 bool UBODTGenAppConfig::validate() const {

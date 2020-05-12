@@ -87,6 +87,14 @@ struct ResultConfig {
    */
   static ResultConfig load_from_arg(
       const cxxopts::ParseResult &arg_data);
+  /**
+   * Register arguments to an option object
+   */
+  static void register_arg(cxxopts::Options &options);
+  /**
+   * Register help information to a string stream
+   */
+  static void register_help(std::ostringstream &oss);
 };
 }
 
