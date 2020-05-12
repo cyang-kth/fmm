@@ -47,32 +47,6 @@ Network::Network(const std::string &filename,
   }
 };
 
-class OSMHandler : public osmium::handler::Handler {
-public:
-  OSMHandler(Network *network_arg) : network(*network_arg){
-  };
-  void way(const osmium::Way& way){
-    if (way.nodes().size()>1) {
-      try{
-        EdgeID eid= way.id();
-        int source = way.nodes().front().ref();
-        int target = way.nodes().back().ref();
-        // SPDLOG_INFO("Read road edge {} {} {} nodes {}",
-        //              eid, source, target, way.nodes().size());
-        std::unique_ptr<OGRLineString> line = factory.create_linestring(way);
-        LineString geom = ogr2linestring(line.get());
-        network.add_edge(eid,source,target,geom);
-      } catch (const std::exception& e) { // caught by reference to base
-        std::cout << " a standard exception was caught, with message '"
-                  << e.what() << "'\n";
-      }
-    }
-  };
-private:
-  Network &network;
-  osmium::geom::OGRFactory<> factory;
-};
-
 void Network::add_edge(EdgeID edge_id, NodeID source, NodeID target,
                        const FMM::CORE::LineString &geom){
   NodeIndex s_idx, t_idx;
@@ -112,6 +86,19 @@ void Network::read_osm_file(const std::string &filename) {
   OSMHandler handler(this);
   osmium::apply(reader, location_handler, handler);
   reader.close();
+  SPDLOG_INFO("Read osm network done with edges read {}",edges.size());
+};
+
+void Network::read_osm_file(const std::string &filename) {
+  SPDLOG_INFO("Read osm network {} ", filename);
+  auto otypes = osmium::osm_entity_bits::node|osmium::osm_entity_bits::way;
+  osmium::io::Reader reader{filename, otypes};
+  bool do_filter = true;
+  OSMHandler handler(do_filter);
+  osmium::apply(reader, handler);
+  reader.close();
+  handler.generate_simplified_graph(*this);
+  build_rtree_index();
   SPDLOG_INFO("Read osm network done with edges read {}",edges.size());
 };
 
