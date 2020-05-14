@@ -1,5 +1,15 @@
 cmake_minimum_required( VERSION 3.5.1)
 
+if (POLICY CMP0074)
+    cmake_policy(SET CMP0074 NEW)
+endif()
+if (POLICY CMP0078)
+    cmake_policy(SET CMP0078 NEW)
+endif()
+if (POLICY CMP0086)
+    cmake_policy(SET CMP0086 NEW)
+endif()
+
 # Prevent in source build
 set(CMAKE_DISABLE_SOURCE_CHANGES  ON)
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
@@ -12,13 +22,39 @@ set(CMAKE_CXX_STANDARD 11)
 
 # Make sure the swig package is loaded.
 find_package(SWIG REQUIRED)
-find_package(GDAL 2.2 REQUIRED)
-find_package(PythonLibs 2.7 REQUIRED)
-find_package(Boost 1.54.0 REQUIRED serialization)
-
 include(${SWIG_USE_FILE})
-include_directories(${PYTHON_INCLUDE_DIRS})
-include_directories(${GDAL_INCLUDE_DIR})
+if (SWIG_FOUND)
+  message(STATUS "Swig version is ${SWIG_VERSION}")
+else()
+  message(FATAL_ERROR "Python library not found!\n")
+endif()
+
+find_package(GDAL 2.2 REQUIRED)
+if (GDAL_FOUND)
+  message(STATUS "GDAL headers found at ${GDAL_INCLUDE_DIR}")
+  message(STATUS "GDAL library found at ${GDAL_LIBRARIES}")
+  include_directories(${GDAL_INCLUDE_DIR})
+else()
+  message(FATAL_ERROR "GDAL Not Found!")
+endif (GDAL_FOUND)
+
+find_package(PythonLibs 2.7 REQUIRED)
+if (PYTHONLIBS_FOUND)
+  message(STATUS "Python header found at ${PYTHON_INCLUDE_DIRS}")
+  message(STATUS "Python library found at ${PYTHON_LIBRARIES}")
+  include_directories(${PYTHON_INCLUDE_DIRS})
+else()
+  message(FATAL_ERROR "Python library not found!\n")
+endif()
+
+find_package(Boost 1.54.0 REQUIRED serialization)
+if (Boost_FOUND)
+  message(STATUS "Boost headers found at ${Boost_INCLUDE_DIR}")
+  message(STATUS "Boost library found at ${Boost_LIBRARIES}")
+else()
+  message(FATAL_ERROR "Boost Not Found!")
+endif (Boost_FOUND)
+
 include_directories(../third_party)
 include_directories(../src)
 
@@ -53,8 +89,10 @@ ${STMATCHGlob})
 target_link_libraries(pyfmm ${GDAL_LIBRARIES} ${Boost_LIBRARIES})
 # Add the target.
 if (${CMAKE_VERSION} VERSION_LESS "3.8.0")
+  message(STATUS "Using swig add module")
   SWIG_ADD_MODULE(fmm python fmm.i)
 else()
+  message(STATUS "Using swig add library")
   SWIG_ADD_LIBRARY(fmm
     LANGUAGE python
     SOURCES fmm.i)
