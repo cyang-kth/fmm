@@ -6,7 +6,7 @@
 #include <ogrsf_frmts.h> // C++ API for GDAL
 #include <math.h> // Calulating probability
 #include <algorithm> // Partial sort copy
- // Partial sort copy
+// Partial sort copy
 
 // Data structures for Rtree
 #include <boost/geometry/index/rtree.hpp>
@@ -67,7 +67,7 @@ Network::Network(const std::string &filename,
     std::exit(EXIT_FAILURE);
   } else {
     SPDLOG_DEBUG("Geometry type of network is {}",
-                OGRGeometryTypeToName(ogrFDefn->GetGeomType()));
+                 OGRGeometryTypeToName(ogrFDefn->GetGeomType()));
   }
   OGRSpatialReference *ogrsr = ogrFDefn->GetGeomFieldDefn(0)->GetSpatialRef();
   if (ogrsr != nullptr) {
@@ -85,7 +85,7 @@ Network::Network(const std::string &filename,
   }
   // Read data from shapefile
   EdgeIndex index = 0;
-  while( (ogrFeature = ogrlayer->GetNextFeature()) != NULL){
+  while( (ogrFeature = ogrlayer->GetNextFeature()) != NULL) {
     EdgeID id = ogrFeature->GetFieldAsInteger(id_idx);
     NodeID source = ogrFeature->GetFieldAsInteger(source_idx);
     NodeID target = ogrFeature->GetFieldAsInteger(target_idx);
@@ -129,7 +129,7 @@ Network::Network(const std::string &filename,
   num_vertices = node_id_vec.size();
   SPDLOG_INFO("Number of edges {} nodes {}",edges.size(),num_vertices);
   SPDLOG_INFO("Field index: id {} source {} target {}",
-      id_idx,source_idx,target_idx);
+              id_idx,source_idx,target_idx);
   build_rtree_index();
   SPDLOG_INFO("Read network done.");
 }    // Network constructor
@@ -151,7 +151,7 @@ const std::vector<Edge> &Network::get_edges() const
 // Get the ID attribute of an edge according to its index
 EdgeID Network::get_edge_id(EdgeIndex index) const
 {
-  return index<edges.size() ? edges[index].id:-1;
+  return index<edges.size() ? edges[index].id : -1;
 }
 
 EdgeIndex Network::get_edge_index(EdgeID id) const {
@@ -230,9 +230,6 @@ Traj_Candidates Network::search_tr_cs_knn(const LineString &geom, std::size_t k,
         pcs.push_back(c);
       }
     }
-    if (pcs.empty()) {
-      return Traj_Candidates();
-    }
     // KNN part
     if (pcs.size()<=k) {
       tr_cs[i]=pcs;
@@ -298,7 +295,31 @@ LineString Network::complete_path_to_geometry(
     append_segs_to_line(&line,lastlineseg,1);
   }
   return line;
-}
+};
+
+std::vector<LineString> Network::oc_path_to_multiple_geometry(
+  const O_Path &o_path, const C_Path &complete_path,
+  const std::vector<int> &indices) const {
+  if (t_path.cpath.empty()) return {};
+  std::vector<LineString> lines;
+  // Iterate through consecutive indexes and write the traversed path
+  int J = indices.size();
+  for (int j=0; j<J-1; ++j) {
+    O_Path lopath;
+    lopath.push_back(o_path[j]);
+    lopath.push_back(o_path[j+1]);
+    C_Path lcpath;
+    int a = t_path.indices[j];
+    int b = t_path.indices[j+1];
+    for (int i=a; i<b; ++i) {
+      lcpath.push_back(t_path.cpath[i]);
+    }
+    lcpath.push_back(t_path.cpath[b]);
+    SPDLOG_TRACE("Complete path j {} J {}", j, J);
+    lines.push_back(complete_path_to_geometry(lopath,lcpath));
+  }
+  return lines;
+};
 
 const std::vector<Point> &Network::get_vertex_points() const {
   return vertex_points;
@@ -356,4 +377,3 @@ void Network::append_segs_to_line(LineString *line,
     }
   }
 }
-

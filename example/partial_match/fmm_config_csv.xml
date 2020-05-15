@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config>
+    <input>
+        <ubodt>
+            <file>../ubodt.txt</file>
+        </ubodt>
+        <network>
+            <file>../data/edges.shp</file>
+            <id>id</id>
+        </network>
+        <gps>
+            <file>trips_outlier.csv</file>
+            <id>id</id>
+        </gps>
+    </input>
+    <parameters>
+        <k>4</k>
+        <r>0.4</r>
+        <gps_error>0.5</gps_error>
+    </parameters>
+    <output>
+        <fields>
+          <opath/>
+          <cpath/>
+          <tpath/>
+          <mgeom/>
+          <ep/>
+          <tp/>
+        </fields>
+        <file>mr_outlier.txt</file>
+    </output>
+    <other>
+      <log_level>0</log_level>
+    </other>
+</config>

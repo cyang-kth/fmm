@@ -1,7 +1,7 @@
 /**
  * Fast map matching.
  *
- * Upperbounded origin destination table 
+ * Upperbounded origin destination table
  *
  * @author: Can Yang
  * @version: 2020.01.31
@@ -34,7 +34,7 @@ struct Record {
  * Upperbounded origin destination table
  */
 class UBODT {
- public:
+public:
   UBODT(const UBODT &) = delete;
   UBODT &operator=(const UBODT &) = delete;
   /**
@@ -62,7 +62,7 @@ class UBODT {
    * @return  a shortest path connecting source to target
    */
   std::vector<NETWORK::EdgeIndex> look_sp_path(NETWORK::NodeIndex source,
-      NETWORK::NodeIndex target) const;
+                                               NETWORK::NodeIndex target) const;
 
   /**
    * Construct the complete path (a vector of edge ID) from an optimal path
@@ -79,6 +79,11 @@ class UBODT {
   C_Path construct_complete_path(const TGOpath &path,
                                  const std::vector<NETWORK::Edge> &edges,
                                  std::vector<int> *indices) const;
+
+  void construct_traversed_path(
+    const TGOpath &path, const std::vector<NETWORK::Edge> &edges,
+    C_Path *cpath, std::vector<int> *indices) const;
+
   /**
    * Get the upperbound of the UBODT
    * @return upperbound value
@@ -91,7 +96,7 @@ class UBODT {
    * @return  bucket index
    */
   unsigned int cal_bucket_index(NETWORK::NodeIndex source,
-      NETWORK::NodeIndex target) const;
+                                NETWORK::NodeIndex target) const;
 
   /**
    *  Insert a record into the hash table
@@ -138,11 +143,11 @@ class UBODT {
    */
   static int find_prime_number(double value);
   constexpr static double LOAD_FACTOR = 2.0; /**< factor measuring the
-                                              average number of elements in
-                                              a bucket. */
+                                                average number of elements in
+                                                a bucket. */
   static const int BUFFER_LINE = 1024; /**< Number of characters to store in
                                             a line */
- private:
+private:
   const long long multiplier;   // multiplier to get a unique ID
   const int buckets;   // number of buckets
   double delta = 0.0;

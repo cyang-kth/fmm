@@ -81,6 +81,11 @@ struct MatchResult {
   CORE::LineString mgeom; /**< the geometry of the matched path */
 };
 
+// struct PartialMatchResult{
+//   const MatchResult &result;
+//   std::vector<CORE::LineString> t_geom;
+// };
+
 };
 
 };

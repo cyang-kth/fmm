@@ -34,7 +34,7 @@ namespace NETWORK {
  * Road network class
  */
 class Network {
- public:
+public:
   /**
    * Box of a edge
    */
@@ -119,7 +119,7 @@ class Network {
    *
    */
   FMM::MM::Traj_Candidates search_tr_cs_knn(
-      FMM::CORE::Trajectory &trajectory, std::size_t k, double radius) const;
+    FMM::CORE::Trajectory &trajectory, std::size_t k, double radius) const;
 
   /**
    * Search for k nearest neighboring (KNN) candidates of a
@@ -147,8 +147,27 @@ class Network {
    * @param complete_path complete path
    */
   FMM::CORE::LineString complete_path_to_geometry(
-      const FMM::CORE::LineString &traj,
-      const MM::C_Path &complete_path) const;
+    const FMM::CORE::LineString &traj,
+    const MM::C_Path &complete_path) const;
+
+  /**
+   * Extract the geometry of a complete path, whose two end segment will be
+   * clipped according to the opath
+   * @param o_path edges matched to each point
+   * @param complete_path complete path
+   */
+  FMM::CORE::LineString ocpath_to_geometry(
+    const MM::O_Path &o_path, const MM::C_Path &complete_path) const;
+  /**
+   * Extract multiple linestring from a complete path. Each part will be a
+   * separate linestring.
+   * @param o_path        A vector of edge IDs matched to each point
+   * @param complete_path A vector edge of IDs that are topologically connected
+   * @param indices       Indices of each edge of the opath in complete path
+   */
+  std::vector<FMM::CORE::LineString> oc_path_to_multiple_geometry(
+    const MM::O_Path &o_path, const MM::C_Path &complete_path,
+    const std::vector<int> &indices) const;
   /**
    * Get all node geometry
    * @return a vector of points
@@ -172,7 +191,7 @@ class Network {
    * @return the geometry of the route
    */
   FMM::CORE::LineString route2geometry(
-      const std::vector<EdgeIndex> &path) const;
+    const std::vector<EdgeIndex> &path) const;
   /**
    * Compare two candidate according to their GPS error
    * @param a candidate a
@@ -180,7 +199,7 @@ class Network {
    * @return true if a.dist<b.dist
    */
   static bool candidate_compare(const MM::Candidate &a, const MM::Candidate &b);
- private:
+private:
   /**
    * Concatenate a linestring segs to a linestring line, used in the
    * function complete_path_to_geometry
