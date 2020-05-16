@@ -93,8 +93,8 @@ MatchedCandidatePath TransitionGraph::extract_matched_candidates(
     const TGNode *a = tg_opath[i];
     if (a==nullptr) {
       matched_candidate_path.push_back(
-        {i,-1,-1,-1,0,0,0,0,0,0}
-        );
+        {i,-1,-1,-1,0,0,0,0,0,0,0,0}
+      );
     } else {
       matched_candidate_path.push_back(
         {i,
@@ -106,7 +106,10 @@ MatchedCandidatePath TransitionGraph::extract_matched_candidates(
          a->c->edge->length,
          a->ep,
          a->tp,
-         a->sp_dist}
+         a->sp_dist,
+         a->c->point.get<0>(),
+         a->c->point.get<1>()
+       }
         );
     }
   }

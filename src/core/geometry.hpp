@@ -25,7 +25,8 @@ namespace CORE {
  *  Point class
  */
 typedef boost::geometry::model::point<double, 2,
-                                      boost::geometry::cs::cartesian> Point; // Point for rtree box
+                                      boost::geometry::cs::cartesian> Point;
+
 /**
  *  Linestring geometry class
  *
