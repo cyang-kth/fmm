@@ -68,7 +68,19 @@ public:
    */
   void write_result(const FMM::CORE::Trajectory &traj,
                     const FMM::MM::MatchResult &result);
+  void write_result(const FMM::CORE::Trajectory &traj,
+                    const FMM::MM::PartialMatchResult &result);
 private:
+  void write_result_(std::stringstream &buf,
+                     const FMM::CORE::Trajectory &traj,
+                     const MatchedCandidatePath &opt_candidate_path,
+                     const O_Path &opath,
+                     const C_Path &cpath,
+                     const std::vector<int> &indices);
+  void write_linestring_(std::stringstream &buf,
+                         const LineString &line);
+  void write_multilinestring_(std::stringstream &buf,
+                              const MultiLineString &mline);
   std::ofstream m_fstream;
   const CONFIG::OutputConfig &config_;
 }; // CSVMatchResultWriter

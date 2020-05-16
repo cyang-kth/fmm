@@ -81,10 +81,20 @@ struct MatchResult {
   CORE::LineString mgeom; /**< the geometry of the matched path */
 };
 
-// struct PartialMatchResult{
-//   const MatchResult &result;
-//   std::vector<CORE::LineString> t_geom;
-// };
+struct PartialMatchResult {
+  int id; /**< id of the trajectory to be matched */
+  MatchedCandidatePath opt_candidate_path; /**< A vector of candidate matched
+  to each point of a trajectory. It is stored in order to export more
+  detailed map matching information. */
+  O_Path opath; /**< the optimal path,
+                              containing id of edges matched to each
+                              point in a trajectory */
+  C_Path cpath; /**< the complete path, containing ids of a sequence of
+                     topologically connected edges traversed by the
+                     trajectory.  */
+  std::vector<int> indices; /**< index of opath edge in cpath */
+  CORE::MultiLineString mgeom; /**< the geometry of the matched path */
+};
 
 };
 

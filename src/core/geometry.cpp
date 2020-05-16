@@ -16,6 +16,12 @@ std::ostream& FMM::CORE::operator<<(std::ostream& os,
   return os;
 };
 
+std::ostream& FMM::CORE::operator<<(std::ostream& os,
+    const FMM::CORE::MultiLineString& rhs){
+  os<< std::setprecision(12) << boost::geometry::wkt(rhs.mline);
+  return os;
+};
+
 FMM::CORE::LineString FMM::CORE::ogr2linestring(const OGRLineString *line){
   int binary_size = line->WkbSize();
   std::vector<unsigned char> wkb(binary_size);

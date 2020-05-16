@@ -19,13 +19,13 @@ namespace FMM {
 /**
  * Core data types
  */
-namespace CORE{
+namespace CORE {
 
 /**
  *  Point class
  */
 typedef boost::geometry::model::point<double, 2,
-    boost::geometry::cs::cartesian> Point; // Point for rtree box
+                                      boost::geometry::cs::cartesian> Point; // Point for rtree box
 /**
  *  Linestring geometry class
  *
@@ -43,7 +43,7 @@ public:
    * @param i point index
    * @return x coordinate
    */
-  inline double get_x(int i) const{
+  inline double get_x(int i) const {
     return boost::geometry::get<0>(line.at(i));
   };
   /**
@@ -52,7 +52,7 @@ public:
    * number of points in the line
    * @return y coordinate
    */
-  inline double get_y(int i) const{
+  inline double get_y(int i) const {
     return boost::geometry::get<1>(line.at(i));
   };
   /**
@@ -95,9 +95,9 @@ public:
    * Manipulating the returned point will not change the
    * original line.
    */
-  inline Point get_point(int i) const{
+  inline Point get_point(int i) const {
     return Point(boost::geometry::get<0>(
-      line.at(i)),boost::geometry::get<1>(line.at(i)));
+                   line.at(i)),boost::geometry::get<1>(line.at(i)));
   };
   /**
    * Get a constance reference of the i-th point in the line
@@ -105,14 +105,14 @@ public:
    * @return  A constant reference to the ith point of line, which
    * avoids create a new point.
    */
-  inline const Point &at(int i) const{
+  inline const Point &at(int i) const {
     return line.at(i);
   }
   /**
    * Get the number of points in a line
    * @return the point number
    */
-  inline int get_num_points() const{
+  inline int get_num_points() const {
     return boost::geometry::num_points(line);
   };
   /**
@@ -141,7 +141,7 @@ public:
    *
    * Example: LINESTRING (30 10, 10 30, 40 40)
    */
-  inline std::string export_wkt() const{
+  inline std::string export_wkt() const {
     std::ostringstream ss;
     ss << boost::geometry::wkt(line);
     return ss.str();
@@ -150,14 +150,14 @@ public:
    * Export a string containing GeoJSON representation of the line.
    * @return The GeoJSON of the line
    */
-  inline std::string export_json() const{
+  inline std::string export_json() const {
     std::ostringstream ss;
     int N = get_num_points();
-    if (N>0){
+    if (N>0) {
       ss << "{\"type\":\"LineString\",\"coordinates\": [";
-      for (int i=0;i<N;++i){
+      for (int i=0; i<N; ++i) {
         ss << "[" << get_x(i) << "," << get_y(i) <<"]"
-           << (i==N-1 ? "": ",");
+           << (i==N-1 ? "" : ",");
       }
       ss << "]}";
     }
@@ -167,7 +167,7 @@ public:
    * Get a const reference to the inner boost geometry linestring
    * @return const reference to the inner boost geometry linestring
    */
-  inline const linestring_t &get_geometry_const() const{
+  inline const linestring_t &get_geometry_const() const {
     return line;
   };
   /**
@@ -192,7 +192,7 @@ public:
     if (rhs.get_num_points()!=N)
       return false;
     bool result = true;
-    for (int i=0;i<N;++i){
+    for (int i=0; i<N; ++i) {
       if (boost::geometry::distance(get_point(i),rhs.get_point(i))>1e-6)
         result = false;
     }
@@ -210,6 +210,36 @@ private:
 }; // LineString
 
 std::ostream& operator<<(std::ostream& os,const FMM::CORE::LineString& rhs);
+
+class MultiLineString {
+public:
+  typedef boost::geometry::model::multi_linestring
+    <LineString::linestring_t> mlinestring_t;
+
+  MultiLineString(){
+  };
+  MultiLineString(const std::vector<LineString> &lines){
+    mline.resize(lines.size());
+    for (int i=0; i<lines.size(); ++i) {
+      int J = lines[i].getNumPoints();
+      for (int j=0; j<J; ++j) {
+        bg::append(mline[i],lines[i].getPoint(j));
+      }
+    }
+  };
+  inline bool isEmpty() const {
+    return bg::num_points(mline)==0;
+  };
+  inline bg::wkt_manipulator<mlinestring_t> exportToWkt() const {
+    return bg::wkt(mline);
+  };
+  friend std::ostream& operator<<(std::ostream& os,const MultiLineString& rhs);
+private:
+  mlinestring_t mline;
+};
+
+std::ostream& operator<<(std::ostream& os,
+                         const FMM::CORE::MultiLineString& rhs);
 
 /**
  * Convert a OGRLineString to a linestring
