@@ -80,9 +80,9 @@ public:
                                  const std::vector<NETWORK::Edge> &edges,
                                  std::vector<int> *indices) const;
 
-  void construct_traversed_path(
-    const TGOpath &path, const std::vector<NETWORK::Edge> &edges,
-    C_Path *cpath, std::vector<int> *indices) const;
+  C_Path construct_complete_path_partial_match(
+    const TGOpath &path,const std::vector<NETWORK::Edge> &edges,
+    std::vector<int> *indices) const;
 
   /**
    * Get the upperbound of the UBODT

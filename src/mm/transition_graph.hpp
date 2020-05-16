@@ -15,6 +15,7 @@
 
 #include "network/type.hpp"
 #include "mm/mm_type.hpp"
+#include "network/network.hpp"
 
 #include <float.h>
 
@@ -96,15 +97,19 @@ public:
    */
   const TGNode *find_optimal_candidate(const TGLayer &layer);
   /**
-   * Backtrack the transition graph to find an optimal path
-   * @return An optimal path connecting the first layer with last layer and
-   * has the highest accumulative probability value.
+   * Backtrack the transition graph to find an optimal path. Some parts may
+   * be unmatched (e.g., not connected or no candidates)
+   * @return An optimal path connecting the candidate found for each point.
+   * if some points are not matched, nullptr will be returned.
    */
   TGOpath backtrack();
   /**
    * Get a reference to the inner layers of the transition graph.
    */
   std::vector<TGLayer> &get_layers();
+  static MatchedCandidatePath extract_matched_candidates(
+    const Network &network, const TGOpath &tg_opath);
+  static O_Path extract_opath(const TGOpath &tg_opath);
 private:
   // candidates of a trajectory
   std::vector<TGLayer> layers;

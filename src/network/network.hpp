@@ -157,7 +157,7 @@ public:
    * @param complete_path complete path
    */
   FMM::CORE::LineString ocpath_to_geometry(
-    const MM::O_Path &o_path, const MM::C_Path &complete_path) const;
+    const MM::TGOpath &tg_opath, const MM::C_Path &complete_path) const;
   /**
    * Extract multiple linestring from a complete path. Each part will be a
    * separate linestring.
@@ -166,7 +166,7 @@ public:
    * @param indices       Indices of each edge of the opath in complete path
    */
   FMM::CORE::MultiLineString oc_path_to_multiple_geometry(
-    const MM::O_Path &o_path, const MM::C_Path &complete_path,
+    const MM::TGOpath &tg_opath, const MM::C_Path &complete_path,
     const std::vector<int> &indices) const;
   /**
    * Get all node geometry

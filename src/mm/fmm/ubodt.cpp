@@ -74,6 +74,10 @@ C_Path UBODT::construct_complete_path(const TGOpath &path,
   if (!indices->empty()) indices->clear();
   if (path.empty()) return cpath;
   int N = path.size();
+  for (int i = 0; i < N; ++i){
+    if (path[i]==nullptr)
+      return cpath;
+  }
   cpath.push_back(path[0]->c->edge->id);
   int current_idx = 0;
   indices->push_back(current_idx);
@@ -98,6 +102,102 @@ C_Path UBODT::construct_complete_path(const TGOpath &path,
     } else {
       indices->push_back(current_idx);
     }
+  }
+  return cpath;
+}
+
+C_Path UBODT::construct_complete_path_partial_match(
+  const TGOpath &path,const std::vector<Edge> &edges,
+  std::vector<int> *indices) const{
+  C_Path cpath;
+  if (path.empty()) return cpath;
+  std::vector<Edge> &edges = network.get_edges();
+  int N = path.size();
+  int current_idx = -1;
+  bool prev_connected = false;
+  for(int i=0; i<N-1; ++i) {
+    SPDLOG_TRACE("Iterate i {}",i);
+    Candidate* a = path[i];
+    Candidate* b = path[i+1];
+    if (a==nullptr && b==nullptr ) {
+      SPDLOG_TRACE("a null b null");
+      cpath.push_back(-1);
+      ++current_idx;
+      SPDLOG_TRACE("Push back current index {}",current_idx);
+      indices->push_back(current_idx);
+      if (i==N-2) {
+        cpath.push_back(-1);
+        ++current_idx;
+        SPDLOG_TRACE("Push back current index {}",current_idx);
+        indices->push_back(current_idx);
+      }
+      prev_connected = false;
+    }
+    if (a==nullptr && b!=nullptr ) {
+      SPDLOG_TRACE("a null b {}",b->edge->id);
+      cpath.push_back(-1);
+      ++current_idx;
+      SPDLOG_TRACE("Push back current index {}",current_idx);
+      indices->push_back(current_idx);
+      if (i==N-2) {
+        cpath.push_back(b->edge->id);
+        ++current_idx;
+        SPDLOG_TRACE("Push back current index {}",current_idx);
+        indices->push_back(current_idx);
+      }
+      prev_connected = false;
+    }
+    if (a!=nullptr && b==nullptr) {
+      SPDLOG_TRACE("a {} b nullptr",a->edge->id);
+      if (!prev_connected) {
+        cpath.push_back(a->edge->id);
+        ++current_idx;
+        SPDLOG_TRACE("Push back current index {}",current_idx);
+        indices->push_back(current_idx);
+      }
+      if (i==N-2) {
+        cpath.push_back(-1);
+        ++current_idx;
+        SPDLOG_TRACE("Push back current index {}",current_idx);
+        indices->push_back(current_idx);
+      }
+      prev_connected = false;
+    }
+    if (a!=nullptr && b !=nullptr) {
+      SPDLOG_TRACE("a {} b {}",a->edge->id,b->edge->id);
+      if (!prev_connected) {
+        cpath.push_back(a->edge->id);
+        ++current_idx;
+        SPDLOG_TRACE("Push back current index {}",current_idx);
+        indices->push_back(current_idx);
+      }
+      if ((a->edge->id!=b->edge->id) || (a->offset>b->offset)) {
+        // segs stores edge index
+        auto segs = look_sp_path(a->edge->target,b->edge->source);
+        // No transition exist in UBODT
+        if (segs.empty() &&  a->edge->target!=b->edge->source) {
+          cpath.push_back(-1);
+          ++current_idx;
+          prev_connected = false;
+        } else {
+          for (int e:segs) {
+            cpath.push_back(edges[e].id);
+            ++current_idx;
+          }
+          cpath.push_back(b->edge->id);
+          ++current_idx;
+          SPDLOG_TRACE("Push back current index {}",current_idx);
+          indices->push_back(current_idx);
+          prev_connected = true;
+        }
+      } else {
+        // b stays on the same edge
+        SPDLOG_TRACE("Push back current index {}",current_idx);
+        indices->push_back(current_idx);
+        prev_connected = true;
+      }
+    }
+    SPDLOG_TRACE("Iterate i {} done",i);
   }
   return cpath;
 }

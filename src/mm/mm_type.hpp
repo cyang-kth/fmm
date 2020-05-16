@@ -48,13 +48,22 @@ typedef std::vector<FMM::NETWORK::EdgeID> C_Path; /**< Complete path, ids of
 a sequence of topologically connected edges.*/
 
 /**
- * A candidate matched to a point
+ * A candidate matched to a point, the fields are stored to facilitate the
+ * output of detailed MM information.
  */
 struct MatchedCandidate {
-  Candidate c; /**< Candidate matched to a point */
-  double ep;  /**< emission probability */
-  double tp;  /**< transition probability to previous matched candidate */
-  double sp_dist; /**< shortest path distance to previous matched candidate */
+  int index; /**< Index of point index in trajectory */
+  EdgeID edge_id; /**< Edge id matched */
+  NodeID source; /**< Edge source node ID */
+  NodeID target; /**< Edge target node ID */
+  double error; /**< Error of matching */
+  double offset; /**< Matched point distance to start node of edge */
+  double length; /**< Length of edge matched */
+  double ep; /**< emission probability */
+  double tp; /**< transition proability from previous matched candidate */
+  double spdist; /**< shortest path distance from previous matched candidate */
+  double px; /**< Projected point x */
+  double py; /**< Projected point y */
 };
 
 /**
@@ -66,7 +75,7 @@ typedef std::vector<MatchedCandidate> MatchedCandidatePath;
 /**
  * Map matched result representation
  */
-struct MatchResult {
+struct MatchResult{
   int id; /**< id of the trajectory to be matched */
   MatchedCandidatePath opt_candidate_path; /**< A vector of candidate matched
   to each point of a trajectory. It is stored in order to export more

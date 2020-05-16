@@ -57,7 +57,7 @@ const TGNode *TransitionGraph::find_optimal_candidate(const TGLayer &layer){
     }
   }
   return opt_c;
-}
+};
 
 TGOpath TransitionGraph::backtrack(){
   SPDLOG_TRACE("Backtrack start");
@@ -84,3 +84,31 @@ TGOpath TransitionGraph::backtrack(){
 std::vector<TGLayer> &TransitionGraph::get_layers(){
   return layers;
 }
+
+MatchedCandidatePath TransitionGraph::extract_matched_candidates(
+  const Network &graph,
+  const TGOpath &tg_opath){
+  MatchedCandidatePath matched_candidate_path;
+  for (int i = 0; i < tg_opath.size(); ++i) {
+    const TGNode *a = tg_opath[i];
+    if (a==nullptr) {
+      matched_candidate_path.push_back(
+        {i,-1,-1,-1,0,0,0,0,0,0}
+        );
+    } else {
+      matched_candidate_path.push_back(
+        {i,
+         a->c->edge->id,
+         network.get_node_id(a->c->edge->source),
+         network.get_node_id(a->c->edge->target),
+         a->c->dist,
+         a->c->offset,
+         a->c->edge->length,
+         a->ep,
+         a->tp,
+         a->sp_dist}
+        );
+    }
+  }
+  return matched_candidate_path;
+};

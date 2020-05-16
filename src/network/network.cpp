@@ -297,24 +297,64 @@ LineString Network::complete_path_to_geometry(
   return line;
 };
 
-std::vector<LineString> Network::oc_path_to_multiple_geometry(
-  const O_Path &o_path, const C_Path &complete_path,
+LineString Network::ocpath_to_geometry(const MM::TGOpath &tg_opath
+                                       const C_Path &complete_path)
+{
+  LineString line;
+  if (complete_path.empty()) return line;
+  // If complete path contains -1, export empty line
+  for (auto &item:complete_path) {
+    if (item == -1) return line;
+  }
+  int NOsegs = o_path.size();
+  int NCsegs = complete_path.size();
+  if (NCsegs ==1)
+  {
+    LineString &firstseg = get_edge_geom(complete_path[0]);
+    double firstoffset = tg_opath[0]->c->offset;
+    double lastoffset =  tg_opath[NOsegs-1]->c->offset;
+    LineString firstlineseg= ALGORITHM::cutoffseg_unique(
+      firstoffset,lastoffset,firstseg);
+    append_segs_to_line(&line,firstlineseg,0);
+  } else {
+    LineString &firstseg = get_edge_geom(complete_path[0]);
+    LineString &lastseg = get_edge_geom(complete_path[NCsegs-1]);
+    double firstoffset = tg_opath[0]->c->offset;
+    double lastoffset =  tg_opath[NOsegs-1]->c->offset;
+    LineString firstlineseg= ALGORITHM::cutoffseg(firstoffset, firstseg, 0);
+    LineString lastlineseg= ALGORITHM::cutoffseg(lastoffset, lastseg, 1);
+    append_segs_to_line(&line,firstlineseg,0);
+    if (NCsegs>2)
+    {
+      for(int i=1; i<NCsegs-1; ++i)
+      {
+        LineString &middleseg =  get_edge_geom(complete_path[i]);
+        append_segs_to_line(&line,middleseg,1);
+      }
+    };
+    append_segs_to_line(&line,lastlineseg,1);
+  }
+  return line;
+};
+
+MultiLineString Network::oc_path_to_multiple_geometry(
+  const TGOpath &tg_opath, const C_Path &complete_path,
   const std::vector<int> &indices) const {
-  if (t_path.cpath.empty()) return {};
+  if (cpath.empty()) return {};
   std::vector<LineString> lines;
   // Iterate through consecutive indexes and write the traversed path
   int J = indices.size();
   for (int j=0; j<J-1; ++j) {
-    O_Path lopath;
+    TGOpath lopath;
     lopath.push_back(o_path[j]);
     lopath.push_back(o_path[j+1]);
     C_Path lcpath;
-    int a = t_path.indices[j];
-    int b = t_path.indices[j+1];
+    int a = indices[j];
+    int b = indices[j+1];
     for (int i=a; i<b; ++i) {
-      lcpath.push_back(t_path.cpath[i]);
+      lcpath.push_back(cpath[i]);
     }
-    lcpath.push_back(t_path.cpath[b]);
+    lcpath.push_back(cpath[b]);
     SPDLOG_TRACE("Complete path j {} J {}", j, J);
     lines.push_back(complete_path_to_geometry(lopath,lcpath));
   }

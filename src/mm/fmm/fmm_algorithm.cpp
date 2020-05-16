@@ -82,29 +82,19 @@ MatchResult FastMapMatch::match_traj(const Trajectory &traj,
   SPDLOG_TRACE("Optimal path inference");
   TGOpath tg_opath = tg.backtrack();
   SPDLOG_TRACE("Optimal path size {}", tg_opath.size());
-  MatchedCandidatePath matched_candidate_path(tg_opath.size());
-  std::transform(tg_opath.begin(), tg_opath.end(),
-                 matched_candidate_path.begin(),
-                 [](const TGNode *a) {
-    return MatchedCandidate{
-      *(a->c), a->ep, a->tp, a->sp_dist
-    };
-  });
-  O_Path opath(tg_opath.size());
-  std::transform(tg_opath.begin(), tg_opath.end(),
-                 opath.begin(),
-                 [](const TGNode *a) {
-    return a->c->edge->id;
-  });
+  MatchedCandidatePath matched_candidate_path =
+    TransitionGraph::extract_matched_candidates(network,tg_opath);
+  O_Path opath = TransitionGraph::extract_opath(tg_opath);
+  SPDLOG_TRACE("Complete path inference");
   std::vector<int> indices;
   const std::vector<Edge> &edges = network_.get_edges();
   C_Path cpath = ubodt_->construct_complete_path(tg_opath, edges,
                                                  &indices);
   SPDLOG_TRACE("Cpath {}", cpath);
-  SPDLOG_TRACE("Complete path inference");
+  SPDLOG_TRACE("Geometry creation");
   LineString mgeom = network_.complete_path_to_geometry(
     traj.geom, cpath);
-  SPDLOG_TRACE("Complete path inference done");
+  SPDLOG_TRACE("Match trajectory done");
   return MatchResult{
     traj.id, matched_candidate_path, opath, cpath, indices, mgeom};
 };
@@ -125,30 +115,19 @@ PartialMatchResult partial_match_traj(
   SPDLOG_TRACE("Optimal path inference");
   TGOpath tg_opath = tg.backtrack();
   SPDLOG_TRACE("Optimal path size {}", tg_opath.size());
-  MatchedCandidatePath matched_candidate_path(tg_opath.size());
-  std::transform(tg_opath.begin(), tg_opath.end(),
-                 matched_candidate_path.begin(),
-                 [](const TGNode *a) {
-    return MatchedCandidate{
-      *(a->c), a->ep, a->tp, a->sp_dist
-    };
-  });
-  O_Path opath(tg_opath.size());
-  std::transform(tg_opath.begin(), tg_opath.end(),
-                 opath.begin(),
-                 [](const TGNode *a) {
-    return a->c->edge->id;
-  });
+  MatchedCandidatePath matched_candidate_path =
+    TransitionGraph::extract_matched_candidates(network,tg_opath);
+  O_Path opath = TransitionGraph::extract_opath(tg_opath);
   std::vector<int> indices;
   const std::vector<Edge> &edges = network_.get_edges();
   C_Path cpath;
-  ubodt_->construct_traversed_path(tg_opath, edges,
-                                   &cpath, &indices);
+  C_Path cpath = ubodt_->construct_complete_path_partial_match(
+    tg_opath, edges, &indices);
   SPDLOG_TRACE("Cpath {}", cpath);
-  SPDLOG_TRACE("Complete path inference");
+  SPDLOG_TRACE("Geometry construction");
   MultiLineString mgeom = network_.oc_path_to_multiple_geometry(
-    traj.geom, tg_opath, cpath);
-  SPDLOG_TRACE("Complete path inference done");
+    tg_opath, cpath, indices);
+  SPDLOG_TRACE("Partial match trajectory done");
   return PartialMatchResult{
     traj.id, matched_candidate_path, opath, cpath, indices, mgeom};
 };
