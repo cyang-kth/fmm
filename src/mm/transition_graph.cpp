@@ -60,26 +60,24 @@ const TGNode *TransitionGraph::find_optimal_candidate(const TGLayer &layer){
 }
 
 TGOpath TransitionGraph::backtrack(){
-  SPDLOG_TRACE("Backtrack on transition graph");
-  TGNode* track_cand=nullptr;
-  double final_prob = -0.001;
-  std::vector<TGNode>& last_layer = layers.back();
-  for (auto c = last_layer.begin(); c!=last_layer.end(); ++c) {
-    if(final_prob < c->cumu_prob) {
-      final_prob = c->cumu_prob;
-      track_cand = &(*c);
-    }
-  }
+  SPDLOG_TRACE("Backtrack start");
   TGOpath opath;
-  if (final_prob>0) {
-    opath.push_back(track_cand);
-    // Iterate from tail to head to assign path
-    while ((track_cand=track_cand->prev)!=nullptr) {
-      opath.push_back(track_cand);
+  TGNode *opt_c=nullptr;
+  double final_prob = -0.001;
+  int N = layers.size();
+  for (int i=N-1; i>=0; --i) {
+    opt_c = find_optimal_candidate(layers[i]);
+    opath.push_back(opt_c);
+    if (opt_c!=nullptr) {
+      while ((opt_c=opt_c->prev)!=nullptr)
+      {
+        opath.push_back(opt_c);
+        --i;
+      }
     }
-    std::reverse(opath.begin(), opath.end());
   }
-  SPDLOG_TRACE("Backtrack on transition graph done");
+  std::reverse(opath.begin(), opath.end());
+  SPDLOG_TRACE("Backtrack done");
   return opath;
 }
 

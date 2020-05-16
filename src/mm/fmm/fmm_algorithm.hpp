@@ -23,11 +23,11 @@
 #include "cxxopts/cxxopts.hpp"
 
 namespace FMM {
-namespace MM{
+namespace MM {
 /**
  * Configuration class for fmm algorithm
  */
-struct FastMapMatchConfig{
+struct FastMapMatchConfig {
   /**
    * Constructor of FastMapMatch configuration
    * @param k_arg the number of candidates
@@ -55,14 +55,14 @@ struct FastMapMatchConfig{
    * @return a %FastMapMatchConfig object
    */
   static FastMapMatchConfig load_from_xml(
-      const boost::property_tree::ptree &xml_data);
+    const boost::property_tree::ptree &xml_data);
   /**
    * Load configuration from argument data
    * @param arg_data argument data
    * @return a %FastMapMatchConfig object
    */
   static FastMapMatchConfig load_from_arg(
-      const cxxopts::ParseResult &arg_data);
+    const cxxopts::ParseResult &arg_data);
   /**
    * Register arguments to an option object
    */
@@ -79,7 +79,7 @@ struct FastMapMatchConfig{
  *
  */
 class FastMapMatch {
- public:
+public:
   /**
    * Constructor of Fast map matching model
    * @param network road network
@@ -87,9 +87,9 @@ class FastMapMatch {
    * @param ubodt Upperbounded origin destination table
    */
   FastMapMatch(const NETWORK::Network &network,
-      const  NETWORK::NetworkGraph &graph,
-      std::shared_ptr<UBODT> ubodt)
-      : network_(network), graph_(graph), ubodt_(ubodt) {
+               const NETWORK::NetworkGraph &graph,
+               std::shared_ptr<UBODT> ubodt)
+    : network_(network), graph_(graph), ubodt_(ubodt) {
   };
   /**
    * Match a trajectory to the road network
@@ -100,14 +100,23 @@ class FastMapMatch {
   MatchResult match_traj(const CORE::Trajectory &traj,
                          const FastMapMatchConfig &config);
   /**
+   * Partial match a trajectory to the road network
+   * @param  traj   input trajector data
+   * @param  config configuration of map matching algorithm
+   * @return A partial map matching result, which may contain multiple
+   * paths matched to segments of a trajectory.
+   */
+  PartialMatchResult partial_match_traj(
+    const CORE::Trajectory &traj,const FastMapMatchConfig &config);
+  /**
    * Match a wkt linestring to the road network.
    * @param wkt WKT representation of a trajectory
    * @param config Map matching configuration
    * @return Map matching result in POD format used in Python API
    */
   PYTHON::PyMatchResult match_wkt(
-      const std::string &wkt,const FastMapMatchConfig &config);
- protected:
+    const std::string &wkt,const FastMapMatchConfig &config);
+protected:
   /**
    * Get shortest path distance between two candidates
    * @param  ca from candidate
@@ -116,6 +125,16 @@ class FastMapMatch {
    */
   double get_sp_dist(const Candidate *ca,
                      const Candidate *cb);
+  /**
+   * Get shortest path distance between two candidates
+   * @param  ca from candidate
+   * @param  cb to candidate
+   * @param  connected if ca and cb are connected (found in UBODT), this
+   * value is set to true. Otherwise, it is set to false
+   * @return  shortest path value
+   */
+  double get_sp_dist(const Candidate *ca,
+                     const Candidate *cb, bool* connected);
   /**
    * Update probabilities in a transition graph
    * @param tg transition graph
@@ -131,10 +150,12 @@ class FastMapMatch {
    * @param la_ptr  layer a
    * @param lb_ptr  layer b next to a
    * @param eu_dist Euclidean distance between two observed point
+   * @param connected If the two layer are connected by a path, this value is
+   * set to true
    */
   void update_layer(int level, TGLayer *la_ptr, TGLayer *lb_ptr,
-                    double eu_dist);
- private:
+                    double eu_dist, bool *connected);
+private:
   const NETWORK::Network &network_;
   const NETWORK::NetworkGraph &graph_;
   std::shared_ptr<UBODT> ubodt_;

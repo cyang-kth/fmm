@@ -165,7 +165,7 @@ public:
    * @param complete_path A vector edge of IDs that are topologically connected
    * @param indices       Indices of each edge of the opath in complete path
    */
-  std::vector<FMM::CORE::LineString> oc_path_to_multiple_geometry(
+  FMM::CORE::MultiLineString oc_path_to_multiple_geometry(
     const MM::O_Path &o_path, const MM::C_Path &complete_path,
     const std::vector<int> &indices) const;
   /**
