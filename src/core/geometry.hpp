@@ -143,7 +143,7 @@ public:
    */
   inline std::string export_wkt() const{
     std::ostringstream ss;
-    ss << boost::geometry::wkt(line);
+    ss << std::setprecision(8) << boost::geometry::wkt(line);
     return ss.str();
   };
   /**
