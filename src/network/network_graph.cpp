@@ -247,4 +247,25 @@ void NetworkGraph::single_source_upperbound_dijkstra(NodeIndex s,
       }
     }
   }
-}
+};
+
+BidirectionalNetworkGraph::BidirectionalNetworkGraph(
+  const Network &network_arg) const {
+
+};
+
+std::vector<EdgeIndex>
+  BidirectionalNetworkGraph::shortest_path_bidirectional_dijkstra(
+  NodeIndex source, NodeIndex target) const {
+
+};
+
+std::vector<NodeIndex>
+  BidirectionalNetworkGraph::get_in_nodes(NodeIndex target) const{
+
+};
+
+std::vector<EdgeIndex>
+  BidirectionalNetworkGraph::get_in_edges(NodeIndex target) const{
+
+};
