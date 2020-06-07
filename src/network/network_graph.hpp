@@ -1,7 +1,8 @@
 /**
  * Fast map matching.
  *
- * Network graph class
+ * Network graph class. Routing functions of Dijkstra, AStar
+ * and Bidirectional Dijkstra are implemented.
  *
  * The optimization is achieved by recording the output
  * of routing in two variables predecessor map and distance map
@@ -85,11 +86,18 @@ public:
                                          PredecessorMap *pmap,
                                          DistanceMap *dmap) const;
   /**
-   *  Find the edge ID given a pair of nodes and its cost,
+   *  Find the edge index given a pair of nodes and its cost,
    *  if not found, return -1
    */
   int get_edge_index(NodeIndex source, NodeIndex target,
                      double cost) const;
+  /**
+   *  Find the edge index given a pair of nodes,
+   *  if not found, return -1. The cost parameter will be updated to
+   *  be the length of the edge found.
+   */
+  int get_edge_index(NodeIndex source, NodeIndex target,
+                     double *cost) const;
   /**
    * Get the edge ID from edge index
    * @param idx edge index
@@ -169,10 +177,18 @@ public:
     NodeIndex source, NodeIndex target) const;
   void single_target_upperbound_dijkstra(NodeIndex target,
                                          double delta,
-                                         PredecessorMap *pmap,
+                                         SuccessorMap *smap,
                                          DistanceMap *dmap) const;
-  std::vector<NodeIndex> get_in_nodes(NodeIndex target) const;
-  std::vector<EdgeIndex> get_in_edges(NodeIndex target) const;
+  std::vector<EdgeIndex> forward_track(NodeIndex source,
+                                       NodeIndex target,
+                                       const SuccessorMap &smap,
+                                       const DistanceMap &dmap) const;
+  void backward_search(
+    Heap *Q, NodeIndex v, double dist,
+    SuccessorMap *smap, DistanceMap *dmap) const;
+  void forward_search(
+    Heap *Q, NodeIndex v, double dist,
+    PredecessorMap *pmap, DistanceMap *dmap) const;
 protected:
   std::vector<std::vector<NodeIndex>> inverted_indices;
 };

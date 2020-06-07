@@ -14,6 +14,7 @@ TEST_CASE( "Network graph is tested", "[network_graph]" ) {
   spdlog::set_pattern("[%l][%s:%-3#] %v");
   Network network("../data/network.gpkg");
   NetworkGraph ng(network);
+  BidirectionalNetworkGraph bng(network);
 
   SECTION( "single_source_upperbound_dijkstra" ) {
     NodeID nid = 2;
@@ -37,4 +38,14 @@ TEST_CASE( "Network graph is tested", "[network_graph]" ) {
     ) == -1);
   }
 
+  SECTION( "bidirectional_dijkstra" ) {
+    NodeID source_id = 2;
+    NodeID target_id = 3;
+    NodeIndex source = network.get_node_index(source_id);
+    NodeIndex target = network.get_node_index(target_id);
+    std::vector<EdgeIndex> path1 = ng.shortest_path_dijkstra(source,target);
+    std::vector<EdgeIndex> path2 = bng.shortest_path_bidirectional_dijkstra(
+      source, target);
+    REQUIRE_THAT(path1,Catch::Equals<EdgeIndex>(path2));
+  }
 }
