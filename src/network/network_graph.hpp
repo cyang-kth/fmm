@@ -179,31 +179,6 @@ protected:
   unsigned int num_vertices = 0; /**< number of vertices  */
 }; // NetworkGraph
 
-class BidirectionalNetworkGraph : public NetworkGraph {
-public:
-  explicit BidirectionalNetworkGraph(const Network &network_arg);
-  std::vector<EdgeIndex> shortest_path_bidirectional_dijkstra(
-    NodeIndex source, NodeIndex target) const;
-  void single_target_upperbound_dijkstra(NodeIndex target,
-                                         double delta,
-                                         SuccessorMap *smap,
-                                         DistanceMap *dmap) const;
-  std::vector<EdgeIndex> forward_track(NodeIndex source,
-                                       NodeIndex target,
-                                       const SuccessorMap &smap,
-                                       const DistanceMap &dmap) const;
-  void backward_search(
-    Heap *Q, NodeIndex v, double dist,
-    SuccessorMap *smap, DistanceMap *dmap) const;
-  void forward_search(
-    Heap *Q, NodeIndex v, double dist,
-    PredecessorMap *pmap, DistanceMap *dmap) const;
-  std::unordered_set<EdgeID> search_edges_within_dist(
-    EdgeID eid, double dist) const;
-protected:
-  std::vector<std::vector<NodeIndex>> inverted_indices;
-};
-
 }; // NETWORK
 } // FMM
 #endif /* FMM_NETWORK_GRAPH_HPP */
