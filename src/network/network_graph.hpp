@@ -106,6 +106,15 @@ public:
   inline int get_edge_id(EdgeIndex idx) const {
     return network.get_edge_id(idx);
   };
+
+  inline const Edge& get_edge(EdgeID id) const {
+    return network.get_edge(id);
+  };
+
+  inline const Edge& get_edge(EdgeIndex index) const {
+    return network.get_edge(index);
+  };
+
   /**
    * Get edge ID from source node, target node and cost
    * @param source
@@ -189,6 +198,8 @@ public:
   void forward_search(
     Heap *Q, NodeIndex v, double dist,
     PredecessorMap *pmap, DistanceMap *dmap) const;
+  std::unordered_set<EdgeID> search_edges_within_dist(
+    EdgeID eid, double dist) const;
 protected:
   std::vector<std::vector<NodeIndex>> inverted_indices;
 };

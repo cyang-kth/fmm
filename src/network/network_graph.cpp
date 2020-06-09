@@ -312,7 +312,7 @@ BidirectionalNetworkGraph::shortest_path_bidirectional_dijkstra(
       fQ.pop();
       NodeIndex u = node.index;
       SPDLOG_INFO("Forward search node {} dist {}",
-        get_node_id(u),node.value);
+                  get_node_id(u),node.value);
       if (u==prev_node) break;
       forward_search(&fQ,u,node.value,&pmap,&fdmap);
       forward_search_flag = false;
@@ -323,7 +323,7 @@ BidirectionalNetworkGraph::shortest_path_bidirectional_dijkstra(
       bQ.pop();
       NodeIndex u = node.index;
       SPDLOG_INFO("Backward search node {} dist {}",
-        get_node_id(u),node.value);
+                  get_node_id(u),node.value);
       if (u==prev_node) break;
       backward_search(&bQ,u,node.value,&smap,&bdmap);
       forward_search_flag = true;
@@ -360,7 +360,7 @@ void BidirectionalNetworkGraph::single_target_upperbound_dijkstra(
 
 void BidirectionalNetworkGraph::forward_search(
   Heap *Q, NodeIndex u, double dist, PredecessorMap *pmap, DistanceMap *dmap)
-  const {
+const {
   OutEdgeIterator out_i, out_end;
   double temp_dist = 0;
   for (boost::tie(out_i, out_end) = boost::out_edges(u, g);
@@ -388,7 +388,7 @@ void BidirectionalNetworkGraph::forward_search(
 
 void BidirectionalNetworkGraph::backward_search(
   Heap *Q, NodeIndex v, double dist, SuccessorMap *smap, DistanceMap *dmap)
-  const {
+const {
   double temp_dist = 0;
   const std::vector<NodeIndex> &incoming_nodes = inverted_indices[v];
   for (NodeIndex u:incoming_nodes) {
@@ -431,4 +431,39 @@ std::vector<EdgeIndex> BidirectionalNetworkGraph::forward_track(
     }
     return path;
   }
-}
+};
+
+std::unordered_set<EdgeID> BidirectionalNetworkGraph::search_edges_within_dist(
+  EdgeID eid, double dist) const {
+  const Edge& edge = get_edge(eid);
+  NodeIndex source = edge.source;
+  NodeIndex target = edge.target;
+  PredecessorMap pmap;
+  DistanceMap fdmap;
+  SuccessorMap smap;
+  DistanceMap bdmap;
+  single_source_upperbound_dijkstra(target, dist, &pmap, &fdmap);
+  single_target_upperbound_dijkstra(source, dist, &smap, &bdmap);
+  // Find edges in the pmap
+  std::unordered_set<EdgeID> result;
+  for (auto &item:pmap){
+    NodeIndex v = item.first;
+    NodeIndex u = item.second;
+    double cost = fdmap.at(v)-fdmap.at(u);
+    if (u!=v){
+      SPDLOG_INFO("Found edge {}",get_edge_id(get_edge_index(u, v, cost)));
+      result.insert(get_edge_id(get_edge_index(u, v, cost)));
+    }
+  }
+  for (auto &item:smap){
+    NodeIndex u = item.first;
+    NodeIndex v = item.second;
+    double cost = bdmap.at(u)-bdmap.at(v);
+    if (u!=v){
+      SPDLOG_INFO("Found edge {}",get_edge_id(get_edge_index(u, v, cost)));
+      result.insert(get_edge_id(get_edge_index(u, v, cost)));
+    }
+  }
+  // Find edges in the smap
+  return result;
+};
