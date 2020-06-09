@@ -2,6 +2,7 @@
 #include "catch2/catch.hpp"
 #include "util/debug.hpp"
 #include "network/network_graph.hpp"
+#include "network/bidirectional_network_graph.hpp"
 
 using namespace FMM;
 using namespace FMM::CORE;
@@ -48,4 +49,17 @@ TEST_CASE( "Network graph is tested", "[network_graph]" ) {
       source, target);
     REQUIRE_THAT(path1,Catch::Equals<EdgeIndex>(path2));
   }
+
+  SECTION( "bidirectional_dijkstra_within_dist" ) {
+    EdgeID edge_id = 2;
+    double dist = 3;
+    auto result = bng.search_edges_within_dist_ft_edge(
+      edge_id, dist);
+    std::cout<<"Edges found: ";
+    for (auto item:result){
+      std::cout<<item<<" ";
+    }
+    std::cout<<"\n";
+  }
+
 }

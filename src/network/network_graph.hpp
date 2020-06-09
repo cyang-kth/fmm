@@ -106,6 +106,15 @@ public:
   inline int get_edge_id(EdgeIndex idx) const {
     return network.get_edge_id(idx);
   };
+
+  inline const Edge& get_edge(EdgeID id) const {
+    return network.get_edge(id);
+  };
+
+  inline const Edge& get_edge(EdgeIndex index) const {
+    return network.get_edge(index);
+  };
+
   /**
    * Get edge ID from source node, target node and cost
    * @param source
@@ -169,29 +178,6 @@ protected:
   const Network &network; /**< Road network */
   unsigned int num_vertices = 0; /**< number of vertices  */
 }; // NetworkGraph
-
-class BidirectionalNetworkGraph : public NetworkGraph {
-public:
-  explicit BidirectionalNetworkGraph(const Network &network_arg);
-  std::vector<EdgeIndex> shortest_path_bidirectional_dijkstra(
-    NodeIndex source, NodeIndex target) const;
-  void single_target_upperbound_dijkstra(NodeIndex target,
-                                         double delta,
-                                         SuccessorMap *smap,
-                                         DistanceMap *dmap) const;
-  std::vector<EdgeIndex> forward_track(NodeIndex source,
-                                       NodeIndex target,
-                                       const SuccessorMap &smap,
-                                       const DistanceMap &dmap) const;
-  void backward_search(
-    Heap *Q, NodeIndex v, double dist,
-    SuccessorMap *smap, DistanceMap *dmap) const;
-  void forward_search(
-    Heap *Q, NodeIndex v, double dist,
-    PredecessorMap *pmap, DistanceMap *dmap) const;
-protected:
-  std::vector<std::vector<NodeIndex>> inverted_indices;
-};
 
 }; // NETWORK
 } // FMM
