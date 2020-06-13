@@ -1,25 +1,3 @@
-cmake_minimum_required( VERSION 3.5.1)
-
-if (POLICY CMP0074)
-    cmake_policy(SET CMP0074 NEW)
-endif()
-if (POLICY CMP0078)
-    cmake_policy(SET CMP0078 NEW)
-endif()
-if (POLICY CMP0086)
-    cmake_policy(SET CMP0086 NEW)
-endif()
-
-# Prevent in source build
-set(CMAKE_DISABLE_SOURCE_CHANGES  ON)
-set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
-
-project(fmm-python)
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}
-  -DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_OFF")
-set(CMAKE_CXX_STANDARD 11)
-
 # Make sure the swig package is loaded.
 find_package(SWIG REQUIRED)
 include(${SWIG_USE_FILE})
@@ -77,15 +55,16 @@ ${OSMIUM_LIBRARIES})
 # Add the target.
 if (${CMAKE_VERSION} VERSION_LESS "3.8.0")
   message(STATUS "Using swig add module")
-  SWIG_ADD_MODULE(fmm python ${PROJECT_SOURCE_DIR}/python/fmm.i)
+  SWIG_ADD_MODULE(pyfmm python ${PROJECT_SOURCE_DIR}/python/fmm.i)
 else()
   message(STATUS "Using swig add library")
-  SWIG_ADD_LIBRARY(fmm
+  SWIG_ADD_LIBRARY(pyfmm
     LANGUAGE python
     SOURCES ${PROJECT_SOURCE_DIR}/python/fmm.i)
 endif()
 
-swig_link_libraries(fmm
+set_target_properties(pyfmm PROPERTIES OUTPUT_NAME "fmm")
+swig_link_libraries(pyfmm
         ${PYTHON_LIBRARIES}
         ${GDAL_LIBRARIES}
         ${Boost_LIBRARIES}

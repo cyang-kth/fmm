@@ -69,23 +69,6 @@ void Network::add_edge(EdgeID edge_id, NodeID source, NodeID target,
 };
 
 void Network::read_osm_file(const std::string &filename) {
-  SPDLOG_INFO("Read osm network {} ", filename);
-  auto otypes = osmium::osm_entity_bits::node|osmium::osm_entity_bits::way;
-  osmium::io::Reader reader{filename, otypes};
-  namespace map = osmium::index::map;
-  using index_type =
-    map::SparseMemArray<osmium::unsigned_object_id_type, osmium::Location>;
-  using location_handler_type
-    = osmium::handler::NodeLocationsForWays<index_type>;
-  index_type index;
-  location_handler_type location_handler{index};
-  OSMHandler handler(this);
-  osmium::apply(reader, location_handler, handler);
-  reader.close();
-  SPDLOG_INFO("Read osm network done with edges read {}",edges.size());
-};
-
-void Network::read_osm_file(const std::string &filename) {
 #ifdef BUILD_OSM
   SPDLOG_INFO("Read osm network {} ", filename);
   OSMNetworkReader::read_osm_data_into_network(filename,this);
