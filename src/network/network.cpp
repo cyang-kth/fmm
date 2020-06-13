@@ -11,14 +11,10 @@
 // Data structures for Rtree
 #include <boost/geometry/index/rtree.hpp>
 #include <boost/function_output_iterator.hpp>
-#include <osmium/handler.hpp>
-#include <osmium/io/any_input.hpp>
-#include <osmium/osm/node.hpp>
-#include <osmium/osm/way.hpp>
-#include <osmium/visitor.hpp>
-#include <osmium/geom/ogr.hpp>
-#include <osmium/index/map/sparse_mem_array.hpp>
-#include <osmium/handler/node_locations_for_ways.hpp>
+
+#ifdef BUILD_OSM
+#include "network/osm_network_reader.hpp"
+#endif
 
 using namespace FMM;
 using namespace FMM::CORE;
@@ -90,16 +86,14 @@ void Network::read_osm_file(const std::string &filename) {
 };
 
 void Network::read_osm_file(const std::string &filename) {
+#ifdef BUILD_OSM
   SPDLOG_INFO("Read osm network {} ", filename);
-  auto otypes = osmium::osm_entity_bits::node|osmium::osm_entity_bits::way;
-  osmium::io::Reader reader{filename, otypes};
-  bool do_filter = true;
-  OSMHandler handler(do_filter);
-  osmium::apply(reader, handler);
-  reader.close();
-  handler.generate_simplified_graph(*this);
+  OSMNetworkReader::read_osm_data_into_network(filename,this);
   build_rtree_index();
   SPDLOG_INFO("Read osm network done with edges read {}",edges.size());
+#else
+  SPDLOG_CRITICAL("OSM is not build for FMM");
+#endif
 };
 
 void Network::read_ogr_file(const std::string &filename,
@@ -216,6 +210,14 @@ int Network::get_edge_count() const {
 const std::vector<Edge> &Network::get_edges() const {
   return edges;
 }
+
+const Edge& Network::get_edge(EdgeID id) const {
+  return edges[get_edge_index(id)];
+};
+
+const Edge& Network::get_edge(EdgeIndex index) const {
+  return edges[index];
+};
 
 // Get the ID attribute of an edge according to its index
 EdgeID Network::get_edge_id(EdgeIndex index) const {

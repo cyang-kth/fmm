@@ -54,6 +54,35 @@ FMM::CONFIG::GPSConfig FMM::CONFIG::GPSConfig::load_from_arg(
   return config;
 };
 
+void FMM::CONFIG::GPSConfig::register_arg(cxxopts::Options &options){
+  options.add_options()
+  ("gps","GPS file name",
+  cxxopts::value<std::string>()->default_value(""))
+  ("gps_id","GPS file id",
+  cxxopts::value<std::string>()->default_value("id"))
+  ("gps_x","GPS x name",
+  cxxopts::value<std::string>()->default_value("x"))
+  ("gps_y","GPS y name",
+  cxxopts::value<std::string>()->default_value("y"))
+  ("gps_geom","GPS file geom column name",
+  cxxopts::value<std::string>()->default_value("geom"))
+  ("gps_timestamp",   "GPS file timestamp column name",
+  cxxopts::value<std::string>()->default_value("timestamp"))
+  ("gps_point","GPS point or not");
+};
+
+void FMM::CONFIG::GPSConfig::register_help(std::ostringstream &oss){
+  oss<<"--gps (required) <string>: GPS file name\n";
+  oss<<"--gps_id (optional) <string>: GPS id name (id)\n";
+  oss<<"--gps_x (optional) <string>: GPS x name (x)\n";
+  oss<<"--gps_y (optional) <string>: GPS y name (y)\n";
+  oss<<"--gps_timestamp (optional) <string>: "
+    "GPS timestamp name (timestamp)\n";
+  oss<<"--gps_geom (optional) <string>: GPS geometry name (geom)\n";
+  oss<<"--gps_point (optional): if specified read input data as gps point, "
+    "otherwise (default) read input data as trajectory\n";
+};
+
 int FMM::CONFIG::GPSConfig::get_gps_format() const {
   std::string fn_extension = file.substr(
       file.find_last_of(".") + 1);
@@ -82,4 +111,4 @@ bool FMM::CONFIG::GPSConfig::validate() const {
     return false;
   }
   return true;
-}
+};

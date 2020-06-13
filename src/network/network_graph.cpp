@@ -35,7 +35,7 @@ void NetworkGraph::print_graph() const {
   boost::graph_traits<Graph_T>::edge_iterator it, end;
   for (boost::tie(it, end) = boost::edges(g); it != end; ++it)
     std::cout << " index " << g[*it].index << " edge " <<
-              network.get_edge_id(g[*it].index) << " "
+      network.get_edge_id(g[*it].index) << " "
               << network.get_node_id(boost::source(*it, g)) << " -> "
               << network.get_node_id(boost::target(*it, g)) << '\n';
 }
@@ -52,7 +52,7 @@ unsigned int NetworkGraph::get_num_vertices() const {
 }
 
 std::vector<EdgeIndex> NetworkGraph::shortest_path_dijkstra(
-    NodeIndex source, NodeIndex target) const {
+  NodeIndex source, NodeIndex target) const {
   SPDLOG_TRACE("Shortest path starts");
   if (source == target) return {};
   Heap Q;
@@ -97,17 +97,17 @@ std::vector<EdgeIndex> NetworkGraph::shortest_path_dijkstra(
 }
 
 double NetworkGraph::calc_heuristic_dist(
-    const Point &p1, const Point &p2) const {
+  const Point &p1, const Point &p2) const {
   return sqrt((p2.get<0>() - p1.get<0>()) * (p2.get<0>() - p1.get<0>()) +
-      (p2.get<1>() - p1.get<1>()) * (p2.get<1>() - p1.get<1>()));
+              (p2.get<1>() - p1.get<1>()) * (p2.get<1>() - p1.get<1>()));
 }
 
 std::vector<EdgeIndex> NetworkGraph::shortest_path_astar(
-    NodeIndex source, NodeIndex target) const {
+  NodeIndex source, NodeIndex target) const {
   SPDLOG_TRACE("Shortest path astar starts");
   if (source == target) return {};
   const std::vector<Point> &vertex_points =
-      network.get_vertex_points();
+    network.get_vertex_points();
   Heap Q;
   PredecessorMap pmap;
   DistanceMap dmap;
@@ -158,8 +158,8 @@ std::vector<EdgeIndex> NetworkGraph::shortest_path_astar(
 }
 
 std::vector<EdgeIndex> NetworkGraph::back_track(
-    NodeIndex source, NodeIndex target, const PredecessorMap &pmap,
-    const DistanceMap &dmap) const {
+  NodeIndex source, NodeIndex target, const PredecessorMap &pmap,
+  const DistanceMap &dmap) const {
   SPDLOG_TRACE("Backtrack starts");
   if (dmap.find(target) == dmap.end()) {
     return {};
@@ -206,6 +206,31 @@ int NetworkGraph::get_edge_index(NodeIndex source, NodeIndex target,
   SPDLOG_ERROR("Edge not found");
   return -1;
 }
+
+int NetworkGraph::get_edge_index(
+  NodeIndex source, NodeIndex target, double *cost) const {
+  if (source >= num_vertices || target >= num_vertices) return -1;
+  EdgeDescriptor e;
+  OutEdgeIterator out_i, out_end;
+  int result=-1;
+  double current_cost = std::numeric_limits<double>::max();
+  for (boost::tie(out_i, out_end) = boost::out_edges(source, g);
+       out_i != out_end; ++out_i) {
+    e = *out_i;
+    SPDLOG_TRACE("  Check Edge from {} to {} cost {}",
+                 source, boost::target(e, g), g[e].length);
+    if (target == boost::target(e, g) &&
+        g[e].length <= current_cost) {
+      current_cost = g[e].length;
+      *cost = current_cost;
+      result = g[e].index;
+    }
+  }
+  if (result<0)
+    SPDLOG_ERROR("Edge not found from {} to {}",source,target);
+  return result;
+};
+
 void NetworkGraph::single_source_upperbound_dijkstra(NodeIndex s,
                                                      double delta,
                                                      PredecessorMap *pmap,
@@ -238,7 +263,6 @@ void NetworkGraph::single_source_upperbound_dijkstra(NodeIndex s,
           Q.decrease_key(v, temp_dist);
         };
       } else {
-        // dmap does not contain v
         if (temp_dist <= delta) {
           Q.push(v, temp_dist);
           pmap->insert({v, u});
@@ -247,4 +271,4 @@ void NetworkGraph::single_source_upperbound_dijkstra(NodeIndex s,
       }
     }
   }
-}
+};

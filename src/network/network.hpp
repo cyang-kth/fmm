@@ -71,6 +71,8 @@ public:
    * @return number of edges
    */
   int get_edge_count() const;
+  const Edge& get_edge(EdgeID id) const;
+  const Edge& get_edge(EdgeIndex index) const;
   /**
    * Get edges in the network
    * @return a constant reference to the edges

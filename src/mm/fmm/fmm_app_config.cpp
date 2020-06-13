@@ -48,54 +48,27 @@ void FMMAppConfig::load_xml(const std::string &file){
 void FMMAppConfig::load_arg(int argc, char **argv){
   SPDLOG_INFO("Start reading FMM configuration from arguments");
   cxxopts::Options options("fmm_config", "Configuration parser of fmm");
+  NetworkConfig::register_arg(options);
+  GPSConfig::register_arg(options);
+  ResultConfig::register_arg(options);
+  FastMapMatchConfig::register_arg(options);
   options.add_options()
     ("ubodt","Ubodt file name",
     cxxopts::value<std::string>()->default_value(""))
-    ("network","Network file name",
-    cxxopts::value<std::string>()->default_value(""))
-    ("network_id","Network id name",
-    cxxopts::value<std::string>()->default_value("id"))
-    ("source","Network source name",
-    cxxopts::value<std::string>()->default_value("source"))
-    ("target","Network target name",
-    cxxopts::value<std::string>()->default_value("target"))
-    ("gps","GPS file name",
-    cxxopts::value<std::string>()->default_value(""))
-    ("gps_id","GPS file id",
-    cxxopts::value<std::string>()->default_value("id"))
-    ("gps_x","GPS x name",
-    cxxopts::value<std::string>()->default_value("x"))
-    ("gps_y","GPS y name",
-    cxxopts::value<std::string>()->default_value("y"))
-    ("gps_geom","GPS file geom column name",
-    cxxopts::value<std::string>()->default_value("geom"))
-    ("gps_timestamp",   "GPS file timestamp column name",
-    cxxopts::value<std::string>()->default_value("timestamp"))
-    ("k,candidates","Number of candidates",
-    cxxopts::value<int>()->default_value("8"))
-    ("r,radius","Search radius",
-    cxxopts::value<double>()->default_value("300.0"))
-    ("e,error","GPS error",
-    cxxopts::value<double>()->default_value("50.0"))
-    ("o,output","Output file name",
-    cxxopts::value<std::string>()->default_value(""))
-    ("output_fields","Output fields",
-    cxxopts::value<std::string>()->default_value(""))
     ("l,log_level","Log level",cxxopts::value<int>()->default_value("2"))
-    ("step","Step report",cxxopts::value<int>()->default_value("100"))
-    ("h,help",   "Help information")
-    ("gps_point","GPS point or not")
+    ("s,step","Step report",cxxopts::value<int>()->default_value("100"))
+    ("h,help","Help information")
     ("use_omp","Use parallel computing if specified");
   if (argc==1) {
     help_specified = true;
     return;
   }
   auto result = options.parse(argc, argv);
-  ubodt_file = result["ubodt"].as<std::string>();
   network_config = NetworkConfig::load_from_arg(result);
   gps_config = GPSConfig::load_from_arg(result);
   result_config = CONFIG::ResultConfig::load_from_arg(result);
   fmm_config = FastMapMatchConfig::load_from_arg(result);
+  ubodt_file = result["ubodt"].as<std::string>();
   log_level = result["log_level"].as<int>();
   step = result["step"].as<int>();
   use_omp = result.count("use_omp")>0;
@@ -106,32 +79,19 @@ void FMMAppConfig::load_arg(int argc, char **argv){
 };
 
 void FMMAppConfig::print_help(){
-  std::cout<<"fmm argument lists:\n";
-  std::cout<<"--ubodt (required) <string>: Ubodt file name\n";
-  std::cout<<"--network (required) <string>: Network file name\n";
-  std::cout<<"--network_id (optional) <string>: Network id name (id)\n";
-  std::cout<<"--source (optional) <string>: Network source name (source)\n";
-  std::cout<<"--target (optional) <string>: Network target name (target)\n";
-  std::cout<<"--gps (required) <string>: GPS file name\n";
-  std::cout<<"--gps_id (optional) <string>: GPS id name (id)\n";
-  std::cout<<"--gps_x (optional) <string>: GPS x name (x)\n";
-  std::cout<<"--gps_y (optional) <string>: GPS y name (y)\n";
-  std::cout<<"--gps_timestamp (optional) <string>: "
-    "GPS timestamp name (timestamp)\n";
-  std::cout<<"--gps_geom (optional) <string>: GPS geometry name (geom)\n";
-  std::cout<<"-r/--radius (optional) <double>: search "
-             "radius (network data unit) (300)\n";
-  std::cout<<"-e/--error (optional) <double>: GPS error "
-             "(network data unit) (50)\n";
-  std::cout<<"--output (required) <string>: Output file name\n";
-  std::cout<<"--output_fields (optional) <string>: Output fields\n";
-  std::cout<<"  opath,cpath,tpath,ogeom,mgeom,pgeom,\n";
-  std::cout<<"  offset,error,spdist,tp,ep,length,all\n";
-  std::cout<<"--log_level (optional) <int>: log level (2)\n";
-  std::cout<<"--step (optional) <int>: progress report step (100)\n";
-  std::cout<<"--use_omp: use OpenMP for multithreaded map matching\n";
-  std::cout<<"-h/--help:print help information\n";
-  std::cout<<"For xml configuration, check example folder\n";
+  std::ostringstream oss;
+  oss<<"fmm argument lists:\n";
+  oss<<"--ubodt (required) <string>: Ubodt file name\n";
+  NetworkConfig::register_help(oss);
+  GPSConfig::register_help(oss);
+  ResultConfig::register_help(oss);
+  FastMapMatchConfig::register_help(oss);
+  oss<<"-l/--log_level (optional) <int>: log level (2)\n";
+  oss<<"-s/--step (optional) <int>: progress report step (100)\n";
+  oss<<"--use_omp: use OpenMP for multithreaded map matching\n";
+  oss<<"-h/--help:print help information\n";
+  oss<<"For xml configuration, check example folder\n";
+  std::cout<<oss.str();
 };
 
 void FMMAppConfig::print() const {

@@ -37,10 +37,14 @@ void CSVMatchResultWriter::write_header() {
   if (config_.write_ep) header += ";ep";
   if (config_.write_tp) header += ";tp";
   if (config_.write_length) header += ";length";
+  if (config_.write_duration) header += ";duration";
+  if (config_.write_speed) header += ";speed";
   m_fstream << header << '\n';
 }
 
-void CSVMatchResultWriter::write_result(const FMM::MM::MatchResult &result) {
+void CSVMatchResultWriter::write_result(
+    const FMM::CORE::Trajectory &traj,
+    const FMM::MM::MatchResult &result) {
   std::stringstream buf;
   buf << result.id;
   if (config_.write_opath) {
@@ -70,10 +74,10 @@ void CSVMatchResultWriter::write_result(const FMM::MM::MatchResult &result) {
     buf << ";";
     if (!result.opt_candidate_path.empty()) {
       int N = result.opt_candidate_path.size();
-      for (int i = 0; i < N - 1; ++i) {
-        buf << result.opt_candidate_path[i].sp_dist << ",";
+      for (int i = 1; i < N; ++i) {
+        buf << result.opt_candidate_path[i].sp_dist
+            << (i==N-1?"":",");
       }
-      buf << result.opt_candidate_path[N - 1].sp_dist;
     }
   }
   if (config_.write_pgeom) {
@@ -139,13 +143,36 @@ void CSVMatchResultWriter::write_result(const FMM::MM::MatchResult &result) {
     buf << ";";
     if (!result.opt_candidate_path.empty()) {
       int N = result.opt_candidate_path.size();
-      SPDLOG_TRACE("Write length {}",N);
+      SPDLOG_TRACE("Write length for {} edges",N);
       for (int i = 0; i < N - 1; ++i) {
         // SPDLOG_TRACE("Write length {}",i);
         buf << result.opt_candidate_path[i].c.edge->length << ",";
       }
       // SPDLOG_TRACE("Write length {}",N-1);
       buf << result.opt_candidate_path[N - 1].c.edge->length;
+    }
+  }
+  if (config_.write_duration) {
+    buf << ";";
+    if (!traj.timestamps.empty()) {
+      int N = traj.timestamps.size();
+      SPDLOG_TRACE("Write duration for {} points",N);
+      for (int i = 1; i < N; ++i) {
+        // SPDLOG_TRACE("Write length {}",i);
+        buf << traj.timestamps[i] - traj.timestamps[i-1]
+            << (i==N-1?"":",");
+      }
+    }
+  }
+  if (config_.write_speed) {
+    buf << ";";
+    if (!result.opt_candidate_path.empty() && !traj.timestamps.empty()) {
+      int N = traj.timestamps.size();
+      for (int i = 1; i < N; ++i) {
+        double duration = traj.timestamps[i] - traj.timestamps[i-1];
+        buf << (duration>0?(result.opt_candidate_path[i].sp_dist/duration):0)
+            << (i==N-1?"":",");
+      }
     }
   }
   buf << '\n';

@@ -55,6 +55,12 @@ typedef boost::graph_traits<Graph_T>::out_edge_iterator OutEdgeIterator;
 typedef std::unordered_map<NodeIndex,NodeIndex> PredecessorMap;
 
 /**
+ * Successor Map. It stores for each node, the next node
+ * visited, which is part of the bidirectional shortest path routing result.
+ */
+typedef std::unordered_map<NodeIndex,NodeIndex> SuccessorMap;
+
+/**
  * Distance map. It stores for each node, the distance visited from a source
  * node, which is part of the shortest path routing result.
  */

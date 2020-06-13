@@ -4,7 +4,7 @@
 #include <set>
 
 void FMM::CONFIG::ResultConfig::print() const {
-  std::stringstream ss;
+  std::ostringstream ss;
   if (output_config.write_opath)
     ss << "opath ";
   if (output_config.write_pgeom)
@@ -27,13 +27,17 @@ void FMM::CONFIG::ResultConfig::print() const {
     ss << "tp ";
   if (output_config.write_length)
     ss << "length ";
+  if (output_config.write_duration)
+    ss << "duration ";
+  if (output_config.write_speed)
+    ss << "speed ";
   SPDLOG_INFO("ResultConfig");
   SPDLOG_INFO("File: {}",file);
   SPDLOG_INFO("Fields: {}",ss.str());
 };
 
 FMM::CONFIG::ResultConfig FMM::CONFIG::ResultConfig::load_from_xml(
-    const boost::property_tree::ptree &xml_data) {
+  const boost::property_tree::ptree &xml_data) {
   ResultConfig config;
   config.file = xml_data.get<std::string>("config.output.file");
   if (xml_data.get_child_optional("config.output.fields")) {
@@ -74,6 +78,12 @@ FMM::CONFIG::ResultConfig FMM::CONFIG::ResultConfig::load_from_xml(
     if (xml_data.get_child_optional("config.output.fields.length")) {
       config.output_config.write_length = true;
     }
+    if (xml_data.get_child_optional("config.output.fields.duration")) {
+      config.output_config.write_duration = true;
+    }
+    if (xml_data.get_child_optional("config.output.fields.speed")) {
+      config.output_config.write_speed = true;
+    }
     if (xml_data.get_child_optional("config.output.fields.all")) {
       config.output_config.write_opath = true;
       config.output_config.write_pgeom = true;
@@ -86,13 +96,15 @@ FMM::CONFIG::ResultConfig FMM::CONFIG::ResultConfig::load_from_xml(
       config.output_config.write_ep = true;
       config.output_config.write_tp = true;
       config.output_config.write_length = true;
+      config.output_config.write_duration = true;
+      config.output_config.write_speed = true;
     }
   }
   return config;
 };
 
 FMM::CONFIG::ResultConfig FMM::CONFIG::ResultConfig::load_from_arg(
-    const cxxopts::ParseResult &arg_data) {
+  const cxxopts::ParseResult &arg_data) {
   FMM::CONFIG::ResultConfig config;
   config.file = arg_data["output"].as<std::string>();
   if (arg_data.count("output_fields") > 0) {
@@ -133,6 +145,12 @@ FMM::CONFIG::ResultConfig FMM::CONFIG::ResultConfig::load_from_arg(
     if (dict.find("length") != dict.end()) {
       config.output_config.write_length = true;
     }
+    if (dict.find("duration") != dict.end()) {
+      config.output_config.write_duration = true;
+    }
+    if (dict.find("speed") != dict.end()) {
+      config.output_config.write_speed = true;
+    }
     if (dict.find("all") != dict.end()) {
       config.output_config.write_opath = true;
       config.output_config.write_pgeom = true;
@@ -145,13 +163,15 @@ FMM::CONFIG::ResultConfig FMM::CONFIG::ResultConfig::load_from_arg(
       config.output_config.write_ep = true;
       config.output_config.write_tp = true;
       config.output_config.write_length = true;
+      config.output_config.write_duration = true;
+      config.output_config.write_speed = true;
     }
   }
   return config;
 };
 
 std::set<std::string> FMM::CONFIG::ResultConfig::string2set(
-    const std::string &s) {
+  const std::string &s) {
   char delim = ',';
   std::set<std::string> result;
   std::stringstream ss(s);
@@ -160,7 +180,8 @@ std::set<std::string> FMM::CONFIG::ResultConfig::string2set(
     result.insert(intermediate);
   }
   return result;
-}
+};
+
 bool FMM::CONFIG::ResultConfig::validate() const {
   if (UTIL::file_exists(file))
   {
@@ -172,4 +193,19 @@ bool FMM::CONFIG::ResultConfig::validate() const {
     return false;
   }
   return true;
+};
+
+void FMM::CONFIG::ResultConfig::register_arg(cxxopts::Options &options){
+  options.add_options()
+    ("o,output","Output file name",
+    cxxopts::value<std::string>()->default_value(""))
+    ("output_fields","Output fields",
+    cxxopts::value<std::string>()->default_value(""));
+};
+
+void FMM::CONFIG::ResultConfig::register_help(std::ostringstream &oss){
+  oss<<"--output (required) <string>: Output file name\n";
+  oss<<"--output_fields (optional) <string>: Output fields\n";
+  oss<<"  opath,cpath,tpath,mgeom,pgeom,\n";
+  oss<<"  offset,error,spdist,tp,ep,length,duration,speed,all\n";
 };
