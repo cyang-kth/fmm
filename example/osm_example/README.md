@@ -12,7 +12,7 @@ curl https://download.bbbike.org/osm/bbbike/Stockholm/Stockholm.osm.pbf -o Stock
 2. Run map matching
 
 ```
-stmatch --network Stockholm.osm.pbf --gps traj.csv -k 16 -r 0.005 -e 0.0005 --output mr.txt
+stmatch --network Stockholm.osm.pbf --gps traj.csv -k 16 -r 0.005 -e 0.0005 --vmax 0.0002 --output mr.txt
 ```
 
 3. Result

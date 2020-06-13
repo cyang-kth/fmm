@@ -25,9 +25,9 @@ We encourage contribution with feature request, bug report or developping new ma
 
 ### Examples
 
-- [OSM-example](example/osm_example)
+- Map matching on [OSM network](example/osm_example) (left) and ESRI shapefile (right)
 
-<img src="example/osm_example/result.png" width="400"/>
+<img src="example/osm_example/result.png" width="400"/><img src="img/shp_example.png" width="400"/>
 
 - [Interactive web demo](example/web_demo)
 
