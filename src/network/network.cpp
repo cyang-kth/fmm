@@ -12,7 +12,7 @@
 #include <boost/geometry/index/rtree.hpp>
 #include <boost/function_output_iterator.hpp>
 
-#ifdef BUILD_OSM
+#ifndef SKIP_OSM_BUILD
 #include "network/osm_network_reader.hpp"
 #endif
 
@@ -69,7 +69,7 @@ void Network::add_edge(EdgeID edge_id, NodeID source, NodeID target,
 };
 
 void Network::read_osm_file(const std::string &filename) {
-#ifdef BUILD_OSM
+#ifndef SKIP_OSM_BUILD
   SPDLOG_INFO("Read osm network {} ", filename);
   OSMNetworkReader::read_osm_data_into_network(filename,this);
   build_rtree_index();

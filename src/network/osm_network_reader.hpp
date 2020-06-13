@@ -14,8 +14,10 @@
 #ifndef FMM_NETWORK_OSM_READER_HPP
 #define FMM_NETWORK_OSM_READER_HPP
 
-#ifdef BUILD_OSM
+#ifndef SKIP_OSM_BUILD
 
+#include "network/network.hpp"
+#include "util/debug.hpp"
 #include <unordered_map>
 #include <unordered_set>
 #include <osmium/handler.hpp>
@@ -23,6 +25,9 @@
 #include <osmium/osm/node.hpp>
 #include <osmium/osm/way.hpp>
 #include <osmium/visitor.hpp>
+#include <osmium/geom/ogr.hpp>
+#include <osmium/index/map/sparse_mem_array.hpp>
+#include <osmium/handler/node_locations_for_ways.hpp>
 
 namespace FMM {
 namespace NETWORK {
@@ -96,7 +101,12 @@ public:
   OSMHandler(Network *network_arg) : network(*network_arg){
   };
   inline void way(const osmium::Way& way){
+    ++way_processed;
+    if (way_processed%100000==0){
+      SPDLOG_INFO("Processed ways in osm file {}",way_processed);
+    }
     if (filter.is_excluded(way)) return;
+    ++way_kept;
     if (way.nodes().size()>1) {
       try{
         EdgeID eid= way.id();
@@ -105,7 +115,7 @@ public:
         // SPDLOG_INFO("Read road edge {} {} {} nodes {}",
         //              eid, source, target, way.nodes().size());
         std::unique_ptr<OGRLineString> line = factory.create_linestring(way);
-        LineString geom = ogr2linestring(line.get());
+        CORE::LineString geom = CORE::ogr2linestring(line.get());
         int one_way = is_oneway(way);
         if (one_way==0) {
           // Two way
@@ -148,13 +158,22 @@ public:
     }
     return oneway;
   };
+  inline unsigned int get_way_processed() const {
+    return way_processed;
+  }
+  inline unsigned int get_way_kept() const {
+    return way_kept;
+  }
 private:
   Network &network;
   WayFilter filter;
+  unsigned int way_processed = 0;
+  unsigned int way_kept = 0;
   osmium::geom::OGRFactory<> factory;
 };
 
 class OSMNetworkReader {
+public:
   static inline void read_osm_data_into_network(const std::string &filename,
   Network *network){
     auto otypes = osmium::osm_entity_bits::node|osmium::osm_entity_bits::way;
@@ -169,12 +188,14 @@ class OSMNetworkReader {
     OSMHandler handler(network);
     osmium::apply(reader, location_handler, handler);
     reader.close();
+    SPDLOG_INFO("Ways kept {} among {}",handler.get_way_kept(),
+      handler.get_way_processed());
   };
 };
 
 }; // NETWORK
 }; // FMM
 
-#endif // BUILD_OSM
+#endif // SKIP_OSM_BUILD
 
 #endif // FMM_NETWORK_OSM_READER_HPP

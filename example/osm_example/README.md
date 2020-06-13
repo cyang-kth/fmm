@@ -1,25 +1,19 @@
-### FMM OpenStreetMap example
+### Run FMM on OpenStreetMap
 
-In order to run this demo, you need to prepare an OSM file and put it in this folder.
-
-#### Prepare an OSM dataset
-
-Extract only highway road network
+1. Download an OSM file.
 
 ```
-osmconvert Stockholm.osm.pbf -o=stockholm.o5m
+wget https://download.bbbike.org/osm/bbbike/Stockholm/Stockholm.osm.pbf
 ```
 
-#### Run jupyter-notebook
-
-Type
+2. Run map matching
 
 ```
-jupyter-notebook
+stmatch --network Stockholm.osm.pbf --gps traj.csv -k 16 -r 0.005 -e 0.0005 --output mr.txt
 ```
 
-Visit the notebook link in your browser.
+3. Result
 
-#### Run OSM for command line application
-
-stmatch --network stockholm.o5m --gps ../data/trips.shp -k 4 -r 0.003 -e 0.0005 --output mr.txt
+<div align="center">
+  <img src="result.png">
+</div>
