@@ -54,7 +54,7 @@ else()
     SOURCES ${PROJECT_SOURCE_DIR}/python/fmm.i)
 endif()
 
-set_target_properties(pyfmm PROPERTIES OUTPUT_NAME "fmm")
+# set_target_properties(pyfmm PROPERTIES OUTPUT_NAME "fmm")
 swig_link_libraries(pyfmm
         ${PYTHON_LIBRARIES}
         ${Boost_LIBRARIES}
