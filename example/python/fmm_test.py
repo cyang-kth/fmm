@@ -1,5 +1,5 @@
 from fmm import Network,NetworkGraph,STMATCH,STMATCHConfig
-network = Network("../example/data/edges.shp")
+network = Network("../data/edges.shp")
 graph = NetworkGraph(network)
 print graph.get_num_vertices()
 model = STMATCH(network,graph)
@@ -14,3 +14,4 @@ result = model.match_wkt(wkt,config)
 print type(result)
 print "Opath ",list(result.opath)
 print "Cpath ",list(result.cpath)
+print "WKT ",result.mgeom.export_wkt()

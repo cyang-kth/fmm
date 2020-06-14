@@ -1,42 +1,11 @@
-cmake_minimum_required( VERSION 3.5.1)
-
-if (POLICY CMP0074)
-    cmake_policy(SET CMP0074 NEW)
-endif()
-if (POLICY CMP0078)
-    cmake_policy(SET CMP0078 NEW)
-endif()
-if (POLICY CMP0086)
-    cmake_policy(SET CMP0086 NEW)
-endif()
-
-# Prevent in source build
-set(CMAKE_DISABLE_SOURCE_CHANGES  ON)
-set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
-
-project(fmm-python)
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}
-  -DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_OFF")
-set(CMAKE_CXX_STANDARD 11)
-
 # Make sure the swig package is loaded.
 find_package(SWIG REQUIRED)
 include(${SWIG_USE_FILE})
 if (SWIG_FOUND)
   message(STATUS "Swig version is ${SWIG_VERSION}")
 else()
-  message(FATAL_ERROR "Python library not found!\n")
+  message(FATAL_ERROR "Swig not found!\n")
 endif()
-
-find_package(GDAL 2.2 REQUIRED)
-if (GDAL_FOUND)
-  message(STATUS "GDAL headers found at ${GDAL_INCLUDE_DIR}")
-  message(STATUS "GDAL library found at ${GDAL_LIBRARIES}")
-  include_directories(${GDAL_INCLUDE_DIR})
-else()
-  message(FATAL_ERROR "GDAL Not Found!")
-endif (GDAL_FOUND)
 
 find_package(PythonLibs 2.7 REQUIRED)
 if (PYTHONLIBS_FOUND)
@@ -47,62 +16,53 @@ else()
   message(FATAL_ERROR "Python library not found!\n")
 endif()
 
-find_package(Boost 1.54.0 REQUIRED serialization)
-if (Boost_FOUND)
-  message(STATUS "Boost headers found at ${Boost_INCLUDE_DIR}")
-  message(STATUS "Boost library found at ${Boost_LIBRARIES}")
-else()
-  message(FATAL_ERROR "Boost Not Found!")
-endif (Boost_FOUND)
+file(GLOB PYTHONFMMGlob
+${PROJECT_SOURCE_DIR}/src/mm/fmm/fmm_algorithm.cpp
+${PROJECT_SOURCE_DIR}/src/mm/fmm/ubodt.cpp)
+file(GLOB PYTHONSTMATCHGlob
+${PROJECT_SOURCE_DIR}/src/mm/stmatch/stmatch_algorithm.cpp)
 
-include_directories(../third_party)
-include_directories(../src)
+add_library(PYTHONFMM_OBJ OBJECT ${PYTHONFMMGlob})
+add_library(PYTHONSTMATCH_OBJ OBJECT ${PYTHONSTMATCHGlob})
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+set_source_files_properties(
+${PROJECT_SOURCE_DIR}/python/fmm.i PROPERTIES CPLUSPLUS ON)
+set_source_files_properties(
+${PROJECT_SOURCE_DIR}/python/fmm.i PROPERTIES SWIG_FLAGS "")
 
-# Set the flags.
+add_library(pyfmmlib SHARED
+$<TARGET_OBJECTS:MM_OBJ>
+$<TARGET_OBJECTS:PYTHONFMM_OBJ>
+$<TARGET_OBJECTS:PYTHONSTMATCH_OBJ>
+$<TARGET_OBJECTS:CORE>
+$<TARGET_OBJECTS:CONFIG>
+$<TARGET_OBJECTS:ALGORITHM>
+$<TARGET_OBJECTS:UTIL>
+$<TARGET_OBJECTS:NETWORK>)
 
-set(CMAKE_CXX_FLAGS "-O3")
-
-# Set the properties for the interface file.
-set_source_files_properties(fmm.i PROPERTIES CPLUSPLUS ON)
-set_source_files_properties(fmm.i PROPERTIES SWIG_FLAGS "")
-
-file(GLOB CoreGlob ../src/core/*.cpp)
-file(GLOB AlgorithmGlob ../src/algorithm/*.cpp)
-file(GLOB ConfigGlob ../src/config/*.cpp)
-file(GLOB NetworkGlob ../src/network/*.cpp)
-file(GLOB UtilGlob ../src/util/*.cpp)
-file(GLOB MMGlob ../src/mm/*.cpp)
-file(GLOB FMMGlob ../src/mm/fmm/fmm_algorithm.cpp ../src/mm/fmm/ubodt.cpp)
-file(GLOB STMATCHGlob ../src/mm/stmatch/stmatch_algorithm.cpp)
-
-add_library(pyfmm SHARED ${CoreGlob}
-${AlgorithmGlob}
-${ConfigGlob}
-${UtilGlob}
-${NetworkGlob}
-${MMGlob}
-${FMMGlob}
-${STMATCHGlob})
-
-target_link_libraries(pyfmm ${GDAL_LIBRARIES} ${Boost_LIBRARIES})
+set_property(TARGET pyfmmlib PROPERTY POSITION_INDEPENDENT_CODE ON)
+target_link_libraries(pyfmmlib ${GDAL_LIBRARIES} ${Boost_LIBRARIES}
+${OSMIUM_LIBRARIES})
 # Add the target.
-if (${CMAKE_VERSION} VERSION_LESS "3.8.0")
+if (${CMAKE_VERSION} VERSION_LESS 3.13.0)
   message(STATUS "Using swig add module")
-  SWIG_ADD_MODULE(fmm python fmm.i)
+  set_property(SOURCE ${PROJECT_SOURCE_DIR}/python/fmm.i
+    PROPERTY SWIG_MODULE_NAME fmm)
+  SWIG_ADD_MODULE(fmm python ${PROJECT_SOURCE_DIR}/python/fmm.i)
+  swig_link_libraries(fmm
+          ${PYTHON_LIBRARIES}
+          ${Boost_LIBRARIES}
+          ${OSMIUM_LIBRARIES}
+          pyfmmlib)
 else()
   message(STATUS "Using swig add library")
-  SWIG_ADD_LIBRARY(fmm
+  SWIG_ADD_LIBRARY(pyfmm
     LANGUAGE python
-    SOURCES fmm.i)
+    SOURCES ${PROJECT_SOURCE_DIR}/python/fmm.i)
+  set_property(TARGET pyfmm PROPERTY OUTPUT_NAME fmm)
+  swig_link_libraries(pyfmm
+          ${PYTHON_LIBRARIES}
+          ${Boost_LIBRARIES}
+          ${OSMIUM_LIBRARIES}
+          pyfmmlib)
 endif()
-
-# -----------------------------------------------------------------------------
-# LINK
-# -----------------------------------------------------------------------------
-message( STATUS "Creating makefiles for system: ${CMAKE_SYSTEM}")
-
-swig_link_libraries(fmm
-        ${PYTHON_LIBRARIES} ${GDAL_LIBRARIES}  ${Boost_LIBRARIES}
-        pyfmm)

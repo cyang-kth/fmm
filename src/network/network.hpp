@@ -34,7 +34,7 @@ namespace NETWORK {
  * Road network class
  */
 class Network {
- public:
+public:
   /**
    * Box of a edge
    */
@@ -60,7 +60,7 @@ class Network {
   Network(const std::string &filename,
           const std::string &id_name = "id",
           const std::string &source_name = "source",
-          const std::string &target_name = "target");   // Network constructor
+          const std::string &target_name = "target");
   /**
    * Get number of nodes in the network
    * @return number of nodes
@@ -121,7 +121,7 @@ class Network {
    *
    */
   FMM::MM::Traj_Candidates search_tr_cs_knn(
-      FMM::CORE::Trajectory &trajectory, std::size_t k, double radius) const;
+    FMM::CORE::Trajectory &trajectory, std::size_t k, double radius) const;
 
   /**
    * Search for k nearest neighboring (KNN) candidates of a
@@ -149,8 +149,8 @@ class Network {
    * @param complete_path complete path
    */
   FMM::CORE::LineString complete_path_to_geometry(
-      const FMM::CORE::LineString &traj,
-      const MM::C_Path &complete_path) const;
+    const FMM::CORE::LineString &traj,
+    const MM::C_Path &complete_path) const;
   /**
    * Get all node geometry
    * @return a vector of points
@@ -174,7 +174,7 @@ class Network {
    * @return the geometry of the route
    */
   FMM::CORE::LineString route2geometry(
-      const std::vector<EdgeIndex> &path) const;
+    const std::vector<EdgeIndex> &path) const;
   /**
    * Compare two candidate according to their GPS error
    * @param a candidate a
@@ -182,7 +182,14 @@ class Network {
    * @return true if a.dist<b.dist
    */
   static bool candidate_compare(const MM::Candidate &a, const MM::Candidate &b);
- private:
+  void add_edge(EdgeID edge_id, NodeID source, NodeID target,
+    const FMM::CORE::LineString &geom);
+private:
+  void read_ogr_file(const std::string &filename,
+                     const std::string &id_name,
+                     const std::string &source_name,
+                     const std::string &target_name);
+  void read_osm_file(const std::string &filename);
   /**
    * Concatenate a linestring segs to a linestring line, used in the
    * function complete_path_to_geometry
