@@ -44,7 +44,7 @@ set_property(TARGET pyfmmlib PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_link_libraries(pyfmmlib ${GDAL_LIBRARIES} ${Boost_LIBRARIES}
 ${OSMIUM_LIBRARIES})
 # Add the target.
-if (${CMAKE_VERSION} VERSION_LESS 3.8.0)
+if (${CMAKE_VERSION} VERSION_LESS 3.13.0)
   message(STATUS "Using swig add module")
   set_property(SOURCE ${PROJECT_SOURCE_DIR}/python/fmm.i
     PROPERTY SWIG_MODULE_NAME fmm)
