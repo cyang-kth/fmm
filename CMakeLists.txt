@@ -1,12 +1,17 @@
 cmake_minimum_required( VERSION 3.5.1)
 
+message(STATUS "CMAKE version ${CMAKE_VERSION}")
+
 if (POLICY CMP0074)
+    message(STATUS "Set CMP0074 state to NEW")
     cmake_policy(SET CMP0074 NEW)
 endif()
 if (POLICY CMP0078)
+    message(STATUS "Set CMP0078 state to NEW")
     cmake_policy(SET CMP0078 NEW)
 endif()
 if (POLICY CMP0086)
+    message(STATUS "Set CMP0086 state to NEW")
     cmake_policy(SET CMP0086 NEW)
 endif()
 
