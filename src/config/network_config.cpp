@@ -28,6 +28,25 @@ FMM::CONFIG::NetworkConfig FMM::CONFIG::NetworkConfig::load_from_arg(
   return FMM::CONFIG::NetworkConfig{file, id, source, target};
 };
 
+void FMM::CONFIG::NetworkConfig::register_arg(cxxopts::Options &options){
+  options.add_options()
+  ("network","Network file name",
+  cxxopts::value<std::string>()->default_value(""))
+  ("network_id","Network id name",
+  cxxopts::value<std::string>()->default_value("id"))
+  ("source","Network source name",
+  cxxopts::value<std::string>()->default_value("source"))
+  ("target","Network target name",
+  cxxopts::value<std::string>()->default_value("target"));
+};
+
+void FMM::CONFIG::NetworkConfig::register_help(std::ostringstream &oss){
+  oss<<"--network (required) <string>: Network file name\n";
+  oss<<"--network_id (optional) <string>: Network id name (id)\n";
+  oss<<"--source (optional) <string>: Network source name (source)\n";
+  oss<<"--target (optional) <string>: Network target name (target)\n";
+};
+
 bool FMM::CONFIG::NetworkConfig::validate() const {
   if (!UTIL::file_exists(file)){
     SPDLOG_CRITICAL("Network file not found {}",file);

@@ -1,6 +1,6 @@
 /**
  * Fast map matching.
- * 
+ *
  * Definition of MatchResultWriter Class, which contains functions for
  * writing the results.
  *
@@ -30,19 +30,21 @@ namespace IO {
  * An interface defined for writing the map match result
  */
 class MatchResultWriter {
- public:
+public:
   /**
    * Write the match result to a file
    * @param result the match result of a trajectory
    */
-  virtual void write_result(const FMM::MM::MatchResult &result) = 0;
+  virtual void write_result(
+    const FMM::CORE::Trajectory &traj,
+    const FMM::MM::MatchResult &result) = 0;
 };
 
 /**
  * A writer class for writing matche result to a CSV file.
  */
 class CSVMatchResultWriter : public MatchResultWriter {
- public:
+public:
   /**
    * Constructor
    *
@@ -61,10 +63,12 @@ class CSVMatchResultWriter : public MatchResultWriter {
   void write_header();
   /**
    * Write match result
-   * @param result A map match result
+   * @param traj Input trajectory
+   * @param result Map match result
    */
-  void write_result(const FMM::MM::MatchResult &result);
- private:
+  void write_result(const FMM::CORE::Trajectory &traj,
+                    const FMM::MM::MatchResult &result);
+private:
   std::ofstream m_fstream;
   const CONFIG::OutputConfig &config_;
 }; // CSVMatchResultWriter

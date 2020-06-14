@@ -1,7 +1,8 @@
 /**
  * Fast map matching.
  *
- * Network graph class
+ * Network graph class. Routing functions of Dijkstra, AStar
+ * and Bidirectional Dijkstra are implemented.
  *
  * The optimization is achieved by recording the output
  * of routing in two variables predecessor map and distance map
@@ -31,7 +32,7 @@ namespace NETWORK {
  * Graph class of the network
  */
 class NetworkGraph {
- public:
+public:
   /**
    *  Construct a network graph from a network
    *  @param network_arg network data
@@ -44,7 +45,7 @@ class NetworkGraph {
    * @return a vector of edge index representing the path from source to target
    */
   std::vector<EdgeIndex> shortest_path_dijkstra(
-      NodeIndex source, NodeIndex target) const;
+    NodeIndex source, NodeIndex target) const;
   /**
    * Calculate heuristic distance from p1 to p2,which is used in Astar routing.
    * @param p1
@@ -52,7 +53,7 @@ class NetworkGraph {
    * @return the Euclidean distance from p1 to p2
    */
   double calc_heuristic_dist(
-      const CORE::Point &p1, const CORE::Point &p2) const;
+    const CORE::Point &p1, const CORE::Point &p2) const;
   /**
    * AStar Shortest path query from source to target
    * @param source
@@ -85,11 +86,18 @@ class NetworkGraph {
                                          PredecessorMap *pmap,
                                          DistanceMap *dmap) const;
   /**
-   *  Find the edge ID given a pair of nodes and its cost,
+   *  Find the edge index given a pair of nodes and its cost,
    *  if not found, return -1
    */
   int get_edge_index(NodeIndex source, NodeIndex target,
                      double cost) const;
+  /**
+   *  Find the edge index given a pair of nodes,
+   *  if not found, return -1. The cost parameter will be updated to
+   *  be the length of the edge found.
+   */
+  int get_edge_index(NodeIndex source, NodeIndex target,
+                     double *cost) const;
   /**
    * Get the edge ID from edge index
    * @param idx edge index
@@ -98,6 +106,15 @@ class NetworkGraph {
   inline int get_edge_id(EdgeIndex idx) const {
     return network.get_edge_id(idx);
   };
+
+  inline const Edge& get_edge(EdgeID id) const {
+    return network.get_edge(id);
+  };
+
+  inline const Edge& get_edge(EdgeIndex index) const {
+    return network.get_edge(index);
+  };
+
   /**
    * Get edge ID from source node, target node and cost
    * @param source
@@ -152,7 +169,7 @@ class NetworkGraph {
    * @return number of vertices
    */
   unsigned int get_num_vertices() const;
- protected:
+protected:
   Graph_T g; /**< The member storing a boost graph */
   /**
    * A value used in checking edge from source,target and cost
@@ -161,6 +178,7 @@ class NetworkGraph {
   const Network &network; /**< Road network */
   unsigned int num_vertices = 0; /**< number of vertices  */
 }; // NetworkGraph
+
 }; // NETWORK
 } // FMM
 #endif /* FMM_NETWORK_GRAPH_HPP */

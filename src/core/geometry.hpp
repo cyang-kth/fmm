@@ -141,9 +141,9 @@ public:
    *
    * Example: LINESTRING (30 10, 10 30, 40 40)
    */
-  inline std::string export_wkt() const{
+  inline std::string export_wkt(int precision=8) const{
     std::ostringstream ss;
-    ss << std::setprecision(8) << boost::geometry::wkt(line);
+    ss << std::setprecision(precision) << boost::geometry::wkt(line);
     return ss.str();
   };
   /**

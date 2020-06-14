@@ -40,7 +40,7 @@ void FMMApp::run() {
         int points_in_tr = trajectory.geom.get_num_points();
         MM::MatchResult result = mm_model.match_traj(
             trajectory, fmm_config);
-        writer.write_result(result);
+        writer.write_result(trajectory,result);
         #pragma omp critical
         if (!result.cpath.empty()) {
           points_matched += points_in_tr;
@@ -64,7 +64,7 @@ void FMMApp::run() {
       int points_in_tr = trajectory.geom.get_num_points();
       MM::MatchResult result = mm_model.match_traj(
           trajectory, fmm_config);
-      writer.write_result(result);
+      writer.write_result(trajectory,result);
       if (!result.cpath.empty()) {
         points_matched += points_in_tr;
       }

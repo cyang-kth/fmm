@@ -44,6 +44,31 @@ STMATCHConfig STMATCHConfig::load_from_arg(
   return STMATCHConfig{k, radius, gps_error, vmax, factor};
 };
 
+void STMATCHConfig::register_arg(cxxopts::Options &options){
+  options.add_options()
+    ("k,candidates","Number of candidates",
+    cxxopts::value<int>()->default_value("8"))
+    ("r,radius","Search radius",
+    cxxopts::value<double>()->default_value("300.0"))
+    ("e,error","GPS error",
+    cxxopts::value<double>()->default_value("50.0"))
+    ("vmax","Maximum speed",
+    cxxopts::value<double>()->default_value("30.0"))
+    ("factor","Scale factor",
+    cxxopts::value<double>()->default_value("1.5"));
+}
+
+void STMATCHConfig::register_help(std::ostringstream &oss){
+  oss<<"-k/--candidates (optional) <int>: number of candidates (8)\n";
+  oss<<"-r/--radius (optional) <double>: search "
+      "radius (network data unit) (300)\n";
+  oss<<"-e/--error (optional) <double>: GPS error "
+               "(network data unit) (50)\n";
+  oss<<"-f/--factor (optional) <double>: scale factor (1.5)\n";
+  oss<<"-v/--vmax (optional) <double>: "
+               " Maximum speed (unit: network_data_unit/s) (30)\n";
+};
+
 bool STMATCHConfig::validate() const {
   if (gps_error <= 0 || radius <= 0 || k <= 0 || vmax <= 0 || factor <= 0) {
     SPDLOG_CRITICAL("Invalid mm parameter k {} r {} gps error {} vmax {} f {}",

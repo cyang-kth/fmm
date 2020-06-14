@@ -11,14 +11,10 @@
 // Data structures for Rtree
 #include <boost/geometry/index/rtree.hpp>
 #include <boost/function_output_iterator.hpp>
-#include <osmium/handler.hpp>
-#include <osmium/io/any_input.hpp>
-#include <osmium/osm/node.hpp>
-#include <osmium/osm/way.hpp>
-#include <osmium/visitor.hpp>
-#include <osmium/geom/ogr.hpp>
-#include <osmium/index/map/sparse_mem_array.hpp>
-#include <osmium/handler/node_locations_for_ways.hpp>
+
+#ifndef SKIP_OSM_BUILD
+#include "network/osm_network_reader.hpp"
+#endif
 
 using namespace FMM;
 using namespace FMM::CORE;
@@ -47,32 +43,6 @@ Network::Network(const std::string &filename,
   }
 };
 
-class OSMHandler : public osmium::handler::Handler {
-public:
-  OSMHandler(Network *network_arg) : network(*network_arg){
-  };
-  void way(const osmium::Way& way){
-    if (way.nodes().size()>1) {
-      try{
-        EdgeID eid= way.id();
-        int source = way.nodes().front().ref();
-        int target = way.nodes().back().ref();
-        // SPDLOG_INFO("Read road edge {} {} {} nodes {}",
-        //              eid, source, target, way.nodes().size());
-        std::unique_ptr<OGRLineString> line = factory.create_linestring(way);
-        LineString geom = ogr2linestring(line.get());
-        network.add_edge(eid,source,target,geom);
-      } catch (const std::exception& e) { // caught by reference to base
-        std::cout << " a standard exception was caught, with message '"
-                  << e.what() << "'\n";
-      }
-    }
-  };
-private:
-  Network &network;
-  osmium::geom::OGRFactory<> factory;
-};
-
 void Network::add_edge(EdgeID edge_id, NodeID source, NodeID target,
                        const FMM::CORE::LineString &geom){
   NodeIndex s_idx, t_idx;
@@ -99,20 +69,14 @@ void Network::add_edge(EdgeID edge_id, NodeID source, NodeID target,
 };
 
 void Network::read_osm_file(const std::string &filename) {
+#ifndef SKIP_OSM_BUILD
   SPDLOG_INFO("Read osm network {} ", filename);
-  auto otypes = osmium::osm_entity_bits::node|osmium::osm_entity_bits::way;
-  osmium::io::Reader reader{filename, otypes};
-  namespace map = osmium::index::map;
-  using index_type =
-    map::SparseMemArray<osmium::unsigned_object_id_type, osmium::Location>;
-  using location_handler_type
-    = osmium::handler::NodeLocationsForWays<index_type>;
-  index_type index;
-  location_handler_type location_handler{index};
-  OSMHandler handler(this);
-  osmium::apply(reader, location_handler, handler);
-  reader.close();
+  OSMNetworkReader::read_osm_data_into_network(filename,this);
+  build_rtree_index();
   SPDLOG_INFO("Read osm network done with edges read {}",edges.size());
+#else
+  SPDLOG_CRITICAL("OSM is not build for FMM");
+#endif
 };
 
 void Network::read_ogr_file(const std::string &filename,
@@ -229,6 +193,14 @@ int Network::get_edge_count() const {
 const std::vector<Edge> &Network::get_edges() const {
   return edges;
 }
+
+const Edge& Network::get_edge(EdgeID id) const {
+  return edges[get_edge_index(id)];
+};
+
+const Edge& Network::get_edge(EdgeIndex index) const {
+  return edges[index];
+};
 
 // Get the ID attribute of an edge according to its index
 EdgeID Network::get_edge_id(EdgeIndex index) const {

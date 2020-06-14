@@ -14,20 +14,24 @@ FMM is an open source map matching framework in C++ and Python. It solves the pr
 - **High performance**: C++ implementation using Rtree, optimized routing, parallel computing (OpenMP).
 - **Python API**: [jupyter-notebook](example/notebook) and [web demo](example/web_demo)
 - **Scalibility**: millions of GPS points and millions of road edges.  
-- **Multiple data format**: GPS data in Point CSV, Trajectory CSV and Trajectory Shapefile. Road network in ESRI shapefile or Geopackage. OSM network can also be supported with [manual preprocessing](https://github.com/cyang-kth/osm_mapmatching).
-- **Detailed matching information**: traversed path, geometry, individual matched edges, GPS error, etc.
-- **Multiple algorithms**: FMM (for small and middle scale network) and STMatch (for large scale road network)
+- **Multiple data format**:
+  - Road network in OpenStreetMap :tada: or ESRI shapefile and Geopackage.
+  - GPS data in Point CSV, Trajectory CSV and Trajectory Shapefile ([more details](https://fmm-wiki.github.io/docs/documentation/input/#gps-data)).
+- **Detailed matching information**: traversed path, geometry, individual matched edges, GPS error, etc. More information at [here](https://fmm-wiki.github.io/docs/documentation/output/).
+- **Multiple algorithms**: [FMM](http://www.tandfonline.com/doi/full/10.1080/13658816.2017.1400548) (for small and middle scale network) and [STMatch](https://dl.acm.org/doi/abs/10.1145/1653771.1653820) (for large scale road network)
 - **Cross platform support**: Unix, Mac and Windows.
 
 We encourage contribution with feature request, bug report or developping new map matching algorithms using the framework.
 
-### Demo
+### Examples
 
-Interactive web demo
+- Map matching on [OSM network](example/osm_example) (left) and ESRI shapefile (right)
+
+<img src="example/osm_example/result.png" width="400"/><img src="img/shp_example.png" width="400"/>
+
+- [Interactive web demo](example/web_demo)
 
 <img src="img/demo3.gif" width="400"/> <img src="img/demo4.gif" width="400"/>
-
-### Examples
 
 - [Command line examples](example/command_line_example)
 - [Jupyter-notebook](example/notebook)
