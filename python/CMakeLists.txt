@@ -4,17 +4,8 @@ include(${SWIG_USE_FILE})
 if (SWIG_FOUND)
   message(STATUS "Swig version is ${SWIG_VERSION}")
 else()
-  message(FATAL_ERROR "Python library not found!\n")
+  message(FATAL_ERROR "Swig not found!\n")
 endif()
-
-find_package(GDAL 2.2 REQUIRED)
-if (GDAL_FOUND)
-  message(STATUS "GDAL headers found at ${GDAL_INCLUDE_DIR}")
-  message(STATUS "GDAL library found at ${GDAL_LIBRARIES}")
-  include_directories(${GDAL_INCLUDE_DIR})
-else()
-  message(FATAL_ERROR "GDAL Not Found!")
-endif (GDAL_FOUND)
 
 find_package(PythonLibs 2.7 REQUIRED)
 if (PYTHONLIBS_FOUND)
@@ -49,7 +40,7 @@ $<TARGET_OBJECTS:ALGORITHM>
 $<TARGET_OBJECTS:UTIL>
 $<TARGET_OBJECTS:NETWORK>)
 
-# set_property(TARGET pyfmmlib PROPERTY POSITION_INDEPENDENT_CODE ON)
+set_property(TARGET pyfmmlib PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_link_libraries(pyfmmlib ${GDAL_LIBRARIES} ${Boost_LIBRARIES}
 ${OSMIUM_LIBRARIES})
 # Add the target.
@@ -66,7 +57,6 @@ endif()
 set_target_properties(pyfmm PROPERTIES OUTPUT_NAME "fmm")
 swig_link_libraries(pyfmm
         ${PYTHON_LIBRARIES}
-        ${GDAL_LIBRARIES}
         ${Boost_LIBRARIES}
         ${OSMIUM_LIBRARIES}
         pyfmmlib)
