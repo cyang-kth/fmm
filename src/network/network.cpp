@@ -282,7 +282,9 @@ Traj_Candidates Network::search_tr_cs_knn(const LineString &geom, std::size_t k,
         pcs.push_back(c);
       }
     }
+    SPDLOG_DEBUG("Candidate count point {}: {} (filter to k)",i,pcs.size());
     if (pcs.empty()) {
+      SPDLOG_DEBUG("Candidate not found for point {}: {} {}",i,px,py);
       return Traj_Candidates();
     }
     // KNN part

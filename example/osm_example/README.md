@@ -9,6 +9,33 @@ wget https://download.bbbike.org/osm/bbbike/Stockholm/Stockholm.osm.pbf
 curl https://download.bbbike.org/osm/bbbike/Stockholm/Stockholm.osm.pbf -o Stockholm.osm.pbf
 ```
 
+Download data for a small region using [Overpass API](https://overpass-turbo.eu/)
+
+```
+[out:xml]
+[timeout:25]
+;
+(
+  node
+    ["highway"]
+    (33.913520126901,-118.22945594788,33.960874396538,-118.1652545929);
+  way
+    ["highway"]
+    (33.913520126901,-118.22945594788,33.960874396538,-118.1652545929);
+  relation
+    ["highway"]
+    (33.913520126901,-118.22945594788,33.960874396538,-118.1652545929);
+);
+out;
+>;
+out skel qt;
+```
+
+```
+osmconvert socal-latest.osm.pbf -b=-118.22945594788,33.913520126901,-118.1652545929,33.960874396538 -o=network.osm
+```
+
+
 2. Run map matching
 
 ```

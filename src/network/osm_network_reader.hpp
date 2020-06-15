@@ -115,6 +115,7 @@ public:
         // SPDLOG_INFO("Read road edge {} {} {} nodes {}",
         //              eid, source, target, way.nodes().size());
         std::unique_ptr<OGRLineString> line = factory.create_linestring(way);
+
         CORE::LineString geom = CORE::ogr2linestring(line.get());
         int one_way = is_oneway(way);
         if (one_way==0) {
@@ -131,8 +132,8 @@ public:
                            ALGORITHM::reverse_geometry(geom));
         }
       } catch (const std::exception& e) { // caught by reference to base
-        std::cout << " a standard exception was caught, with message '"
-                  << e.what() << "'\n";
+        // std::cout << " a standard exception was caught, with message '"
+        //           << e.what() << "'\n";
       }
     }
   };
@@ -185,6 +186,7 @@ public:
       = osmium::handler::NodeLocationsForWays<index_type>;
     index_type index;
     location_handler_type location_handler{index};
+    location_handler.ignore_errors();
     OSMHandler handler(network);
     osmium::apply(reader, location_handler, handler);
     reader.close();
