@@ -2,39 +2,22 @@
 
 1. Download an OSM file.
 
+Download from the [Geofabrik](https://download.geofabrik.de/index.html), clip for a smaller region using [osmconvert](https://wiki.openstreetmap.org/wiki/Osmconvert):  
+
+```
+osmconvert country.osm.pbf -b=west_coor,south_coor,east_coor,north_coor -o=region.o5m
+```
+
+Note the coordinate of the box is in order of WSEN.
+
+Download from other online resources of OSM.
+
 ```
 # On Ubuntu
 wget https://download.bbbike.org/osm/bbbike/Stockholm/Stockholm.osm.pbf
 # On Windows and Mac
 curl https://download.bbbike.org/osm/bbbike/Stockholm/Stockholm.osm.pbf -o Stockholm.osm.pbf
 ```
-
-Download data for a small region using [Overpass API](https://overpass-turbo.eu/)
-
-```
-[out:xml]
-[timeout:25]
-;
-(
-  node
-    ["highway"]
-    (33.913520126901,-118.22945594788,33.960874396538,-118.1652545929);
-  way
-    ["highway"]
-    (33.913520126901,-118.22945594788,33.960874396538,-118.1652545929);
-  relation
-    ["highway"]
-    (33.913520126901,-118.22945594788,33.960874396538,-118.1652545929);
-);
-out;
->;
-out skel qt;
-```
-
-```
-osmconvert socal-latest.osm.pbf -b=-118.22945594788,33.913520126901,-118.1652545929,33.960874396538 -o=network.osm
-```
-
 
 2. Run map matching
 
