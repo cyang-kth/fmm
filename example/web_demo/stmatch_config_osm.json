@@ -1,0 +1,13 @@
+{
+  "input": {
+    "network": {
+      "file": "Stockholm.osm.pbf"
+    }
+  },
+  "model": "stmatch",
+  "parameters": {
+    "k": 32,
+    "r": 0.01,
+    "e": 0.003
+  }
+}
