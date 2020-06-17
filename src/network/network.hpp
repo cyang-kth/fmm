@@ -11,6 +11,7 @@
 #define FMM_NETWORK_HPP
 
 #include "network/type.hpp"
+#include "config/network_config.hpp"
 #include "core/gps.hpp"
 #include "mm/mm_type.hpp"
 #include <ogrsf_frmts.h> // C++ API for GDAL
@@ -64,10 +65,8 @@ public:
           const std::string &target_name = "target",
           const std::string &mode = "drive"
         );
-  Network(const NetworkConfig &config):Network(
-    config.filename,){
-
-  };
+  Network(const CONFIG::NetworkConfig &config):Network(
+    config.file,config.id,config.source,config.target,config.mode){};
   /**
    * Get number of nodes in the network
    * @return number of nodes

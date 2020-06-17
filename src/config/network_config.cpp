@@ -17,8 +17,8 @@ FMM::CONFIG::NetworkConfig FMM::CONFIG::NetworkConfig::load_from_xml(
   std::string id = xml_data.get("config.input.network.id", "id");
   std::string source = xml_data.get("config.input.network.source","source");
   std::string target = xml_data.get("config.input.network.target","target");
-  std::string target = xml_data.get("config.input.network.mode","mode");
-  return FMM::CONFIG::NetworkConfig{file, id, source, target};
+  std::string mode = xml_data.get("config.input.network.mode","mode");
+  return FMM::CONFIG::NetworkConfig{file, id, source, target, mode};
 };
 
 FMM::CONFIG::NetworkConfig FMM::CONFIG::NetworkConfig::load_from_arg(
@@ -27,7 +27,7 @@ FMM::CONFIG::NetworkConfig FMM::CONFIG::NetworkConfig::load_from_arg(
   std::string id = arg_data["network_id"].as<std::string>();
   std::string source = arg_data["source"].as<std::string>();
   std::string target = arg_data["target"].as<std::string>();
-  std::string target = arg_data["mode"].as<std::string>();
+  std::string mode = arg_data["mode"].as<std::string>();
   return FMM::CONFIG::NetworkConfig{file, id, source, target, mode};
 };
 

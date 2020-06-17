@@ -1,7 +1,7 @@
 /**
  * Fast map matching.
  *
- * ubodg_gen command line program 
+ * ubodg_gen command line program
  *
  * @author: Can Yang
  * @version: 2020.01.31
@@ -28,10 +28,7 @@ class UBODTGenApp {
    */
   UBODTGenApp(const UBODTGenAppConfig &config) :
       config_(config),
-      network_(config_.network_config.file,
-               config_.network_config.id,
-               config_.network_config.source,
-               config_.network_config.target),
+      network_(config_.network_config),
       graph_(network_) {};
   /**
    * Run the precomputation

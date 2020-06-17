@@ -28,10 +28,7 @@ class FMMApp {
    */
   FMMApp(const FMMAppConfig &config) :
       config_(config),
-      network_(config_.network_config.file,
-               config_.network_config.id,
-               config_.network_config.source,
-               config_.network_config.target),
+      network_(config_.network_config),
       ng_(network_),
       ubodt_(UBODT::read_ubodt_file(config_.ubodt_file)){};
   /**

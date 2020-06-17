@@ -32,12 +32,12 @@
 namespace FMM {
 namespace NETWORK {
 
-enum NETWORK_TYPE{
-  DRIVE;
-  WALK;
-  BIKE;
-  ALL;
-}
+enum class NETWORK_TYPE{
+  DRIVE,
+  WALK,
+  BIKE,
+  ALL
+};
 
 inline NETWORK_TYPE string2network_type(const std::string &mode){
   if (mode == "drive"){
@@ -71,16 +71,16 @@ public:
    */
   explicit WayFilter(NETWORK_TYPE type){
     switch (type) {
-      case DRIVE:
+      case NETWORK_TYPE::DRIVE:
         set_drive_filter();
         break;
-      case BIKE:
+      case NETWORK_TYPE::BIKE:
         set_bike_filter();
         break;
-      case WALK:
+      case NETWORK_TYPE::WALK:
         set_walk_filter();
         break;
-      case ALL:
+      case NETWORK_TYPE::ALL:
         set_all_filter();
         break;
     }
@@ -133,9 +133,6 @@ public:
                      std::unordered_set<std::string>{"private"}));
   };
   inline void set_bike_filter(){
-    f'["highway"]["area"!~"yes"]["highway"!~"footway|steps|corridor|elevator|'
-       f'escalator|motor|proposed|construction|abandoned|platform|raceway"]'
-       f'["bicycle"!~"no"]["service"!~"private"]{settings.default_access}'
     exclude_tags.insert(
       std::make_pair(std::string("area"),
                      std::unordered_set<std::string>{"yes"}));

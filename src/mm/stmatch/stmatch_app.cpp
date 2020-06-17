@@ -8,13 +8,6 @@ using namespace FMM;
 using namespace FMM::CORE;
 using namespace FMM::NETWORK;
 using namespace FMM::MM;
-STMATCHApp::STMATCHApp(const STMATCHAppConfig &config) :
-    config_(config),
-    network_(config_.network_config.file,
-             config_.network_config.id,
-             config_.network_config.source,
-             config_.network_config.target),
-    ng_(network_) {};
 
 void STMATCHApp::run() {
   UTIL::TimePoint start_time = std::chrono::steady_clock::now();
