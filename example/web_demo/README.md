@@ -14,7 +14,7 @@ pip install flask tornado
 
 ### Run the demo
 
-Try to preprare real world routable road network file (e.g., network.shp).
+Try to preprare real world routable road network file (e.g., network.shp or Stockholm.osm.pbf available at https://download.bbbike.org/osm/bbbike/Stockholm/).
 Then update the json configuration below.
 
 Run the fmm web demo
