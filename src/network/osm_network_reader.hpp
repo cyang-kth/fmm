@@ -31,8 +31,19 @@
 
 namespace FMM {
 namespace NETWORK {
+
+enum NETWORK_TYPE{
+  DRIVE;
+  WALK;
+  BIKE;
+  ALL;
+}
+
 /**
- * Helper class to filter out OSM ways that are not roads
+ * Helper class to filter out OSM ways according to a network mode
+ * It is based on the filter setting of OSMNX at
+ * https://github.com/gboeing/osmnx/blob/
+ * 1633b83ed6fcd1021889ecd867581a5400aa6a2d/osmnx/downloader.py#L22
  */
 class WayFilter {
 public:
@@ -41,7 +52,23 @@ public:
    * Constructor of way filter
    * @param  do_filter perform filter or not
    */
-  explicit WayFilter(){
+  explicit WayFilter(NETWORK_TYPE type){
+    switch (type) {
+      case DRIVE:
+        set_drive_filter();
+        break;
+      case BIKE:
+        set_bike_filter();
+        break;
+      case WALK:
+        set_walk_filter();
+        break;
+      case ALL:
+        set_all_filter();
+        break;
+    }
+  };
+  inline void set_drive_filter(){
     exclude_tags.insert(
       std::make_pair(std::string("area"),
                      std::unordered_set<std::string>{"yes"}));
@@ -67,6 +94,71 @@ public:
       std::make_pair(std::string("access"),
                      std::unordered_set<std::string>{"private"}));
   };
+  inline void set_walk_filter(){
+    exclude_tags.insert(
+      std::make_pair(std::string("area"),
+                     std::unordered_set<std::string>{"yes"}));
+    exclude_tags.insert(
+      std::make_pair(
+        std::string("highway"),std::unordered_set<std::string>
+        {
+          "cycleway","motor","proposed","construction","abandoned",
+          "platform","raceway"}));
+    exclude_tags.insert(
+      std::make_pair(std::string("foot"),
+                     std::unordered_set<std::string>{"no"}));
+    exclude_tags.insert(
+      std::make_pair(std::string("service"),
+                     std::unordered_set<std::string>{
+          "private"}));
+    exclude_tags.insert(
+      std::make_pair(std::string("access"),
+                     std::unordered_set<std::string>{"private"}));
+  };
+  inline void set_bike_filter(){
+    f'["highway"]["area"!~"yes"]["highway"!~"footway|steps|corridor|elevator|'
+       f'escalator|motor|proposed|construction|abandoned|platform|raceway"]'
+       f'["bicycle"!~"no"]["service"!~"private"]{settings.default_access}'
+    exclude_tags.insert(
+      std::make_pair(std::string("area"),
+                     std::unordered_set<std::string>{"yes"}));
+    exclude_tags.insert(
+      std::make_pair(
+        std::string("highway"),std::unordered_set<std::string>
+        {
+          "footway","steps","corridor","elevator","escalator","motor",
+          "proposed","construction","abandoned","platform",
+          "raceway"}));
+    exclude_tags.insert(
+      std::make_pair(std::string("bicycle"),
+                     std::unordered_set<std::string>{"no"}));
+    exclude_tags.insert(
+      std::make_pair(std::string("service"),
+                     std::unordered_set<std::string>{
+          "private"}));
+    exclude_tags.insert(
+      std::make_pair(std::string("access"),
+                     std::unordered_set<std::string>{"private"}));
+  };
+  inline void set_all_filter(){
+    exclude_tags.insert(
+      std::make_pair(std::string("area"),
+                     std::unordered_set<std::string>{"yes"}));
+    exclude_tags.insert(
+      std::make_pair(
+        std::string("highway"),std::unordered_set<std::string>
+        {
+          "proposed","construction","abandoned","platform",
+          "raceway"}));
+    exclude_tags.insert(
+      std::make_pair(std::string("service"),
+                     std::unordered_set<std::string>{
+          "private"}));
+    exclude_tags.insert(
+      std::make_pair(std::string("access"),
+                     std::unordered_set<std::string>{"private"}));
+  };
+
   /**
    * Check if the given way should be excluded or not
    * @param way OSM way to be examined
@@ -98,7 +190,8 @@ protected:
 
 class OSMHandler : public osmium::handler::Handler {
 public:
-  OSMHandler(Network *network_arg) : network(*network_arg){
+  OSMHandler(Network *network_arg, NETWORK_TYPE type) : network(*network_arg),
+    filter(type){
   };
   inline void way(const osmium::Way& way){
     ++way_processed;
@@ -176,7 +269,7 @@ private:
 class OSMNetworkReader {
 public:
   static inline void read_osm_data_into_network(const std::string &filename,
-  Network *network){
+    NETWORK_TYPE type, Network *network){
     auto otypes = osmium::osm_entity_bits::node|osmium::osm_entity_bits::way;
     osmium::io::Reader reader{filename, otypes};
     using index_type =
@@ -187,7 +280,7 @@ public:
     index_type index;
     location_handler_type location_handler{index};
     location_handler.ignore_errors();
-    OSMHandler handler(network);
+    OSMHandler handler(network,type);
     osmium::apply(reader, location_handler, handler);
     reader.close();
     SPDLOG_INFO("Ways kept {} among {}",handler.get_way_kept(),
