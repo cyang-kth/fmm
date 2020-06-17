@@ -32,11 +32,12 @@ bool Network::candidate_compare(const Candidate &a, const Candidate &b) {
 Network::Network(const std::string &filename,
                  const std::string &id_name,
                  const std::string &source_name,
-                 const std::string &target_name) {
+                 const std::string &target_name,
+                 const std::string &mode) {
   if (FMM::UTIL::check_file_extension(filename, "shp")) {
     read_ogr_file(filename,id_name,source_name,target_name);
   } else if (FMM::UTIL::check_file_extension(filename, "osm,pbf,bz2,o5m")) {
-    read_osm_file(filename);
+    read_osm_file(filename,mode);
   } else {
     SPDLOG_CRITICAL("Network file not supported {}",filename);
     exit(EXIT_FAILURE);
@@ -68,10 +69,11 @@ void Network::add_edge(EdgeID edge_id, NodeID source, NodeID target,
   edge_map.insert({edge_id, index});
 };
 
-void Network::read_osm_file(const std::string &filename) {
+void Network::read_osm_file(const std::string &filename,
+                            const std::string &mode) {
 #ifndef SKIP_OSM_BUILD
   SPDLOG_INFO("Read osm network {} ", filename);
-  OSMNetworkReader::read_osm_data_into_network(filename,this);
+  OSMNetworkReader::read_osm_data_into_network(filename,mode,this);
   build_rtree_index();
   SPDLOG_INFO("Read osm network done with edges read {}",edges.size());
 #else

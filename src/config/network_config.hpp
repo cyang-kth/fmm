@@ -25,6 +25,7 @@ struct NetworkConfig{
   std::string id; /**< id field/column name */
   std::string source; /**< source field/column name */
   std::string target; /**< target field/column name */
+  std::string mode; /**< mode type name (OSM network) */
   /**
    * Validate the GPS configuration for file existence.
    * @return if file exists returns true, otherwise return false

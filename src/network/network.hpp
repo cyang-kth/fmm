@@ -55,12 +55,19 @@ public:
    *  @param id_name: the name of the id field
    *  @param source_name: the name of the source field
    *  @param target_name: the name of the target field
+   *  @param mode: mode name, only applies to OSM network
    *
    */
   Network(const std::string &filename,
           const std::string &id_name = "id",
           const std::string &source_name = "source",
-          const std::string &target_name = "target");
+          const std::string &target_name = "target",
+          const std::string &mode = "drive"
+        );
+  Network(const NetworkConfig &config):Network(
+    config.filename,){
+
+  };
   /**
    * Get number of nodes in the network
    * @return number of nodes
@@ -189,7 +196,7 @@ private:
                      const std::string &id_name,
                      const std::string &source_name,
                      const std::string &target_name);
-  void read_osm_file(const std::string &filename);
+  void read_osm_file(const std::string &filename,const std::string &mode);
   /**
    * Concatenate a linestring segs to a linestring line, used in the
    * function complete_path_to_geometry

@@ -39,6 +39,23 @@ enum NETWORK_TYPE{
   ALL;
 }
 
+inline NETWORK_TYPE string2network_type(const std::string &mode){
+  if (mode == "drive"){
+    return NETWORK_TYPE::DRIVE;
+  }
+  if (mode == "walk"){
+    return NETWORK_TYPE::WALK;
+  }
+  if (mode == "bike"){
+    return NETWORK_TYPE::BIKE;
+  }
+  if (mode == "all"){
+    return NETWORK_TYPE::ALL;
+  }
+  SPDLOG_CRITICAL("Unknown network mode, should be drive|walk|bike|all");
+  std::exit(EXIT_FAILURE);
+};
+
 /**
  * Helper class to filter out OSM ways according to a network mode
  * It is based on the filter setting of OSMNX at
@@ -269,7 +286,8 @@ private:
 class OSMNetworkReader {
 public:
   static inline void read_osm_data_into_network(const std::string &filename,
-    NETWORK_TYPE type, Network *network){
+    const std::string &mode, Network *network){
+    NETWORK_TYPE type = string2network_type(mode);
     auto otypes = osmium::osm_entity_bits::node|osmium::osm_entity_bits::way;
     osmium::io::Reader reader{filename, otypes};
     using index_type =
@@ -283,8 +301,8 @@ public:
     OSMHandler handler(network,type);
     osmium::apply(reader, location_handler, handler);
     reader.close();
-    SPDLOG_INFO("Ways kept {} among {}",handler.get_way_kept(),
-      handler.get_way_processed());
+    SPDLOG_INFO("Ways kept {} among {} for mode {}",handler.get_way_kept(),
+      handler.get_way_processed(),mode);
   };
 };
 
