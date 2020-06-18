@@ -1,0 +1,41 @@
+environment:
+  matrix:
+  - CYG_ARCH: x86_64
+    CYG_ROOT: C:/cygwin64
+    CYG_CACHE: C:/cygwin64/var/cache/setup
+    CYG_SH: C:/cygwin64/bin/bash -lc
+    CYG_INSTALL: C:/cygwin64/setup-x86_64.exe -q -P
+    CYG_PATH: C:/cygwin64/bin/cygpath -u
+
+cache:
+    - '%CYG_CACHE%'
+    - C:/cygwin64/fmm/build
+
+init:
+    - '%CYG_SH% "cygcheck -dc cygwin"'
+    - '%CYG_INSTALL% "wget"'
+    - '%CYG_SH% "wget rawgit.com/transcode-open/apt-cyg/master/apt-cyg"'
+    - '%CYG_SH% "install apt-cyg /bin"'
+    - '%CYG_SH% "apt-cyg install make gcc-g++ cmake gdal libboost-devel zlib-devel libgdal-devel libexpat1-devel libbz2-devel"'
+    - '%CYG_SH% "apt-cyg install swig python-devel"'
+
+os: Visual Studio 2015
+
+# clone directory
+clone_folder: C:/cygwin64/fmm
+
+platform: x64
+
+build_script:
+  - '%CYG_SH% "mkdir build"'
+  - '%CYG_SH% "cd build && cmake -G "Unix Makefiles" .. && make && make install"'
+
+before_test:
+  - '%CYG_SH% "echo 'export PYTHONPATH=${PYTHONPATH}:fmm/build/python' >> ~/.bashrc"'
+
+test_script:
+  - '%CYG_SH% "fmm"'
+  - '%CYG_SH% "cd fmm/example/python;python fmm_test.py"'
+branches:
+  only:
+    - windows
