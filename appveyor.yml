@@ -9,9 +9,10 @@ environment:
 
 cache:
     - '%CYG_CACHE%'
-    - C:/cygwin64/fmm/build
+    - C:/cygwin64/home/appveyor/fmm/build
 
 init:
+    - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
     - '%CYG_SH% "cygcheck -dc cygwin"'
     - '%CYG_INSTALL% "wget"'
     - '%CYG_SH% "wget rawgit.com/transcode-open/apt-cyg/master/apt-cyg"'
@@ -22,20 +23,24 @@ init:
 os: Visual Studio 2015
 
 # clone directory
-clone_folder: C:/cygwin64/fmm
+clone_folder: C:/cygwin64/home/appveyor/fmm
 
 platform: x64
 
 build_script:
-  - '%CYG_SH% "mkdir build"'
-  - '%CYG_SH% "cd build && cmake -G "Unix Makefiles" .. && make && make install"'
+  - '%CYG_SH% "cd fmm && mkdir build"'
+  - '%CYG_SH% "cd fmm/build && cmake -G \"Unix Makefiles\" .. && make -j4 && make install"'
+  - '%CYG_SH% "echo export \"PYTHONPATH=/home/appveyor/fmm/build/python:${PYTHONPATH}\" >> /home/appveyor/.bashrc"'
 
-before_test:
-  - '%CYG_SH% "echo 'export PYTHONPATH=${PYTHONPATH}:fmm/build/python' >> ~/.bashrc"'
-
-test_script:
-  - '%CYG_SH% "fmm"'
+after_build:
+  - '%CYG_SH% "echo $PYTHONPATH"'
+  - '%CYG_SH% "echo $PATH"'
+  - '%CYG_SH% "cd fmm/example/command_line_example;stmatch.exe stmatch_config.xml"'
   - '%CYG_SH% "cd fmm/example/python;python fmm_test.py"'
+
+on_finish:
+  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+
 branches:
   only:
     - windows
