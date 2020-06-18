@@ -19,7 +19,9 @@ FMM is an open source map matching framework in C++ and Python. It solves the pr
   - GPS data in Point CSV, Trajectory CSV and Trajectory Shapefile ([more details](https://fmm-wiki.github.io/docs/documentation/input/#gps-data)).
 - **Detailed matching information**: traversed path, geometry, individual matched edges, GPS error, etc. More information at [here](https://fmm-wiki.github.io/docs/documentation/output/).
 - **Multiple algorithms**: [FMM](http://www.tandfonline.com/doi/full/10.1080/13658816.2017.1400548) (for small and middle scale network) and [STMatch](https://dl.acm.org/doi/abs/10.1145/1653771.1653820) (for large scale road network)
-- **Cross platform support**: Unix, Mac and Windows.
+- **Platform support**: Unix (ubuntu) and Mac.
+
+Windows support is currently removed as installation with cygwin has been reported of import module failure in Python bindings.
 
 We encourage contribution with feature request, bug report or developping new map matching algorithms using the framework.
 
