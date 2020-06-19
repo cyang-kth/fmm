@@ -61,7 +61,7 @@ else()
   message(FATAL_ERROR "GDAL Not Found!")
 endif (GDAL_FOUND)
 
-find_package(Boost 1.54.0 REQUIRED serialization)
+find_package(Boost 1.54.0 REQUIRED serialization geometry graph program_options)
 if (Boost_FOUND)
   message(STATUS "Boost headers found at ${Boost_INCLUDE_DIR}")
   message(STATUS "Boost library found at ${Boost_LIBRARIES}")

@@ -4,18 +4,18 @@ environment:
     APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
     BUILD_SHARED_LIBS: ON
 
-cache:         c:\tools\vcpkg\installed\
+cache: c:\tools\vcpkg\installed\
 
 init:
-    - ps:      iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
-    - call "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64
-      call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
+    - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
-os:            Visual Studio 2015
+os: Visual Studio 2015
 
 install:
     - cd c:\tools\vcpkg
-    - vcpkg integrate install
+    - git pull
+    - .\bootstrap-vcpkg.bat
+    - vcpkg install gdal boost-geometry boost-graph boost-serialization bzip2
 
 # clone directory
 clone_folder:  c:\projects\fmm
@@ -23,6 +23,11 @@ clone_folder:  c:\projects\fmm
 platform:      x64
 
 build_script:
+  - set PROJ_BUILD=%APPVEYOR_BUILD_FOLDER%\build
+  - mkdir %PROJ_BUILD%
+  - cd %PROJ_BUILD%
+  - cmake -DCMAKE_TOOLCHAIN_FILE=c:\tools\vcpkg\scripts\buildsystems\vcpkg.cmake ..
+  - make && make install
 
 after_build:
 
