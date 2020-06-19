@@ -15,13 +15,13 @@ install:
     - cd c:\tools\vcpkg
     - git pull
     - .\bootstrap-vcpkg.bat
-    - vcpkg install gdal
-    - vcpkg install boost-geometry boost-graph boost-serialization bzip2 boost-program-options
+    - vcpkg install gdal:"%platform%"-windows
+    - vcpkg install boost-geometry:"%platform%"-windows boost-graph:"%platform%"-windows
+    - vcpkg install boost-serialization:"%platform%"-windows bzip2:"%platform%"-windows
+    - vcpkg install boost-program-options:"%platform%"-windows
 
 # clone directory
 clone_folder:  c:\projects\fmm
-
-platform:      x64
 
 build_script:
   - set PROJ_BUILD=%APPVEYOR_BUILD_FOLDER%\build
