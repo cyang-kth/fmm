@@ -15,7 +15,8 @@ install:
     - cd c:\tools\vcpkg
     - git pull
     - .\bootstrap-vcpkg.bat
-    - vcpkg install gdal boost-geometry boost-graph boost-serialization bzip2
+    - vcpkg install gdal
+    - vcpkg install boost-geometry boost-graph boost-serialization bzip2 boost-program-options
 
 # clone directory
 clone_folder:  c:\projects\fmm
