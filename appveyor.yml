@@ -1,6 +1,8 @@
 environment:
   matrix:
-  - configuration: Release
+  - platform: x64
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+    BUILD_SHARED_LIBS: ON
 
 cache:         c:\tools\vcpkg\installed\
 
