@@ -1,30 +1,31 @@
 environment:
   matrix:
+  - configuration: Release
 
-cache: c:\tools\vcpkg\installed\
+cache:         c:\tools\vcpkg\installed\
 
 init:
-    - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+    - ps:      iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
     - call "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64
       call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
 
-os: Visual Studio 2015
+os:            Visual Studio 2015
 
 install:
     - cd c:\tools\vcpkg
     - vcpkg integrate install
 
 # clone directory
-clone_folder: c:\projects\fmm
+clone_folder:  c:\projects\fmm
 
-platform: x64
+platform:      x64
 
 build_script:
 
 after_build:
 
 on_finish:
-  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+  - ps:        $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
 branches:
   only:
