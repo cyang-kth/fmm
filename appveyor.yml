@@ -34,8 +34,8 @@ build_script:
   - '%CYG_SH% "cd build && cmake -G "Unix Makefiles" .. && make && make install"'
 
 before_test:
-  - '%CYG_SH% "echo 'export PATH=${PYTHONPATH}:fmm/build' >> ~/.bashrc"'
-  - '%CYG_SH% "echo 'export PYTHONPATH=${PYTHONPATH}:fmm/build/python' >> ~/.bashrc"'
+  - '%CYG_SH% "echo \"export PATH=${PYTHONPATH}:fmm/build\" >> ~/.bashrc"'
+  - '%CYG_SH% "echo \"export PYTHONPATH=${PYTHONPATH}:fmm/build/python\" >> ~/.bashrc"'
 
 test_script:
   - '%CYG_SH% "cd fmm/example/python;python fmm_test.py"'
