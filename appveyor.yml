@@ -30,8 +30,8 @@ clone_folder: C:/cygwin64/home/appveyor/fmm
 platform: x64
 
 build_script:
-  - '%CYG_SH% "mkdir build"'
-  - '%CYG_SH% "cd build && cmake .. && make && make install"'
+  - '%CYG_SH% "cd fmm && mkdir build"'
+  - '%CYG_SH% "cd fmm/build && cmake .. && make && make install"'
 
 before_test:
   - '%CYG_SH% "echo \"export PATH=${PYTHONPATH}:fmm/build\" >> ~/.bashrc"'
