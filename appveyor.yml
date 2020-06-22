@@ -22,8 +22,6 @@ init:
     - '%CYG_SH% "apt-cyg install make gcc-g++ cmake gdal libboost-devel zlib-devel libgdal-devel libexpat1-devel libbz2-devel"'
     - '%CYG_SH% "apt-cyg install swig python-devel"'
 
-os: Visual Studio 2015
-
 # clone directory
 clone_folder: C:/cygwin64/home/appveyor/fmm
 
@@ -33,11 +31,11 @@ build_script:
 
 before_test:
   - '%CYG_SH% "echo \"export PATH=/home/appveyor/fmm/build:$PATH\" >> ~/.bashrc"'
-  - '%CYG_SH% "echo \"export PYTHONPATH=/home/appveyor/fmm/:$PYTHONPATH\" >> ~/.bashrc"'
+  - '%CYG_SH% "echo \"export PYTHONPATH=/home/appveyor/fmm/build/python:$PYTHONPATH\" >> ~/.bashrc"'
 
 test_script:
-  - '%CYG_SH% "cd fmm/example/python;python fmm_test.py"'
   - '%CYG_SH% "fmm"'
+  - '%CYG_SH% "cd fmm/example/python;python fmm_test.py"'
 
 on_finish:
   - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
