@@ -2,38 +2,47 @@ environment:
   matrix:
   - platform: x64
     APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
-    BUILD_SHARED_LIBS: ON
+    CYG_ARCH: x86_64
+    CYG_ROOT: C:/cygwin64
+    CYG_CACHE: C:/cygwin64/var/cache/setup
+    CYG_SH: C:/cygwin64/bin/bash -lc
+    CYG_INSTALL: C:/cygwin64/setup-x86_64.exe -q -P
+    CYG_PATH: C:/cygwin64/bin/cygpath -u
 
-cache: c:\tools\vcpkg\installed\
+cache:
+    - '%CYG_CACHE%'
+    - C:/cygwin64/fmm/build
 
 init:
     - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+    - '%CYG_SH% "cygcheck -dc cygwin"'
+    - '%CYG_INSTALL% "wget"'
+    - '%CYG_SH% "wget rawgit.com/transcode-open/apt-cyg/master/apt-cyg"'
+    - '%CYG_SH% "install apt-cyg /bin"'
+    - '%CYG_SH% "apt-cyg install make gcc-g++ cmake gdal libboost-devel zlib-devel libgdal-devel libexpat1-devel libbz2-devel"'
+    - '%CYG_SH% "apt-cyg install swig python-devel"'
 
 os: Visual Studio 2015
 
-install:
-    - cd c:\tools\vcpkg
-    - git pull
-    - .\bootstrap-vcpkg.bat
-    - vcpkg install gdal:"%platform%"-windows
-    - vcpkg install boost-geometry:"%platform%"-windows boost-graph:"%platform%"-windows
-    - vcpkg install boost-serialization:"%platform%"-windows bzip2:"%platform%"-windows
-    - vcpkg install boost-program-options:"%platform%"-windows
-
 # clone directory
-clone_folder:  c:\projects\fmm
+clone_folder: C:/cygwin64/fmm
+
+platform: x64
 
 build_script:
-  - set PROJ_BUILD=%APPVEYOR_BUILD_FOLDER%\build
-  - mkdir %PROJ_BUILD%
-  - cd %PROJ_BUILD%
-  - cmake -DCMAKE_TOOLCHAIN_FILE=c:\tools\vcpkg\scripts\buildsystems\vcpkg.cmake ..
-  - make && make install
+  - '%CYG_SH% "mkdir build"'
+  - '%CYG_SH% "cd build && cmake -G "Unix Makefiles" .. && make && make install"'
 
-after_build:
+before_test:
+  - '%CYG_SH% "echo 'export PATH=${PYTHONPATH}:fmm/build' >> ~/.bashrc"'
+  - '%CYG_SH% "echo 'export PYTHONPATH=${PYTHONPATH}:fmm/build/python' >> ~/.bashrc"'
+
+test_script:
+  - '%CYG_SH% "cd fmm/example/python;python fmm_test.py"'
+  - '%CYG_SH% "fmm"'
 
 on_finish:
-  - ps:        $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
 branches:
   only:
