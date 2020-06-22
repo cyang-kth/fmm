@@ -31,7 +31,7 @@ platform: x64
 
 build_script:
   - '%CYG_SH% "mkdir build"'
-  - '%CYG_SH% "cd build && cmake -G "Unix Makefiles" .. && make && make install"'
+  - '%CYG_SH% "cd build && cmake .. && make && make install"'
 
 before_test:
   - '%CYG_SH% "echo \"export PATH=${PYTHONPATH}:fmm/build\" >> ~/.bashrc"'
