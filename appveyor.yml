@@ -1,7 +1,7 @@
 environment:
   matrix:
   - platform: x64
-    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
     CYG_ARCH: x86_64
     CYG_ROOT: C:/cygwin64
     CYG_CACHE: C:/cygwin64/var/cache/setup
@@ -26,8 +26,6 @@ os: Visual Studio 2015
 
 # clone directory
 clone_folder: C:/cygwin64/home/appveyor/fmm
-
-platform: x64
 
 build_script:
   - '%CYG_SH% "cd fmm && mkdir build"'
