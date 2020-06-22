@@ -11,7 +11,6 @@ environment:
 
 cache:
     - '%CYG_CACHE%'
-    - C:/cygwin64/fmm/build
 
 init:
     - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
@@ -30,11 +29,12 @@ build_script:
   - '%CYG_SH% "cd fmm/build && cmake .. && make -j 4 && make install"'
 
 before_test:
-  - '%CYG_SH% "echo \"export PATH=/home/appveyor/fmm/build:$PATH\" >> ~/.bashrc"'
-  - '%CYG_SH% "echo \"export PYTHONPATH=/home/appveyor/fmm/build/python:$PYTHONPATH\" >> ~/.bashrc"'
+  - '%CYG_SH% "echo \"export PATH=/home/appveyor/fmm/build:\$PATH\" >> ~/.bashrc"'
+  - '%CYG_SH% "echo \"export PYTHONPATH=/home/appveyor/fmm/build/python:\$PYTHONPATH\" >> ~/.bashrc"'
 
 test_script:
   - '%CYG_SH% "fmm"'
+  - '%CYG_SH% "echo $PYTHONPATH"'
   - '%CYG_SH% "cd fmm/example/python;python fmm_test.py"'
 
 on_finish:
