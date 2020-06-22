@@ -25,7 +25,7 @@ init:
 os: Visual Studio 2015
 
 # clone directory
-clone_folder: C:/cygwin64/fmm
+clone_folder: C:/cygwin64/home/appveyor/fmm
 
 platform: x64
 
