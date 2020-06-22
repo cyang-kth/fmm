@@ -31,11 +31,11 @@ platform: x64
 
 build_script:
   - '%CYG_SH% "cd fmm && mkdir build"'
-  - '%CYG_SH% "cd fmm/build && cmake .. && make && make install"'
+  - '%CYG_SH% "cd fmm/build && cmake .. && make -j 4 && make install"'
 
 before_test:
-  - '%CYG_SH% "echo \"export PATH=${PYTHONPATH}:fmm/build\" >> ~/.bashrc"'
-  - '%CYG_SH% "echo \"export PYTHONPATH=${PYTHONPATH}:fmm/build/python\" >> ~/.bashrc"'
+  - '%CYG_SH% "echo \"export PATH=/home/appveyor/fmm/build:${PATH}\" >> ~/.bashrc"'
+  - '%CYG_SH% "echo \"export PYTHONPATH=/home/appveyor/fmm/:${PYTHONPATH}\" >> ~/.bashrc"'
 
 test_script:
   - '%CYG_SH% "cd fmm/example/python;python fmm_test.py"'
