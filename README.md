@@ -4,6 +4,7 @@
 
 
 [![Build Status](https://travis-ci.org/cyang-kth/fmm.svg?branch=master)](https://travis-ci.org/github/cyang-kth/fmm)
+[![Build status](https://ci.appveyor.com/api/projects/status/8qee5c8iay75j1am?svg=true)](https://ci.appveyor.com/project/cyang-kth/fmm)
 [![Wiki](https://img.shields.io/badge/wiki-website-blue.svg)](https://fmm-wiki.github.io/)
 [![Documentation](https://img.shields.io/badge/docs-doxygen-blue.svg)](https://cyang-kth.github.io/fmm/)
 
@@ -19,9 +20,9 @@ FMM is an open source map matching framework in C++ and Python. It solves the pr
   - GPS data in Point CSV, Trajectory CSV and Trajectory Shapefile ([more details](https://fmm-wiki.github.io/docs/documentation/input/#gps-data)).
 - **Detailed matching information**: traversed path, geometry, individual matched edges, GPS error, etc. More information at [here](https://fmm-wiki.github.io/docs/documentation/output/).
 - **Multiple algorithms**: [FMM](http://www.tandfonline.com/doi/full/10.1080/13658816.2017.1400548) (for small and middle scale network) and [STMatch](https://dl.acm.org/doi/abs/10.1145/1653771.1653820) (for large scale road network)
-- **Platform support**: Unix (ubuntu) and Mac.
+- **Platform support**: Unix (ubuntu) , Mac and Windows(cygwin environment).
 
-Windows support is currently removed as installation with cygwin has been reported of import module failure in Python bindings.
+>>>>>>> windows
 
 We encourage contribution with feature request, bug report or developping new map matching algorithms using the framework.
 

@@ -1,0 +1,42 @@
+environment:
+  matrix:
+  - platform: x64
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+    CYG_ARCH: x86_64
+    CYG_ROOT: C:/cygwin64
+    CYG_CACHE: C:/cygwin64/var/cache/setup
+    CYG_SH: C:/cygwin64/bin/bash -lc
+    CYG_INSTALL: C:/cygwin64/setup-x86_64.exe -q -P
+    CYG_PATH: C:/cygwin64/bin/cygpath -u
+
+cache:
+    - '%CYG_CACHE%'
+
+init:
+    - '%CYG_SH% "cygcheck -dc cygwin"'
+    - '%CYG_INSTALL% "wget"'
+    - '%CYG_SH% "wget rawgit.com/transcode-open/apt-cyg/master/apt-cyg"'
+    - '%CYG_SH% "install apt-cyg /bin"'
+    - '%CYG_SH% "apt-cyg install make gcc-g++ cmake gdal libboost-devel zlib-devel libgdal-devel libexpat1-devel libbz2-devel"'
+    - '%CYG_SH% "apt-cyg install swig python-devel"'
+
+# clone directory
+clone_folder: C:/cygwin64/home/appveyor/fmm
+
+build_script:
+  - '%CYG_SH% "cd fmm && mkdir build"'
+  - '%CYG_SH% "cd fmm/build && cmake .. && make -j 4 && make install"'
+
+before_test:
+  - '%CYG_SH% "echo \"export PATH=/home/appveyor/fmm/build:\$PATH\" >> ~/.bash_profile"'
+  - '%CYG_SH% "echo \"export PYTHONPATH=/home/appveyor/fmm/build/python:\$PYTHONPATH\" >> ~/.bash_profile"'
+
+test_script:
+  - '%CYG_SH% "fmm"'
+  - '%CYG_SH% "echo $PYTHONPATH"'
+  - '%CYG_SH% "cd fmm/example/python;python fmm_test.py"'
+
+branches:
+  only:
+    - master
+    - windows
