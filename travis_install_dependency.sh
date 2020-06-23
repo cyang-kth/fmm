@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ $TRAVIS_OS_NAME = 'osx' ]; then
-  brew list boost gdal libomp expat || brew install boost gdal libomp expat
+  brew list boost gdal expat || brew install boost gdal expat
 else
   sudo add-apt-repository -y ppa:ubuntugis/ppa;
   sudo apt-get -q update;
