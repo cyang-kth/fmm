@@ -2,11 +2,10 @@
   <img src="img/fmm_social.jpg">
 </div>
 
+| Linux / macOS | Windows | Wiki          | Docs        |
+| ------------- | ------- | ------------- | ----------- |
+| [![Build Status](https://travis-ci.org/cyang-kth/fmm.svg?branch=master)](https://travis-ci.org/github/cyang-kth/fmm) | [![Build status](https://ci.appveyor.com/api/projects/status/8qee5c8iay75j1am?svg=true)](https://ci.appveyor.com/project/cyang-kth/fmm) | [![Wiki](https://img.shields.io/badge/wiki-website-blue.svg)](https://fmm-wiki.github.io/) | [![Documentation](https://img.shields.io/badge/docs-doxygen-blue.svg)](https://cyang-kth.github.io/fmm/) |
 
-[![Build Status](https://travis-ci.org/cyang-kth/fmm.svg?branch=master)](https://travis-ci.org/github/cyang-kth/fmm)
-[![Build status](https://ci.appveyor.com/api/projects/status/8qee5c8iay75j1am?svg=true)](https://ci.appveyor.com/project/cyang-kth/fmm)
-[![Wiki](https://img.shields.io/badge/wiki-website-blue.svg)](https://fmm-wiki.github.io/)
-[![Documentation](https://img.shields.io/badge/docs-doxygen-blue.svg)](https://cyang-kth.github.io/fmm/)
 
 FMM is an open source map matching framework in C++ and Python. It solves the problem of matching noisy GPS data to a road network. The design considers maximizing performance, scalability and functionality.
 

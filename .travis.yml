@@ -1,12 +1,16 @@
 # C++ project
 language: cpp
 sudo: required
-dist: xenial
+jobs:
+  include:
+    - os: linux
+      dist: xenial
+    - os: osx
+      osx_image: xcode11
+before_install:
+  - chmod +x travis_install_dependency.sh
 install:
-  - sudo add-apt-repository -y ppa:ubuntugis/ppa
-  - sudo apt-get -q update
-  - sudo apt-get -y install libboost-dev libboost-serialization-dev gdal-bin libgdal-dev make cmake
-  - sudo apt-get -y install libbz2-dev libexpat1-dev swig python-dev
+  - ./travis_install_dependency.sh
 script:
   - mkdir -p build
   - cd build
@@ -16,6 +20,7 @@ script:
   - ./stmatch
   - ./ubodt_gen
   - export PYTHONPATH=${PYTHONPATH}:$(pwd)/python
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export PATH=/usr/bin:${PATH}; fi
   - cd ../example/python
   - python fmm_test.py
 branches:
