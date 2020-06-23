@@ -13,7 +13,6 @@ cache:
     - '%CYG_CACHE%'
 
 init:
-    - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
     - '%CYG_SH% "cygcheck -dc cygwin"'
     - '%CYG_INSTALL% "wget"'
     - '%CYG_SH% "wget rawgit.com/transcode-open/apt-cyg/master/apt-cyg"'
@@ -37,9 +36,7 @@ test_script:
   - '%CYG_SH% "echo $PYTHONPATH"'
   - '%CYG_SH% "cd fmm/example/python;python fmm_test.py"'
 
-on_finish:
-  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
-
 branches:
   only:
+    - master
     - windows
