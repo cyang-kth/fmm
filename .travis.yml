@@ -1,12 +1,14 @@
 # C++ project
 language: cpp
 sudo: required
-dist: xenial
+jobs:
+  include:
+    - os: linux
+      dist: xenial
+    - os: osx
+      osx_image: xcode7.2
 install:
-  - sudo add-apt-repository -y ppa:ubuntugis/ppa
-  - sudo apt-get -q update
-  - sudo apt-get -y install libboost-dev libboost-serialization-dev gdal-bin libgdal-dev make cmake
-  - sudo apt-get -y install libbz2-dev libexpat1-dev swig python-dev
+  - ./travis_install_dependency.sh
 script:
   - mkdir -p build
   - cd build
