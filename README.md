@@ -22,8 +22,6 @@ FMM is an open source map matching framework in C++ and Python. It solves the pr
 - **Multiple algorithms**: [FMM](http://www.tandfonline.com/doi/full/10.1080/13658816.2017.1400548) (for small and middle scale network) and [STMatch](https://dl.acm.org/doi/abs/10.1145/1653771.1653820) (for large scale road network)
 - **Platform support**: Unix (ubuntu) , Mac and Windows(cygwin environment).
 
->>>>>>> windows
-
 We encourage contribution with feature request, bug report or developping new map matching algorithms using the framework.
 
 ### Examples
