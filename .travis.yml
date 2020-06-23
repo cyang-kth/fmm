@@ -7,6 +7,8 @@ jobs:
       dist: xenial
     - os: osx
       osx_image: xcode7.2
+before_install:
+  - chmod +x travis_install_dependency.sh
 install:
   - ./travis_install_dependency.sh
 script:
