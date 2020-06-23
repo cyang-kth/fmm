@@ -29,8 +29,8 @@ build_script:
   - '%CYG_SH% "cd fmm/build && cmake .. && make -j 4 && make install"'
 
 before_test:
-  - '%CYG_SH% "echo \"export PATH=/home/appveyor/fmm/build:\$PATH\" >> ~/.bashrc"'
-  - '%CYG_SH% "echo \"export PYTHONPATH=/home/appveyor/fmm/build/python:\$PYTHONPATH\" >> ~/.bashrc"'
+  - '%CYG_SH% "echo \"export PATH=/home/appveyor/fmm/build:\$PATH\" >> ~/.bash_profile"'
+  - '%CYG_SH% "echo \"export PYTHONPATH=/home/appveyor/fmm/build/python:\$PYTHONPATH\" >> ~/.bash_profile"'
 
 test_script:
   - '%CYG_SH% "fmm"'
