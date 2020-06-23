@@ -21,7 +21,7 @@ script:
   - ./ubodt_gen
   - export PYTHONPATH=${PYTHONPATH}:$(pwd)/python
   - if [ $TRAVIS_OS_NAME = 'osx']; then
-      export PATH=/usr/bin:${PATH}
+      export PATH=/usr/bin:${PATH};
     fi
   - cd ../example/python
   - python fmm_test.py
