@@ -112,24 +112,24 @@ PyMatchResult STMATCH::match_wkt(
 // Procedure of HMM based map matching algorithm.
 MatchResult STMATCH::match_traj(const Trajectory &traj,
                                 const STMATCHConfig &config) {
-  SPDLOG_TRACE("Count of points in trajectory {}", traj.geom.get_num_points());
-  SPDLOG_TRACE("Search candidates");
+  SPDLOG_DEBUG("Count of points in trajectory {}", traj.geom.get_num_points());
+  SPDLOG_DEBUG("Search candidates");
   Traj_Candidates tc = network_.search_tr_cs_knn(
       traj.geom, config.k, config.radius);
-  SPDLOG_TRACE("Trajectory candidate {}", tc);
+  SPDLOG_DEBUG("Trajectory candidate {}", tc);
   if (tc.empty()) return MatchResult{};
-  SPDLOG_TRACE("Generate dummy graph");
+  SPDLOG_DEBUG("Generate dummy graph");
   DummyGraph dg(tc);
-  SPDLOG_TRACE("Generate composite_graph");
+  SPDLOG_DEBUG("Generate composite_graph");
   CompositeGraph cg(graph_, dg);
-  SPDLOG_TRACE("Generate composite_graph");
+  SPDLOG_DEBUG("Generate composite_graph");
   TransitionGraph tg(tc, config.gps_error);
-  SPDLOG_TRACE("Update cost in transition graph");
+  SPDLOG_DEBUG("Update cost in transition graph");
   // The network will be used internally to update transition graph
   update_tg(&tg, cg, traj, config);
-  SPDLOG_TRACE("Optimal path inference");
+  SPDLOG_DEBUG("Optimal path inference");
   TGOpath tg_opath = tg.backtrack();
-  SPDLOG_TRACE("Optimal path size {}", tg_opath.size());
+  SPDLOG_DEBUG("Optimal path size {}", tg_opath.size());
   MatchedCandidatePath matched_candidate_path(tg_opath.size());
   std::transform(tg_opath.begin(), tg_opath.end(),
                  matched_candidate_path.begin(),
@@ -146,9 +146,9 @@ MatchResult STMATCH::match_traj(const Trajectory &traj,
                  });
   std::vector<int> indices;
   C_Path cpath = build_cpath(tg_opath, &indices);
-  SPDLOG_TRACE("Opath is {}", opath);
-  SPDLOG_TRACE("Indices is {}", indices);
-  SPDLOG_TRACE("Complete path is {}", cpath);
+  SPDLOG_DEBUG("Opath is {}", opath);
+  SPDLOG_DEBUG("Indices is {}", indices);
+  SPDLOG_DEBUG("Complete path is {}", cpath);
   LineString mgeom = network_.complete_path_to_geometry(
       traj.geom, cpath);
   return MatchResult{
@@ -159,13 +159,13 @@ void STMATCH::update_tg(TransitionGraph *tg,
                         const CompositeGraph &cg,
                         const Trajectory &traj,
                         const STMATCHConfig &config) {
-  SPDLOG_TRACE("Update transition graph");
+  SPDLOG_DEBUG("Update transition graph");
   std::vector<TGLayer> &layers = tg->get_layers();
   std::vector<double> eu_dists = ALGORITHM::cal_eu_dist(traj.geom);
   int N = layers.size();
   for (int i = 0; i < N - 1; ++i) {
     // Routing from current_layer to next_layer
-    SPDLOG_TRACE("Update layer {} ", i);
+    SPDLOG_DEBUG("Update layer {} ", i);
     double delta = 0;
     if (traj.timestamps.size() != N) {
       delta = eu_dists[i] * config.factor * 4;
@@ -176,7 +176,7 @@ void STMATCH::update_tg(TransitionGraph *tg,
     update_layer(i, &(layers[i]), &(layers[i + 1]),
                  cg, eu_dists[i], delta);
   }
-  SPDLOG_TRACE("Update transition graph done");
+  SPDLOG_DEBUG("Update transition graph done");
 }
 
 void STMATCH::update_layer(int level, TGLayer *la_ptr, TGLayer *lb_ptr,
@@ -297,16 +297,22 @@ C_Path STMATCH::build_cpath(const TGOpath &opath, std::vector<int> *indices) {
   for (int i = 0; i < N - 1; ++i) {
     const Candidate *a = opath[i]->c;
     const Candidate *b = opath[i + 1]->c;
-    SPDLOG_TRACE("Check a {} b {}", a->edge->id, b->edge->id);
+    SPDLOG_DEBUG("Check a {} b {}", a->edge->id, b->edge->id);
     if ((a->edge->id != b->edge->id) || (a->offset > b->offset)) {
       auto segs = graph_.shortest_path_dijkstra(a->edge->target,
                                                 b->edge->source);
       // No transition found
       if (segs.empty() && a->edge->target != b->edge->source) {
+        SPDLOG_DEBUG("Edges not found connecting a b");
         indices->clear();
         return {};
       }
-      SPDLOG_TRACE("Edges found {}", segs);
+      if (segs.empty()){
+        SPDLOG_DEBUG("Edges ab are adjacent");
+      } else {
+        SPDLOG_DEBUG("Edges connecting ab are {}", segs);
+      }
+
       for (int e:segs) {
         cpath.push_back(edges[e].id);
         ++current_idx;

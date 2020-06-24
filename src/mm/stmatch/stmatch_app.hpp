@@ -26,7 +26,10 @@ public:
    * Create stmatch command application from configuration
    * @param config configuration of the command line app
    */
-  STMATCHApp(const STMATCHAppConfig &config);
+  STMATCHApp(const STMATCHAppConfig &config):
+      config_(config),
+      network_(config_.network_config),
+      ng_(network_){};
   /**
    * Run the stmatch program
    */
