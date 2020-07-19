@@ -6,6 +6,9 @@
 #include "algorithm/geom_algorithm.hpp"
 #include "util/util.hpp"
 #include "util/debug.hpp"
+#include "io/gps_reader.hpp"
+#include "io/mm_writer.hpp"
+
 
 using namespace FMM;
 using namespace FMM::CORE;
@@ -171,8 +174,8 @@ std::string FastMapMatch::match_gps_file(
   int step_size = 1000;
   UTIL::TimePoint begin_time = std::chrono::steady_clock::now();
   FMM::IO::GPSReader reader(gps_config);
-  FMM::IO::CSVMatchResultWriter writer(config_.result_config.file,
-                                       config_.result_config.output_config);
+  FMM::IO::CSVMatchResultWriter writer(result_config.file,
+                                       result_config.output_config);
   while (reader.has_next_trajectory()) {
     if (progress % step_size == 0) {
       SPDLOG_INFO("Progress {}", progress);
@@ -191,7 +194,6 @@ std::string FastMapMatch::match_gps_file(
   UTIL::TimePoint end_time = std::chrono::steady_clock::now();
   double duration = std::chrono::duration_cast<
     std::chrono::milliseconds>(end_time - begin_time).count() / 1000.;
-  std::ostringstream oss;
   oss<<"Time takes " << duration << " seconds\n";
   oss<<"Total points " << total_points << " matched "<< points_matched <<"\n";
   oss<<"Map match speed " << points_matched / duration << " points/s \n";
