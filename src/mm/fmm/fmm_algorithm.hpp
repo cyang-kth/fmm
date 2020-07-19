@@ -15,6 +15,8 @@
 #include "mm/transition_graph.hpp"
 #include "mm/fmm/ubodt.hpp"
 #include "python/pyfmm.hpp"
+#include "config/gps_config.hpp"
+#include "config/result_config.hpp"
 
 #include <string>
 #include <boost/property_tree/ptree.hpp>
@@ -107,6 +109,19 @@ class FastMapMatch {
    */
   PYTHON::PyMatchResult match_wkt(
       const std::string &wkt,const FastMapMatchConfig &config);
+  /**
+   * Match GPS data stored in a file
+   * @param  gps_config    [description]
+   * @param  result_config [description]
+   * @param  config        [description]
+   * @return a string storing information about running time and
+   * statistics.
+   */
+  std::string match_gps_file(
+    const FMM::CONFIG::GPSConfig &gps_config,
+    const FMM::CONFIG::ResultConfig &result_config,
+    const FastMapMatchConfig &config
+  );
  protected:
   /**
    * Get shortest path distance between two candidates
