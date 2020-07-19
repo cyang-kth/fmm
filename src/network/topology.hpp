@@ -19,6 +19,10 @@ struct EdgeIntersectionData{
   double offset;
 };
 
+typedef std::vector<FMM::CORE::LineString> EdgeGeomData;
+
+typedef std::unordered_map<EdgeID,EdgeIntersectionData> TopologyData;
+
 class TopologyGeneratorConfig
 {
  public:
@@ -57,26 +61,35 @@ class TopologyGeneratorConfig
 class TopologyGenerator{
 public:
   TopologyGenerator(const TopologyGeneratorConfig &config);
-  inline void run(){
-    std::vector<FMM::CORE::LineString> raw_data = read_geom_data(
+  inline int run(){
+    EdgeGeomData geom_data = read_geom_data(
       config_.network_config.network_file);
-    std::vector<Edge> topology_data  = create_topology(
-      raw_data, config_.tolerance, config_.split_intersection);
-    int status = export_result(topology_data,config_.output_folder);
+    auto topo_data = create_topology(
+      geom_data, config_.tolerance, config_.split_intersection);
+    auto edges = create_edges(geom_data,topo_data);
+    int status = export_result(edges,config_.output_folder);
   };
-  static int export_result(const std::vector<Edge> &topology_data,
+
+  static int export_result(const std::vector<Edge> &edges,
     const std::string &output_folder){
 
   };
-  static std::vector<FMM::CORE::LineString> read_geom_data(
+
+  static EdgeGeomData read_geom_data(
     const std::string &network_file){
 
   };
-  static std::vector<Edge> create_topology(
-    const std::vector<FMM::CORE::LineString> &data, double tolerance,
+
+  static TopologyData create_topology(
+    const EdgeGeomData &data, double tolerance,
     bool split_intersection = false) {
 
   };
+
+  static std::vector<Edge> create_edges(){
+    TopologyData &topo_data, EdgeGeomData &geom_data
+  };
+
 private:
   const FMMAppConfig &config_;
 };
