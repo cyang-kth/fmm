@@ -7,6 +7,8 @@
 %ignore operator<<(std::ostream& os, const LineString& rhs);
 %ignore FMM::MM::STMATCHConfig::print() const;
 %ignore FMM::MM::FastMapMatchConfig::print() const;
+%ignore FMM::CONFIG::GPSConfig::print() const;
+%ignore FMM::CONFIG::ResultConfig::print() const;
 
 %{
 /* Put header files here or function declarations like below */

@@ -68,6 +68,7 @@ struct ResultConfig {
    * Print the configuration information
    */
   void print() const;
+  std::string to_string() const;
   /**
    * Parse a string separated by , into a set of strings.
    *

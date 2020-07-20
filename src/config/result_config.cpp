@@ -36,6 +36,39 @@ void FMM::CONFIG::ResultConfig::print() const {
   SPDLOG_INFO("Fields: {}",ss.str());
 };
 
+std::string FMM::CONFIG::ResultConfig::to_string() const{
+  std::ostringstream oss;
+  oss << "Result file : " << file << "\n";
+  oss << "Output fields: ";
+  if (output_config.write_opath)
+    oss << "opath ";
+  if (output_config.write_pgeom)
+    oss << "pgeom ";
+  if (output_config.write_offset)
+    oss << "offset ";
+  if (output_config.write_error)
+    oss << "error ";
+  if (output_config.write_spdist)
+    oss << "spdist ";
+  if (output_config.write_cpath)
+    oss << "cpath ";
+  if (output_config.write_tpath)
+    oss << "tpath ";
+  if (output_config.write_mgeom)
+    oss << "mgeom ";
+  if (output_config.write_ep)
+    oss << "ep ";
+  if (output_config.write_tp)
+    oss << "tp ";
+  if (output_config.write_length)
+    oss << "length ";
+  if (output_config.write_duration)
+    oss << "duration ";
+  if (output_config.write_speed)
+    oss << "speed ";
+  return oss.str();
+};
+
 FMM::CONFIG::ResultConfig FMM::CONFIG::ResultConfig::load_from_xml(
   const boost::property_tree::ptree &xml_data) {
   ResultConfig config;

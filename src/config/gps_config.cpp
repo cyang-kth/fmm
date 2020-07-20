@@ -25,6 +25,18 @@ void FMM::CONFIG::GPSConfig::print() const{
   }
 };
 
+std::string FMM::CONFIG::GPSConfig::to_string() const{
+  std::ostringstream oss;
+  oss << "gps file : " << file << "\n";
+  oss << "id column : " << id << "\n";
+  oss << "geom column : " << geom << "\n";
+  oss << "timestamp column : " << timestamp << "\n";
+  oss << "x column : " << x << "\n";
+  oss << "y column : " << y << "\n";
+  oss << "GPS point : " << (gps_point?"true":"false") << "\n";
+  return oss.str();
+};
+
 FMM::CONFIG::GPSConfig FMM::CONFIG::GPSConfig::load_from_xml(
   const boost::property_tree::ptree &xml_data){
   GPSConfig config;
