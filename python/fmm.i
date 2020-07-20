@@ -7,6 +7,8 @@
 %ignore operator<<(std::ostream& os, const LineString& rhs);
 %ignore FMM::MM::STMATCHConfig::print() const;
 %ignore FMM::MM::FastMapMatchConfig::print() const;
+%ignore FMM::CONFIG::GPSConfig::print() const;
+%ignore FMM::CONFIG::ResultConfig::print() const;
 
 %{
 /* Put header files here or function declarations like below */
@@ -15,14 +17,18 @@
 #include "network/network.hpp"
 #include "network/network_graph.hpp"
 #include "python/pyfmm.hpp"
+#include "config/gps_config.hpp"
+#include "config/result_config.hpp"
 #include "mm/mm_type.hpp"
 #include "mm/fmm/fmm_algorithm.hpp"
+#include "mm/fmm/ubodt_gen_algorithm.hpp"
 #include "mm/stmatch/stmatch_algorithm.hpp"
 #include "mm/fmm/ubodt.hpp"
 using namespace FMM;
 using namespace FMM::CORE;
 using namespace FMM::NETWORK;
 using namespace FMM::MM;
+using namespace FMM::CONFIG;
 %}
 
 
@@ -43,4 +49,7 @@ using namespace FMM::MM;
 %include "mm/fmm/ubodt.hpp"
 %include "network/network_graph.hpp"
 %include "mm/fmm/fmm_algorithm.hpp"
+%include "mm/fmm/ubodt_gen_algorithm.hpp"
+%include "config/gps_config.hpp"
+%include "config/result_config.hpp"
 %include "mm/stmatch/stmatch_algorithm.hpp"

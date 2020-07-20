@@ -119,13 +119,13 @@ target_link_libraries(fmm ${GDAL_LIBRARIES}
 
 add_executable(ubodt_gen src/app/ubodt_gen_app.cpp
         $<TARGET_OBJECTS:MM_OBJ>
+        $<TARGET_OBJECTS:FMM_OBJ>
         $<TARGET_OBJECTS:CORE>
         $<TARGET_OBJECTS:CONFIG>
         $<TARGET_OBJECTS:ALGORITHM>
         $<TARGET_OBJECTS:UTIL>
         $<TARGET_OBJECTS:IO>
-        $<TARGET_OBJECTS:NETWORK>
-        $<TARGET_OBJECTS:FMM_OBJ>)
+        $<TARGET_OBJECTS:NETWORK>)
 target_link_libraries(ubodt_gen
         ${GDAL_LIBRARIES}
         ${Boost_LIBRARIES}

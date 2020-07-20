@@ -6,6 +6,9 @@
 #include "algorithm/geom_algorithm.hpp"
 #include "util/util.hpp"
 #include "util/debug.hpp"
+#include "io/gps_reader.hpp"
+#include "io/mm_writer.hpp"
+
 
 using namespace FMM;
 using namespace FMM::CORE;
@@ -14,8 +17,8 @@ using namespace FMM::PYTHON;
 using namespace FMM::MM;
 
 FastMapMatchConfig::FastMapMatchConfig(int k_arg, double r_arg,
-    double gps_error) :
-    k(k_arg), radius(r_arg), gps_error(gps_error) {
+                                       double gps_error) :
+  k(k_arg), radius(r_arg), gps_error(gps_error) {
 };
 
 void FastMapMatchConfig::print() const {
@@ -24,7 +27,7 @@ void FastMapMatchConfig::print() const {
 };
 
 FastMapMatchConfig FastMapMatchConfig::load_from_xml(
-    const boost::property_tree::ptree &xml_data) {
+  const boost::property_tree::ptree &xml_data) {
   int k = xml_data.get("config.parameters.k", 8);
   double radius = xml_data.get("config.parameters.r", 300.0);
   double gps_error = xml_data.get("config.parameters.gps_error", 50.0);
@@ -32,7 +35,7 @@ FastMapMatchConfig FastMapMatchConfig::load_from_xml(
 };
 
 FastMapMatchConfig FastMapMatchConfig::load_from_arg(
-    const cxxopts::ParseResult &arg_data) {
+  const cxxopts::ParseResult &arg_data) {
   int k = arg_data["candidates"].as<int>();
   double radius = arg_data["radius"].as<double>();
   double gps_error = arg_data["error"].as<double>();
@@ -52,9 +55,9 @@ void FastMapMatchConfig::register_arg(cxxopts::Options &options){
 void FastMapMatchConfig::register_help(std::ostringstream &oss){
   oss<<"-k/--candidates (optional) <int>: Number of candidates (8)\n";
   oss<<"-r/--radius (optional) <double>: search "
-           "radius (network data unit) (300)\n";
+    "radius (network data unit) (300)\n";
   oss<<"-e/--error (optional) <double>: GPS error "
-           "(network data unit) (50)\n";
+    "(network data unit) (50)\n";
 };
 
 bool FastMapMatchConfig::validate() const {
@@ -67,11 +70,11 @@ bool FastMapMatchConfig::validate() const {
 }
 
 MatchResult FastMapMatch::match_traj(const Trajectory &traj,
-                       const FastMapMatchConfig &config) {
+                                     const FastMapMatchConfig &config) {
   SPDLOG_TRACE("Count of points in trajectory {}", traj.geom.get_num_points());
   SPDLOG_TRACE("Search candidates");
   Traj_Candidates tc = network_.search_tr_cs_knn(
-      traj.geom, config.k, config.radius);
+    traj.geom, config.k, config.radius);
   SPDLOG_TRACE("Trajectory candidate {}", tc);
   if (tc.empty()) return MatchResult{};
   SPDLOG_TRACE("Generate transition graph");
@@ -86,16 +89,16 @@ MatchResult FastMapMatch::match_traj(const Trajectory &traj,
   std::transform(tg_opath.begin(), tg_opath.end(),
                  matched_candidate_path.begin(),
                  [](const TGNode *a) {
-                   return MatchedCandidate{
-                       *(a->c), a->ep, a->tp, a->sp_dist
-                   };
-                 });
+    return MatchedCandidate{
+      *(a->c), a->ep, a->tp, a->sp_dist
+    };
+  });
   O_Path opath(tg_opath.size());
   std::transform(tg_opath.begin(), tg_opath.end(),
                  opath.begin(),
                  [](const TGNode *a) {
-                   return a->c->edge->id;
-                 });
+    return a->c->edge->id;
+  });
   std::vector<int> indices;
   const std::vector<Edge> &edges = network_.get_edges();
   C_Path cpath = ubodt_->construct_complete_path(tg_opath, edges,
@@ -103,14 +106,14 @@ MatchResult FastMapMatch::match_traj(const Trajectory &traj,
   SPDLOG_TRACE("Cpath {}", cpath);
   SPDLOG_TRACE("Complete path inference");
   LineString mgeom = network_.complete_path_to_geometry(
-      traj.geom, cpath);
+    traj.geom, cpath);
   SPDLOG_TRACE("Complete path inference done");
   return MatchResult{
-      traj.id, matched_candidate_path, opath, cpath, indices, mgeom};
+    traj.id, matched_candidate_path, opath, cpath, indices, mgeom};
 }
 
 PyMatchResult FastMapMatch::match_wkt(
-    const std::string &wkt, const FastMapMatchConfig &config) {
+  const std::string &wkt, const FastMapMatchConfig &config) {
   LineString line = wkt2linestring(wkt);
   std::vector<double> timestamps;
   Trajectory traj{0, line, timestamps};
@@ -124,20 +127,77 @@ PyMatchResult FastMapMatch::match_wkt(
   for (int i = 0; i < result.opt_candidate_path.size(); ++i) {
     const MatchedCandidate &mc = result.opt_candidate_path[i];
     output.candidates.push_back(
-        {i,
-         mc.c.edge->id,
-         graph_.get_node_id(mc.c.edge->source),
-         graph_.get_node_id(mc.c.edge->target),
-         mc.c.dist,
-         mc.c.offset,
-         mc.c.edge->length,
-         mc.ep,
-         mc.tp,
-         mc.sp_dist}
-    );
+      {i,
+       mc.c.edge->id,
+       graph_.get_node_id(mc.c.edge->source),
+       graph_.get_node_id(mc.c.edge->target),
+       mc.c.dist,
+       mc.c.offset,
+       mc.c.edge->length,
+       mc.ep,
+       mc.tp,
+       mc.sp_dist}
+      );
     output.pgeom.add_point(mc.c.point);
   }
   return output;
+};
+
+std::string FastMapMatch::match_gps_file(
+  const FMM::CONFIG::GPSConfig &gps_config,
+  const FMM::CONFIG::ResultConfig &result_config,
+  const FastMapMatchConfig &fmm_config
+  ){
+  std::ostringstream oss;
+  std::string status;
+  bool validate = true;
+  if (!gps_config.validate()) {
+    oss<<"gps_config invalid\n";
+    validate = false;
+  }
+  if (!result_config.validate()) {
+    oss<<"result_config invalid\n";
+    validate = false;
+  }
+  if (!fmm_config.validate()) {
+    oss<<"fmm_config invalid\n";
+    validate = false;
+  }
+  if (!validate){
+    oss<<"match_gps_file canceled\n";
+    return oss.str();
+  }
+  // Start map matching
+  int progress = 0;
+  int points_matched = 0;
+  int total_points = 0;
+  int step_size = 1000;
+  UTIL::TimePoint begin_time = std::chrono::steady_clock::now();
+  FMM::IO::GPSReader reader(gps_config);
+  FMM::IO::CSVMatchResultWriter writer(result_config.file,
+                                       result_config.output_config);
+  while (reader.has_next_trajectory()) {
+    if (progress % step_size == 0) {
+      SPDLOG_INFO("Progress {}", progress);
+    }
+    Trajectory trajectory = reader.read_next_trajectory();
+    int points_in_tr = trajectory.geom.get_num_points();
+    MM::MatchResult result = match_traj(
+      trajectory, fmm_config);
+    writer.write_result(trajectory,result);
+    if (!result.cpath.empty()) {
+      points_matched += points_in_tr;
+    }
+    total_points += points_in_tr;
+    ++progress;
+  }
+  UTIL::TimePoint end_time = std::chrono::steady_clock::now();
+  double duration = std::chrono::duration_cast<
+    std::chrono::milliseconds>(end_time - begin_time).count() / 1000.;
+  oss<<"Time takes " << duration << " seconds\n";
+  oss<<"Total points " << total_points << " matched "<< points_matched <<"\n";
+  oss<<"Map match speed " << points_matched / duration << " points/s \n";
+  return oss.str();
 };
 
 double FastMapMatch::get_sp_dist(const Candidate *ca, const Candidate *cb) {
@@ -158,8 +218,8 @@ double FastMapMatch::get_sp_dist(const Candidate *ca, const Candidate *cb) {
 }
 
 void FastMapMatch::update_tg(
-    TransitionGraph *tg,
-    const Trajectory &traj, const FastMapMatchConfig &config) {
+  TransitionGraph *tg,
+  const Trajectory &traj, const FastMapMatchConfig &config) {
   SPDLOG_TRACE("Update transition graph");
   std::vector<TGLayer> &layers = tg->get_layers();
   std::vector<double> eu_dists = ALGORITHM::cal_eu_dist(traj.geom);
@@ -172,9 +232,9 @@ void FastMapMatch::update_tg(
 }
 
 void FastMapMatch::update_layer(int level,
-                       TGLayer *la_ptr,
-                       TGLayer *lb_ptr,
-                       double eu_dist) {
+                                TGLayer *la_ptr,
+                                TGLayer *lb_ptr,
+                                double eu_dist) {
   SPDLOG_TRACE("Update layer");
   TGLayer &lb = *lb_ptr;
   for (auto iter_a = la_ptr->begin(); iter_a != la_ptr->end(); ++iter_a) {

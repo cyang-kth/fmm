@@ -15,6 +15,8 @@
 #include "mm/transition_graph.hpp"
 #include "mm/mm_type.hpp"
 #include "python/pyfmm.hpp"
+#include "config/gps_config.hpp"
+#include "config/result_config.hpp"
 
 #include <string>
 #include <boost/property_tree/ptree.hpp>
@@ -23,7 +25,7 @@
 #include "cxxopts/cxxopts.hpp"
 
 namespace FMM {
-namespace MM{
+namespace MM {
 
 /**
  * Configuration of stmatch algorithm
@@ -40,7 +42,7 @@ struct STMATCHConfig {
    * search in stmatch.
    */
   STMATCHConfig(int k_arg = 8, double r_arg = 300, double gps_error_arg = 50,
-      double vmax_arg = 30, double factor_arg = 1.5);
+                double vmax_arg = 30, double factor_arg = 1.5);
   int k; /**< number of candidates */
   double radius; /**< search radius for candidates, unit is map_unit*/
   double gps_error; /**< GPS error, unit is map_unit */
@@ -59,12 +61,12 @@ struct STMATCHConfig {
    * Load from xml data
    */
   static STMATCHConfig load_from_xml(
-      const boost::property_tree::ptree &xml_data);
+    const boost::property_tree::ptree &xml_data);
   /**
    * Load from argument parsed data
    */
   static STMATCHConfig load_from_arg(
-      const cxxopts::ParseResult &arg_data);
+    const cxxopts::ParseResult &arg_data);
   /**
    * Register arguments to an option object
    */
@@ -79,12 +81,12 @@ struct STMATCHConfig {
  * %STMATCH algorithm/model
  */
 class STMATCH {
- public:
+public:
   /**
    * Create a stmatch model from network and graph
    */
   STMATCH(const NETWORK::Network &network, const NETWORK::NetworkGraph &graph) :
-      network_(network), graph_(graph) {
+    network_(network), graph_(graph) {
   };
   /**
    * Match a wkt linestring to the road network.
@@ -102,7 +104,20 @@ class STMATCH {
    */
   MatchResult match_traj(const CORE::Trajectory &traj,
                          const STMATCHConfig &config);
- protected:
+  /**
+   * Match GPS data stored in a file
+   * @param  gps_config    [description]
+   * @param  result_config [description]
+   * @param  config        [description]
+   * @return a string storing information about running time and
+   * statistics.
+   */
+  std::string match_gps_file(
+    const FMM::CONFIG::GPSConfig &gps_config,
+    const FMM::CONFIG::ResultConfig &result_config,
+    const STMATCHConfig &config
+    );
+protected:
   /**
    * Update probabilities in a transition graph
    * @param tg transition graph
@@ -141,9 +156,9 @@ class STMATCH {
    * is not reached, infinity distance will be returned for that node.
    */
   std::vector<double> shortest_path_upperbound(
-      int level,
-      const CompositeGraph &cg, NETWORK::NodeIndex source,
-      const std::vector<NETWORK::NodeIndex> &targets, double delta);
+    int level,
+    const CompositeGraph &cg, NETWORK::NodeIndex source,
+    const std::vector<NETWORK::NodeIndex> &targets, double delta);
 
   /**
    * Create a topologically connected path according to each matched
@@ -154,7 +169,7 @@ class STMATCH {
    * @return A vector of edge id representing the traversed path
    */
   C_Path build_cpath(const TGOpath &tg_opath, std::vector<int> *indices);
- private:
+private:
   const NETWORK::Network &network_;
   const NETWORK::NetworkGraph &graph_;
 };// STMATCH
