@@ -16,67 +16,30 @@
 #include "network/network_graph.hpp"
 
 namespace FMM {
-namespace MM{
+namespace MM {
 /**
  * ubodt_gen command line program
  */
 class UBODTGenApp {
- public:
+public:
   /**
    * Constructor
    * @param config Configuration data
    */
   UBODTGenApp(const UBODTGenAppConfig &config) :
-      config_(config),
-      network_(config_.network_config),
-      graph_(network_) {};
+    config_(config),
+    network_(config_.network_config),
+    ng_(network_) {
+  };
   /**
    * Run the precomputation
    */
   void run() const;
-  /**
-   * Run precomputation in a single thread and save result to a file
-   * @param filename output file name
-   * @param delta    upper bound value
-   * @param binary   whether store binary data or not
-   */
-  void precompute_ubodt(
-      const std::string &filename, double delta, bool binary = true) const;
-  /**
-   * Run precomputation parallelly and save result to a file
-   * @param filename output file name
-   * @param delta    upper bound value
-   * @param binary   whether store binary data or not
-   */
-  void precompute_ubodt_omp(const std::string &filename, double delta,
-                            bool binary = true) const;
-
- private:
+private:
   const UBODTGenAppConfig &config_;
   NETWORK::Network network_;
-  NETWORK::NetworkGraph graph_;
-  /**
-   * Write the routing result to a binary stream
-   * @param stream output binary stream
-   * @param s      source node
-   * @param pmap   predecessor map
-   * @param dmap   distance map
-   */
-  void write_result_binary(boost::archive::binary_oarchive &stream,
-                           NETWORK::NodeIndex s,
-                           NETWORK::PredecessorMap &pmap,
-                           NETWORK::DistanceMap &dmap) const;
-  /**
-   * Write the routing result to a csv stream
-   * @param stream output csv stream
-   * @param s      source node
-   * @param pmap   predecessor map
-   * @param dmap   distance map
-   */
-  void write_result_csv(std::ostream &stream,
-                        NETWORK::NodeIndex s,
-                        NETWORK::PredecessorMap &pmap,
-                        NETWORK::DistanceMap &dmap) const;
+  NETWORK::NetworkGraph ng_;
+
 };
 }
 }

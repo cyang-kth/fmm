@@ -18,7 +18,8 @@ endif()
 
 file(GLOB PYTHONFMMGlob
 ${PROJECT_SOURCE_DIR}/src/mm/fmm/fmm_algorithm.cpp
-${PROJECT_SOURCE_DIR}/src/mm/fmm/ubodt.cpp)
+${PROJECT_SOURCE_DIR}/src/mm/fmm/ubodt.cpp
+${PROJECT_SOURCE_DIR}/src/mm/fmm/ubodt_gen_algorithm.cpp)
 file(GLOB PYTHONSTMATCHGlob
 ${PROJECT_SOURCE_DIR}/src/mm/stmatch/stmatch_algorithm.cpp)
 

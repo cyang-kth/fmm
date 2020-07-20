@@ -21,6 +21,7 @@
 #include "config/result_config.hpp"
 #include "mm/mm_type.hpp"
 #include "mm/fmm/fmm_algorithm.hpp"
+#include "mm/fmm/ubodt_gen_algorithm.hpp"
 #include "mm/stmatch/stmatch_algorithm.hpp"
 #include "mm/fmm/ubodt.hpp"
 using namespace FMM;
@@ -48,6 +49,7 @@ using namespace FMM::CONFIG;
 %include "mm/fmm/ubodt.hpp"
 %include "network/network_graph.hpp"
 %include "mm/fmm/fmm_algorithm.hpp"
+%include "mm/fmm/ubodt_gen_algorithm.hpp"
 %include "config/gps_config.hpp"
 %include "config/result_config.hpp"
 %include "mm/stmatch/stmatch_algorithm.hpp"
