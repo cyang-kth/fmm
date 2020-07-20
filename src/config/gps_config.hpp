@@ -23,7 +23,19 @@ namespace CONFIG {
 /**
  *  GPS configuration class for reading data from a file.
  */
-struct GPSConfig{
+struct GPSConfig {
+  GPSConfig(){};
+  GPSConfig(const std::string &file_arg,
+            const std::string &id_arg,
+            const std::string &geom_arg,
+            const std::string &x_arg,
+            const std::string &y_arg,
+            const std::string &timestamp_arg,
+            bool gps_point_arg) :
+    file(file_arg), id(id_arg), geom(geom_arg),
+    x(x_arg),y(y_arg),timestamp(timestamp_arg),
+    gps_point(gps_point_arg)
+  {};
   std::string file; /**< filename */
   std::string id; /**< id field/column name */
   std::string geom; /**< geometry field/column name */

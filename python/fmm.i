@@ -25,6 +25,7 @@ using namespace FMM;
 using namespace FMM::CORE;
 using namespace FMM::NETWORK;
 using namespace FMM::MM;
+using namespace FMM::CONFIG;
 %}
 
 
@@ -45,4 +46,6 @@ using namespace FMM::MM;
 %include "mm/fmm/ubodt.hpp"
 %include "network/network_graph.hpp"
 %include "mm/fmm/fmm_algorithm.hpp"
+%include "config/gps_config.hpp"
+%include "config/result_config.hpp"
 %include "mm/stmatch/stmatch_algorithm.hpp"
