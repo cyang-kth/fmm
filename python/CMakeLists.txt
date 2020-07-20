@@ -43,7 +43,7 @@ $<TARGET_OBJECTS:NETWORK>)
 
 set_property(TARGET pyfmmlib PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_link_libraries(pyfmmlib ${GDAL_LIBRARIES} ${Boost_LIBRARIES}
-${OSMIUM_LIBRARIES})
+${OSMIUM_LIBRARIES} ${OpenMP_CXX_LIBRARIES})
 # Add the target.
 if (${CMAKE_VERSION} VERSION_LESS 3.13.0)
   message(STATUS "Using swig add module")

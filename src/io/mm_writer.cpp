@@ -11,6 +11,7 @@
 #include "util/util.hpp"
 #include "util/debug.hpp"
 #include "config/result_config.hpp"
+#include <omp.h>
 
 #include <sstream>
 
