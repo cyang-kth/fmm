@@ -2,6 +2,8 @@
 #include "algorithm/geom_algorithm.hpp"
 #include "util/debug.hpp"
 #include "util/util.hpp"
+#include "io/gps_reader.hpp"
+#include "io/mm_writer.hpp"
 
 #include <limits>
 
@@ -154,6 +156,63 @@ MatchResult STMATCH::match_traj(const Trajectory &traj,
   return MatchResult{
       traj.id, matched_candidate_path, opath, cpath, indices, mgeom};
 }
+
+std::string STMATCH::match_gps_file(
+  const FMM::CONFIG::GPSConfig &gps_config,
+  const FMM::CONFIG::ResultConfig &result_config,
+  const STMATCHConfig &stmatch_config
+  ){
+  std::ostringstream oss;
+  std::string status;
+  bool validate = true;
+  if (!gps_config.validate()) {
+    oss<<"gps_config invalid\n";
+    validate = false;
+  }
+  if (!result_config.validate()) {
+    oss<<"result_config invalid\n";
+    validate = false;
+  }
+  if (!stmatch_config.validate()) {
+    oss<<"stmatch_config invalid\n";
+    validate = false;
+  }
+  if (!validate){
+    oss<<"match_gps_file canceled\n";
+    return oss.str();
+  }
+  // Start map matching
+  int progress = 0;
+  int points_matched = 0;
+  int total_points = 0;
+  int step_size = 1000;
+  UTIL::TimePoint begin_time = std::chrono::steady_clock::now();
+  FMM::IO::GPSReader reader(gps_config);
+  FMM::IO::CSVMatchResultWriter writer(result_config.file,
+                                       result_config.output_config);
+  while (reader.has_next_trajectory()) {
+    if (progress % step_size == 0) {
+      SPDLOG_INFO("Progress {}", progress);
+    }
+    Trajectory trajectory = reader.read_next_trajectory();
+    int points_in_tr = trajectory.geom.get_num_points();
+    MM::MatchResult result = match_traj(
+      trajectory, stmatch_config);
+    writer.write_result(trajectory,result);
+    if (!result.cpath.empty()) {
+      points_matched += points_in_tr;
+    }
+    total_points += points_in_tr;
+    ++progress;
+  }
+  UTIL::TimePoint end_time = std::chrono::steady_clock::now();
+  double duration = std::chrono::duration_cast<
+    std::chrono::milliseconds>(end_time - begin_time).count() / 1000.;
+  oss<<"Time takes " << duration << " seconds\n";
+  oss<<"Total points " << total_points << " matched "<< points_matched <<"\n";
+  oss<<"Map match speed " << points_matched / duration << " points/s \n";
+  return oss.str();
+};
 
 void STMATCH::update_tg(TransitionGraph *tg,
                         const CompositeGraph &cg,
