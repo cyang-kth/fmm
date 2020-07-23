@@ -28,7 +28,8 @@ std::string UBODTGenAlgorithm::generate_ubodt(
   double time_spent =
       std::chrono::duration_cast<std::chrono::milliseconds>
           (end - begin).count() / 1000.;
-  oss<< "Time takes " << time_spent << "seconds";
+  oss<< "Status: success\n";
+  oss<< "Time takes " << time_spent << " seconds\n";
   return oss.str();
 };
 

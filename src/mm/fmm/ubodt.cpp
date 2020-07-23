@@ -117,6 +117,7 @@ void UBODT::insert(Record *r) {
   r->next = hashtable[h];
   hashtable[h] = r;
   if (r->cost > delta) delta = r->cost;
+  ++num_rows;
 }
 
 long UBODT::estimate_ubodt_rows(const std::string &filename) {

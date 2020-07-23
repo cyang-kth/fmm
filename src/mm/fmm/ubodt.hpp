@@ -1,7 +1,7 @@
 /**
  * Fast map matching.
  *
- * Upperbounded origin destination table 
+ * Upperbounded origin destination table
  *
  * @author: Can Yang
  * @version: 2020.01.31
@@ -99,6 +99,10 @@ class UBODT {
    */
   void insert(Record *r);
 
+  inline long long get_num_rows(){
+    return num_rows;
+  };
+
   /**
    * Read UBODT from a file.
    * The format will be infered from the file extension.
@@ -145,6 +149,7 @@ class UBODT {
  private:
   const long long multiplier;   // multiplier to get a unique ID
   const int buckets;   // number of buckets
+  long long num_rows=0;   // multiplier to get a unique ID
   double delta = 0.0;
   Record **hashtable;
 };

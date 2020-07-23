@@ -146,7 +146,8 @@ PyMatchResult FastMapMatch::match_wkt(
 std::string FastMapMatch::match_gps_file(
   const FMM::CONFIG::GPSConfig &gps_config,
   const FMM::CONFIG::ResultConfig &result_config,
-  const FastMapMatchConfig &fmm_config
+  const FastMapMatchConfig &fmm_config,
+  bool use_omp
   ){
   std::ostringstream oss;
   std::string status;
@@ -176,26 +177,56 @@ std::string FastMapMatch::match_gps_file(
   FMM::IO::GPSReader reader(gps_config);
   FMM::IO::CSVMatchResultWriter writer(result_config.file,
                                        result_config.output_config);
-  while (reader.has_next_trajectory()) {
-    if (progress % step_size == 0) {
-      SPDLOG_INFO("Progress {}", progress);
+  if (use_omp){
+    int buffer_trajectories_size = 100000;
+    while (reader.has_next_trajectory()) {
+      std::vector<Trajectory> trajectories =
+        reader.read_next_N_trajectories(buffer_trajectories_size);
+      int trajectories_fetched = trajectories.size();
+      #pragma omp parallel for
+      for (int i = 0; i < trajectories_fetched; ++i) {
+        Trajectory &trajectory = trajectories[i];
+        int points_in_tr = trajectory.geom.get_num_points();
+        MM::MatchResult result = match_traj(
+            trajectory, fmm_config);
+        writer.write_result(trajectory,result);
+        #pragma omp critical
+        if (!result.cpath.empty()) {
+          points_matched += points_in_tr;
+        }
+        total_points += points_in_tr;
+        ++progress;
+        if (progress % step_size == 0) {
+          std::stringstream buf;
+          buf << "Progress " << progress << '\n';
+          std::cout << buf.rdbuf();
+        }
+      }
     }
-    Trajectory trajectory = reader.read_next_trajectory();
-    int points_in_tr = trajectory.geom.get_num_points();
-    MM::MatchResult result = match_traj(
-      trajectory, fmm_config);
-    writer.write_result(trajectory,result);
-    if (!result.cpath.empty()) {
-      points_matched += points_in_tr;
+  } else {
+    while (reader.has_next_trajectory()) {
+      if (progress % step_size == 0) {
+        SPDLOG_INFO("Progress {}", progress);
+      }
+      Trajectory trajectory = reader.read_next_trajectory();
+      int points_in_tr = trajectory.geom.get_num_points();
+      MM::MatchResult result = match_traj(
+        trajectory, fmm_config);
+      writer.write_result(trajectory,result);
+      if (!result.cpath.empty()) {
+        points_matched += points_in_tr;
+      }
+      total_points += points_in_tr;
+      ++progress;
     }
-    total_points += points_in_tr;
-    ++progress;
   }
   UTIL::TimePoint end_time = std::chrono::steady_clock::now();
   double duration = std::chrono::duration_cast<
     std::chrono::milliseconds>(end_time - begin_time).count() / 1000.;
+  oss<<"Status: success\n";
   oss<<"Time takes " << duration << " seconds\n";
   oss<<"Total points " << total_points << " matched "<< points_matched <<"\n";
+  oss<<"Map match percentage " << points_matched / (double) total_points <<"\n";
   oss<<"Map match speed " << points_matched / duration << " points/s \n";
   return oss.str();
 };

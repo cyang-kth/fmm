@@ -115,7 +115,8 @@ public:
   std::string match_gps_file(
     const FMM::CONFIG::GPSConfig &gps_config,
     const FMM::CONFIG::ResultConfig &result_config,
-    const STMATCHConfig &config
+    const STMATCHConfig &config,
+    bool use_omp = true
     );
 protected:
   /**
