@@ -19,8 +19,10 @@
 namespace FMM {
 namespace NETWORK{
 
-typedef uint64_t NodeID; /**< Node ID in the network, can be discontinuous int */
-typedef int EdgeID; /**< Edge ID in the network, can be discontinuous int */
+typedef long long NodeID; /**< Node ID in the network, can be discontinuous
+                          int */
+typedef long long EdgeID; /**< Edge ID in the network, can be negative to
+                          distinguish edges in two directions */
 typedef unsigned int NodeIndex; /**< Node Index in the network, range
                                  from [0,num_vertices-1 ]*/
 typedef unsigned int EdgeIndex; /**< Edge Index in the network, range
