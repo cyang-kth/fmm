@@ -22,9 +22,9 @@ namespace PYTHON{
  */
 struct PyCandidate{
   int index; /**< Index of the candidate, point index */
-  int edge_id; /**< Edge id matched */
-  int source; /**< Edge source node ID */
-  int target; /**< Edge target node ID */
+  NETWORK::EdgeID edge_id; /**< Edge id matched */
+  NETWORK::NodeID source; /**< Edge source node ID */
+  NETWORK::NodeID target; /**< Edge target node ID */
   double error; /**< Error of matching */
   double offset; /**< Matched point distance to start node of edge */
   double length; /**< Length of edge matched */

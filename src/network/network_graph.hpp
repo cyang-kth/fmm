@@ -103,7 +103,7 @@ public:
    * @param idx edge index
    * @return edge ID
    */
-  inline int get_edge_id(EdgeIndex idx) const {
+  inline EdgeID get_edge_id(EdgeIndex idx) const {
     return network.get_edge_id(idx);
   };
 
@@ -122,7 +122,7 @@ public:
    * @param cost
    * @return edge ID
    */
-  inline int get_edge_id(NodeIndex source, NodeIndex target,
+  inline EdgeID get_edge_id(NodeIndex source, NodeIndex target,
                          double cost) const {
     return network.get_edge_id(get_edge_index(source, target, cost));
   };
@@ -131,7 +131,7 @@ public:
    * @param idx
    * @return node ID
    */
-  inline int get_node_id(NodeIndex idx) const {
+  inline NodeID get_node_id(NodeIndex idx) const {
     return network.get_node_id(idx);
   };
   /**

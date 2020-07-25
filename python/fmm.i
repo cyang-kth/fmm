@@ -1,9 +1,11 @@
 %module fmm
 %include "std_string.i"
 %include "std_vector.i"
+%include "stdint.i"
 %include "std_shared_ptr.i"
 %shared_ptr(FMM::MM::UBODT)
 %ignore FMM::NETWORK::Network::route2geometry(std::vector<EdgeIndex> const &) const;
+%ignore FMM::NETWORK::Network::get_edge(EdgeIndex index) const;
 %ignore operator<<(std::ostream& os, const LineString& rhs);
 %ignore FMM::MM::STMATCHConfig::print() const;
 %ignore FMM::MM::FastMapMatchConfig::print() const;
@@ -34,6 +36,7 @@ using namespace FMM::CONFIG;
 
 
 %template(IntVector) std::vector<int>;
+%template(IDVector) std::vector<int64_t>;
 %template(UnsignedIntVector) std::vector<unsigned int>;
 %template(DoubleVector) std::vector<double>;
 %template(PyCandidateVector) std::vector<FMM::PYTHON::PyCandidate>;
