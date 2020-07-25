@@ -13,16 +13,15 @@
 #include <vector>
 #include <list>
 #include <string>
-#include <cstdint>
 #include <unordered_map>
 #include "core/geometry.hpp"
 
 namespace FMM {
 namespace NETWORK{
 
-typedef int64_t NodeID; /**< Node ID in the network, can be discontinuous
+typedef long long NodeID; /**< Node ID in the network, can be discontinuous
                           int */
-typedef int64_t EdgeID; /**< Edge ID in the network, can be negative to
+typedef long long EdgeID; /**< Edge ID in the network, can be negative to
                           distinguish edges in two directions */
 typedef unsigned int NodeIndex; /**< Node Index in the network, range
                                  from [0,num_vertices-1 ]*/

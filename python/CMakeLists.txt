@@ -7,8 +7,6 @@ else()
   message(FATAL_ERROR "Swig not found!\n")
 endif()
 
-set(CMAKE_SWIG_FLAGS -DSWIGWORDSIZE64)
-
 find_package(PythonLibs 2.7 REQUIRED)
 if (PYTHONLIBS_FOUND)
   message(STATUS "Python header found at ${PYTHON_INCLUDE_DIRS}")
