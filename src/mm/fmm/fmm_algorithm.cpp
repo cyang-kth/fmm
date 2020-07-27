@@ -71,20 +71,20 @@ bool FastMapMatchConfig::validate() const {
 
 MatchResult FastMapMatch::match_traj(const Trajectory &traj,
                                      const FastMapMatchConfig &config) {
-  SPDLOG_TRACE("Count of points in trajectory {}", traj.geom.get_num_points());
-  SPDLOG_TRACE("Search candidates");
+  SPDLOG_DEBUG("Count of points in trajectory {}", traj.geom.get_num_points());
+  SPDLOG_DEBUG("Search candidates");
   Traj_Candidates tc = network_.search_tr_cs_knn(
     traj.geom, config.k, config.radius);
-  SPDLOG_TRACE("Trajectory candidate {}", tc);
+  SPDLOG_DEBUG("Trajectory candidate {}", tc);
   if (tc.empty()) return MatchResult{};
-  SPDLOG_TRACE("Generate transition graph");
+  SPDLOG_DEBUG("Generate transition graph");
   TransitionGraph tg(tc, config.gps_error);
-  SPDLOG_TRACE("Update cost in transition graph");
+  SPDLOG_DEBUG("Update cost in transition graph");
   // The network will be used internally to update transition graph
   update_tg(&tg, traj, config);
-  SPDLOG_TRACE("Optimal path inference");
+  SPDLOG_DEBUG("Optimal path inference");
   TGOpath tg_opath = tg.backtrack();
-  SPDLOG_TRACE("Optimal path size {}", tg_opath.size());
+  SPDLOG_DEBUG("Optimal path size {}", tg_opath.size());
   MatchedCandidatePath matched_candidate_path(tg_opath.size());
   std::transform(tg_opath.begin(), tg_opath.end(),
                  matched_candidate_path.begin(),
@@ -103,11 +103,11 @@ MatchResult FastMapMatch::match_traj(const Trajectory &traj,
   const std::vector<Edge> &edges = network_.get_edges();
   C_Path cpath = ubodt_->construct_complete_path(tg_opath, edges,
                                                  &indices);
-  SPDLOG_TRACE("Cpath {}", cpath);
-  SPDLOG_TRACE("Complete path inference");
+  SPDLOG_DEBUG("Opath is {}", opath);
+  SPDLOG_DEBUG("Indices is {}", indices);
+  SPDLOG_DEBUG("Complete path is {}", cpath);
   LineString mgeom = network_.complete_path_to_geometry(
     traj.geom, cpath);
-  SPDLOG_TRACE("Complete path inference done");
   return MatchResult{
     traj.id, matched_candidate_path, opath, cpath, indices, mgeom};
 }
@@ -251,22 +251,23 @@ double FastMapMatch::get_sp_dist(const Candidate *ca, const Candidate *cb) {
 void FastMapMatch::update_tg(
   TransitionGraph *tg,
   const Trajectory &traj, const FastMapMatchConfig &config) {
-  SPDLOG_TRACE("Update transition graph");
+  SPDLOG_DEBUG("Update transition graph");
   std::vector<TGLayer> &layers = tg->get_layers();
   std::vector<double> eu_dists = ALGORITHM::cal_eu_dist(traj.geom);
   int N = layers.size();
   for (int i = 0; i < N - 1; ++i) {
+    SPDLOG_DEBUG("Update layer {} ", i);
     update_layer(i, &(layers[i]), &(layers[i + 1]),
                  eu_dists[i]);
   }
-  SPDLOG_TRACE("Update transition graph done");
+  SPDLOG_DEBUG("Update transition graph done");
 }
 
 void FastMapMatch::update_layer(int level,
                                 TGLayer *la_ptr,
                                 TGLayer *lb_ptr,
                                 double eu_dist) {
-  SPDLOG_TRACE("Update layer");
+  // SPDLOG_TRACE("Update layer");
   TGLayer &lb = *lb_ptr;
   for (auto iter_a = la_ptr->begin(); iter_a != la_ptr->end(); ++iter_a) {
     NodeIndex source = iter_a->c->index;
@@ -281,5 +282,5 @@ void FastMapMatch::update_layer(int level,
       }
     }
   }
-  SPDLOG_TRACE("Update layer done");
+  // SPDLOG_TRACE("Update layer done");
 }

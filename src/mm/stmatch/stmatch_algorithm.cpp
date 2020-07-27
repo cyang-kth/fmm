@@ -237,7 +237,7 @@ std::string STMATCH::match_gps_file(
   UTIL::TimePoint end_time = std::chrono::steady_clock::now();
   double duration = std::chrono::duration_cast<
     std::chrono::milliseconds>(end_time - begin_time).count() / 1000.;
-  oss<<"Status: success\n";  
+  oss<<"Status: success\n";
   oss<<"Time takes " << duration << " seconds\n";
   oss<<"Total points " << total_points << " matched "<< points_matched <<"\n";
   oss<<"Map match speed " << points_matched / duration << " points/s \n";

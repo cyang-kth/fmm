@@ -77,16 +77,24 @@ C_Path UBODT::construct_complete_path(const TGOpath &path,
   cpath.push_back(path[0]->c->edge->id);
   int current_idx = 0;
   indices->push_back(current_idx);
+  SPDLOG_TRACE("Insert index {}", current_idx);
   for (int i = 0; i < N - 1; ++i) {
     const Candidate *a = path[i]->c;
     const Candidate *b = path[i + 1]->c;
+    SPDLOG_DEBUG("Check a {} b {}", a->edge->id, b->edge->id);
     if ((a->edge->id != b->edge->id) || (a->offset > b->offset)) {
       // segs stores edge index
       auto segs = look_sp_path(a->edge->target, b->edge->source);
       // No transition exist in UBODT
       if (segs.empty() && a->edge->target != b->edge->source) {
+        SPDLOG_DEBUG("Edges not found connecting a b");
         indices->clear();
         return C_Path();
+      }
+      if (segs.empty()) {
+        SPDLOG_DEBUG("Edges ab are adjacent");
+      } else {
+        SPDLOG_DEBUG("Edges connecting ab are {}", segs);
       }
       for (int e:segs) {
         cpath.push_back(edges[e].id);
@@ -95,8 +103,10 @@ C_Path UBODT::construct_complete_path(const TGOpath &path,
       cpath.push_back(b->edge->id);
       ++current_idx;
       indices->push_back(current_idx);
+      SPDLOG_TRACE("Insert index {}", current_idx);
     } else {
       indices->push_back(current_idx);
+      SPDLOG_TRACE("Insert index {}", current_idx);
     }
   }
   return cpath;
