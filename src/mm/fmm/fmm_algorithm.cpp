@@ -101,7 +101,7 @@ MatchResult FastMapMatch::match_traj(const Trajectory &traj,
   });
   std::vector<int> indices;
   const std::vector<Edge> &edges = network_.get_edges();
-  C_Path cpath = ubodt_->construct_complete_path(tg_opath, edges,
+  C_Path cpath = ubodt_->construct_complete_path(traj.id, tg_opath, edges,
                                                  &indices);
   SPDLOG_DEBUG("Opath is {}", opath);
   SPDLOG_DEBUG("Indices is {}", indices);

@@ -76,7 +76,7 @@ class UBODT {
    * path implying complete path cannot be found in UBDOT,
    * an empty path is returned
    */
-  C_Path construct_complete_path(const TGOpath &path,
+  C_Path construct_complete_path(int traj_id, const TGOpath &path,
                                  const std::vector<NETWORK::Edge> &edges,
                                  std::vector<int> *indices) const;
   /**

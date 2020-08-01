@@ -67,7 +67,7 @@ std::vector<EdgeIndex> UBODT::look_sp_path(NodeIndex source,
   return edges;
 }
 
-C_Path UBODT::construct_complete_path(const TGOpath &path,
+C_Path UBODT::construct_complete_path(int traj_id, const TGOpath &path,
                                       const std::vector<Edge> &edges,
                                       std::vector<int> *indices) const {
   C_Path cpath;
@@ -88,6 +88,8 @@ C_Path UBODT::construct_complete_path(const TGOpath &path,
       // No transition exist in UBODT
       if (segs.empty() && a->edge->target != b->edge->source) {
         SPDLOG_DEBUG("Edges not found connecting a b");
+        SPDLOG_WARN("Traj {} unmatched as edge {} and {} disconnected",
+          traj_id, a->edge->id, b->edge->id);
         indices->clear();
         return C_Path();
       }
