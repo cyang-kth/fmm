@@ -294,8 +294,9 @@ void FastMapMatch::update_layer(int level,
       double sp_dist = get_sp_dist(iter_a->c, iter_b->c,
         config.reverse_tolerance);
       double tp = TransitionGraph::calc_tp(sp_dist, eu_dist);
-      if (iter_a->cumu_prob + tp * iter_b->ep >= iter_b->cumu_prob) {
-        iter_b->cumu_prob = iter_a->cumu_prob + tp * iter_b->ep;
+      double temp = iter_a->cumu_prob + log(tp) + log(iter_b->ep);
+      if (temp >= iter_b->cumu_prob) {
+        iter_b->cumu_prob = temp;
         iter_b->prev = &(*iter_a);
         iter_b->tp = tp;
         iter_b->sp_dist = sp_dist;

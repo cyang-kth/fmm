@@ -21,7 +21,8 @@ TransitionGraph::TransitionGraph(const Traj_Candidates &tc, double gps_error){
     TGLayer layer;
     for (auto iter = cs->begin(); iter!=cs->end(); ++iter) {
       double ep = calc_ep(iter->dist,gps_error);
-      layer.push_back(TGNode{&(*iter),nullptr,ep,0});
+      layer.push_back(TGNode{&(*iter),nullptr,ep,0,
+        -std::numeric_limits<double>::infinity(),0});
     }
     layers.push_back(layer);
   }
@@ -42,14 +43,14 @@ double TransitionGraph::calc_ep(double dist,double error){
 // Reset the properties of a candidate set
 void TransitionGraph::reset_layer(TGLayer *layer){
   for (auto iter=layer->begin(); iter!=layer->end(); ++iter) {
-    iter->cumu_prob = iter->ep;
+    iter->cumu_prob = log(iter->ep);
     iter->prev = nullptr;
   }
 }
 
 const TGNode *TransitionGraph::find_optimal_candidate(const TGLayer &layer){
   const TGNode *opt_c=nullptr;
-  double final_prob = -0.001;
+  double final_prob = -std::numeric_limits<double>::infinity();
   for (auto c = layer.begin(); c!=layer.end(); ++c) {
     if(final_prob < c->cumu_prob) {
       final_prob = c->cumu_prob;
@@ -62,7 +63,7 @@ const TGNode *TransitionGraph::find_optimal_candidate(const TGLayer &layer){
 TGOpath TransitionGraph::backtrack(){
   SPDLOG_TRACE("Backtrack on transition graph");
   TGNode* track_cand=nullptr;
-  double final_prob = -0.001;
+  double final_prob = -std::numeric_limits<double>::infinity();
   std::vector<TGNode>& last_layer = layers.back();
   for (auto c = last_layer.begin(); c!=last_layer.end(); ++c) {
     if(final_prob < c->cumu_prob) {
@@ -71,11 +72,20 @@ TGOpath TransitionGraph::backtrack(){
     }
   }
   TGOpath opath;
-  if (final_prob>0) {
+  int i = layers.size();
+  if (final_prob>-std::numeric_limits<double>::infinity()) {
     opath.push_back(track_cand);
+    --i;
+    SPDLOG_TRACE("Optimal candidate {} edge id {} sp {} tp {} cp {}",
+        i,track_cand->c->edge->id,track_cand->sp_dist,track_cand->tp,
+        track_cand->cumu_prob);
     // Iterate from tail to head to assign path
     while ((track_cand=track_cand->prev)!=nullptr) {
       opath.push_back(track_cand);
+      --i;
+      SPDLOG_TRACE("Optimal candidate {} edge id {} sp {} tp {} cp {}",
+        i,track_cand->c->edge->id,track_cand->sp_dist,track_cand->tp,
+        track_cand->cumu_prob);
     }
     std::reverse(opath.begin(), opath.end());
   }
