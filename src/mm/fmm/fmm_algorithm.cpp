@@ -17,13 +17,16 @@ using namespace FMM::PYTHON;
 using namespace FMM::MM;
 
 FastMapMatchConfig::FastMapMatchConfig(int k_arg, double r_arg,
-                                       double gps_error) :
-  k(k_arg), radius(r_arg), gps_error(gps_error) {
+                                       double gps_error,
+                                       double reverse_tolerance) :
+  k(k_arg), radius(r_arg), gps_error(gps_error),
+  reverse_tolerance(reverse_tolerance) {
 };
 
 void FastMapMatchConfig::print() const {
   SPDLOG_INFO("FMMAlgorithmConfig");
-  SPDLOG_INFO("k {} radius {} gps_error {}", k, radius, gps_error);
+  SPDLOG_INFO("k {} radius {} gps_error {} reverse_tolerance {}",
+    k, radius, gps_error, reverse_tolerance);
 };
 
 FastMapMatchConfig FastMapMatchConfig::load_from_xml(
@@ -31,7 +34,9 @@ FastMapMatchConfig FastMapMatchConfig::load_from_xml(
   int k = xml_data.get("config.parameters.k", 8);
   double radius = xml_data.get("config.parameters.r", 300.0);
   double gps_error = xml_data.get("config.parameters.gps_error", 50.0);
-  return FastMapMatchConfig{k, radius, gps_error};
+  double reverse_tolerance =
+    xml_data.get("config.parameters.reverse_tolerance", 0.0);
+  return FastMapMatchConfig{k, radius, gps_error, reverse_tolerance};
 };
 
 FastMapMatchConfig FastMapMatchConfig::load_from_arg(
@@ -39,7 +44,8 @@ FastMapMatchConfig FastMapMatchConfig::load_from_arg(
   int k = arg_data["candidates"].as<int>();
   double radius = arg_data["radius"].as<double>();
   double gps_error = arg_data["error"].as<double>();
-  return FastMapMatchConfig{k, radius, gps_error};
+  double reverse_tolerance = arg_data["reverse_tolerance"].as<double>();
+  return FastMapMatchConfig{k, radius, gps_error, reverse_tolerance};
 };
 
 void FastMapMatchConfig::register_arg(cxxopts::Options &options){
@@ -48,6 +54,8 @@ void FastMapMatchConfig::register_arg(cxxopts::Options &options){
     cxxopts::value<int>()->default_value("8"))
     ("r,radius","Search radius",
     cxxopts::value<double>()->default_value("300.0"))
+    ("reverse_tolerance","Ratio of reverse movement allowed",
+      cxxopts::value<double>()->default_value("0.0"))
     ("e,error","GPS error",
     cxxopts::value<double>()->default_value("50.0"));
 }
@@ -58,12 +66,16 @@ void FastMapMatchConfig::register_help(std::ostringstream &oss){
     "radius (network data unit) (300)\n";
   oss<<"-e/--error (optional) <double>: GPS error "
     "(network data unit) (50)\n";
+  oss<<"--reverse_tolerance (optional) <double>: proportion "
+      "of reverse movement allowed on an edge\n";
 };
 
 bool FastMapMatchConfig::validate() const {
-  if (gps_error <= 0 || radius <= 0 || k <= 0) {
-    SPDLOG_CRITICAL("Invalid mm parameter k {} r {} gps error {}",
-                    k, radius, gps_error);
+  if (gps_error <= 0 || radius <= 0 || k <= 0 || reverse_tolerance <0
+    || reverse_tolerance>1 ) {
+    SPDLOG_CRITICAL(
+      "Invalid mm parameter k {} r {} gps error {} reverse_tolerance {}",
+                    k, radius, gps_error,reverse_tolerance);
     return false;
   }
   return true;
@@ -102,7 +114,8 @@ MatchResult FastMapMatch::match_traj(const Trajectory &traj,
   std::vector<int> indices;
   const std::vector<Edge> &edges = network_.get_edges();
   C_Path cpath = ubodt_->construct_complete_path(traj.id, tg_opath, edges,
-                                                 &indices);
+                                                 &indices,
+                                                 config.reverse_tolerance);
   SPDLOG_DEBUG("Opath is {}", opath);
   SPDLOG_DEBUG("Indices is {}", indices);
   SPDLOG_DEBUG("Complete path is {}", cpath);
@@ -231,17 +244,22 @@ std::string FastMapMatch::match_gps_file(
   return oss.str();
 };
 
-double FastMapMatch::get_sp_dist(const Candidate *ca, const Candidate *cb) {
+double FastMapMatch::get_sp_dist(
+  const Candidate *ca, const Candidate *cb, double reverse_tolerance) {
   double sp_dist = 0;
   if (ca->edge->id == cb->edge->id && ca->offset <= cb->offset) {
     sp_dist = cb->offset - ca->offset;
-  } else if (ca->edge->target == cb->edge->source) {
+  } else if (ca->edge->id == cb->edge->id &&
+    ca->offset - cb->offset < ca->edge->length * reverse_tolerance) {
+    sp_dist = 0;
+  }
+  else if (ca->edge->target == cb->edge->source) {
     // Transition on the same OD nodes
     sp_dist = ca->edge->length - ca->offset + cb->offset;
   } else {
     Record *r = ubodt_->look_up(ca->edge->target, cb->edge->source);
     // No sp path exist from O to D.
-    if (r == nullptr) return ubodt_->get_delta();
+    if (r == nullptr) return std::numeric_limits<double>::infinity();
     // calculate original SP distance
     sp_dist = r->cost + ca->edge->length - ca->offset + cb->offset;
   }
@@ -258,7 +276,7 @@ void FastMapMatch::update_tg(
   for (int i = 0; i < N - 1; ++i) {
     SPDLOG_DEBUG("Update layer {} ", i);
     update_layer(i, &(layers[i]), &(layers[i + 1]),
-                 eu_dists[i]);
+                 eu_dists[i], config);
   }
   SPDLOG_DEBUG("Update transition graph done");
 }
@@ -266,13 +284,15 @@ void FastMapMatch::update_tg(
 void FastMapMatch::update_layer(int level,
                                 TGLayer *la_ptr,
                                 TGLayer *lb_ptr,
-                                double eu_dist) {
+                                double eu_dist,
+                                const FastMapMatchConfig &config) {
   // SPDLOG_TRACE("Update layer");
   TGLayer &lb = *lb_ptr;
   for (auto iter_a = la_ptr->begin(); iter_a != la_ptr->end(); ++iter_a) {
     NodeIndex source = iter_a->c->index;
     for (auto iter_b = lb_ptr->begin(); iter_b != lb_ptr->end(); ++iter_b) {
-      double sp_dist = get_sp_dist(iter_a->c, iter_b->c);
+      double sp_dist = get_sp_dist(iter_a->c, iter_b->c,
+        config.reverse_tolerance);
       double tp = TransitionGraph::calc_tp(sp_dist, eu_dist);
       if (iter_a->cumu_prob + tp * iter_b->ep >= iter_b->cumu_prob) {
         iter_b->cumu_prob = iter_a->cumu_prob + tp * iter_b->ep;

@@ -78,7 +78,8 @@ class UBODT {
    */
   C_Path construct_complete_path(int traj_id, const TGOpath &path,
                                  const std::vector<NETWORK::Edge> &edges,
-                                 std::vector<int> *indices) const;
+                                 std::vector<int> *indices,
+                                 double reverse_tolerance) const;
   /**
    * Get the upperbound of the UBODT
    * @return upperbound value
