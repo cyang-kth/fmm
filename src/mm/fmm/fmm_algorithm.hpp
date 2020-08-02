@@ -150,9 +150,12 @@ class FastMapMatch {
    * @param la_ptr  layer a
    * @param lb_ptr  layer b next to a
    * @param eu_dist Euclidean distance between two observed point
+   * @param connected the variable is set to false if the layer is not connected
+   * with the next layer
    */
   void update_layer(int level, TGLayer *la_ptr, TGLayer *lb_ptr,
-                    double eu_dist, const FastMapMatchConfig &config);
+                    double eu_dist, const FastMapMatchConfig &config,
+                    bool *connected);
  private:
   const NETWORK::Network &network_;
   const NETWORK::NetworkGraph &graph_;

@@ -275,8 +275,14 @@ void FastMapMatch::update_tg(
   int N = layers.size();
   for (int i = 0; i < N - 1; ++i) {
     SPDLOG_DEBUG("Update layer {} ", i);
+    bool connected = false;
     update_layer(i, &(layers[i]), &(layers[i + 1]),
-                 eu_dists[i], config);
+                 eu_dists[i], config, &connected);
+    if (!connected){
+      SPDLOG_WARN("Traj {} unmatched as point {} and {} not connected",
+        traj.id, i, i+1);
+      break;
+    }
   }
   SPDLOG_DEBUG("Update transition graph done");
 }
@@ -285,9 +291,11 @@ void FastMapMatch::update_layer(int level,
                                 TGLayer *la_ptr,
                                 TGLayer *lb_ptr,
                                 double eu_dist,
-                                const FastMapMatchConfig &config) {
+                                const FastMapMatchConfig &config,
+                                bool *connected) {
   // SPDLOG_TRACE("Update layer");
   TGLayer &lb = *lb_ptr;
+  bool layer_connected = false;
   for (auto iter_a = la_ptr->begin(); iter_a != la_ptr->end(); ++iter_a) {
     NodeIndex source = iter_a->c->index;
     for (auto iter_b = lb_ptr->begin(); iter_b != lb_ptr->end(); ++iter_b) {
@@ -296,12 +304,25 @@ void FastMapMatch::update_layer(int level,
       double tp = TransitionGraph::calc_tp(sp_dist, eu_dist);
       double temp = iter_a->cumu_prob + log(tp) + log(iter_b->ep);
       if (temp >= iter_b->cumu_prob) {
+        if (iter_a->cumu_prob>-std::numeric_limits<double>::infinity()
+            && temp == -std::numeric_limits<double>::infinity()){
+          SPDLOG_TRACE("L {} f {} t {} sp {} dist {} tp {} ep {} fcp {} tcp {}",
+            level, iter_a->c->edge->id,iter_b->c->edge->id,
+            sp_dist, eu_dist, tp, iter_b->ep, iter_a->cumu_prob,
+            temp);
+        }
+        if (temp>-std::numeric_limits<double>::infinity()){
+          layer_connected = true;
+        }
         iter_b->cumu_prob = temp;
         iter_b->prev = &(*iter_a);
         iter_b->tp = tp;
         iter_b->sp_dist = sp_dist;
       }
     }
+  }
+  if (connected!=nullptr){
+    *connected = layer_connected;
   }
   // SPDLOG_TRACE("Update layer done");
 }

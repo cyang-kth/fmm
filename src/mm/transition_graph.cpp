@@ -88,7 +88,7 @@ TGOpath TransitionGraph::backtrack(){
         track_cand->cumu_prob);
     }
     std::reverse(opath.begin(), opath.end());
-  }
+  } 
   SPDLOG_TRACE("Backtrack on transition graph done");
   return opath;
 }
