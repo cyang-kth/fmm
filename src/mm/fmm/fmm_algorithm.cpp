@@ -281,6 +281,7 @@ void FastMapMatch::update_tg(
     if (!connected){
       SPDLOG_WARN("Traj {} unmatched as point {} and {} not connected",
         traj.id, i, i+1);
+      tg->print_optimal_info();  
       break;
     }
   }
@@ -303,14 +304,11 @@ void FastMapMatch::update_layer(int level,
         config.reverse_tolerance);
       double tp = TransitionGraph::calc_tp(sp_dist, eu_dist);
       double temp = iter_a->cumu_prob + log(tp) + log(iter_b->ep);
+      SPDLOG_TRACE("L {} f {} t {} sp {} dist {} tp {} ep {} fcp {} tcp {}",
+        level, iter_a->c->edge->id,iter_b->c->edge->id,
+        sp_dist, eu_dist, tp, iter_b->ep, iter_a->cumu_prob,
+        temp);
       if (temp >= iter_b->cumu_prob) {
-        if (iter_a->cumu_prob>-std::numeric_limits<double>::infinity()
-            && temp == -std::numeric_limits<double>::infinity()){
-          SPDLOG_TRACE("L {} f {} t {} sp {} dist {} tp {} ep {} fcp {} tcp {}",
-            level, iter_a->c->edge->id,iter_b->c->edge->id,
-            sp_dist, eu_dist, tp, iter_b->ep, iter_a->cumu_prob,
-            temp);
-        }
         if (temp>-std::numeric_limits<double>::infinity()){
           layer_connected = true;
         }

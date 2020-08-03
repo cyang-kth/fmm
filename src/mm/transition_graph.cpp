@@ -88,10 +88,27 @@ TGOpath TransitionGraph::backtrack(){
         track_cand->cumu_prob);
     }
     std::reverse(opath.begin(), opath.end());
-  } 
+  }
   SPDLOG_TRACE("Backtrack on transition graph done");
   return opath;
 }
+
+void TransitionGraph::print_optimal_info(){
+  int N = layers.size();
+  if (N<1) return;
+  const TGNode *global_opt_node = nullptr;
+  for (int i=N-1;i>=0;--i){
+    const TGNode *local_opt_node = find_optimal_candidate(layers[i]);
+    if (global_opt_node!=nullptr){
+      global_opt_node=global_opt_node->prev;
+    } else {
+      global_opt_node=local_opt_node;
+    }
+    SPDLOG_TRACE("Point {} global opt {} local opt {}",
+      i, (global_opt_node==nullptr)?-1:global_opt_node->c->edge->id,
+         (local_opt_node==nullptr)?-1:local_opt_node->c->edge->id);
+  }
+};
 
 std::vector<TGLayer> &TransitionGraph::get_layers(){
   return layers;
