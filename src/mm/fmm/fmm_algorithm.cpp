@@ -185,6 +185,8 @@ std::string FastMapMatch::match_gps_file(
   int progress = 0;
   int points_matched = 0;
   int total_points = 0;
+  int traj_matched = 0;
+  int total_trajs = 0;
   int step_size = 1000;
   UTIL::TimePoint begin_time = std::chrono::steady_clock::now();
   FMM::IO::GPSReader reader(gps_config);
@@ -206,8 +208,10 @@ std::string FastMapMatch::match_gps_file(
         #pragma omp critical
         if (!result.cpath.empty()) {
           points_matched += points_in_tr;
+          traj_matched+=1;
         }
         total_points += points_in_tr;
+        total_trajs += 1;
         ++progress;
         if (progress % step_size == 0) {
           std::stringstream buf;
@@ -228,8 +232,10 @@ std::string FastMapMatch::match_gps_file(
       writer.write_result(trajectory,result);
       if (!result.cpath.empty()) {
         points_matched += points_in_tr;
+        traj_matched+=1;
       }
       total_points += points_in_tr;
+      total_trajs += 1;
       ++progress;
     }
   }
@@ -239,6 +245,8 @@ std::string FastMapMatch::match_gps_file(
   oss<<"Status: success\n";
   oss<<"Time takes " << duration << " seconds\n";
   oss<<"Total points " << total_points << " matched "<< points_matched <<"\n";
+  oss<<"Total trajectories " << total_trajs << " matched "
+     << traj_matched <<"\n";
   oss<<"Map match percentage " << points_matched / (double) total_points <<"\n";
   oss<<"Map match speed " << points_matched / duration << " points/s \n";
   return oss.str();
@@ -281,7 +289,7 @@ void FastMapMatch::update_tg(
     if (!connected){
       SPDLOG_WARN("Traj {} unmatched as point {} and {} not connected",
         traj.id, i, i+1);
-      tg->print_optimal_info();  
+      tg->print_optimal_info();
       break;
     }
   }
