@@ -53,7 +53,7 @@ std::ostream &operator<<(std::ostream &os,
  * @return the stream with trajectory candidate information written
  */
 std::ostream &operator<<(std::ostream &os,
-    const FMM::MM::Traj_Candidates &tr_cs);
+                         const FMM::MM::Traj_Candidates &tr_cs);
 
 /**
  * Write optimal candidate path into a stream
@@ -62,7 +62,7 @@ std::ostream &operator<<(std::ostream &os,
  * @return the stream with candidate path information written
  */
 std::ostream &operator<<(std::ostream &os,
-    const FMM::MM::OptCandidatePath &opath);
+                         const FMM::MM::OptCandidatePath &opath);
 
 /**
  * Write a point into a stream
@@ -71,7 +71,7 @@ std::ostream &operator<<(std::ostream &os,
  * @return the stream with wkt point written.
  */
 std::ostream &operator<<(std::ostream &os,
-    const FMM::CORE::Point &geom);
+                         const FMM::CORE::Point &geom);
 
 } // namespace std
 
@@ -144,7 +144,7 @@ bool check_file_extension(const std::string &filename,
  */
 template<typename T>
 std::string vec2string(
-    const std::vector<T> &vec) {
+  const std::vector<T> &vec) {
   std::ostringstream vts;
   if (!vec.empty()) {
     std::copy(vec.begin(), vec.end() - 1,
@@ -161,7 +161,7 @@ std::string vec2string(
  */
 template<typename T>
 std::vector<T> string2vec(
-    const std::string &str) {
+  const std::string &str) {
   std::vector<T> vec;
   std::stringstream ss(str);
   T i;
@@ -191,7 +191,7 @@ std::chrono::time_point<std::chrono::system_clock> get_current_time();
  * @param start_time timestamp point
  */
 void print_time(
-    const std::chrono::time_point<std::chrono::system_clock> &start_time);
+  const std::chrono::time_point<std::chrono::system_clock> &start_time);
 
 /**
  * Calculate the duration between two time points
@@ -200,8 +200,13 @@ void print_time(
  * @return the duration between two time points
  */
 double get_duration(
-    const std::chrono::time_point<std::chrono::system_clock> &start_time,
-    const std::chrono::time_point<std::chrono::system_clock> &end_time);
+  const std::chrono::time_point<std::chrono::system_clock> &start_time,
+  const std::chrono::time_point<std::chrono::system_clock> &end_time);
+
+/**
+ * Get line correctly by handling `\r\n` line endings
+ */
+std::istream& safe_get_line(std::istream& is, std::string& t, char delim);
 
 } // Util
 } // FMM

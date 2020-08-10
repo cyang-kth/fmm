@@ -1,7 +1,7 @@
 /**
  * Fast map matching.
  *
- * Definition of GPS reader classes 
+ * Definition of GPS reader classes
  *
  * @author: Can Yang
  * @version: 2017.11.11
@@ -27,7 +27,7 @@ namespace IO {
  * Trajectory Reader Interface.
  */
 class ITrajectoryReader {
- public:
+public:
   /**
    * Read the next trajectory in the class
    * @return a trajectory
@@ -69,7 +69,7 @@ class ITrajectoryReader {
  *  a trajectory.
  */
 class GDALTrajectoryReader : public ITrajectoryReader {
- public:
+public:
   /**
    *  Constructor of GDALTrajectoryReader
    *  @param filename a GPS ESRI shapefile path
@@ -87,7 +87,7 @@ class GDALTrajectoryReader : public ITrajectoryReader {
    * Get the number of trajectories in the file
    */
   int get_num_trajectories();
- private:
+private:
   int NUM_FEATURES = 0;
   int id_idx = -1;   // Index of the id column in shapefile
   int timestamp_idx = -1;   // Index of the id column in shapefile
@@ -113,7 +113,7 @@ class GDALTrajectoryReader : public ITrajectoryReader {
  *    1;LineString(1 0,1 1);1,1
  */
 class CSVTrajectoryReader : public ITrajectoryReader {
- public:
+public:
   /**
    * Constructor of CSVTrajectoryReader
    * @param e_filename input file name.
@@ -156,7 +156,7 @@ class CSVTrajectoryReader : public ITrajectoryReader {
    * @return a vector of timestamps
    */
   static std::vector<double> string2time(const std::string &str);
- private:
+private:
   std::fstream ifs;
   int id_idx = -1;
   int geom_idx = -1;
@@ -179,7 +179,7 @@ class CSVTrajectoryReader : public ITrajectoryReader {
  *    1;1;2;2
  */
 class CSVPointReader : public ITrajectoryReader {
- public:
+public:
   /**
    *  Reader class for CSV point data.
    * @param e_filename file name
@@ -190,11 +190,11 @@ class CSVPointReader : public ITrajectoryReader {
    * an empty timestamp vector will be returned for every trajectory.
    */
   CSVPointReader(
-      const std::string &e_filename,
-      const std::string &id_name,
-      const std::string &x_name,
-      const std::string &y_name,
-      const std::string &time_name);
+    const std::string &e_filename,
+    const std::string &id_name,
+    const std::string &x_name,
+    const std::string &y_name,
+    const std::string &time_name);
   /**
    * Read the next trajectory in the file.
    * @return A trajectory object
@@ -218,7 +218,7 @@ class CSVPointReader : public ITrajectoryReader {
    * Close the reader object
    */
   void close() override;
- private:
+private:
   std::string prev_line = "";
   std::fstream ifs;
   int id_idx = -1;
@@ -233,7 +233,7 @@ class CSVPointReader : public ITrajectoryReader {
  * a file by specifying GPSConfig as input.
  */
 class GPSReader {
- public:
+public:
   /**
    * Constructor
    * @param config configuration of GPS data, the file format will be
@@ -271,7 +271,7 @@ class GPSReader {
   inline std::vector<FMM::CORE::Trajectory> read_all_trajectories() {
     return reader->read_all_trajectories();
   };
- private:
+private:
   std::shared_ptr<ITrajectoryReader> reader;
   int mode; /**< Mode marking the type of GPS data stored in the file */
 };

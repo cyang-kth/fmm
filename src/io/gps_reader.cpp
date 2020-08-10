@@ -6,6 +6,7 @@
  */
 #include "io/gps_reader.hpp"
 #include "util/debug.hpp"
+#include "util/util.hpp"
 #include "config/gps_config.hpp"
 #include <iostream>
 #include <string>
@@ -13,6 +14,7 @@
 using namespace FMM;
 using namespace FMM::CORE;
 using namespace FMM::IO;
+using namespace FMM::UTIL;
 
 std::vector<Trajectory> ITrajectoryReader::read_next_N_trajectories(int N) {
   std::vector<Trajectory> trajectories;
@@ -68,7 +70,7 @@ GDALTrajectoryReader::GDALTrajectoryReader(const std::string &filename,
     std::exit(EXIT_FAILURE);
   } else {
     SPDLOG_DEBUG("Geometry type is {}",
-                OGRGeometryTypeToName(ogrFDefn->GetGeomType()));
+                 OGRGeometryTypeToName(ogrFDefn->GetGeomType()));
   }
   SPDLOG_INFO("Total number of trajectories {}", NUM_FEATURES);
   SPDLOG_INFO("Finish reading meta data");
@@ -87,7 +89,7 @@ Trajectory GDALTrajectoryReader::read_next_trajectory() {
   int trid = ogrFeature->GetFieldAsInteger(id_idx);
   OGRGeometry *rawgeometry = ogrFeature->GetGeometryRef();
   FMM::CORE::LineString linestring =
-      FMM::CORE::ogr2linestring((OGRLineString *) rawgeometry);
+    FMM::CORE::ogr2linestring((OGRLineString *) rawgeometry);
   OGRFeature::DestroyFeature(ogrFeature);
   ++_cursor;
   return Trajectory{trid, linestring};
@@ -105,14 +107,14 @@ CSVTrajectoryReader::CSVTrajectoryReader(const std::string &e_filename,
                                          const std::string &id_name,
                                          const std::string &geom_name,
                                          const std::string &timestamp_name) :
-    ifs(e_filename) {
+  ifs(e_filename) {
   std::string line;
   std::getline(ifs, line);
   std::stringstream check1(line);
   std::string intermediate;
   // Tokenizing w.r.t. space ' '
   int i = 0;
-  while (getline(check1, intermediate, delim)) {
+  while (safe_get_line(check1, intermediate, delim)) {
     if (intermediate == id_name) {
       id_idx = i;
     }
@@ -137,7 +139,7 @@ CSVTrajectoryReader::CSVTrajectoryReader(const std::string &e_filename,
 }
 
 std::vector<double> CSVTrajectoryReader::string2time(
-    const std::string &str) {
+  const std::string &str) {
   std::vector<double> values;
   std::stringstream ss(str);
   double v;
@@ -199,14 +201,14 @@ CSVPointReader::CSVPointReader(const std::string &e_filename,
                                const std::string &x_name,
                                const std::string &y_name,
                                const std::string &time_name) :
-    ifs(e_filename) {
+  ifs(e_filename) {
   std::string line;
   std::getline(ifs, line);
   std::stringstream check1(line);
   std::string intermediate;
   // Tokenizing w.r.t. space ' '
   int i = 0;
-  while (getline(check1, intermediate, delim)) {
+  while (safe_get_line(check1, intermediate, delim)) {
     if (intermediate == id_name) {
       id_idx = i;
     }
@@ -226,10 +228,10 @@ CSVPointReader::CSVPointReader(const std::string &e_filename,
       SPDLOG_CRITICAL("Id column {} not found", id_name);
     }
     if (x_idx < 0) {
-      SPDLOG_CRITICAL("Geom column {} not found", x_name);
+      SPDLOG_CRITICAL("X column name {} not found", x_name);
     }
     if (y_idx < 0) {
-      SPDLOG_CRITICAL("Geom column {} not found", y_name);
+      SPDLOG_CRITICAL("Y column name {} not found", y_name);
     }
     std::exit(EXIT_FAILURE);
   }
@@ -293,7 +295,7 @@ Trajectory CSVPointReader::read_next_trajectory() {
       prev_line = line;
     }
   }
-  if (!has_next_trajectory()){
+  if (!has_next_trajectory()) {
     trid = prev_id;
   }
   return Trajectory{trid, geom, timestamps};
@@ -321,17 +323,19 @@ bool CSVPointReader::has_timestamp() {
 GPSReader::GPSReader(const FMM::CONFIG::GPSConfig &config) {
   mode = config.get_gps_format();
   if (mode == 0) {
+    SPDLOG_INFO("GPS data in trajectory shapefile format");
     reader = std::make_shared<GDALTrajectoryReader>
-        (config.file, config.id,config.timestamp);
+               (config.file, config.id,config.timestamp);
   } else if (mode == 1) {
+    SPDLOG_INFO("GPS data in trajectory CSV format");
     reader = std::make_shared<CSVTrajectoryReader>
-        (config.file, config.id, config.geom, config.timestamp);
+               (config.file, config.id, config.geom, config.timestamp);
   } else if (mode == 2) {
+    SPDLOG_INFO("GPS data in point CSV format");
     reader = std::make_shared<CSVPointReader>
-        (config.file, config.id, config.x, config.y, config.timestamp);
+               (config.file, config.id, config.x, config.y, config.timestamp);
   } else {
     SPDLOG_CRITICAL("Unrecognized GPS format");
     std::exit(EXIT_FAILURE);
   }
 };
-

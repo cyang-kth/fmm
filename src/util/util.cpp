@@ -134,5 +134,33 @@ std::string get_file_directory(const std::string &fn) {
   return {};
 };
 
+std::istream& safe_get_line(std::istream& is, std::string& t, char delim)
+{
+  t.clear();
+  std::istream::sentry se(is, true);
+  std::streambuf* sb = is.rdbuf();
+  for(;;) {
+    int c = sb->sbumpc();
+    switch (c) {
+    case '\n':
+      return is;
+    case '\r':
+      if(sb->sgetc() == '\n')
+        sb->sbumpc();
+      return is;
+    case std::streambuf::traits_type::eof():
+      // Also handle the case when the last line has no line ending
+      if(t.empty())
+        is.setstate(std::ios::eofbit);
+      return is;
+    default:
+      if (c==delim){
+        return is;
+      }
+      t += (char)c;
+    }
+  }
+}
+
 } // Util
 } // FMM
