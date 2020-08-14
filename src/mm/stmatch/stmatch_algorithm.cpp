@@ -15,9 +15,10 @@ using namespace FMM::PYTHON;
 
 STMATCHConfig::STMATCHConfig(
   int k_arg, double r_arg, double gps_error_arg,
-  double vmax_arg, double factor_arg) :
+  double vmax_arg, double factor_arg, double reverse_tolerance_arg):
   k(k_arg), radius(r_arg), gps_error(gps_error_arg),
-  vmax(vmax_arg), factor(factor_arg) {
+  vmax(vmax_arg), factor(factor_arg),
+  reverse_tolerance(reverse_tolerance_arg) {
 };
 
 void STMATCHConfig::print() const {
@@ -31,9 +32,11 @@ STMATCHConfig STMATCHConfig::load_from_xml(
   int k = xml_data.get("config.parameters.k", 8);
   double radius = xml_data.get("config.parameters.r", 300.0);
   double gps_error = xml_data.get("config.parameters.gps_error", 50.0);
-  double vmax = xml_data.get("config.parameters.vmax", 80.0);;
-  double factor = xml_data.get("config.parameters.factor", 1.5);;
-  return STMATCHConfig{k, radius, gps_error, vmax, factor};
+  double vmax = xml_data.get("config.parameters.vmax", 80.0);
+  double factor = xml_data.get("config.parameters.factor", 1.5);
+  double reverse_tolerance =
+    xml_data.get("config.parameters.reverse_tolerance", 0.0);
+  return STMATCHConfig{k, radius, gps_error, vmax, factor,reverse_tolerance};
 };
 
 STMATCHConfig STMATCHConfig::load_from_arg(
@@ -43,7 +46,8 @@ STMATCHConfig STMATCHConfig::load_from_arg(
   double gps_error = arg_data["error"].as<double>();
   double vmax = arg_data["vmax"].as<double>();
   double factor = arg_data["factor"].as<double>();
-  return STMATCHConfig{k, radius, gps_error, vmax, factor};
+  double reverse_tolerance = arg_data["reverse_tolerance"].as<double>();
+  return STMATCHConfig{k, radius, gps_error, vmax, factor, reverse_tolerance};
 };
 
 void STMATCHConfig::register_arg(cxxopts::Options &options){
@@ -57,7 +61,9 @@ void STMATCHConfig::register_arg(cxxopts::Options &options){
     ("vmax","Maximum speed",
     cxxopts::value<double>()->default_value("30.0"))
     ("factor","Scale factor",
-    cxxopts::value<double>()->default_value("1.5"));
+    cxxopts::value<double>()->default_value("1.5"))
+    ("reverse_tolerance","Ratio of reverse movement allowed",
+      cxxopts::value<double>()->default_value("0.0"));
 }
 
 void STMATCHConfig::register_help(std::ostringstream &oss){
@@ -69,12 +75,16 @@ void STMATCHConfig::register_help(std::ostringstream &oss){
   oss<<"-f/--factor (optional) <double>: scale factor (1.5)\n";
   oss<<"-v/--vmax (optional) <double>: "
     " Maximum speed (unit: network_data_unit/s) (30)\n";
+  oss<<"--reverse_tolerance (optional) <double>: proportion "
+      "of reverse movement allowed on an edge\n";
 };
 
 bool STMATCHConfig::validate() const {
-  if (gps_error <= 0 || radius <= 0 || k <= 0 || vmax <= 0 || factor <= 0) {
-    SPDLOG_CRITICAL("Invalid mm parameter k {} r {} gps error {} vmax {} f {}",
-                    k, radius, gps_error, vmax, factor);
+  if (gps_error <= 0 || radius <= 0 || k <= 0 || vmax <= 0 || factor <= 0
+      || reverse_tolerance<0) {
+    SPDLOG_CRITICAL("Invalid mm parameter k {} r {} gps error {} "
+        "vmax {} f {} reverse_tolerance {}",
+                    k, radius, gps_error, vmax, factor, reverse_tolerance);
     return false;
   }
   return true;
@@ -121,7 +131,7 @@ MatchResult STMATCH::match_traj(const Trajectory &traj,
   SPDLOG_DEBUG("Trajectory candidate {}", tc);
   if (tc.empty()) return MatchResult{};
   SPDLOG_DEBUG("Generate dummy graph");
-  DummyGraph dg(tc);
+  DummyGraph dg(tc, config.reverse_tolerance);
   SPDLOG_DEBUG("Generate composite_graph");
   CompositeGraph cg(graph_, dg);
   SPDLOG_DEBUG("Generate composite_graph");
@@ -147,7 +157,7 @@ MatchResult STMATCH::match_traj(const Trajectory &traj,
     return a->c->edge->id;
   });
   std::vector<int> indices;
-  C_Path cpath = build_cpath(tg_opath, &indices);
+  C_Path cpath = build_cpath(tg_opath, &indices, config.reverse_tolerance);
   SPDLOG_DEBUG("Opath is {}", opath);
   SPDLOG_DEBUG("Indices is {}", indices);
   SPDLOG_DEBUG("Complete path is {}", cpath);
@@ -289,11 +299,12 @@ void STMATCH::update_layer(int level, TGLayer *la_ptr, TGLayer *lb_ptr,
     SPDLOG_TRACE("  Update property of transition graph ");
     for (int i = 0; i < distances.size(); ++i) {
       double tp = TransitionGraph::calc_tp(distances[i], eu_dist);
-      if (lb[i].cumu_prob < iter->cumu_prob + tp * lb[i].ep) {
-        lb[i].cumu_prob = iter->cumu_prob + tp * lb[i].ep;
+      double temp = iter->cumu_prob + log(tp) + log(lb[i].ep);
+      if (lb[i].cumu_prob<temp) {
+        lb[i].cumu_prob = temp;
         lb[i].prev = &(*iter);
-        lb[i].tp = tp;
         lb[i].sp_dist = distances[i];
+        lb[i].tp = tp;
       }
     }
   }
@@ -372,7 +383,8 @@ std::vector<double> STMATCH::shortest_path_upperbound(
   return distances;
 }
 
-C_Path STMATCH::build_cpath(const TGOpath &opath, std::vector<int> *indices) {
+C_Path STMATCH::build_cpath(const TGOpath &opath, std::vector<int> *indices,
+  double reverse_tolerance) {
   SPDLOG_DEBUG("Build cpath from optimal candidate path");
   C_Path cpath;
   if (!indices->empty()) indices->clear();
@@ -387,7 +399,8 @@ C_Path STMATCH::build_cpath(const TGOpath &opath, std::vector<int> *indices) {
     const Candidate *a = opath[i]->c;
     const Candidate *b = opath[i + 1]->c;
     SPDLOG_DEBUG("Check a {} b {}", a->edge->id, b->edge->id);
-    if ((a->edge->id != b->edge->id) || (a->offset > b->offset)) {
+    if ((a->edge->id != b->edge->id) ||
+        (a->offset-b->offset>a->edge->length * reverse_tolerance)) {
       auto segs = graph_.shortest_path_dijkstra(a->edge->target,
                                                 b->edge->source);
       // No transition found

@@ -42,13 +42,15 @@ struct STMATCHConfig {
    * search in stmatch.
    */
   STMATCHConfig(int k_arg = 8, double r_arg = 300, double gps_error_arg = 50,
-                double vmax_arg = 30, double factor_arg = 1.5);
+                double vmax_arg = 30, double factor_arg = 1.5,
+                double reverse_tolerance_arg = 0.0);
   int k; /**< number of candidates */
   double radius; /**< search radius for candidates, unit is map_unit*/
   double gps_error; /**< GPS error, unit is map_unit */
   double vmax; /**< maximum speed of the vehicle, unit is map_unit/second */
   double factor; /**< factor multiplied to vmax*deltaT to
                       limit the search of shortest path */
+  double reverse_tolerance;
   /**
    * Check the validity of the configuration
    */
@@ -169,7 +171,8 @@ protected:
    * edge or candidate in the returned path.
    * @return A vector of edge id representing the traversed path
    */
-  C_Path build_cpath(const TGOpath &tg_opath, std::vector<int> *indices);
+  C_Path build_cpath(const TGOpath &tg_opath, std::vector<int> *indices,
+                     double reverse_tolerance=0);
 private:
   const NETWORK::Network &network_;
   const NETWORK::NetworkGraph &graph_;

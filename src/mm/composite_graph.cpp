@@ -8,7 +8,8 @@ using namespace FMM::MM;
 
 DummyGraph::DummyGraph(){}
 
-DummyGraph::DummyGraph(const Traj_Candidates &traj_candidates){
+DummyGraph::DummyGraph(const Traj_Candidates &traj_candidates,
+  double reverse_tolerance){
   if (traj_candidates.empty()) return;
   int N = traj_candidates.size();
   std::unordered_map<EdgeIndex,const Candidate*> ca;
@@ -27,6 +28,10 @@ DummyGraph::DummyGraph(const Traj_Candidates &traj_candidates){
         if (iter->second->offset <= c.offset) {
           add_edge(iter->second->index,
                    n, c.edge->index, c.offset-iter->second->offset);
+        } else if (iter->second->offset - c.offset <
+                   c.edge->length * reverse_tolerance) {
+          add_edge(iter->second->index,
+                   n, c.edge->index, 0);
         }
       }
     }
