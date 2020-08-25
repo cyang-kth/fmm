@@ -38,10 +38,12 @@ struct FastMapMatchConfig{
    * @param gps_error the gps error, in map unit
    *
    */
-  FastMapMatchConfig(int k_arg = 8, double r_arg = 300, double gps_error = 50);
+  FastMapMatchConfig(int k_arg = 8, double r_arg = 300, double gps_error = 50,
+    double reverse_tolerance = 0.0);
   int k; /**< Number of candidates */
   double radius; /**< Search radius*/
   double gps_error; /**< GPS error */
+  double reverse_tolerance;
   /**
    * Check if the configuration is valid or not
    * @return true if valid
@@ -131,7 +133,8 @@ class FastMapMatch {
    * @return  shortest path value
    */
   double get_sp_dist(const Candidate *ca,
-                     const Candidate *cb);
+                     const Candidate *cb,
+                     double reverse_tolerance);
   /**
    * Update probabilities in a transition graph
    * @param tg transition graph
@@ -140,16 +143,19 @@ class FastMapMatch {
    */
   void update_tg(TransitionGraph *tg,
                  const CORE::Trajectory &traj,
-                 const FastMapMatchConfig &config);
+                 double reverse_tolerance = 0);
   /**
    * Update probabilities between two layers a and b in the transition graph
    * @param level   the index of layer a
    * @param la_ptr  layer a
    * @param lb_ptr  layer b next to a
    * @param eu_dist Euclidean distance between two observed point
+   * @param connected the variable is set to false if the layer is not connected
+   * with the next layer
    */
   void update_layer(int level, TGLayer *la_ptr, TGLayer *lb_ptr,
-                    double eu_dist);
+                    double eu_dist, double reverse_tolerance,
+                    bool *connected);
  private:
   const NETWORK::Network &network_;
   const NETWORK::NetworkGraph &graph_;

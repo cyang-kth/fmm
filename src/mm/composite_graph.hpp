@@ -42,7 +42,8 @@ class DummyGraph {
    *
    * @param traj_candidates input information
    */
-  DummyGraph(const Traj_Candidates &traj_candidates);
+  DummyGraph(const Traj_Candidates &traj_candidates,
+             double reverse_tolerance=0);
 
   /**
    * Get the inner graph data

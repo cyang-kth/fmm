@@ -67,9 +67,10 @@ std::vector<EdgeIndex> UBODT::look_sp_path(NodeIndex source,
   return edges;
 }
 
-C_Path UBODT::construct_complete_path(const TGOpath &path,
+C_Path UBODT::construct_complete_path(int traj_id, const TGOpath &path,
                                       const std::vector<Edge> &edges,
-                                      std::vector<int> *indices) const {
+                                      std::vector<int> *indices,
+                                      double reverse_tolerance) const {
   C_Path cpath;
   if (!indices->empty()) indices->clear();
   if (path.empty()) return cpath;
@@ -81,13 +82,21 @@ C_Path UBODT::construct_complete_path(const TGOpath &path,
   for (int i = 0; i < N - 1; ++i) {
     const Candidate *a = path[i]->c;
     const Candidate *b = path[i + 1]->c;
-    SPDLOG_DEBUG("Check a {} b {}", a->edge->id, b->edge->id);
-    if ((a->edge->id != b->edge->id) || (a->offset > b->offset)) {
+    SPDLOG_DEBUG("Check point {} a {} b {}", i, a->edge->id, b->edge->id);
+    if ((a->edge->id != b->edge->id) || (a->offset - b->offset >
+        a->edge->length * reverse_tolerance)) {
       // segs stores edge index
       auto segs = look_sp_path(a->edge->target, b->edge->source);
       // No transition exist in UBODT
       if (segs.empty() && a->edge->target != b->edge->source) {
         SPDLOG_DEBUG("Edges not found connecting a b");
+        SPDLOG_DEBUG("reverse movement {} tolerance {}",
+          a->offset - b->offset, a->edge->length * reverse_tolerance);
+        SPDLOG_WARN("Traj {} unmatched as edge {} L {} offset {}"
+          " and edge {} L {} offset {} disconnected",
+          traj_id, a->edge->id, a->edge->length, a->offset,
+          b->edge->id, b->edge->length, b->offset);
+
         indices->clear();
         return C_Path();
       }

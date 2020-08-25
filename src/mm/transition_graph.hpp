@@ -105,6 +105,7 @@ public:
    * Get a reference to the inner layers of the transition graph.
    */
   std::vector<TGLayer> &get_layers();
+  void print_optimal_info();
 private:
   // candidates of a trajectory
   std::vector<TGLayer> layers;
