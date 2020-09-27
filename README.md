@@ -15,7 +15,7 @@ FMM is an open source map matching framework in C++ and Python. It solves the pr
 - **Python API**: [jupyter-notebook](example/notebook) and [web demo](example/web_demo)
 - **Scalibility**: millions of GPS points and millions of road edges.  
 - **Multiple data format**:
-  - Road network in OpenStreetMap :tada: or ESRI shapefile and Geopackage.
+  - Road network in OpenStreetMap or ESRI shapefile.
   - GPS data in Point CSV, Trajectory CSV and Trajectory Shapefile ([more details](https://fmm-wiki.github.io/docs/documentation/input/#gps-data)).
 - **Detailed matching information**: traversed path, geometry, individual matched edges, GPS error, etc. More information at [here](https://fmm-wiki.github.io/docs/documentation/output/).
 - **Multiple algorithms**: [FMM](http://www.tandfonline.com/doi/full/10.1080/13658816.2017.1400548) (for small and middle scale network) and [STMatch](https://dl.acm.org/doi/abs/10.1145/1653771.1653820) (for large scale road network)
@@ -29,12 +29,15 @@ We encourage contribution with feature request, bug report or developping new ma
 
 <img src="example/osm_example/result.png" width="400"/><img src="img/shp_example.png" width="400"/>
 
+Note that although FMM can directly read OSM file as input, the original OSM file is common to contain poor topology information (https://github.com/cyang-kth/fmm/issues/99). Therefore, it is recommended to use OSMNX to download a routable shapefile for OSM. Check the [OSMNX example](example/osmnx_example). 
+
 - [Interactive web demo](example/web_demo)
 
 <img src="img/demo3.gif" width="400"/> <img src="img/demo4.gif" width="400"/>
 
 - [Command line examples](example/command_line_example)
 - [Jupyter-notebook](example/notebook)
+- [OSMNX example](example/osmnx_example)
 
 ### Installation, tutorial and API.
 

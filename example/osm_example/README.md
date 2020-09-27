@@ -1,5 +1,7 @@
 ### Run FMM on OpenStreetMap
 
+Note that although FMM can directly read OSM file as input, the original OSM file is common to contain poor topology information (https://github.com/cyang-kth/fmm/issues/99). Therefore, it is recommended to use OSMNX to download a routable shapefile for OSM. Check https://github.com/cyang-kth/fmm/tree/master/example/osmnx_example. 
+
 1. Download an OSM file.
 
 Download from the [Geofabrik](https://download.geofabrik.de/index.html), clip for a smaller region using [osmconvert](https://wiki.openstreetmap.org/wiki/Osmconvert):  
