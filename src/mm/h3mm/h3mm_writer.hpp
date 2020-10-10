@@ -1,7 +1,17 @@
+#ifndef H3MM_WRITER_HEADER
+#define H3MM_WRITER_HEADER
+#include "h3_type.hpp"
+#include "h3_util.hpp"
+#include "util/util.hpp"
+
 namespace FMM {
-namespace IO {
+namespace MM {
 
 struct H3MatchResultConfig {
+  H3MatchResultConfig(){
+    file = "";
+    write_geom = false;
+  };
   std::string file;   /**< Output file to write the result */
   bool write_geom;
   /**
@@ -9,12 +19,16 @@ struct H3MatchResultConfig {
    * @return true if valid otherwise false
    */
   bool validate() const {
-    if (UTIL::file_exists(file))
+    if (file.empty()){
+      SPDLOG_CRITICAL("Output file not specified");
+      return false;
+    }
+    if (FMM::UTIL::file_exists(file))
     {
       SPDLOG_WARN("Overwrite existing result file {}",file);
     };
-    std::string output_folder = UTIL::get_file_directory(file);
-    if (!UTIL::folder_exist(output_folder)) {
+    std::string output_folder = FMM::UTIL::get_file_directory(file);
+    if (!FMM::UTIL::folder_exist(output_folder)) {
       SPDLOG_CRITICAL("Output folder {} not exists",output_folder);
       return false;
     }
@@ -41,6 +55,7 @@ struct H3MatchResultConfig {
     if (arg_data.count("write_geom") > 0) {
       config.write_geom = true;
     }
+    return config;
   };
   /**
    * Register arguments to an option object
@@ -75,9 +90,10 @@ public:
    * @param config_arg the fields that will be exported
    *
    */
-  H3MatchResultWriter(const std::string &result_file,
-                      const H3MatchResultConfig &config_arg) :
-    m_fstream(result_file),config_(config_arg){
+
+  H3MatchResultWriter(
+    const H3MatchResultConfig &config_arg) :
+    m_fstream(config_.file),config_(config_arg){
     write_header();
   };
 
@@ -91,7 +107,7 @@ public:
     m_fstream << traj.id;
     m_fstream << ";" << result.hexs;
     if (config_.write_geom)
-      m_fstream << ";" << result.geom.export_wkt();
+      m_fstream << ";" << hexs2wkt(result.hexs, 12);
     m_fstream << "\n";
   };
 private:
@@ -103,7 +119,8 @@ private:
     m_fstream<<"\n";
   };
   std::ofstream m_fstream;
-  const H3MatchResultConfig &config_;
+  H3MatchResultConfig config_;
 };     // CSVMatchResultWriter
 }
 }
+#endif

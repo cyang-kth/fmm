@@ -1,18 +1,23 @@
-// typedef boost::geometry::polygon Polygon;
-#include <h3api.h>
+#ifndef H3MM_HEADER
+#define H3MM_HEADER
+
+#include "util/debug.hpp"
+#include "h3_type.hpp"
+#include "h3_util.hpp"
+#include "h3mm_writer.hpp"
+
 namespace FMM {
 namespace MM {
 
-struct H3MMResult {
-  int traj_id;
-  std::vector<H3Index> hexs;
-};
 
 /**
  * Configuration class of stmatch command line program
  */
 struct H3MMConfig {
-  H3MMConfig(int h3level_arg, bool interpolate);
+  H3MMConfig(int h3level_arg = 9, bool interpolate = false){
+     h3level = h3level_arg;
+     interpolate = interpolate;  
+  };
   int h3level;
   bool interpolate;
   bool validate() const {
@@ -55,50 +60,18 @@ struct H3MMConfig {
 
 class H3MM {
 public:
-  H3MMResult match_wkt(
+  static H3MatchResult match_wkt(
     const std::string &wkt,const H3MMConfig &config){
-    LineString line = wkt2linestring(wkt);
+    FMM::CORE::LineString line = FMM::CORE::wkt2linestring(wkt);
     std::vector<double> timestamps;
-    Trajectory traj{0, line, timestamps};
+    FMM::CORE::Trajectory traj{0, line, timestamps};
     return match_traj(traj,config);
   };
-  static std::string hexs2wkt(const std::vector<H3Index> &hexs){
-    oss << "MULTIPOLYGON(";
-    for (auto index:hexs){
-      GeoBoundary boundary;
-      oss<<"(";
-      h3ToGeoBoundary(indexed, &boundary);
-      for (int v = 0; v < boundary.numVerts; v++) {
-        oss << boundary.verts[v].lat << " " <<
-          boundary.verts[v].lon;
-      }
-      oss<<")";
-    }
-    oss << ")";
-  };
-  static std::string hex2wkt(H3Index &index){
-    std::ostringstream oss;
-    GeoBoundary boundary;
-    oss << "POLYGON(";
-    h3ToGeoBoundary(indexed, &boundary);
-    for (int v = 0; v < boundary.numVerts; v++) {
-      oss << boundary.verts[v].lat << " " <<
-        boundary.verts[v].lon;
-    }
-    oss << ")";
-  };
-  static H3Index xy2hex(double x, double y){
-    double px = geom.get_x(i);
-    double py = geom.get_y(i);
-    GeoCoord location;
-    setGeoDegs(&location,py,px);
-    H3Index indexed = geoToH3(&location, config.h3level);
-    return indexed;
-  };
-  H3MMResult match_traj(const CORE::Trajectory &traj,
+
+  static H3MatchResult match_traj(const FMM::CORE::Trajectory &traj,
                         const H3MMConfig &config){
     int NumberPoints = traj.geom.get_num_points();
-    SPDLOG_DEBUG("Count of points in trajectory {}", );
+    SPDLOG_DEBUG("Count of points in trajectory {}", NumberPoints);
     SPDLOG_DEBUG("Search candidates");
     std::vector<H3Index> hexs;
     // MultiPolygon
@@ -106,18 +79,14 @@ public:
     for (int i = 0; i < NumberPoints; ++i) {
       // SPDLOG_DEBUG("Search candidates for point index {}",i);
       // Construct a bounding boost_box
-      double px = geom.get_x(i);
-      double py = geom.get_y(i);
-      GeoCoord location;
-      setGeoDegs(&location,py,px);
-      H3Index indexed = geoToH3(&location, config.h3level);
-      hexs.push_back(indexed);
+      double px = traj.geom.get_x(i);
+      double py = traj.geom.get_y(i);
+      hexs.push_back(xy2hex(px,py,config.h3level));
     }
     return H3MatchResult{
       traj.id, hexs};
   };
-
-  std::string match_gps_file(
+  static std::string match_gps_file(
     const FMM::CONFIG::GPSConfig &gps_config,
     const H3MMConfig &config,
     const H3MatchResultConfig &output_config,
@@ -144,16 +113,16 @@ public:
     int step_size = 1000;
     UTIL::TimePoint begin_time = std::chrono::steady_clock::now();
     FMM::IO::GPSReader reader(gps_config);
-    H3MMResultWriter writer(output_config);
+    H3MatchResultWriter writer(output_config);
     if (use_omp) {
       int buffer_trajectories_size = 100000;
       while (reader.has_next_trajectory()) {
-        std::vector<Trajectory> trajectories =
+        std::vector<FMM::CORE::Trajectory> trajectories =
           reader.read_next_N_trajectories(buffer_trajectories_size);
         int trajectories_fetched = trajectories.size();
         #pragma omp parallel for
         for (int i = 0; i < trajectories_fetched; ++i) {
-          Trajectory &trajectory = trajectories[i];
+          FMM::CORE::Trajectory &trajectory = trajectories[i];
           int points_in_tr = trajectory.geom.get_num_points();
           auto result = match_traj(
             trajectory, config);
@@ -173,7 +142,7 @@ public:
         if (progress % step_size == 0) {
           SPDLOG_INFO("Progress {}", progress);
         }
-        Trajectory trajectory = reader.read_next_trajectory();
+        FMM::CORE::Trajectory trajectory = reader.read_next_trajectory();
         int points_in_tr = trajectory.geom.get_num_points();
         auto result = match_traj(
           trajectory, config);
@@ -192,3 +161,4 @@ public:
 };     // H3MM
 }
 }
+#endif

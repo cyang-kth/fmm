@@ -1,5 +1,16 @@
+#ifndef H3MM_APP_HEADER
+#define H3MM_APP_HEADER
+
+#include "io/gps_reader.hpp"
+#include "config/gps_config.hpp"
+#include "h3mm.hpp"
+#include "cxxopts/cxxopts.hpp"
+#include "util/util.hpp"
+#include "util/debug.hpp"
+#include "h3mm_writer.hpp"
+
 namespace FMM {
-namespace IO {
+namespace MM {
 /**
  * Configuration class of stmatch command line program
  */
@@ -18,11 +29,7 @@ public:
     spdlog::set_pattern("[%^%l%$][%s:%-3#] %v");
     if (argc==2) {
       std::string configfile(argv[1]);
-      if (UTIL::check_file_extension(configfile,"xml,XML"))
-        load_xml(configfile);
-      else {
-        load_arg(argc,argv);
-      }
+      load_arg(argc,argv);
     } else {
       load_arg(argc,argv);
     }
@@ -40,7 +47,7 @@ public:
     SPDLOG_INFO("Start reading stmatch configuration from arguments");
     cxxopts::Options options("h3mm_config", "Configuration parser");
     // Register options
-    GPSConfig::register_arg(options);
+    FMM::CONFIG::GPSConfig::register_arg(options);
     H3MMConfig::register_arg(options);
     options.add_options()
       ("l,log_level","Log level",cxxopts::value<int>()->default_value("2"))
@@ -54,8 +61,8 @@ public:
     // Parse options
     auto result = options.parse(argc, argv);
     // Read options
-    gps_config = GPSConfig::load_from_arg(result);
-    result_config = CONFIG::ResultConfig::load_from_arg(result);
+    gps_config = FMM::CONFIG::GPSConfig::load_from_arg(result);
+    result_config = H3MatchResultConfig::load_from_arg(result);
     h3mm_config = H3MMConfig::load_from_arg(result);
     log_level = result["log_level"].as<int>();
     step = result["step"].as<int>();
@@ -68,13 +75,12 @@ public:
   /**
    * Print help information
    */
-  static void void print_help(){
+  static void print_help(){
     std::ostringstream oss;
     oss<<"stmatch argument lists:\n";
-    NetworkConfig::register_help(oss);
-    GPSConfig::register_help(oss);
+    FMM::CONFIG::GPSConfig::register_help(oss);
     H3MMConfig::register_help(oss);
-    ResultConfig::register_help(oss);
+    H3MatchResultConfig::register_help(oss);
     oss<<"-l/--log_level (optional) <int>: log level (2)\n";
     oss<<"-s/--step (optional) <int>: progress report step (100)\n";
     oss<<"--use_omp: use OpenMP for multithreaded map matching\n";
@@ -106,8 +112,9 @@ public:
     return true;
   };
 
-  CONFIG::GPSConfig gps_config; /**< GPS data configuraiton */
+  FMM::CONFIG::GPSConfig gps_config; /**< GPS data configuraiton */
   H3MMConfig h3mm_config; /**< Map matching configuraiton */
+  H3MatchResultConfig result_config;
   bool use_omp = false; /**< If true, parallel map matching performed */
   bool help_specified = false; /**< Help is specified or not */
   int log_level = 2; /**< log level, 0-trace,1-debug,2-info,
@@ -134,3 +141,4 @@ private:
 
 }
 }
+#endif
