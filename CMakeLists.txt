@@ -146,7 +146,25 @@ target_link_libraries(stmatch
         ${GDAL_LIBRARIES}
         ${OpenMP_CXX_LIBRARIES})
 
+# Build h3
+
+set(UNCONFIGURED_API_HEADER third_party/h3/src/h3lib/include/h3api.h.in)
+set(CONFIGURED_API_HEADER third_party/h3/src/h3lib/include/h3api.h)
+configure_file(${UNCONFIGURED_API_HEADER} ${CONFIGURED_API_HEADER})
+message(STATUS "Copy h3 header to ${CONFIGURED_API_HEADER}")
+set(H3_INCLUDE_PATH
+    ${CMAKE_CURRENT_BINARY_DIR}/third_party/h3/src/h3lib/include
+    third_party/h3/src/h3lib/include)
+
+file(GLOB h3Glob third_party/h3/src/h3lib/lib/*.c)
+add_library(H3_OBJ OBJECT ${h3Glob})
+target_include_directories(H3_OBJ PUBLIC ${H3_INCLUDE_PATH})
+
+add_executable(h3mm src/mm/h3mm/h3mm.cpp $<TARGET_OBJECTS:H3_OBJ>)
+target_include_directories(
+  h3mm PUBLIC ${H3_INCLUDE_PATH})
+
 add_subdirectory(python)
 add_subdirectory(test EXCLUDE_FROM_ALL)
 
-install(TARGETS fmm ubodt_gen stmatch DESTINATION bin)
+install(TARGETS fmm ubodt_gen stmatch h3mm DESTINATION bin)
