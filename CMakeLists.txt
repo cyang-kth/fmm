@@ -160,7 +160,7 @@ file(GLOB h3Glob third_party/h3/src/h3lib/lib/*.c)
 add_library(H3_OBJ OBJECT ${h3Glob})
 target_include_directories(H3_OBJ PUBLIC ${H3_INCLUDE_PATH})
 
-add_executable(h3mm src/mm/h3mm/h3mm.cpp $<TARGET_OBJECTS:H3_OBJ>)
+add_executable(h3mm src/mm/h3mm/h3mm_test.cpp $<TARGET_OBJECTS:H3_OBJ>)
 target_include_directories(
   h3mm PUBLIC ${H3_INCLUDE_PATH})
 
