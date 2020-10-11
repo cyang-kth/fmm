@@ -14,9 +14,9 @@ namespace MM {
  * Configuration class of stmatch command line program
  */
 struct H3MMConfig {
-  H3MMConfig(int h3level_arg = 9, bool interpolate = false){
+  H3MMConfig(int h3level_arg = 9, bool interpolate_arg = false){
      h3level = h3level_arg;
-     interpolate = interpolate;  
+     interpolate = interpolate_arg;
   };
   int h3level;
   bool interpolate;
@@ -75,13 +75,48 @@ public:
     SPDLOG_DEBUG("Search candidates");
     std::vector<H3Index> hexs;
     // MultiPolygon
-    int prev_hex = -1;
-    for (int i = 0; i < NumberPoints; ++i) {
-      // SPDLOG_DEBUG("Search candidates for point index {}",i);
-      // Construct a bounding boost_box
-      double px = traj.geom.get_x(i);
-      double py = traj.geom.get_y(i);
-      hexs.push_back(xy2hex(px,py,config.h3level));
+    if (config.interpolate){
+      SPDLOG_DEBUG("Interpolate hex");
+      H3Index prev_hex=0;
+      for (int i = 0; i < NumberPoints; ++i) {
+        SPDLOG_TRACE("Search candidates for point index {}",i);
+        // Construct a bounding boost_box
+        double px = traj.geom.get_x(i);
+        double py = traj.geom.get_y(i);
+        H3Index hex = xy2hex(px,py,config.h3level);
+        SPDLOG_TRACE("Prev hex {} hex {}",prev_hex,hex);
+        if (i!=0 && hex!=prev_hex){
+          if (h3IndexesAreNeighbors(prev_hex,hex)){
+            SPDLOG_TRACE("Prev hex and hex are neighbors");
+            hexs.push_back(hex);
+          } else {
+            auto seq_hex = hexpath(prev_hex,hex);
+            SPDLOG_TRACE("Hex between {} {} is with size {}: {}",
+              prev_hex, hex, seq_hex.size(), seq_hex);
+            int N = seq_hex.size();
+            if (N>1){
+              for (int j=1;j<N;++j){
+                hexs.push_back(seq_hex[j]);
+              }
+            } else {
+              hexs.push_back(hex);
+            }
+          }
+        } else {
+          if (i==0)
+            hexs.push_back(hex);
+        }
+        prev_hex = hex;
+      }
+    } else {
+      SPDLOG_DEBUG("No interpolate");
+      for (int i = 0; i < NumberPoints; ++i) {
+        // SPDLOG_DEBUG("Search candidates for point index {}",i);
+        // Construct a bounding boost_box
+        double px = traj.geom.get_x(i);
+        double py = traj.geom.get_y(i);
+        hexs.push_back(xy2hex(px,py,config.h3level));
+      }
     }
     return H3MatchResult{
       traj.id, hexs};
@@ -154,6 +189,7 @@ public:
     UTIL::TimePoint end_time = std::chrono::steady_clock::now();
     double duration = std::chrono::duration_cast<
       std::chrono::milliseconds>(end_time - begin_time).count() / 1000.;
+    SPDLOG_INFO("Program finish in time {}", duration);
     oss<<"Status: success\n";
     oss<<"Time takes " << duration << " seconds\n";
     return oss.str();

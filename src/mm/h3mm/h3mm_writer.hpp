@@ -93,7 +93,7 @@ public:
 
   H3MatchResultWriter(
     const H3MatchResultConfig &config_arg) :
-    m_fstream(config_.file),config_(config_arg){
+    config_(config_arg), m_fstream(config_.file){
     write_header();
   };
 
@@ -118,8 +118,8 @@ private:
     }
     m_fstream<<"\n";
   };
-  std::ofstream m_fstream;
   H3MatchResultConfig config_;
+  std::ofstream m_fstream;
 };     // CSVMatchResultWriter
 }
 }

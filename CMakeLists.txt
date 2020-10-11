@@ -78,7 +78,6 @@ if(OPENMP_FOUND)
   message(STATUS "OpenMP_CXX_LIBRARIES found at ${OpenMP_CXX_LIBRARIES}")
 endif()
 
-set (CMAKE_CXX_FLAGS "-fexceptions -v")
 
 include_directories(third_party)
 include_directories(third_party/libosmium/include)

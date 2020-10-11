@@ -12,7 +12,7 @@
 namespace FMM {
 namespace MM {
 /**
- * Configuration class of stmatch command line program
+ * Configuration class of h3mm command line program
  */
 class H3MMAppConfig
 {
@@ -44,11 +44,12 @@ public:
    * @param argv raw argument data
    */
   void load_arg(int argc, char **argv){
-    SPDLOG_INFO("Start reading stmatch configuration from arguments");
+    SPDLOG_INFO("Start reading h3mm configuration from arguments");
     cxxopts::Options options("h3mm_config", "Configuration parser");
     // Register options
     FMM::CONFIG::GPSConfig::register_arg(options);
     H3MMConfig::register_arg(options);
+    H3MatchResultConfig::register_arg(options);
     options.add_options()
       ("l,log_level","Log level",cxxopts::value<int>()->default_value("2"))
       ("s,step","Step report",cxxopts::value<int>()->default_value("100"))
@@ -70,14 +71,14 @@ public:
     if (result.count("help")>0) {
       help_specified = true;
     }
-    SPDLOG_INFO("Finish with reading stmatch arg configuration");
+    SPDLOG_INFO("Finish with reading h3mm arg configuration");
   };
   /**
    * Print help information
    */
   static void print_help(){
     std::ostringstream oss;
-    oss<<"stmatch argument lists:\n";
+    oss<<"h3mm argument lists:\n";
     FMM::CONFIG::GPSConfig::register_help(oss);
     H3MMConfig::register_help(oss);
     H3MatchResultConfig::register_help(oss);
@@ -125,16 +126,20 @@ public:
 class H3MMApp {
 public:
   /**
-   * Create stmatch command application from configuration
+   * Create h3mm command application from configuration
    * @param config configuration of the command line app
    */
   H3MMApp(const H3MMAppConfig &config) :
     config_(config){
   };
   /**
-   * Run the stmatch program
+   * Run the h3mm program
    */
-  void run();
+  void run(){
+    H3MM::match_gps_file(config_.gps_config,
+      config_.h3mm_config,config_.result_config,
+      config_.use_omp);
+  };
 private:
   const H3MMAppConfig &config_;
 };
