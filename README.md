@@ -34,10 +34,8 @@ Note that although FMM can directly read OSM file as input, the original OSM fil
 
 - [Match to Hexagons](example/h3)
 
-<img src="example/h3/h8.png" width = "390" />
-<img src="example/h3/h8i.png" width = "390" />
-<img src="example/h3/h9i.png" width = "390" />
-<img src="example/h3/h7i.png" width = "390" />
+<img src="example/h3/h8.png" width = "390" /><img src="example/h3/h8i.png" width = "390" />
+<img src="example/h3/h9i.png" width = "390" /><img src="example/h3/h7i.png" width = "390" />
 
 - [Interactive web demo](example/web_demo)
 
