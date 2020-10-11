@@ -57,12 +57,16 @@ std::string hex2wkt(const HexIndex &index, int precision=12){
 std::vector<HexIndex> hexpath(const HexIndex &start,const HexIndex &end){
   int line_size = h3LineSize(start,end);
   if (line_size>0){
-    std::vector<HexIndex> indices(line_size,0);
+    std::vector<H3Index> indices(line_size,0);
     if (line_size>0){
       SPDLOG_TRACE("Line size {}",line_size);
       int err = h3Line(start,end,&indices[0]);
     }
-    return indices;
+    std::vector<HexIndex> result;
+    for (H3Index i:indices){
+      result.push_back(i);
+    }
+    return result;
   }
   return {};
 };
