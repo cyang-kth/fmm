@@ -20,7 +20,7 @@ FMM is an open source map matching framework in C++ and Python. It solves the pr
 - **Detailed matching information**: traversed path, geometry, individual matched edges, GPS error, etc. More information at [here](https://fmm-wiki.github.io/docs/documentation/output/).
 - **Multiple algorithms**: [FMM](http://www.tandfonline.com/doi/full/10.1080/13658816.2017.1400548) (for small and middle scale network) and [STMatch](https://dl.acm.org/doi/abs/10.1145/1653771.1653820) (for large scale road network)
 - **Platform support**: Unix (ubuntu) , Mac and Windows(cygwin environment).
-- **Hexagon match**: :tada: Match to the uber's [h3](https://github.com/uber/h3) Hexagonal Hierarchical Geospatial Indexing System. Check the [demo](example/h3). 
+- **Hexagon match**: :tada: Match to the uber's [h3](https://github.com/uber/h3) Hexagonal Hierarchical Geospatial Indexing System. Check the [demo](example/h3).
 
 We encourage contribution with feature request, bug report or developping new map matching algorithms using the framework.
 
@@ -34,10 +34,10 @@ Note that although FMM can directly read OSM file as input, the original OSM fil
 
 - [Match to Hexagons](example/h3)
 
-<img src="example/h3/h8.png" width = "400px">
-<img src="example/h3/h8i.png" width = "400px">
-<img src="example/h3/h9i.png" width = "400px">
-<img src="example/h3/h7i.png" width = "400px">
+<img src="example/h3/h8.png" width = "390" />
+<img src="example/h3/h8i.png" width = "390" />
+<img src="example/h3/h9i.png" width = "390" />
+<img src="example/h3/h7i.png" width = "390" />
 
 - [Interactive web demo](example/web_demo)
 
