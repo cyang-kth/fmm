@@ -16,6 +16,9 @@ else()
   message(FATAL_ERROR "Python library not found!\n")
 endif()
 
+include_directories(${H3_INCLUDE_PATH})
+message(STATUS "Include h3 headers at ${H3_INCLUDE_PATH}")
+
 file(GLOB PYTHONFMMGlob
 ${PROJECT_SOURCE_DIR}/src/mm/fmm/fmm_algorithm.cpp
 ${PROJECT_SOURCE_DIR}/src/mm/fmm/ubodt.cpp
@@ -26,6 +29,9 @@ ${PROJECT_SOURCE_DIR}/src/mm/stmatch/stmatch_algorithm.cpp)
 add_library(PYTHONFMM_OBJ OBJECT ${PYTHONFMMGlob})
 add_library(PYTHONSTMATCH_OBJ OBJECT ${PYTHONSTMATCHGlob})
 
+set_source_files_properties(
+${PROJECT_SOURCE_DIR}/python/fmm.i PROPERTIES INCLUDE_DIRECTORIES
+ON ${H3_INCLUDE_PATH})
 set_source_files_properties(
 ${PROJECT_SOURCE_DIR}/python/fmm.i PROPERTIES CPLUSPLUS ON)
 set_source_files_properties(
@@ -40,7 +46,8 @@ $<TARGET_OBJECTS:CONFIG>
 $<TARGET_OBJECTS:ALGORITHM>
 $<TARGET_OBJECTS:UTIL>
 $<TARGET_OBJECTS:IO>
-$<TARGET_OBJECTS:NETWORK>)
+$<TARGET_OBJECTS:NETWORK>
+$<TARGET_OBJECTS:H3_OBJ>)
 
 set_property(TARGET pyfmmlib PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_link_libraries(pyfmmlib ${GDAL_LIBRARIES} ${Boost_LIBRARIES}
