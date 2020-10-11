@@ -104,11 +104,14 @@ public:
    */
   void write_result(const FMM::CORE::Trajectory &traj,
                     const FMM::MM::H3MatchResult &result){
-    m_fstream << traj.id;
-    m_fstream << ";" << result.hexs;
+    std::ostringstream buf;
+    buf << traj.id;
+    buf << ";" << result.hexs;
     if (config_.write_geom)
-      m_fstream << ";" << hexs2wkt(result.hexs, 12);
-    m_fstream << "\n";
+      buf << ";" << hexs2wkt(result.hexs, 12);
+    buf << "\n";
+    #pragma omp critical
+    m_fstream << buf.str();
   };
 private:
   void write_header(){

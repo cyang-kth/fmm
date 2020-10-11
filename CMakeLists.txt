@@ -155,7 +155,7 @@ configure_file(${UNCONFIGURED_API_HEADER} ${CONFIGURED_API_HEADER})
 message(STATUS "Copy h3 header to ${CONFIGURED_API_HEADER}")
 set(H3_INCLUDE_PATH
     ${CMAKE_CURRENT_BINARY_DIR}/third_party/h3/src/h3lib/include
-    third_party/h3/src/h3lib/include)
+    ${CMAKE_CURRENT_SOURCE_DIR}/third_party/h3/src/h3lib/include)
 
 file(GLOB h3Glob third_party/h3/src/h3lib/lib/*.c)
 add_library(H3_OBJ OBJECT ${h3Glob})

@@ -5,6 +5,7 @@
 #include "h3_type.hpp"
 #include "h3_util.hpp"
 #include "h3mm_writer.hpp"
+#include "io/gps_reader.hpp"
 
 namespace FMM {
 namespace MM {
@@ -61,6 +62,14 @@ struct H3MMConfig {
 class H3MM {
 public:
   static H3MatchResult match_wkt(
+    const std::string &wkt,int h3level, bool interpolate){
+    FMM::CORE::LineString line = FMM::CORE::wkt2linestring(wkt);
+    std::vector<double> timestamps;
+    FMM::CORE::Trajectory traj{0, line, timestamps};
+    H3MMConfig config{h3level,interpolate};
+    return match_traj(traj,config);
+  };
+  static H3MatchResult match_wkt(
     const std::string &wkt,const H3MMConfig &config){
     FMM::CORE::LineString line = FMM::CORE::wkt2linestring(wkt);
     std::vector<double> timestamps;
@@ -73,50 +82,53 @@ public:
     int NumberPoints = traj.geom.get_num_points();
     SPDLOG_DEBUG("Count of points in trajectory {}", NumberPoints);
     SPDLOG_DEBUG("Search candidates");
-    std::vector<H3Index> hexs;
-    // MultiPolygon
-    if (config.interpolate){
-      SPDLOG_DEBUG("Interpolate hex");
-      H3Index prev_hex=0;
-      for (int i = 0; i < NumberPoints; ++i) {
-        SPDLOG_TRACE("Search candidates for point index {}",i);
-        // Construct a bounding boost_box
-        double px = traj.geom.get_x(i);
-        double py = traj.geom.get_y(i);
-        H3Index hex = xy2hex(px,py,config.h3level);
-        SPDLOG_TRACE("Prev hex {} hex {}",prev_hex,hex);
-        if (i!=0 && hex!=prev_hex){
-          if (h3IndexesAreNeighbors(prev_hex,hex)){
-            SPDLOG_TRACE("Prev hex and hex are neighbors");
-            hexs.push_back(hex);
-          } else {
-            auto seq_hex = hexpath(prev_hex,hex);
-            SPDLOG_TRACE("Hex between {} {} is with size {}: {}",
-              prev_hex, hex, seq_hex.size(), seq_hex);
-            int N = seq_hex.size();
-            if (N>1){
-              for (int j=1;j<N;++j){
-                hexs.push_back(seq_hex[j]);
-              }
-            } else {
+    std::vector<HexIndex> hexs;
+    if (config.validate()){
+      if (config.interpolate){
+        SPDLOG_DEBUG("Interpolate hex");
+        HexIndex prev_hex=0;
+        for (int i = 0; i < NumberPoints; ++i) {
+          SPDLOG_TRACE("Search candidates for point index {}",i);
+          // Construct a bounding boost_box
+          double px = traj.geom.get_x(i);
+          double py = traj.geom.get_y(i);
+          HexIndex hex = xy2hex(px,py,config.h3level);
+          SPDLOG_TRACE("Prev hex {} hex {}",prev_hex,hex);
+          if (i!=0 && hex!=prev_hex){
+            if (h3IndexesAreNeighbors(prev_hex,hex)){
+              SPDLOG_TRACE("Prev hex and hex are neighbors");
               hexs.push_back(hex);
+            } else {
+              auto seq_hex = hexpath(prev_hex,hex);
+              SPDLOG_TRACE("Hex between {} {} is with size {}: {}",
+                prev_hex, hex, seq_hex.size(), seq_hex);
+              int N = seq_hex.size();
+              if (N>1){
+                for (int j=1;j<N;++j){
+                  hexs.push_back(seq_hex[j]);
+                }
+              } else {
+                hexs.push_back(hex);
+              }
             }
+          } else {
+            if (i==0)
+              hexs.push_back(hex);
           }
-        } else {
-          if (i==0)
-            hexs.push_back(hex);
+          prev_hex = hex;
         }
-        prev_hex = hex;
+      } else {
+        SPDLOG_DEBUG("No interpolate");
+        for (int i = 0; i < NumberPoints; ++i) {
+          // SPDLOG_DEBUG("Search candidates for point index {}",i);
+          // Construct a bounding boost_box
+          double px = traj.geom.get_x(i);
+          double py = traj.geom.get_y(i);
+          hexs.push_back(xy2hex(px,py,config.h3level));
+        }
       }
     } else {
-      SPDLOG_DEBUG("No interpolate");
-      for (int i = 0; i < NumberPoints; ++i) {
-        // SPDLOG_DEBUG("Search candidates for point index {}",i);
-        // Construct a bounding boost_box
-        double px = traj.geom.get_x(i);
-        double py = traj.geom.get_y(i);
-        hexs.push_back(xy2hex(px,py,config.h3level));
-      }
+      SPDLOG_ERROR("Configuration invalid");
     }
     return H3MatchResult{
       traj.id, hexs};

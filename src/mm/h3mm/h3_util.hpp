@@ -13,7 +13,7 @@
 namespace FMM{
 namespace MM{
 
-std::string hexs2wkt(const std::vector<H3Index> &hexs, int precision=12){
+std::string hexs2wkt(const std::vector<HexIndex> &hexs, int precision=12){
   std::ostringstream oss;
   oss << "MULTIPOLYGON(";
   for (int i = 0 ; i<hexs.size();++i){
@@ -32,14 +32,14 @@ std::string hexs2wkt(const std::vector<H3Index> &hexs, int precision=12){
   return oss.str();
 };
 
-H3Index xy2hex(double px, double py, int level){
+HexIndex xy2hex(double px, double py, int level){
   GeoCoord location;
   setGeoDegs(&location, px, py);
-  H3Index indexed = geoToH3(&location,level);
-  return indexed;
+  HexIndex indexed = geoToH3(&location,level);
+  return (HexIndex) indexed;
 };
 
-std::string hex2wkt(const H3Index &index, int precision=12){
+std::string hex2wkt(const HexIndex &index, int precision=12){
   std::ostringstream oss;
   GeoBoundary boundary;
   oss << "POLYGON(";
@@ -54,10 +54,10 @@ std::string hex2wkt(const H3Index &index, int precision=12){
   return oss.str();
 };
 
-std::vector<H3Index> hexpath(const H3Index &start,const H3Index &end){
+std::vector<HexIndex> hexpath(const HexIndex &start,const HexIndex &end){
   int line_size = h3LineSize(start,end);
   if (line_size>0){
-    std::vector<H3Index> indices(line_size,0);
+    std::vector<HexIndex> indices(line_size,0);
     if (line_size>0){
       SPDLOG_TRACE("Line size {}",line_size);
       int err = h3Line(start,end,&indices[0]);
