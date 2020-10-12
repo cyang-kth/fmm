@@ -24,30 +24,36 @@ FMM is an open source map matching framework in C++ and Python. It solves the pr
 
 We encourage contribution with feature request, bug report or developping new map matching algorithms using the framework.
 
-### Examples
+### Screenshots
 
-- Map matching on [OSM network](example/osm_example) (left) and ESRI shapefile (right)
+Map match to OSM road network by drawing
 
-<img src="example/osm_example/result.png" width="400"/><img src="img/shp_example.png" width="400"/>
+![fmm_draw](https://github.com/cyang-kth/fmm-examples/blob/master/img/fmm_draw.gif?raw=true)
 
-Note that although FMM can directly read OSM file as input, the original OSM file is common to contain poor topology information (https://github.com/cyang-kth/fmm/issues/99). Therefore, it is recommended to use OSMNX to download a routable shapefile for OSM. Check the [OSMNX example](example/osmnx_example).
+Explore the factor of candidate size k, search radius and GPS error
 
-- [Match to Hexagons](example/h3)
+![fmm_explore](https://github.com/cyang-kth/fmm-examples/blob/master/img/fmm_explore.gif?raw=true)
 
-<img src="example/h3/h8.png" width = "390" /><img src="example/h3/h8i.png" width = "390" />
-<img src="example/h3/h9i.png" width = "390" /><img src="example/h3/h7i.png" width = "390" />
+Explore with dual map
 
-- [Interactive web demo](example/web_demo)
+![dual_map](https://github.com/cyang-kth/fmm-examples/blob/master/img/dual_map.gif?raw=true)
 
-<img src="img/demo3.gif" width="400"/> <img src="img/demo4.gif" width="400"/>
+Map match to hexagon by drawing
 
-- [Command line examples](example/command_line_example)
-- [Jupyter-notebook](example/notebook)
-- [OSMNX example](example/osmnx_example)
+![hex_draw](https://github.com/cyang-kth/fmm-examples/blob/master/img/hex_draw.gif?raw=true)
 
-### Installation, tutorial and API.
+Explore the factor of hexagon level and interpolate
 
-Check [https://fmm-wiki.github.io/](https://fmm-wiki.github.io/).
+![hex_explore](https://github.com/cyang-kth/fmm-examples/blob/master/img/hex_explore.gif?raw=true)
+
+Source code of these screenshots are available at https://github.com/cyang-kth/fmm-examples. 
+
+### Installation, example, tutorial and API.
+
+- Check [https://fmm-wiki.github.io/](https://fmm-wiki.github.io/) for installation, documentation.
+- Check [example](example) for simple examples of fmm.
+- :tada: Check [https://github.com/cyang-kth/fmm-examples](https://github.com/cyang-kth/fmm-examples)
+for interactive map matching in notebook.
 
 ### Code docs for developer
 

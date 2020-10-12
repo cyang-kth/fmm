@@ -40,3 +40,10 @@ branches:
   only:
     - master
     - windows
+
+skip_commits:
+  files:
+    - docs/*
+    - '**/*.html'
+    - '**/*.md'
+    - img/   
