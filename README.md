@@ -34,6 +34,10 @@ Explore the factor of candidate size k, search radius and GPS error
 
 ![fmm_explore](https://github.com/cyang-kth/fmm-examples/blob/master/img/fmm_explore.gif?raw=true)
 
+Explore detailed map matching information
+
+![fmm_detail](https://github.com/cyang-kth/fmm-examples/blob/master/img/fmm_detail.gif?raw=true)
+
 Explore with dual map
 
 ![dual_map](https://github.com/cyang-kth/fmm-examples/blob/master/img/dual_map.gif?raw=true)
@@ -46,7 +50,7 @@ Explore the factor of hexagon level and interpolate
 
 ![hex_explore](https://github.com/cyang-kth/fmm-examples/blob/master/img/hex_explore.gif?raw=true)
 
-Source code of these screenshots are available at https://github.com/cyang-kth/fmm-examples. 
+Source code of these screenshots are available at https://github.com/cyang-kth/fmm-examples.
 
 ### Installation, example, tutorial and API.
 
