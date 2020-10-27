@@ -52,8 +52,10 @@ inline NETWORK_TYPE string2network_type(const std::string &mode){
   if (mode == "all"){
     return NETWORK_TYPE::ALL;
   }
-  SPDLOG_CRITICAL("Unknown network mode, should be drive|walk|bike|all");
-  std::exit(EXIT_FAILURE);
+
+  std::string message = "Unknown network mode, should be drive|walk|bike|all";
+  SPDLOG_CRITICAL(message);
+  throw std::runtime_error(message);
 };
 
 /**

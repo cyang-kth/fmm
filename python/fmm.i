@@ -1,4 +1,5 @@
 %module fmm
+%include exception.i
 %include "std_string.i"
 // %include "stdint.i"
 %include "std_vector.i"
@@ -11,6 +12,16 @@
 %ignore FMM::MM::FastMapMatchConfig::print() const;
 %ignore FMM::CONFIG::GPSConfig::print() const;
 %ignore FMM::CONFIG::ResultConfig::print() const;
+
+%exception {
+    try {
+        $action
+    } catch (std::exception& e) {
+        SWIG_exception(SWIG_RuntimeError, const_cast<char*>(e.what()));
+    } catch (...) {
+        SWIG_exception(SWIG_RuntimeError, "Unknown error");
+    }
+}
 
 %{
 /* Put header files here or function declarations like below */
