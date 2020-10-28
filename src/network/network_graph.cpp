@@ -160,7 +160,7 @@ std::vector<EdgeIndex> NetworkGraph::shortest_path_astar(
 std::vector<EdgeIndex> NetworkGraph::back_track(
   NodeIndex source, NodeIndex target, const PredecessorMap &pmap,
   const DistanceMap &dmap) const {
-  SPDLOG_TRACE("Backtrack starts");
+  // SPDLOG_TRACE("Backtrack starts");
   if (dmap.find(target) == dmap.end()) {
     return {};
   } else {
@@ -169,9 +169,9 @@ std::vector<EdgeIndex> NetworkGraph::back_track(
     NodeIndex u = pmap.at(v);
     while (v != source) {
       double cost = dmap.at(v) - dmap.at(u);
-      SPDLOG_TRACE("u {} d {} v {} d {} cost {}",
-                   get_node_id(u), dmap.at(u),
-                   get_node_id(v), dmap.at(v), cost);
+      // SPDLOG_TRACE("u {} d {} v {} d {} cost {}",
+      //              get_node_id(u), dmap.at(u),
+      //              get_node_id(v), dmap.at(v), cost);
       path.push_back(get_edge_index(u, v, cost));
       v = u;
       u = pmap.at(v);
@@ -187,19 +187,19 @@ std::vector<EdgeIndex> NetworkGraph::back_track(
  */
 int NetworkGraph::get_edge_index(NodeIndex source, NodeIndex target,
                                  double cost) const {
-  SPDLOG_TRACE("Find edge from {} to {} cost {}", source, target, cost);
+  // SPDLOG_TRACE("Find edge from {} to {} cost {}", source, target, cost);
   if (source >= num_vertices || target >= num_vertices) return -1;
   EdgeDescriptor e;
   OutEdgeIterator out_i, out_end;
   for (boost::tie(out_i, out_end) = boost::out_edges(source, g);
        out_i != out_end; ++out_i) {
     e = *out_i;
-    SPDLOG_TRACE("  Check Edge from {} to {} cost {}",
-                 source, boost::target(e, g), g[e].length);
+    // SPDLOG_TRACE("  Check Edge from {} to {} cost {}",
+    //              source, boost::target(e, g), g[e].length);
     if (target == boost::target(e, g) &&
         (std::abs(g[e].length - cost) <= DOUBLE_MIN)) {
-      SPDLOG_TRACE("  Found edge idx {} id {}",
-                   g[e].index, get_edge_id(g[e].index));
+      // SPDLOG_TRACE("  Found edge idx {} id {}",
+      //              g[e].index, get_edge_id(g[e].index));
       return g[e].index;
     }
   }

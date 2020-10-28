@@ -264,7 +264,6 @@ void STMATCH::update_tg(TransitionGraph *tg,
   int N = layers.size();
   for (int i = 0; i < N - 1; ++i) {
     // Routing from current_layer to next_layer
-    SPDLOG_DEBUG("Update layer {} ", i);
     double delta = 0;
     if (traj.timestamps.size() != N) {
       delta = eu_dists[i] * config.factor * 4;
@@ -282,40 +281,43 @@ void STMATCH::update_layer(int level, TGLayer *la_ptr, TGLayer *lb_ptr,
                            const CompositeGraph &cg,
                            double eu_dist,
                            double delta) {
-  // SPDLOG_TRACE("Update layer");
+  SPDLOG_DEBUG("Update layer {} starts", level);
   TGLayer &lb = *lb_ptr;
-  for (auto iter = la_ptr->begin(); iter != la_ptr->end(); ++iter) {
-    NodeIndex source = iter->c->index;
-    SPDLOG_TRACE("  Calculate distance from source {}", source);
+  for (auto iter_a = la_ptr->begin(); iter_a != la_ptr->end(); ++iter_a) {
+    NodeIndex source = iter_a->c->index;
+    // SPDLOG_TRACE("  Calculate distance from source {}", source);
     // single source upper bound routing
     std::vector<NodeIndex> targets(lb.size());
     std::transform(lb.begin(), lb.end(), targets.begin(),
                    [](TGNode &a) {
       return a.c->index;
     });
-    SPDLOG_TRACE("  Upperbound shortest path {} ", delta);
     std::vector<double> distances = shortest_path_upperbound(
       level, cg, source, targets, delta);
-    SPDLOG_TRACE("  Update property of transition graph ");
-    for (int i = 0; i < distances.size(); ++i) {
+    for (auto iter_b = lb_ptr->begin(); iter_b != lb_ptr->end(); ++iter_b) {
+      int i = std::distance(lb_ptr->begin(),iter_b);
       double tp = TransitionGraph::calc_tp(distances[i], eu_dist);
-      double temp = iter->cumu_prob + log(tp) + log(lb[i].ep);
-      if (lb[i].cumu_prob<temp) {
-        lb[i].cumu_prob = temp;
-        lb[i].prev = &(*iter);
-        lb[i].sp_dist = distances[i];
-        lb[i].tp = tp;
+      double temp = iter_a->cumu_prob + log(tp) + log(iter_b->ep);
+      SPDLOG_TRACE("L {} f {} t {} sp {} dist {} tp {} ep {} fcp {} tcp {}",
+        level, iter_a->c->edge->id,iter_b->c->edge->id,
+        distances[i], eu_dist, tp, iter_b->ep, iter_a->cumu_prob,
+        temp);
+      if (temp >= iter_b->cumu_prob) {
+        iter_b->cumu_prob = temp;
+        iter_b->prev = &(*iter_a);
+        iter_b->sp_dist = distances[i];
+        iter_b->tp = tp;
       }
     }
   }
-  SPDLOG_TRACE("Update layer done");
+  SPDLOG_DEBUG("Update layer done");
 }
 
 std::vector<double> STMATCH::shortest_path_upperbound(
   int level, const CompositeGraph &cg, NodeIndex source,
   const std::vector<NodeIndex> &targets, double delta) {
-  SPDLOG_TRACE("Upperbound shortest path source {}", source);
-  SPDLOG_TRACE("Upperbound shortest path targets {}", targets);
+  // SPDLOG_TRACE("Upperbound shortest path source {}", source);
+  // SPDLOG_TRACE("Upperbound shortest path targets {}", targets);
   std::unordered_set<NodeIndex> unreached_targets;
   for (auto &node:targets) {
     unreached_targets.insert(node);
@@ -331,12 +333,12 @@ std::vector<double> STMATCH::shortest_path_upperbound(
   while (!Q.empty() && !unreached_targets.empty()) {
     HeapNode node = Q.top();
     Q.pop();
-    SPDLOG_TRACE("  Node u {} dist {}", node.index, node.value);
+    // SPDLOG_TRACE("  Node u {} dist {}", node.index, node.value);
     NodeIndex u = node.index;
     auto iter = unreached_targets.find(u);
     if (iter != unreached_targets.end()) {
       // Remove u
-      SPDLOG_TRACE("  Remove target {}", u);
+      // SPDLOG_TRACE("  Remove target {}", u);
       unreached_targets.erase(iter);
     }
     if (node.value > delta) break;
@@ -345,14 +347,14 @@ std::vector<double> STMATCH::shortest_path_upperbound(
          ++node_iter) {
       NodeIndex v = node_iter->v;
       temp_dist = node.value + node_iter->cost;
-      SPDLOG_TRACE("  Examine node v {} temp dist {}", v, temp_dist);
+      // SPDLOG_TRACE("  Examine node v {} temp dist {}", v, temp_dist);
       auto v_iter = dmap.find(v);
       if (v_iter != dmap.end()) {
         // dmap contains node v
         if (v_iter->second - temp_dist > 1e-6) {
           // a smaller distance is found for v
-          SPDLOG_TRACE("    Update key {} {} in pdmap prev dist {}",
-                       v, temp_dist, v_iter->second);
+          // SPDLOG_TRACE("    Update key {} {} in pdmap prev dist {}",
+          //              v, temp_dist, v_iter->second);
           pmap[v] = u;
           dmap[v] = temp_dist;
           Q.decrease_key(v, temp_dist);
@@ -360,8 +362,8 @@ std::vector<double> STMATCH::shortest_path_upperbound(
       } else {
         // dmap does not contain v
         if (temp_dist <= delta) {
-          SPDLOG_TRACE("    Insert key {} {} into pmap and dmap",
-                       v, temp_dist);
+          // SPDLOG_TRACE("    Insert key {} {} into pmap and dmap",
+          //              v, temp_dist);
           Q.push(v, temp_dist);
           pmap.insert({v, u});
           dmap.insert({v, temp_dist});
@@ -370,7 +372,7 @@ std::vector<double> STMATCH::shortest_path_upperbound(
     }
   }
   // Update distances
-  SPDLOG_TRACE("  Update distances");
+  // SPDLOG_TRACE("  Update distances");
   std::vector<double> distances;
   for (int i = 0; i < targets.size(); ++i) {
     if (dmap.find(targets[i]) != dmap.end()) {
@@ -379,7 +381,7 @@ std::vector<double> STMATCH::shortest_path_upperbound(
       distances.push_back(std::numeric_limits<double>::max());
     }
   }
-  SPDLOG_TRACE("  Distance value {}", distances);
+  // SPDLOG_TRACE("  Distance value {}", distances);
   return distances;
 }
 
@@ -393,38 +395,31 @@ C_Path STMATCH::build_cpath(const TGOpath &opath, std::vector<int> *indices,
   int N = opath.size();
   cpath.push_back(opath[0]->c->edge->id);
   int current_idx = 0;
-  SPDLOG_TRACE("Insert index {}", current_idx);
+  // SPDLOG_TRACE("Insert index {}", current_idx);
   indices->push_back(current_idx);
   for (int i = 0; i < N - 1; ++i) {
     const Candidate *a = opath[i]->c;
     const Candidate *b = opath[i + 1]->c;
-    SPDLOG_DEBUG("Check a {} b {}", a->edge->id, b->edge->id);
+    // SPDLOG_TRACE("Check a {} b {}", a->edge->id, b->edge->id);
     if ((a->edge->id != b->edge->id) ||
         (a->offset-b->offset>a->edge->length * reverse_tolerance)) {
       auto segs = graph_.shortest_path_dijkstra(a->edge->target,
                                                 b->edge->source);
       // No transition found
       if (segs.empty() && a->edge->target != b->edge->source) {
-        SPDLOG_DEBUG("Edges not found connecting a b");
+        SPDLOG_TRACE("Candidate {} has disconnected edge {} to {}",
+          i, a->edge->id, b->edge->id);
         indices->clear();
         return {};
       }
-      if (segs.empty()) {
-        SPDLOG_DEBUG("Edges ab are adjacent");
-      } else {
-        SPDLOG_DEBUG("Edges connecting ab are {}", segs);
-      }
-
       for (int e:segs) {
         cpath.push_back(edges[e].id);
         ++current_idx;
       }
       cpath.push_back(b->edge->id);
       ++current_idx;
-      SPDLOG_TRACE("Insert index {}", current_idx);
       indices->push_back(current_idx);
     } else {
-      SPDLOG_TRACE("Insert index {}", current_idx);
       indices->push_back(current_idx);
     }
   }
