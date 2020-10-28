@@ -9,7 +9,10 @@
 #include "util/util.hpp"
 #include "config/gps_config.hpp"
 #include <iostream>
+#include <stdexcept>
 #include <string>
+
+#include <boost/format.hpp>
 
 using namespace FMM;
 using namespace FMM::CORE;
@@ -44,8 +47,9 @@ GDALTrajectoryReader::GDALTrajectoryReader(const std::string &filename,
   poDS = (GDALDataset *) GDALOpenEx(filename.c_str(),
                                     GDAL_OF_VECTOR, NULL, NULL, NULL);
   if (poDS == NULL) {
-    SPDLOG_CRITICAL("Open data source fail");
-    exit(1);
+    std::string message = "Open data source fail";
+    SPDLOG_CRITICAL(message);
+    throw std::runtime_error(message);
   }
   ogrlayer = poDS->GetLayer(0);
   _cursor = 0;
@@ -55,19 +59,21 @@ GDALTrajectoryReader::GDALTrajectoryReader(const std::string &filename,
   // This should be a local field rather than a new variable
   id_idx = ogrFDefn->GetFieldIndex(id_name.c_str());
   if (id_idx < 0) {
-    SPDLOG_CRITICAL("Id column {} not found", id_name);
+    std::string message = (boost::format("Id column %1% not found") % id_name).str();
+    SPDLOG_CRITICAL(message);
     GDALClose(poDS);
-    std::exit(EXIT_FAILURE);
+    throw std::runtime_error(message);
   }
   timestamp_idx = ogrFDefn->GetFieldIndex(timestamp_name.c_str());
   if (timestamp_idx < 0) {
     SPDLOG_WARN("Timestamp column {} not found", timestamp_name);
   }
   if (wkbFlatten(ogrFDefn->GetGeomType()) != wkbLineString) {
-    SPDLOG_CRITICAL("Geometry type is {}, which should be linestring",
-                    OGRGeometryTypeToName(ogrFDefn->GetGeomType()));
+    std::string message = (boost::format("Geometry type is %1%, which should be linestring") %
+            OGRGeometryTypeToName(ogrFDefn->GetGeomType())).str();
+    SPDLOG_CRITICAL(message);
     GDALClose(poDS);
-    std::exit(EXIT_FAILURE);
+    throw std::runtime_error(message);
   } else {
     SPDLOG_DEBUG("Geometry type is {}",
                  OGRGeometryTypeToName(ogrFDefn->GetGeomType()));
@@ -127,9 +133,9 @@ CSVTrajectoryReader::CSVTrajectoryReader(const std::string &e_filename,
     ++i;
   }
   if (id_idx < 0 || geom_idx < 0) {
-    SPDLOG_CRITICAL("Id {} or Geometry column {} not found",
-                    id_name, geom_name);
-    std::exit(EXIT_FAILURE);
+    std::string message = (boost::format("Id %1% or Geometry column %2% not found") % id_name % geom_name).str();
+    SPDLOG_CRITICAL(message);
+    throw std::runtime_error(message);
   }
   if (timestamp_idx < 0) {
     SPDLOG_WARN("Timestamp column {} not found", timestamp_name);
@@ -225,15 +231,20 @@ CSVPointReader::CSVPointReader(const std::string &e_filename,
   }
   if (id_idx < 0 || x_idx < 0 || y_idx < 0) {
     if (id_idx < 0) {
-      SPDLOG_CRITICAL("Id column {} not found", id_name);
+      std::string message = (boost::format("Id column %1% not found") % id_name).str();
+      SPDLOG_CRITICAL(message);
+      throw std::runtime_error(message);
     }
     if (x_idx < 0) {
-      SPDLOG_CRITICAL("X column name {} not found", x_name);
+      std::string message = (boost::format("X column name %1% not found") % x_name).str();
+      SPDLOG_CRITICAL(message);
+      throw std::runtime_error(message);
     }
     if (y_idx < 0) {
-      SPDLOG_CRITICAL("Y column name {} not found", y_name);
+      std::string message = (boost::format("Y column name %1% not found") % y_name).str();
+      SPDLOG_CRITICAL(message);
+      throw std::runtime_error(message);
     }
-    std::exit(EXIT_FAILURE);
   }
   if (timestamp_idx < 0) {
     SPDLOG_WARN("Time stamp {} not found, will be estimated ", time_name);
@@ -335,7 +346,8 @@ GPSReader::GPSReader(const FMM::CONFIG::GPSConfig &config) {
     reader = std::make_shared<CSVPointReader>
                (config.file, config.id, config.x, config.y, config.timestamp);
   } else {
-    SPDLOG_CRITICAL("Unrecognized GPS format");
-    std::exit(EXIT_FAILURE);
+    std::string message = "Unrecognized GPS format";
+    SPDLOG_CRITICAL(message);
+    throw std::runtime_error(message);
   }
 };

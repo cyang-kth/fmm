@@ -6,11 +6,13 @@
 #include <ogrsf_frmts.h> // C++ API for GDAL
 #include <math.h> // Calulating probability
 #include <algorithm> // Partial sort copy
-// Partial sort copy
+#include <stdexcept>
 
 // Data structures for Rtree
 #include <boost/geometry/index/rtree.hpp>
 #include <boost/function_output_iterator.hpp>
+
+#include <boost/format.hpp>
 
 #ifndef SKIP_OSM_BUILD
 #include "network/osm_network_reader.hpp"
@@ -39,8 +41,9 @@ Network::Network(const std::string &filename,
   } else if (FMM::UTIL::check_file_extension(filename, "osm,pbf,bz2,o5m")) {
     read_osm_file(filename,mode);
   } else {
-    SPDLOG_CRITICAL("Network file not supported {}",filename);
-    exit(EXIT_FAILURE);
+    std::string message = (boost::format("Network file not supported %1%") % filename).str();
+    SPDLOG_CRITICAL(message);
+    throw std::runtime_error(message);
   }
 };
 
@@ -90,8 +93,9 @@ void Network::read_ogr_file(const std::string &filename,
   GDALDataset *poDS = (GDALDataset *) GDALOpenEx(
     filename.c_str(), GDAL_OF_VECTOR, NULL, NULL, NULL);
   if (poDS == NULL) {
-    SPDLOG_CRITICAL("Open dataset failed.");
-    exit(EXIT_FAILURE);
+    std::string message = "Open dataset failed.";
+    SPDLOG_CRITICAL(message);
+    throw std::runtime_error(message);
   }
   OGRLayer *ogrlayer = poDS->GetLayer(0);
   int NUM_FEATURES = ogrlayer->GetFeatureCount();
@@ -107,14 +111,16 @@ void Network::read_ogr_file(const std::string &filename,
   if (source_idx < 0 || target_idx < 0 || id_idx < 0) {
     SPDLOG_CRITICAL("Id, source or target column not found");
     GDALClose(poDS);
-    std::exit(EXIT_FAILURE);
+    throw std::runtime_error("Id, source or target column not found");
   }
 
   if (wkbFlatten(ogrFDefn->GetGeomType()) != wkbLineString) {
-    SPDLOG_CRITICAL("Geometry type of network is {}, should be linestring",
-                    OGRGeometryTypeToName(ogrFDefn->GetGeomType()));
+    const std::string message = (boost::format("Geometry type of network is %1%, should be linestring")
+        % OGRGeometryTypeToName(ogrFDefn->GetGeomType())).str();
+
+    SPDLOG_CRITICAL(message);
     GDALClose(poDS);
-    std::exit(EXIT_FAILURE);
+    throw std::runtime_error(message);
   } else {
     SPDLOG_DEBUG("Geometry type of network is {}",
                  OGRGeometryTypeToName(ogrFDefn->GetGeomType()));

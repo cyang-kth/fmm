@@ -4,8 +4,12 @@
 
 #include "mm/fmm/ubodt.hpp"
 #include "util/util.hpp"
+
 #include <fstream>
+#include <stdexcept>
+
 #include <boost/archive/binary_iarchive.hpp>
+#include <boost/format.hpp>
 
 using namespace FMM;
 using namespace FMM::CORE;
@@ -184,9 +188,9 @@ std::shared_ptr<UBODT> UBODT::read_ubodt_file(const std::string &filename,
   } else if (UTIL::check_file_extension(filename,"csv,txt")) {
     return read_ubodt_csv(filename,multiplier);
   } else {
-    SPDLOG_CRITICAL("File format not support: {}",filename);
-    std::exit(EXIT_FAILURE);
-    return nullptr;
+    std::string message = (boost::format("File format not supported: %1%") % filename).str();
+    SPDLOG_CRITICAL(message);
+    throw std::runtime_error(message);
   }
 }
 
