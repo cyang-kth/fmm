@@ -1,8 +1,10 @@
 {
   "input": {
     "network": {
-      "file": "network.shp",
-      "id": "ID"
+      "file": "data/edges.shp",
+      "id": "fid",
+      "source": "u",
+      "target": "v"
     }
   },
   "model": "stmatch",
