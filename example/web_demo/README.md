@@ -12,22 +12,37 @@ Install with pip
 pip install flask tornado
 ```
 
-### Run the demo
+### Download routable shapefile
 
-Try to preprare real world routable road network file (e.g., network.shp or Stockholm.osm.pbf available at https://download.bbbike.org/osm/bbbike/Stockholm/).
-Then update the json configuration below.
+Download a routable network shapefile (with id, source, target fields)
+from OSM using osmnx following the tutorial [osm map matching](https://github.com/cyang-kth/osm_mapmatching).
 
-Run the fmm web demo
+An example dataset is provided as [data.tar.gz](data/data.tar.gz).
+
+```
+# Extract the dataset
+tar -xvf data/data.tar.gz -C data
+```
+
+### Run the fmm web demo
+
 ```bash
+# Precompute UBODT file
+ubodt_gen --network data/edges.shp --network_id fid --source u --target v \
+--delta 0.03 -o data/ubodt.txt --use_omp
+# Start the web app
 python web_demo.py -c fmm_config.json
 ```
 
-Run the stmatch web demo
+### Run the stmatch web demo
 
 ```bash
+# Start the web app
 python web_demo.py -c stmatch_config.json
 ```
 
 Visit `http://localhost:5000/demo` in your browser.
 
-A practical tutorial is provided at [osm map matching](https://github.com/cyang-kth/osm_mapmatching).
+You should be able to see
+
+![demo](https://github.com/cyang-kth/fmm/blob/master/img/demo3.gif?raw=true)

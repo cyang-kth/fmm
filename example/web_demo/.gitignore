@@ -1,0 +1,7 @@
+data/*.cpg
+data/*.dbf
+data/*.shp
+data/*.prj
+data/*.shx
+data/*.txt
+data/*.bin
