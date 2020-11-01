@@ -162,16 +162,15 @@ add_library(H3_OBJ OBJECT ${h3Glob})
 target_include_directories(H3_OBJ PUBLIC ${H3_INCLUDE_PATH})
 
 add_executable(h3mm src/app/h3mm.cpp
-  $<TARGET_OBJECTS:H3_OBJ>)
+  $<TARGET_OBJECTS:H3_OBJ> $<TARGET_OBJECTS:CONFIG>
+  $<TARGET_OBJECTS:UTIL>
+  $<TARGET_OBJECTS:ALGORITHM>
+  $<TARGET_OBJECTS:IO>
+  $<TARGET_OBJECTS:CORE>)
 target_include_directories(
   h3mm PUBLIC ${H3_INCLUDE_PATH})
 
 target_link_libraries(h3mm
-        $<TARGET_OBJECTS:CONFIG>
-        $<TARGET_OBJECTS:UTIL>
-        $<TARGET_OBJECTS:ALGORITHM>
-        $<TARGET_OBJECTS:IO>
-        $<TARGET_OBJECTS:CORE>
         ${GDAL_LIBRARIES}
         ${OpenMP_CXX_LIBRARIES})
 
