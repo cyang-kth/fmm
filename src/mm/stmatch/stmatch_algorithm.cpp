@@ -25,6 +25,7 @@ void STMATCHConfig::print() const {
   SPDLOG_INFO("STMATCHAlgorithmConfig");
   SPDLOG_INFO("k {} radius {} gps_error {} vmax {} factor {}",
               k, radius, gps_error, vmax, factor);
+  SPDLOG_INFO("reverse_tolerance {}",reverse_tolerance);
 };
 
 STMATCHConfig STMATCHConfig::load_from_xml(
