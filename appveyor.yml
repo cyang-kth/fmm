@@ -27,13 +27,8 @@ build_script:
   - '%CYG_SH% "cd fmm && mkdir build"'
   - '%CYG_SH% "cd fmm/build && cmake .. && make -j 4 && make install"'
 
-before_test:
-  - '%CYG_SH% "echo \"export PATH=/home/appveyor/fmm/build:\$PATH\" >> ~/.bash_profile"'
-  - '%CYG_SH% "echo \"export PYTHONPATH=/home/appveyor/fmm/build/python:\$PYTHONPATH\" >> ~/.bash_profile"'
-
 test_script:
   - '%CYG_SH% "fmm"'
-  - '%CYG_SH% "echo $PYTHONPATH"'
   - '%CYG_SH% "cd fmm/example/python;python fmm_test.py"'
 
 branches:
@@ -46,4 +41,4 @@ skip_commits:
     - docs/*
     - '**/*.html'
     - '**/*.md'
-    - img/   
+    - img/

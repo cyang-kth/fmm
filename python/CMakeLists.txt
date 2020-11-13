@@ -7,6 +7,7 @@ else()
   message(FATAL_ERROR "Swig not found!\n")
 endif()
 
+find_package(PythonInterp 2.7 REQUIRED)
 find_package(PythonLibs 2.7 REQUIRED)
 if (PYTHONLIBS_FOUND)
   message(STATUS "Python header found at ${PYTHON_INCLUDE_DIRS}")
@@ -17,61 +18,21 @@ else()
 endif()
 
 include_directories(${H3_INCLUDE_PATH})
-message(STATUS "Include h3 headers at ${H3_INCLUDE_PATH}")
 
-file(GLOB PYTHONFMMGlob
-${PROJECT_SOURCE_DIR}/src/mm/fmm/fmm_algorithm.cpp
-${PROJECT_SOURCE_DIR}/src/mm/fmm/ubodt.cpp
-${PROJECT_SOURCE_DIR}/src/mm/fmm/ubodt_gen_algorithm.cpp)
-file(GLOB PYTHONSTMATCHGlob
-${PROJECT_SOURCE_DIR}/src/mm/stmatch/stmatch_algorithm.cpp)
-
-add_library(PYTHONFMM_OBJ OBJECT ${PYTHONFMMGlob})
-add_library(PYTHONSTMATCH_OBJ OBJECT ${PYTHONSTMATCHGlob})
-
-set_source_files_properties(
-${PROJECT_SOURCE_DIR}/python/fmm.i PROPERTIES INCLUDE_DIRECTORIES
-ON ${H3_INCLUDE_PATH})
 set_source_files_properties(
 ${PROJECT_SOURCE_DIR}/python/fmm.i PROPERTIES CPLUSPLUS ON)
-set_source_files_properties(
-${PROJECT_SOURCE_DIR}/python/fmm.i PROPERTIES SWIG_FLAGS "")
 
-add_library(pyfmmlib SHARED
-$<TARGET_OBJECTS:MM_OBJ>
-$<TARGET_OBJECTS:PYTHONFMM_OBJ>
-$<TARGET_OBJECTS:PYTHONSTMATCH_OBJ>
-$<TARGET_OBJECTS:CORE>
-$<TARGET_OBJECTS:CONFIG>
-$<TARGET_OBJECTS:ALGORITHM>
-$<TARGET_OBJECTS:UTIL>
-$<TARGET_OBJECTS:IO>
-$<TARGET_OBJECTS:NETWORK>
-$<TARGET_OBJECTS:H3_OBJ>)
+message(STATUS "Using swig add library")
+SWIG_ADD_LIBRARY(pyfmm
+  LANGUAGE python
+  SOURCES ${PROJECT_SOURCE_DIR}/python/fmm.i)
+set_property(TARGET pyfmm PROPERTY OUTPUT_NAME fmm)
+swig_link_libraries(pyfmm FMMLIB ${PYTHON_LIBRARIES})
 
-set_property(TARGET pyfmmlib PROPERTY POSITION_INDEPENDENT_CODE ON)
-target_link_libraries(pyfmmlib ${GDAL_LIBRARIES} ${Boost_LIBRARIES}
-${OSMIUM_LIBRARIES} ${OpenMP_CXX_LIBRARIES})
-# Add the target.
-if (${CMAKE_VERSION} VERSION_LESS 3.13.0)
-  message(STATUS "Using swig add module")
-  set_property(SOURCE ${PROJECT_SOURCE_DIR}/python/fmm.i
-    PROPERTY SWIG_MODULE_NAME fmm)
-  SWIG_ADD_MODULE(fmm python ${PROJECT_SOURCE_DIR}/python/fmm.i)
-  swig_link_libraries(fmm
-          ${PYTHON_LIBRARIES}
-          ${Boost_LIBRARIES}
-          ${OSMIUM_LIBRARIES}
-          pyfmmlib)
-else()
-  message(STATUS "Using swig add library")
-  SWIG_ADD_LIBRARY(pyfmm
-    LANGUAGE python
-    SOURCES ${PROJECT_SOURCE_DIR}/python/fmm.i)
-  set_property(TARGET pyfmm PROPERTY OUTPUT_NAME fmm)
-  swig_link_libraries(pyfmm
-          ${PYTHON_LIBRARIES}
-          ${Boost_LIBRARIES}
-          ${OSMIUM_LIBRARIES}
-          pyfmmlib)
-endif()
+execute_process(
+  COMMAND python -c "from distutils.sysconfig import get_python_lib;print get_python_lib()"
+  OUTPUT_VARIABLE PYTHON_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE)
+message(STATUS "Python packages ${PYTHON_SITE_PACKAGES}")
+
+install(TARGETS pyfmm DESTINATION ${PYTHON_SITE_PACKAGES})
+install(FILES ${CMAKE_BINARY_DIR}/python/fmm.py DESTINATION ${PYTHON_SITE_PACKAGES})

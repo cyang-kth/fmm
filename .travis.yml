@@ -16,10 +16,10 @@ script:
   - cd build
   - cmake ..
   - make -j 4
-  - ./fmm
-  - ./stmatch
-  - ./ubodt_gen
-  - export PYTHONPATH=${PYTHONPATH}:$(pwd)/python
+  - make install
+  - fmm
+  - stmatch
+  - ubodt_gen
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export PATH=/usr/bin:${PATH}; fi
   - cd ../example/python
   - python fmm_test.py

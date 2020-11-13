@@ -17,7 +17,7 @@ FMM::CONFIG::NetworkConfig FMM::CONFIG::NetworkConfig::load_from_xml(
   std::string id = xml_data.get("config.input.network.id", "id");
   std::string source = xml_data.get("config.input.network.source","source");
   std::string target = xml_data.get("config.input.network.target","target");
-  std::string mode = xml_data.get("config.input.network.mode","mode");
+  std::string mode = xml_data.get("config.input.network.mode","drive");
   return FMM::CONFIG::NetworkConfig{file, id, source, target, mode};
 };
 
@@ -54,14 +54,34 @@ void FMM::CONFIG::NetworkConfig::register_help(std::ostringstream &oss){
   oss<<" one of drive|walk|bike|all \n";
 };
 
+bool FMM::CONFIG::NetworkConfig::is_osm_format() const {
+  if (FMM::UTIL::check_file_extension(file,"osm,pbf,bz2,o5m"))
+    return true;
+  return false;
+};
+
+bool FMM::CONFIG::NetworkConfig::is_shapefile_format() const {
+  if (FMM::UTIL::check_file_extension(file,"shp"))
+    return true;
+  return false;
+};
+
 bool FMM::CONFIG::NetworkConfig::validate() const {
   if (!UTIL::file_exists(file)){
     SPDLOG_CRITICAL("Network file not found {}",file);
     return false;
   }
-  if (mode!="drive" && mode!="walk" && mode!="bike" && mode!="all"){
-    SPDLOG_CRITICAL("Network mode not recognized {}",mode);
-    return false;
+  bool osm_format = is_osm_format();
+  bool shapefile_format = is_shapefile_format();
+  if (osm_format || shapefile_format){
+    if (osm_format){
+      if (mode!="drive" && mode!="walk" && mode!="bike" && mode!="all"){
+        SPDLOG_CRITICAL("Network mode not recognized {}",mode);
+        return false;
+      }
+    }
+    return true;
   }
-  return true;
+  SPDLOG_CRITICAL("Network format not recognized {}",file);
+  return false;
 }
