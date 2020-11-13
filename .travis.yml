@@ -20,7 +20,6 @@ script:
   - fmm
   - stmatch
   - ubodt_gen
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export PATH=/usr/bin:${PATH}; fi
   - cd ../example/python
   - python fmm_test.py
 branches:
