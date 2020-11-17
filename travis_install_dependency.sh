@@ -2,7 +2,7 @@
 
 if [ $TRAVIS_OS_NAME = 'osx' ]; then
   brew update;
-  brew install boost gdal libomp expat swig python || true;
+  brew install boost gdal libomp expat swig || true;
 else
   sudo add-apt-repository -y ppa:ubuntugis/ppa;
   sudo apt-get -q update;
