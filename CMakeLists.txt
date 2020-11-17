@@ -23,18 +23,24 @@ set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-# Skip resetting RPATH to empty
-SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-
 project(fmm)
 
 set(CMAKE_BUILD_TYPE "Release")
+# set(CMAKE_C_FLAGS "-std=c11")
 set(CMAKE_CXX_FLAGS "-O3 -DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE")
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build")
 
-list(APPEND CMAKE_MODULE_PATH
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake"
      "${CMAKE_CURRENT_SOURCE_DIR}/third_party/libosmium/cmake")
+
+find_package(Conda)
+if(CONDA_PREFIX)
+  message(STATUS "Set CONDA_PREFIX ${CONDA_PREFIX}")
+  set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${CONDA_PREFIX})
+else()
+  message(STATUS "Non conda exist, search library in default path")
+endif()
 
 if(NOT OSMIUM_INCLUDE_DIR)
   set(OSMIUM_INCLUDE_DIR "third_party/libosmium/include")
@@ -61,7 +67,7 @@ else()
   message(FATAL_ERROR "GDAL Not Found!")
 endif (GDAL_FOUND)
 
-find_package(Boost 1.54.0 REQUIRED serialization)
+find_package(Boost 1.56.0 REQUIRED serialization)
 if (Boost_FOUND)
   message(STATUS "Boost headers found at ${Boost_INCLUDE_DIR}")
   message(STATUS "Boost library found at ${Boost_LIBRARIES}")
@@ -77,7 +83,6 @@ if(OPENMP_FOUND)
   message(STATUS "OpenMP_HEADERS found at ${OpenMP_CXX_INCLUDE_DIRS}")
   message(STATUS "OpenMP_CXX_LIBRARIES found at ${OpenMP_CXX_LIBRARIES}")
 endif()
-
 
 include_directories(third_party)
 include_directories(third_party/libosmium/include)
@@ -104,50 +109,7 @@ add_library(MM_OBJ OBJECT ${MMGlob})
 add_library(FMM_OBJ OBJECT ${FMMGlob})
 add_library(STMATCH_OBJ OBJECT ${STMATCHGlob})
 
-add_executable(fmm src/app/fmm.cpp
-        $<TARGET_OBJECTS:MM_OBJ>
-        $<TARGET_OBJECTS:CORE>
-        $<TARGET_OBJECTS:CONFIG>
-        $<TARGET_OBJECTS:ALGORITHM>
-        $<TARGET_OBJECTS:UTIL>
-        $<TARGET_OBJECTS:IO>
-        $<TARGET_OBJECTS:NETWORK>
-        $<TARGET_OBJECTS:FMM_OBJ>)
-target_link_libraries(fmm ${GDAL_LIBRARIES}
-        ${OSMIUM_LIBRARIES}
-        ${Boost_LIBRARIES}
-        ${OpenMP_CXX_LIBRARIES})
-
-add_executable(ubodt_gen src/app/ubodt_gen_app.cpp
-        $<TARGET_OBJECTS:MM_OBJ>
-        $<TARGET_OBJECTS:FMM_OBJ>
-        $<TARGET_OBJECTS:CORE>
-        $<TARGET_OBJECTS:CONFIG>
-        $<TARGET_OBJECTS:ALGORITHM>
-        $<TARGET_OBJECTS:UTIL>
-        $<TARGET_OBJECTS:IO>
-        $<TARGET_OBJECTS:NETWORK>)
-target_link_libraries(ubodt_gen
-        ${GDAL_LIBRARIES}
-        ${Boost_LIBRARIES}
-        ${OSMIUM_LIBRARIES}
-        ${OpenMP_CXX_LIBRARIES})
-
-add_executable(stmatch src/app/stmatch.cpp
-        $<TARGET_OBJECTS:MM_OBJ>
-        $<TARGET_OBJECTS:STMATCH_OBJ>
-        $<TARGET_OBJECTS:CORE>
-        $<TARGET_OBJECTS:CONFIG>
-        $<TARGET_OBJECTS:ALGORITHM>
-        $<TARGET_OBJECTS:UTIL>
-        $<TARGET_OBJECTS:IO>
-        $<TARGET_OBJECTS:NETWORK>)
-target_link_libraries(stmatch
-        ${OSMIUM_LIBRARIES}
-        ${GDAL_LIBRARIES}
-        ${OpenMP_CXX_LIBRARIES})
-
-# Build h3
+# Build h3 objects
 
 set(UNCONFIGURED_API_HEADER third_party/h3/src/h3lib/include/h3api.h.in)
 set(CONFIGURED_API_HEADER third_party/h3/src/h3lib/include/h3api.h)
@@ -161,20 +123,58 @@ file(GLOB h3Glob third_party/h3/src/h3lib/lib/*.c)
 add_library(H3_OBJ OBJECT ${h3Glob})
 target_include_directories(H3_OBJ PUBLIC ${H3_INCLUDE_PATH})
 
-add_executable(h3mm src/app/h3mm.cpp
-  $<TARGET_OBJECTS:H3_OBJ> $<TARGET_OBJECTS:CONFIG>
-  $<TARGET_OBJECTS:UTIL>
+### Set RPATH properties
+
+set(CMAKE_SKIP_BUILD_RPATH FALSE)
+
+# when building, don't use the install RPATH already
+# (but later on when installing)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+
+# add the automatically determined parts of the RPATH
+# which point to directories outside the build tree to the install RPATH
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+# Creation of FMMLIB
+add_library(FMMLIB SHARED
+  $<TARGET_OBJECTS:MM_OBJ>
+  $<TARGET_OBJECTS:FMM_OBJ>
+  $<TARGET_OBJECTS:STMATCH_OBJ>
+  $<TARGET_OBJECTS:CORE>
+  $<TARGET_OBJECTS:CONFIG>
   $<TARGET_OBJECTS:ALGORITHM>
+  $<TARGET_OBJECTS:UTIL>
+  $<TARGET_OBJECTS:NETWORK>
   $<TARGET_OBJECTS:IO>
-  $<TARGET_OBJECTS:CORE>)
+  $<TARGET_OBJECTS:H3_OBJ>)
+target_link_libraries(FMMLIB
+          ${OSMIUM_LIBRARIES}
+          ${GDAL_LIBRARIES} ${Boost_LIBRARIES}
+          ${OpenMP_CXX_LIBRARIES})
+install(TARGETS FMMLIB DESTINATION lib)
+
+# Add executables
+
+add_executable(fmm src/app/fmm.cpp)
+target_link_libraries(fmm FMMLIB)
+
+add_executable(ubodt_gen src/app/ubodt_gen_app.cpp)
+target_link_libraries(ubodt_gen FMMLIB)
+
+add_executable(stmatch src/app/stmatch.cpp)
+target_link_libraries(stmatch FMMLIB)
+
+add_executable(h3mm src/app/h3mm.cpp)
 target_include_directories(
   h3mm PUBLIC ${H3_INCLUDE_PATH})
 
-target_link_libraries(h3mm
-        ${GDAL_LIBRARIES}
-        ${OpenMP_CXX_LIBRARIES})
+target_link_libraries(h3mm FMMLIB)
+
+message(STATUS "Installation folder ${CMAKE_INSTALL_PREFIX}")
+
+install(TARGETS fmm ubodt_gen stmatch h3mm DESTINATION bin)
 
 add_subdirectory(python)
 add_subdirectory(test EXCLUDE_FROM_ALL)
-
-install(TARGETS fmm ubodt_gen stmatch h3mm DESTINATION bin)

@@ -12,16 +12,17 @@ before_install:
 install:
   - ./travis_install_dependency.sh
 script:
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export PATH=/usr/bin:${PATH}; fi
   - mkdir -p build
   - cd build
   - cmake ..
   - make -j 4
-  - ./fmm
-  - ./stmatch
-  - ./ubodt_gen
-  - export PYTHONPATH=${PYTHONPATH}:$(pwd)/python
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export PATH=/usr/bin:${PATH}; fi
+  - sudo make install
+  - fmm
+  - stmatch
+  - ubodt_gen
   - cd ../example/python
+  - which python
   - python fmm_test.py
 branches:
   only:

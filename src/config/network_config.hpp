@@ -27,6 +27,14 @@ struct NetworkConfig{
   std::string target; /**< target field/column name */
   std::string mode; /**< mode type name (OSM network) */
   /**
+   * Check if the input is OSM format
+   */
+  bool is_osm_format() const;
+  /**
+   * Check if the input is shapefile format
+   */
+  bool is_shapefile_format() const;
+  /**
    * Validate the GPS configuration for file existence.
    * @return if file exists returns true, otherwise return false
    */
