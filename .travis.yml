@@ -27,3 +27,4 @@ branches:
   only:
   - master
   - osm
+  - cmake
