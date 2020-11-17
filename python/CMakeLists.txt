@@ -29,11 +29,11 @@ ${PROJECT_SOURCE_DIR}/python/fmm.i PROPERTIES CPLUSPLUS ON)
 
 if (${CMAKE_VERSION} VERSION_LESS 3.13.0)
   message(STATUS "Using swig add module")
-  set_property(SOURCE ${PROJECT_SOURCE_DIR}/python/fmm.i
-    PROPERTY SWIG_MODULE_NAME fmm)
-  SWIG_ADD_MODULE(pyfmm python ${PROJECT_SOURCE_DIR}/python/fmm.i)
-  swig_link_libraries(pyfmm FMMLIB ${PYTHON_LIBRARIES})
-  install(TARGETS ${SWIG_MODULE_pyfmm_REAL_NAME} DESTINATION ${PYTHON_SITE_PACKAGES})
+#  set_property(SOURCE ${PROJECT_SOURCE_DIR}/python/fmm.i
+#    PROPERTY SWIG_MODULE_NAME fmm)
+  SWIG_ADD_MODULE(fmm python ${PROJECT_SOURCE_DIR}/python/fmm.i)
+  swig_link_libraries(fmm FMMLIB ${PYTHON_LIBRARIES})
+  install(TARGETS ${SWIG_MODULE_fmm_REAL_NAME} DESTINATION ${PYTHON_SITE_PACKAGES})
 else()
   message(STATUS "Using swig add library")
   SWIG_ADD_LIBRARY(pyfmm
