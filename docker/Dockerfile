@@ -16,6 +16,4 @@ RUN mkdir -p build && \
     cmake .. && \
     make install
 EXPOSE 8080
-# ENV PATH /fmm/build:$PATH
-# ENV PYTHONPATH /fmm/build/python:$PYTHONPATH
 CMD

@@ -17,11 +17,6 @@ if (POLICY CMP0078)
     cmake_policy(SET CMP0078 NEW)
 endif()
 
-if(COMMAND cmake_policy)
-  message(STATUS "Set CMP0003 state to NEW")
-  cmake_policy(SET CMP0003 NEW)
-endif(COMMAND cmake_policy)
-
 # Prevent in source build
 set(CMAKE_DISABLE_SOURCE_CHANGES  ON)
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
@@ -36,8 +31,16 @@ set(CMAKE_CXX_FLAGS "-O3 -DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE")
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build")
 
-list(APPEND CMAKE_MODULE_PATH
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake"
      "${CMAKE_CURRENT_SOURCE_DIR}/third_party/libosmium/cmake")
+
+find_package(Conda)
+if(CONDA_PREFIX)
+  message(STATUS "Set CONDA_PREFIX ${CONDA_PREFIX}")
+  set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${CONDA_PREFIX})
+else()
+  message(STATUS "Non conda exist, search library in default path")
+endif()
 
 if(NOT OSMIUM_INCLUDE_DIR)
   set(OSMIUM_INCLUDE_DIR "third_party/libosmium/include")
@@ -79,7 +82,6 @@ if(APPLE)
       set(OpenMP_C_LIB_NAMES "omp")
       set(OpenMP_omp_LIBRARY omp)
   endif()
-
   if(CMAKE_CXX_COMPILER_ID MATCHES "Clang\$")
       set(OpenMP_CXX_FLAGS "-Xpreprocessor -fopenmp")
       set(OpenMP_CXX_LIB_NAMES "omp")
