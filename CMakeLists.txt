@@ -1,4 +1,4 @@
-cmake_minimum_required( VERSION 3.5.1)
+cmake_minimum_required( VERSION 2.5.1)
 
 message(STATUS "CMAKE version ${CMAKE_VERSION}")
 
@@ -26,8 +26,9 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 project(fmm)
 
 set(CMAKE_BUILD_TYPE "Release")
-set(CMAKE_CXX_FLAGS "-O3 -DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE")
-set(CMAKE_CXX_STANDARD 11)
+# set(CMAKE_C_FLAGS "-std=c11")
+set(CMAKE_CXX_FLAGS "-std=c++11 -O3 -DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE")
+# set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build")
 
 list(APPEND CMAKE_MODULE_PATH
@@ -58,7 +59,7 @@ else()
   message(FATAL_ERROR "GDAL Not Found!")
 endif (GDAL_FOUND)
 
-find_package(Boost 1.54.0 REQUIRED serialization)
+find_package(Boost 1.56.0 REQUIRED serialization)
 if (Boost_FOUND)
   message(STATUS "Boost headers found at ${Boost_INCLUDE_DIR}")
   message(STATUS "Boost library found at ${Boost_LIBRARIES}")
