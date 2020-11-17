@@ -12,6 +12,7 @@ before_install:
 install:
   - ./travis_install_dependency.sh
 script:
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export PATH=/usr/bin:${PATH}; fi
   - mkdir -p build
   - cd build
   - cmake ..
@@ -27,4 +28,3 @@ branches:
   only:
   - master
   - osm
-  - cmake
