@@ -16,7 +16,7 @@ script:
   - cd build
   - cmake ..
   - make -j 4
-  - make install
+  - sudo make install
   - fmm
   - stmatch
   - ubodt_gen
