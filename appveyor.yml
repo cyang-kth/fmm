@@ -23,6 +23,9 @@ init:
 # clone directory
 clone_folder: C:/cygwin64/home/appveyor/fmm
 
+before_build:
+  - '%CYG_SH% "echo \"export PATH=/usr/local/lib:\$PATH\" >> ~/.bash_profile"'
+
 build_script:
   - '%CYG_SH% "cd fmm && mkdir build"'
   - '%CYG_SH% "cd fmm/build && cmake .. && make -j 4 && make install"'

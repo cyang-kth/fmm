@@ -17,6 +17,11 @@ if (POLICY CMP0078)
     cmake_policy(SET CMP0078 NEW)
 endif()
 
+if(COMMAND cmake_policy)
+  message(STATUS "Set CMP0003 state to NEW")
+  cmake_policy(SET CMP0003 NEW)
+endif(COMMAND cmake_policy)
+
 # Prevent in source build
 set(CMAKE_DISABLE_SOURCE_CHANGES  ON)
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
@@ -67,6 +72,20 @@ if (Boost_FOUND)
 else()
   message(FATAL_ERROR "Boost Not Found!")
 endif (Boost_FOUND)
+
+if(APPLE)
+  if(CMAKE_C_COMPILER_ID MATCHES "Clang\$")
+      set(OpenMP_C_FLAGS "-Xpreprocessor -fopenmp")
+      set(OpenMP_C_LIB_NAMES "omp")
+      set(OpenMP_omp_LIBRARY omp)
+  endif()
+
+  if(CMAKE_CXX_COMPILER_ID MATCHES "Clang\$")
+      set(OpenMP_CXX_FLAGS "-Xpreprocessor -fopenmp")
+      set(OpenMP_CXX_LIB_NAMES "omp")
+      set(OpenMP_omp_LIBRARY omp)
+  endif()
+endif()
 
 find_package(OpenMP REQUIRED)
 if(OPENMP_FOUND)
