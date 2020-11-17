@@ -1,4 +1,4 @@
-cmake_minimum_required( VERSION 2.5.1)
+cmake_minimum_required( VERSION 3.5.1)
 
 message(STATUS "CMAKE version ${CMAKE_VERSION}")
 
@@ -75,19 +75,6 @@ if (Boost_FOUND)
 else()
   message(FATAL_ERROR "Boost Not Found!")
 endif (Boost_FOUND)
-
-if(APPLE)
-  if(CMAKE_C_COMPILER_ID MATCHES "Clang\$")
-      set(OpenMP_C_FLAGS "-Xpreprocessor -fopenmp")
-      set(OpenMP_C_LIB_NAMES "omp")
-      set(OpenMP_omp_LIBRARY omp)
-  endif()
-  if(CMAKE_CXX_COMPILER_ID MATCHES "Clang\$")
-      set(OpenMP_CXX_FLAGS "-Xpreprocessor -fopenmp")
-      set(OpenMP_CXX_LIB_NAMES "omp")
-      set(OpenMP_omp_LIBRARY omp)
-  endif()
-endif()
 
 find_package(OpenMP REQUIRED)
 if(OPENMP_FOUND)
