@@ -158,7 +158,7 @@ public:
     int points_matched = 0;
     int total_points = 0;
     int step_size = 1000;
-    UTIL::TimePoint begin_time = std::chrono::steady_clock::now();
+    UTIL::TimePoint begin_time = UTIL::get_current_time();
     FMM::IO::GPSReader reader(gps_config);
     H3MatchResultWriter writer(output_config);
     if (use_omp) {
@@ -198,9 +198,8 @@ public:
         ++progress;
       }
     }
-    UTIL::TimePoint end_time = std::chrono::steady_clock::now();
-    double duration = std::chrono::duration_cast<
-      std::chrono::milliseconds>(end_time - begin_time).count() / 1000.;
+    UTIL::TimePoint end_time = UTIL::get_current_time();
+    double duration = UTIL::get_duration(begin_time,end_time);
     SPDLOG_INFO("Program finish in time {}", duration);
     oss<<"Status: success\n";
     oss<<"Time takes " << duration << " seconds\n";

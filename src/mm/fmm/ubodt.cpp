@@ -183,17 +183,22 @@ int UBODT::find_prime_number(double value) {
 
 std::shared_ptr<UBODT> UBODT::read_ubodt_file(const std::string &filename,
     int multiplier) {
+  std::shared_ptr<UBODT> ubodt = nullptr;
+  auto start_time = UTIL::get_current_time();
   if (UTIL::check_file_extension(filename,"bin")){
-    return read_ubodt_binary(filename,multiplier);
+    ubodt = read_ubodt_binary(filename,multiplier);
   } else if (UTIL::check_file_extension(filename,"csv,txt")) {
-    return read_ubodt_csv(filename,multiplier);
+    ubodt = read_ubodt_csv(filename,multiplier);
   } else {
     std::string message = (boost::format("File format not supported: %1%") % filename).str();
     SPDLOG_CRITICAL(message);
     throw std::runtime_error(message);
   }
+  auto end_time = UTIL::get_current_time();
+  double duration = UTIL::get_duration(start_time,end_time);
+  SPDLOG_INFO("Read UBODT file in {} seconds",duration);
+  return ubodt;
 }
-
 
 std::shared_ptr<UBODT> UBODT::read_ubodt_csv(const std::string &filename,
                                              int multiplier) {
