@@ -12,7 +12,7 @@ using namespace FMM::CORE;
 using namespace FMM::NETWORK;
 using namespace FMM::MM;
 void FMMApp::run() {
-  UTIL::TimePoint start_time = std::chrono::steady_clock::now();
+  auto start_time = UTIL::get_current_time();
   FastMapMatch mm_model(network_, ng_, ubodt_);
   const FastMapMatchConfig &fmm_config = config_.fmm_config;
   IO::GPSReader reader(config_.gps_config);
@@ -25,7 +25,7 @@ void FMMApp::run() {
   int step_size = 100;
   if (config_.step > 0) step_size = config_.step;
   SPDLOG_INFO("Progress report step {}", step_size);
-  UTIL::TimePoint corrected_begin = std::chrono::steady_clock::now();
+  auto corrected_begin = UTIL::get_current_time();
   SPDLOG_INFO("Start to match trajectories");
   if (config_.use_omp){
     SPDLOG_INFO("Run map matching parallelly");
@@ -73,11 +73,9 @@ void FMMApp::run() {
     }
   }
   SPDLOG_INFO("MM process finished");
-  UTIL::TimePoint end_time = std::chrono::steady_clock::now();
-  double time_spent = std::chrono::duration_cast<std::chrono::milliseconds>(
-      end_time - start_time).count() / 1000.;
-  double time_spent_exclude_input = std::chrono::duration_cast<
-      std::chrono::milliseconds>(end_time - corrected_begin).count() / 1000.;
+  auto end_time = UTIL::get_current_time();
+  double time_spent = UTIL::get_duration(start_time,end_time);
+  double time_spent_exclude_input = UTIL::get_duration(corrected_begin,end_time);
   SPDLOG_INFO("Time takes {}", time_spent);
   SPDLOG_INFO("Time takes excluding input {}", time_spent_exclude_input);
   SPDLOG_INFO("Finish map match total points {} matched {}",

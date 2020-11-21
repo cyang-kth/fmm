@@ -85,7 +85,27 @@ namespace UTIL {
 /**
  * Time point
  */
-typedef std::chrono::steady_clock::time_point TimePoint;
+typedef std::chrono::system_clock::time_point TimePoint;
+
+/**
+ * Get the current timestamp
+ */
+TimePoint get_current_time();
+
+/**
+ * Print a timestamp
+ * @param timestamp timestamp point
+ */
+void print_time(
+  const TimePoint &timestamp);
+
+/**
+ * Get the duration between two timestamps
+ * @param  the starting timestamp
+ * @param  the ending timestamp
+ * @return duration in seconds
+ */
+double get_duration(const TimePoint &t1,const TimePoint &t2);
 
 /**
  * Check if file exist or not
@@ -179,29 +199,6 @@ std::vector<T> string2vec(
  * @return a vector of strings
  */
 std::vector<std::string> split_string(const std::string &str);
-
-/**
- * Get current timestamp
- * @return a timestamp point
- */
-std::chrono::time_point<std::chrono::system_clock> get_current_time();
-
-/**
- * Print a timestamp
- * @param start_time timestamp point
- */
-void print_time(
-  const std::chrono::time_point<std::chrono::system_clock> &start_time);
-
-/**
- * Calculate the duration between two time points
- * @param start_time start time point
- * @param end_time end time point
- * @return the duration between two time points
- */
-double get_duration(
-  const std::chrono::time_point<std::chrono::system_clock> &start_time,
-  const std::chrono::time_point<std::chrono::system_clock> &end_time);
 
 /**
  * Get line correctly by handling `\r\n` line endings

@@ -58,6 +58,22 @@ namespace FMM {
 
 namespace UTIL {
 
+TimePoint get_current_time(){
+  return std::chrono::system_clock::now();
+};
+
+double get_duration(const TimePoint &t1,const TimePoint &t2){
+  return std::chrono::duration_cast<
+      std::chrono::milliseconds>(t2 - t1).count() / 1000.;
+};
+
+// Print a timestamp
+void print_time(
+    const TimePoint &timestamp) {
+  std::time_t timestamp_t = std::chrono::system_clock::to_time_t(timestamp);
+  std::cout << "Time " << std::ctime(&timestamp_t) << '\n';
+};
+
 bool file_exists(const char *filename) {
   struct stat buf;
   if (stat(filename, &buf) != -1) {
@@ -85,23 +101,6 @@ bool string2bool(const std::string &str) {
   return str == "true" || str == "t" || str == "1";
 }
 
-std::chrono::time_point<std::chrono::system_clock> get_current_time() {
-  return std::chrono::system_clock::now();
-}
-
-// Print a timestamp
-void print_time(
-    const std::chrono::time_point<std::chrono::system_clock> &start_time) {
-  std::time_t start_time_t = std::chrono::system_clock::to_time_t(start_time);
-  std::cout << "Time " << std::ctime(&start_time_t) << '\n';
-}
-
-double get_duration(
-    const std::chrono::time_point<std::chrono::system_clock> &start_time,
-    const std::chrono::time_point<std::chrono::system_clock> &end_time) {
-  std::chrono::duration<double> elapsed_seconds = end_time - start_time;
-  return elapsed_seconds.count();
-}
 bool check_file_extension(const std::string &filename,
                           const std::string &extension_list_str) {
   bool result = false;

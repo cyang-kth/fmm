@@ -198,7 +198,7 @@ std::string STMATCH::match_gps_file(
   int points_matched = 0;
   int total_points = 0;
   int step_size = 1000;
-  UTIL::TimePoint begin_time = std::chrono::steady_clock::now();
+  auto begin_time = UTIL::get_current_time();
   FMM::IO::GPSReader reader(gps_config);
   FMM::IO::CSVMatchResultWriter writer(result_config.file,
                                        result_config.output_config);
@@ -245,9 +245,8 @@ std::string STMATCH::match_gps_file(
       ++progress;
     }
   }
-  UTIL::TimePoint end_time = std::chrono::steady_clock::now();
-  double duration = std::chrono::duration_cast<
-    std::chrono::milliseconds>(end_time - begin_time).count() / 1000.;
+  auto end_time = UTIL::get_current_time();
+  double duration = UTIL::get_duration(begin_time,end_time);
   oss<<"Status: success\n";
   oss<<"Time takes " << duration << " seconds\n";
   oss<<"Total points " << total_points << " matched "<< points_matched <<"\n";
