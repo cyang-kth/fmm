@@ -1,0 +1,29 @@
+body {
+  padding: 0;
+  margin: 0;
+}
+html, body, #map {
+  height: 100%;
+  width: 100%;
+}
+#info {
+    display: block;
+    position: relative;
+    margin: 0px auto;
+    width: 50%;
+    padding: 10px;
+    border: none;
+    border-radius: 3px;
+    font-size: 12px;
+    text-align: center;
+    color: #222;
+    background: #fff;
+}
+/* The stroke width = 4 select only the drawn path*/
+path.leaflet-clickable[stroke-width="4"] {
+    marker-end: url(#circle);
+    marker-mid: url(#circle);
+    marker-start: url(#circle);
+    stroke: #000000;
+    stroke-opacity:0.8;
+}

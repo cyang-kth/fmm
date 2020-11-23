@@ -3,13 +3,15 @@
 To run this demo, you need to first [install the python api](https://fmm-wiki.github.io/docs/installation/) of fmm.
 
 - fmm
+- numpy
 - flask
-- tornado
+- tornado: for Python 2.7, 5.1 version is required.
 
 Install with pip
 
 ```bash
-pip install flask tornado
+pip install --upgrade pip
+pip install numpy flask tornado==5.1
 ```
 
 ### Download routable shapefile

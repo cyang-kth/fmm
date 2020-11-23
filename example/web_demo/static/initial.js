@@ -1,16 +1,34 @@
 /**
  *   FMM web application
- *   Author: Can Yang 
+ *   Author: Can Yang
  */
 var center = [59.3293, 18.0686];
-var zoom_level = 11;
+var zoom_level = 12;
 map = new L.Map('map', {
     center: new L.LatLng(center[0], center[1]),
-    zoom: zoom_level
+    zoom: zoom_level,
+    minZoom:12,
 });
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 }).addTo(map);
+
+var exteriorStyle = {
+    "color": "#FF8C00",
+    "fill":false,
+    "opacity":1.0,
+    "weight":5,
+    "dashArray":"10 10"
+};
+
+var boundary_layer = L.geoJson(boundary, {style: exteriorStyle});
+
+// var optional_layers = {
+//   "Network boundary": boundary_layer
+// };
+// L.control.layers({},optional_layers,{position:'topleft'}).addTo(map);
+
+boundary_layer.addTo(map);
 
 var matched_result_layer;
 var current_drawing_data;
@@ -50,7 +68,6 @@ map.on(L.Draw.Event.CREATED, function(e) {
     // Run map matching
     var traj = e.layer.toGeoJSON();
     var wkt = Terraformer.WKT.convert(traj.geometry);
-    console.log(wkt)
     match_wkt(wkt);
 });
 
@@ -58,8 +75,8 @@ var match_wkt = function(wkt) {
     $.getJSON("/match_wkt", {
             "wkt": wkt
         }).done(function(data) {
-            console.log("Result fetched");
-            console.log(data);
+            // console.log("Result fetched");
+            // console.log(data);
             if (data.state==1){
                 var geojson = Terraformer.WKT.parse(data.wkt);
                 var geojson_layer = L.geoJson(
@@ -67,7 +84,9 @@ var match_wkt = function(wkt) {
                     {
                         style: function(feature) {
                             return {
-                                color: 'red'
+                                color: 'red',
+                                "weight": 5,
+                                "opacity": 0.85
                             };
                         }
                     }
@@ -82,7 +101,7 @@ var match_wkt = function(wkt) {
             console.log("error " + textStatus);
             console.log("incoming Text " + jqXHR.responseText);
         }).always(function() {
-            console.log("complete");
+            // console.log("complete");
         });
 }
 

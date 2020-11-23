@@ -18,8 +18,12 @@ import numpy as np
 app = flask.Flask(__name__,static_url_path='/static')
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
-@app.route('/demo')
+@app.route('/')
 def index():
+    return flask.render_template('demo.html')
+
+@app.route('/demo')
+def demo():
     return flask.render_template('demo.html')
 
 #@app.route('/static/<path:path>')
@@ -30,7 +34,7 @@ def index():
 def match_url():
     # print(flask.request.args)
     wkt = str(flask.request.args.get('wkt', ''))
-    logging.info('WKT get in python: %s', wkt)
+    # logging.info('WKT get in python: %s', wkt)
     starttime = time.time()
     result = app.mapmatcher.match_wkt(wkt)
     mgeom_wkt = ""
@@ -43,11 +47,11 @@ def match_url():
     # print "Result is ",result
     # print "Result geom is ",result.mgeom
     if (mgeom_wkt!=""):
-        print "Matched"
+        # print "Matched"
         response_json = {"wkt":mgeom_wkt,"state":1}
         return jsonify(response_json)
     else:
-        print "Not matched"
+        # print "Not matched"
         return jsonify({"state":0})
 
 def start_tornado(app, port=5000):
@@ -55,7 +59,7 @@ def start_tornado(app, port=5000):
         tornado.wsgi.WSGIContainer(app))
     http_server.listen(port)
     print("Tornado server starting on port {}".format(port))
-    print("Visit http://localhost:{}/demo to check the demo".format(port))
+    print("Visit http://localhost:{} to check the demo".format(port))
     tornado.ioloop.IOLoop.instance().start()
 def start_from_terminal(app):
     """
