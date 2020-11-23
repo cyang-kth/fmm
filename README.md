@@ -8,10 +8,14 @@
 
 FMM is an open source map matching framework in C++ and Python. It solves the problem of matching noisy GPS data to a road network. The design considers maximizing performance, scalability and functionality.
 
+### Online demo
+
+Check the [online demo](https://fmm-demo.herokuapp.com/).
+
 ### Features
 
 - **High performance**: C++ implementation using Rtree, optimized routing, parallel computing (OpenMP).
-- **Python API**: [jupyter-notebook](example/notebook) and [web demo](example/web_demo)
+- **Python API**: [jupyter-notebook](example/notebook) and [web app](example/web_demo)
 - **Scalibility**: millions of GPS points and millions of road edges.  
 - **Multiple data format**:
   - Road network in OpenStreetMap or ESRI shapefile.
@@ -22,10 +26,6 @@ FMM is an open source map matching framework in C++ and Python. It solves the pr
 - **Hexagon match**: :tada: Match to the uber's [h3](https://github.com/uber/h3) Hexagonal Hierarchical Geospatial Indexing System. Check the [demo](example/h3).
 
 We encourage contribution with feature request, bug report or developping new map matching algorithms using the framework.
-
-### Web demo
-
-Check the [web demo](https://fmm-demo.herokuapp.com/).
 
 ### Screenshots of notebook
 
