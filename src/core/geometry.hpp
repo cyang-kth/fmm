@@ -2,6 +2,7 @@
  * Fast map matching.
  *
  * Definition of geometry
+ * 2020-11-25 Remove linestring2ogr
  *
  * @author: Can Yang
  * @version: 2017.11.11
@@ -239,22 +240,6 @@ LineString ogr2linestring(const OGRMultiLineString *mline);
  * @return  a linestring
  */
 LineString wkt2linestring(const std::string &wkt);
-
-/**
- * Convert a linestring into a OGRLineString
- * @param  line input line
- * @return  A OGRLineString, the caller is responsible for
- * freeing the memory.
- */
-OGRLineString *linestring2ogr(const LineString &line);
-
-/**
- * Convert a point into a OGRPoint
- * @param  p input point
- * @return  A OGRPoint, the caller is responsible for
- * freeing the memory.
- */
-OGRPoint *point2ogr(const Point &p);
 
 }; // CORE
 
