@@ -42,22 +42,6 @@ else()
   message(STATUS "Non conda exist, search library in default path")
 endif()
 
-if(NOT OSMIUM_INCLUDE_DIR)
-  set(OSMIUM_INCLUDE_DIR "third_party/libosmium/include")
-endif()
-if(NOT PROTOZERO_INCLUDE_DIR)
-  set(PROTOZERO_INCLUDE_DIR "third_party/protozero/include")
-endif()
-
-find_package(Osmium REQUIRED COMPONENTS io)
-if(OSMIUM_FOUND)
-  message(STATUS "OSMium found at ${OSMIUM_INCLUDE_DIRS}")
-  message(STATUS "OSMium library found at ${OSMIUM_LIBRARIES}")
-  include_directories(${OSMIUM_INCLUDE_DIR})
-else()
-  message(FATAL_ERROR "Libosmium not found!\n")
-endif()
-
 find_package(GDAL 2.2 REQUIRED)
 if (GDAL_FOUND)
   message(STATUS "GDAL headers found at ${GDAL_INCLUDE_DIR}")
@@ -85,20 +69,7 @@ if(OPENMP_FOUND)
 endif()
 
 include_directories(third_party)
-include_directories(third_party/libosmium/include)
-include_directories(third_party/protozero/include)
 include_directories(src)
-
-set(SHAPELIB_INCLUDE_PATH
-    third_party/shapelib)
-
-set(shapelib_SRC
-  third_party/shapelib/shpopen.c
-  third_party/shapelib/dbfopen.c
-  third_party/shapelib/safileio.c
-  third_party/shapelib/shptree.c
-  third_party/shapelib/sbnsearch.c
-)
 
 file(GLOB CoreGlob src/core/*.cpp)
 file(GLOB AlgorithmGlob src/algorithm/*.cpp)
@@ -161,7 +132,6 @@ add_library(FMMLIB SHARED
   $<TARGET_OBJECTS:IO>
   $<TARGET_OBJECTS:H3_OBJ>)
 target_link_libraries(FMMLIB
-          ${OSMIUM_LIBRARIES}
           ${GDAL_LIBRARIES} ${Boost_LIBRARIES}
           ${OpenMP_CXX_LIBRARIES})
 install(TARGETS FMMLIB DESTINATION lib)
@@ -181,16 +151,11 @@ add_executable(h3mm src/app/h3mm.cpp)
 target_include_directories(
   h3mm PUBLIC ${H3_INCLUDE_PATH})
 
-add_executable(shapelib_test src/app/shapelib_test.cpp
-  ${shapelib_SRC})
-target_include_directories(shapelib_test
-  PUBLIC ${SHAPELIB_INCLUDE_PATH})
-
 target_link_libraries(h3mm FMMLIB)
 
 message(STATUS "Installation folder ${CMAKE_INSTALL_PREFIX}")
 
-install(TARGETS fmm ubodt_gen stmatch h3mm shapelib_test DESTINATION bin)
+install(TARGETS fmm ubodt_gen stmatch h3mm DESTINATION bin)
 
 add_subdirectory(python)
 add_subdirectory(test EXCLUDE_FROM_ALL)

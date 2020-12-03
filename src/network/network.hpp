@@ -62,11 +62,10 @@ public:
   Network(const std::string &filename,
           const std::string &id_name = "id",
           const std::string &source_name = "source",
-          const std::string &target_name = "target",
-          const std::string &mode = "drive"
+          const std::string &target_name = "target"
         );
   Network(const CONFIG::NetworkConfig &config):Network(
-    config.file,config.id,config.source,config.target,config.mode){};
+    config.file,config.id,config.source,config.target){};
   /**
    * Get number of nodes in the network
    * @return number of nodes
@@ -195,7 +194,6 @@ private:
                      const std::string &id_name,
                      const std::string &source_name,
                      const std::string &target_name);
-  void read_osm_file(const std::string &filename,const std::string &mode);
   /**
    * Concatenate a linestring segs to a linestring line, used in the
    * function complete_path_to_geometry

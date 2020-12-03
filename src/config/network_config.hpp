@@ -25,11 +25,7 @@ struct NetworkConfig{
   std::string id; /**< id field/column name */
   std::string source; /**< source field/column name */
   std::string target; /**< target field/column name */
-  std::string mode; /**< mode type name (OSM network) */
-  /**
-   * Check if the input is OSM format
-   */
-  bool is_osm_format() const;
+
   /**
    * Check if the input is shapefile format
    */
