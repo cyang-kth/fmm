@@ -31,8 +31,7 @@ set(CMAKE_CXX_FLAGS "-O3 -DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE")
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build")
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake"
-     "${CMAKE_CURRENT_SOURCE_DIR}/third_party/libosmium/cmake")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
 find_package(Conda)
 if(CONDA_PREFIX)
@@ -156,6 +155,32 @@ target_link_libraries(h3mm FMMLIB)
 message(STATUS "Installation folder ${CMAKE_INSTALL_PREFIX}")
 
 install(TARGETS fmm ubodt_gen stmatch h3mm DESTINATION bin)
+
+message(STATUS "Installation header")
+
+# Install fmm header
+
+install(
+    DIRECTORY
+    "./src"
+    DESTINATION
+    "include/fmm"
+    FILES_MATCHING
+    PATTERN
+    "*.hpp"
+)
+
+# Install third party library header
+
+install(
+    DIRECTORY
+    "./third_party"
+    DESTINATION
+    "include/fmm"
+    FILES_MATCHING
+    PATTERN "*.hpp"
+    PATTERN "*.h"
+)
 
 add_subdirectory(python)
 add_subdirectory(test EXCLUDE_FROM_ALL)
