@@ -1,5 +1,5 @@
 if (NOT FMM_INCLUDE_DIR)
-    find_path(FMM_INCLUDE_DIR fmm-api.hpp ${CMAKE_PREFIX_PATH} PATH_SUFFIXES include/fmm)
+    find_path(FMM_INCLUDE_DIR fmm/fmm-api.hpp ${CMAKE_PREFIX_PATH} PATH_SUFFIXES include)
 else ()
     file(TO_CMAKE_PATH "${FMM_INCLUDE_DIR}" FMM_INCLUDE_DIR)
 endif ()
