@@ -22,8 +22,5 @@
 
 - [web_demo](web_demo)
 
-### OSM example
-- [OSM example](osm_example)
-
 ### OSMNX example
 - [OSMNX example](osmnx_example)

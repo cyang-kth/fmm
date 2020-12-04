@@ -17,7 +17,7 @@ init:
     - '%CYG_INSTALL% "wget"'
     - '%CYG_SH% "wget rawgit.com/transcode-open/apt-cyg/master/apt-cyg"'
     - '%CYG_SH% "install apt-cyg /bin"'
-    - '%CYG_SH% "apt-cyg install make gcc-g++ cmake gdal libboost-devel zlib-devel libgdal-devel libexpat1-devel libbz2-devel"'
+    - '%CYG_SH% "apt-cyg install make gcc-g++ cmake gdal libboost-devel libgdal-devel"'
     - '%CYG_SH% "apt-cyg install swig python-devel"'
 
 # clone directory
