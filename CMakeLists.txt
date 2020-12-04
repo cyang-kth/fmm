@@ -147,9 +147,9 @@ target_link_libraries(h3mm FMMLIB)
 
 message(STATUS "Installation folder ${CMAKE_INSTALL_PREFIX}")
 
-install(TARGETS fmm ubodt_gen stmatch h3mm DESTINATION bin)
+install(TARGETS FMMLIB LIBRARY DESTINATION lib)
 
-install(TARGETS FMMLIB LIBRARY DESTINATION lib/fmm)
+install(TARGETS fmm ubodt_gen stmatch h3mm DESTINATION bin)
 
 set(FMM_DIST_INCLUDE_PATH
 ${CMAKE_CURRENT_SOURCE_DIR}/src/algorithm

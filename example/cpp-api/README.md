@@ -5,7 +5,7 @@ Build the program
 ```
 mkdir build
 cd build
-cmake .. -DFMM_LIB -DFMM_HEADER 
+cmake .. -DFMM_LIB -DFMM_HEADER
 make
 sudo make install
 ```
@@ -13,5 +13,5 @@ sudo make install
 Run it with
 
 ```
-fmm-foo ../data/edges.shp
+fmm_print_network example/data/edges.shp
 ```
