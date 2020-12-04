@@ -2,15 +2,16 @@ cmake_minimum_required( VERSION 3.5.1)
 
 project(fmm-contrib)
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+set(CMAKE_CXX_FLAGS "-O3 -DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE")
+set(CMAKE_CXX_STANDARD 11)
 
-findFMM()
-include_directories(${FMM_HEADER})
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
 find_package(FMM REQUIRED)
 if (FMM_FOUND)
-    message(STATUS "FMM headers found at ${FMM_HEADER}")
+    message(STATUS "FMM headers found at ${FMM_INCLUDE_DIR}")
     message(STATUS "FMM library found at ${FMM_LIBRARY}")
+    include_directories(${FMM_INCLUDE_DIR})
 else()
     message(FATAL_ERROR "FMM Not Found!")
 endif (FMM_FOUND)

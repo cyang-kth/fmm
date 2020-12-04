@@ -22,8 +22,6 @@ execute_process(
   OUTPUT_VARIABLE PYTHON_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE)
 message(STATUS "Python packages ${PYTHON_SITE_PACKAGES}")
 
-include_directories(${H3_INCLUDE_PATH})
-
 set_source_files_properties(
 ${PROJECT_SOURCE_DIR}/python/fmm.i PROPERTIES CPLUSPLUS ON)
 

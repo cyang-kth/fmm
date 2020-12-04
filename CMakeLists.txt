@@ -18,7 +18,7 @@ if (POLICY CMP0078)
 endif()
 
 # Prevent in source build
-set(CMAKE_DISABLE_SOURCE_CHANGES  ON)
+set(CMAKE_DISABLE_SOURCE_CHANGES  OFF)
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -26,7 +26,6 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 project(fmm)
 
 set(CMAKE_BUILD_TYPE "Release")
-# set(CMAKE_C_FLAGS "-std=c11")
 set(CMAKE_CXX_FLAGS "-O3 -DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE")
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build")
@@ -67,8 +66,32 @@ if(OPENMP_FOUND)
   message(STATUS "OpenMP_CXX_LIBRARIES found at ${OpenMP_CXX_LIBRARIES}")
 endif()
 
-include_directories(third_party)
-include_directories(src)
+### Set RPATH properties
+
+set(CMAKE_SKIP_BUILD_RPATH FALSE)
+
+set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+# Build h3 objects
+
+set(UNCONFIGURED_API_HEADER
+  ${CMAKE_CURRENT_SOURCE_DIR}/third_party/h3/include/h3api.h.in)
+set(CONFIGURED_API_HEADER
+  ${CMAKE_CURRENT_SOURCE_DIR}/third_party/h3/include/h3api.h)
+configure_file(${UNCONFIGURED_API_HEADER} ${CONFIGURED_API_HEADER})
+
+# Creation of FMMLIB
+
+set(FMM_INCLUDE_PATH
+${CMAKE_CURRENT_SOURCE_DIR}/src
+${CMAKE_CURRENT_SOURCE_DIR}/third_party
+${CMAKE_CURRENT_SOURCE_DIR}/third_party/h3/include)
+
+include_directories(${FMM_INCLUDE_PATH})
 
 file(GLOB CoreGlob src/core/*.cpp)
 file(GLOB AlgorithmGlob src/algorithm/*.cpp)
@@ -79,6 +102,7 @@ file(GLOB UtilGlob src/util/*.cpp)
 file(GLOB MMGlob src/mm/*.cpp)
 file(GLOB FMMGlob src/mm/fmm/*.cpp)
 file(GLOB STMATCHGlob src/mm/stmatch/*.cpp)
+file(GLOB h3Glob third_party/h3/lib/*.c)
 
 add_library(CORE OBJECT ${CoreGlob})
 add_library(ALGORITHM OBJECT ${AlgorithmGlob})
@@ -89,36 +113,8 @@ add_library(NETWORK OBJECT ${NetworkGlob})
 add_library(MM_OBJ OBJECT ${MMGlob})
 add_library(FMM_OBJ OBJECT ${FMMGlob})
 add_library(STMATCH_OBJ OBJECT ${STMATCHGlob})
-
-# Build h3 objects
-
-set(UNCONFIGURED_API_HEADER third_party/h3/src/h3lib/include/h3api.h.in)
-set(CONFIGURED_API_HEADER third_party/h3/src/h3lib/include/h3api.h)
-configure_file(${UNCONFIGURED_API_HEADER} ${CONFIGURED_API_HEADER})
-message(STATUS "Copy h3 header to ${CONFIGURED_API_HEADER}")
-set(H3_INCLUDE_PATH
-    ${CMAKE_CURRENT_BINARY_DIR}/third_party/h3/src/h3lib/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/third_party/h3/src/h3lib/include)
-
-file(GLOB h3Glob third_party/h3/src/h3lib/lib/*.c)
 add_library(H3_OBJ OBJECT ${h3Glob})
-target_include_directories(H3_OBJ PUBLIC ${H3_INCLUDE_PATH})
 
-### Set RPATH properties
-
-set(CMAKE_SKIP_BUILD_RPATH FALSE)
-
-# when building, don't use the install RPATH already
-# (but later on when installing)
-set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-
-set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-
-# add the automatically determined parts of the RPATH
-# which point to directories outside the build tree to the install RPATH
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-
-# Creation of FMMLIB
 add_library(FMMLIB SHARED
   $<TARGET_OBJECTS:MM_OBJ>
   $<TARGET_OBJECTS:FMM_OBJ>
@@ -130,10 +126,10 @@ add_library(FMMLIB SHARED
   $<TARGET_OBJECTS:NETWORK>
   $<TARGET_OBJECTS:IO>
   $<TARGET_OBJECTS:H3_OBJ>)
+
 target_link_libraries(FMMLIB
           ${GDAL_LIBRARIES} ${Boost_LIBRARIES}
           ${OpenMP_CXX_LIBRARIES})
-install(TARGETS FMMLIB DESTINATION lib)
 
 # Add executables
 
@@ -147,40 +143,47 @@ add_executable(stmatch src/app/stmatch.cpp)
 target_link_libraries(stmatch FMMLIB)
 
 add_executable(h3mm src/app/h3mm.cpp)
-target_include_directories(
-  h3mm PUBLIC ${H3_INCLUDE_PATH})
-
 target_link_libraries(h3mm FMMLIB)
 
 message(STATUS "Installation folder ${CMAKE_INSTALL_PREFIX}")
 
 install(TARGETS fmm ubodt_gen stmatch h3mm DESTINATION bin)
 
-message(STATUS "Installation header")
+install(TARGETS FMMLIB LIBRARY DESTINATION lib/fmm)
 
-# Install fmm header
+set(FMM_DIST_INCLUDE_PATH
+${CMAKE_CURRENT_SOURCE_DIR}/src/algorithm
+${CMAKE_CURRENT_SOURCE_DIR}/src/config
+${CMAKE_CURRENT_SOURCE_DIR}/src/core
+${CMAKE_CURRENT_SOURCE_DIR}/src/io
+${CMAKE_CURRENT_SOURCE_DIR}/src/mm
+${CMAKE_CURRENT_SOURCE_DIR}/src/network
+${CMAKE_CURRENT_SOURCE_DIR}/src/python
+${CMAKE_CURRENT_SOURCE_DIR}/src/util
+${CMAKE_CURRENT_SOURCE_DIR}/third_party/cxxopts
+${CMAKE_CURRENT_SOURCE_DIR}/third_party/fiboheap
+${CMAKE_CURRENT_SOURCE_DIR}/third_party/h3
+${CMAKE_CURRENT_SOURCE_DIR}/third_party/spdlog)
 
-install(
-    DIRECTORY
-    "./src"
-    DESTINATION
-    "include/fmm"
-    FILES_MATCHING
-    PATTERN
-    "*.hpp"
+set(FMM_API_HEADER
+${CMAKE_CURRENT_SOURCE_DIR}/src/fmm-api.hpp
 )
 
-# Install third party library header
-
 install(
     DIRECTORY
-    "./third_party"
+    ${FMM_DIST_INCLUDE_PATH}
     DESTINATION
     "include/fmm"
     FILES_MATCHING
     PATTERN "*.hpp"
     PATTERN "*.h"
 )
+install(
+    FILES
+    ${FMM_API_HEADER}
+    DESTINATION
+    "include/fmm"
+)
 
 add_subdirectory(python)
-add_subdirectory(test EXCLUDE_FROM_ALL)
+# add_subdirectory(test EXCLUDE_FROM_ALL)

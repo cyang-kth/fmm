@@ -17,7 +17,6 @@
 #include <network/heap.hpp>
 #include <network/network.hpp>
 #include <network/network_graph.hpp>
-#include <network/osm_network_reader.hpp>
 #include <network/rtree.hpp>
 #include <network/type.hpp>
 #include <python/pyfmm.hpp>

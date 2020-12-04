@@ -4,8 +4,8 @@
 extern "C" {
 #endif
 
-#include <h3api.h>
-#include <geoCoord.h>
+#include <h3/include/h3api.h>
+#include <h3/include/geoCoord.h>
 
 #ifdef __cplusplus
 }
