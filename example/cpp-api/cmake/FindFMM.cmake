@@ -5,7 +5,7 @@ else ()
 endif ()
 
 if (NOT FMM_LIBRARY)
-    find_library(FMM_LIBRARY NAMES fmmlib NAMES_PER_DIR PATH_SUFFIXES lib)
+    find_library(FMM_LIBRARY NAMES FMMLIB PATH_SUFFIXES lib)
 else ()
     file(TO_CMAKE_PATH "${FMM_LIBRARY}" FMM_LIBRARY)
 endif ()
