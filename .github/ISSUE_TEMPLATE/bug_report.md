@@ -8,7 +8,9 @@ assignees: ''
 ---
 
 **Note**
-Before posting an issue about bug in the program, search the GitHub [issue page](https://github.com/cyang-kth/fmm/issues) with keywords to check if a similar issue has been posted or not. 
+Before posting an issue about bug in the program
+- Make sure you have downloaded/pulled the **latest version** of repo
+- **search the GitHub [issue page](https://github.com/cyang-kth/fmm/issues)** with keywords to check if a similar issue has been posted or not. 
 
 **Describe the bug**
 A clear and concise description of what the bug is.
