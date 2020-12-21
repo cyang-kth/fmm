@@ -151,39 +151,44 @@ install(TARGETS FMMLIB LIBRARY DESTINATION lib)
 
 install(TARGETS fmm ubodt_gen stmatch h3mm DESTINATION bin)
 
-set(FMM_DIST_INCLUDE_PATH
-${CMAKE_CURRENT_SOURCE_DIR}/src/algorithm
-${CMAKE_CURRENT_SOURCE_DIR}/src/config
-${CMAKE_CURRENT_SOURCE_DIR}/src/core
-${CMAKE_CURRENT_SOURCE_DIR}/src/io
-${CMAKE_CURRENT_SOURCE_DIR}/src/mm
-${CMAKE_CURRENT_SOURCE_DIR}/src/network
-${CMAKE_CURRENT_SOURCE_DIR}/src/python
-${CMAKE_CURRENT_SOURCE_DIR}/src/util
-${CMAKE_CURRENT_SOURCE_DIR}/third_party/cxxopts
-${CMAKE_CURRENT_SOURCE_DIR}/third_party/fiboheap
-${CMAKE_CURRENT_SOURCE_DIR}/third_party/h3
-${CMAKE_CURRENT_SOURCE_DIR}/third_party/spdlog)
+if(FMM_INSTALL_HEADER)
+  message(STATUS "Install fmm headers")
+  set(FMM_DIST_INCLUDE_PATH
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/algorithm
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/config
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/core
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/io
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/mm
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/network
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/python
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/util
+  ${CMAKE_CURRENT_SOURCE_DIR}/third_party/cxxopts
+  ${CMAKE_CURRENT_SOURCE_DIR}/third_party/fiboheap
+  ${CMAKE_CURRENT_SOURCE_DIR}/third_party/h3
+  ${CMAKE_CURRENT_SOURCE_DIR}/third_party/spdlog)
+  set(FMM_API_HEADER
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/fmm-api.hpp
+  )
+  install(
+      DIRECTORY
+      ${FMM_DIST_INCLUDE_PATH}
+      DESTINATION
+      "include/fmm"
+      FILES_MATCHING
+      PATTERN "*.hpp"
+      PATTERN "*.h"
+  )
+  install(
+      FILES
+      ${FMM_API_HEADER}
+      DESTINATION
+      "include/fmm"
+  )
+else()
+  message(STATUS "Not install fmm headers")
+endif()
 
-set(FMM_API_HEADER
-${CMAKE_CURRENT_SOURCE_DIR}/src/fmm-api.hpp
-)
-
-install(
-    DIRECTORY
-    ${FMM_DIST_INCLUDE_PATH}
-    DESTINATION
-    "include/fmm"
-    FILES_MATCHING
-    PATTERN "*.hpp"
-    PATTERN "*.h"
-)
-install(
-    FILES
-    ${FMM_API_HEADER}
-    DESTINATION
-    "include/fmm"
-)
+message(STATUS "Add python cmake information")
 
 add_subdirectory(python)
 # add_subdirectory(test EXCLUDE_FROM_ALL)

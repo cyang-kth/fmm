@@ -1,7 +1,16 @@
 ### Use fmm in an external project
 
-Build the program
+First install fmm with the option `FMM_INSTALL_HEADER`
 
+```
+# In the project folder of fmm
+cd build
+cmake .. -DFMM_INSTALL_HEADER
+make
+sudo make install
+```
+
+In the current folder, build the program
 ```
 mkdir build
 cd build
