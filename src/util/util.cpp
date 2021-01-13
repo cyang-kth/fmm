@@ -8,6 +8,12 @@
 #include <ctime>
 #include "mm/mm_type.hpp"
 
+#if defined __WIN32__ || defined _WIN32 || defined _Windows
+  #if !defined S_ISDIR
+    #define S_ISDIR(m) (((m) & _S_IFDIR) == _S_IFDIR)
+  #endif
+#endif
+
 namespace std {
 
 std::ostream &operator<<(std::ostream &os,

@@ -10,6 +10,7 @@
 #ifndef FMM_SRC_MM_FMM_UBODT_GEN_APP_HPP_
 #define FMM_SRC_MM_FMM_UBODT_GEN_APP_HPP_
 
+#include <boost/throw_exception.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 #include "mm/fmm/ubodt_gen_app_config.hpp"
 #include "network/network.hpp"

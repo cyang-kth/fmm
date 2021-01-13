@@ -8,8 +8,9 @@
 #include <fstream>
 #include <stdexcept>
 
-#include <boost/archive/binary_iarchive.hpp>
 #include <boost/format.hpp>
+#include <boost/throw_exception.hpp>
+#include <boost/archive/binary_iarchive.hpp>
 
 using namespace FMM;
 using namespace FMM::CORE;
@@ -236,7 +237,7 @@ std::shared_ptr<UBODT> UBODT::read_ubodt_csv(const std::string &filename,
   fclose(stream);
   double lf = NUM_ROWS / (double) buckets;
   SPDLOG_TRACE("Estimated load factor #elements/#tablebuckets {}", lf);
-  if (lf > 10) { SPDLOG_WARN("Load factor is too large.") }
+  if (lf > 10) { SPDLOG_WARN("Load factor is too large."); }
   SPDLOG_INFO("Finish reading UBODT with rows {}", NUM_ROWS);
   return table;
 }
@@ -275,8 +276,8 @@ std::shared_ptr<UBODT> UBODT::read_ubodt_binary(const std::string &filename,
   double lf = NUM_ROWS / (double) buckets;
   SPDLOG_TRACE("Estimated load factor #elements/#tablebuckets {}", lf);
   if (lf > 10) {
-    SPDLOG_WARN("Load factor is too large.")
+    SPDLOG_WARN("Load factor is too large.");
   }
-  SPDLOG_INFO("Finish reading UBODT with rows {}", NUM_ROWS)
+  SPDLOG_INFO("Finish reading UBODT with rows {}", NUM_ROWS);
   return table;
 }
