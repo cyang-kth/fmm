@@ -8,8 +8,10 @@
 #include <fstream>
 #include <stdexcept>
 
-#include <boost/format.hpp>
+#ifdef BOOST_OS_WINDOWS
 #include <boost/throw_exception.hpp>
+#endif
+#include <boost/format.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 
 using namespace FMM;
