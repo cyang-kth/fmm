@@ -78,15 +78,15 @@ void STMATCHAppConfig::load_arg(int argc, char **argv){
 };
 
 void STMATCHAppConfig::print() const {
-  SPDLOG_INFO("----   Print configuration    ----")
+  SPDLOG_INFO("----   Print configuration    ----");
   network_config.print();
   gps_config.print();
   result_config.print();
   stmatch_config.print();
-  SPDLOG_INFO("Log level {}",UTIL::LOG_LEVESLS[log_level])
-  SPDLOG_INFO("Step {}",step)
-  SPDLOG_INFO("Use omp {}",(use_omp ? "true" : "false"))
-  SPDLOG_INFO("---- Print configuration done ----")
+  SPDLOG_INFO("Log level {}", UTIL::LOG_LEVESLS[log_level]);
+  SPDLOG_INFO("Step {}", step);
+  SPDLOG_INFO("Use omp {}", (use_omp ? "true" : "false"));
+  SPDLOG_INFO("---- Print configuration done ----");
 };
 
 void STMATCHAppConfig::print_help(){

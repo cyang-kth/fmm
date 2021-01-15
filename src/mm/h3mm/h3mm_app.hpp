@@ -90,14 +90,14 @@ public:
   };
 
   void print() const {
-    SPDLOG_INFO("----   Print configuration    ----")
+    SPDLOG_INFO("----   Print configuration    ----");
     gps_config.print();
     result_config.print();
     h3mm_config.print();
-    SPDLOG_INFO("Log level {}",UTIL::LOG_LEVESLS[log_level])
-    SPDLOG_INFO("Step {}",step)
-    SPDLOG_INFO("Use omp {}",(use_omp ? "true" : "false"))
-    SPDLOG_INFO("---- Print configuration done ----")
+    SPDLOG_INFO("Log level {}", UTIL::LOG_LEVESLS[log_level]);
+    SPDLOG_INFO("Step {}", step);
+    SPDLOG_INFO("Use omp {}", (use_omp ? "true" : "false"));
+    SPDLOG_INFO("---- Print configuration done ----");
   };
 
   bool validate() const {

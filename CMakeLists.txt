@@ -20,7 +20,7 @@ endif()
 # Prevent in source build
 set(CMAKE_DISABLE_SOURCE_CHANGES  OFF)
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
-
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 project(fmm)
@@ -48,8 +48,13 @@ if (GDAL_FOUND)
 else()
   message(FATAL_ERROR "GDAL Not Found!")
 endif (GDAL_FOUND)
+link_libraries(${GDAL_LIBRARIES})
 
-find_package(Boost 1.56.0 REQUIRED serialization)
+if (WIN32)
+  find_package(Boost 1.56.0 REQUIRED serialization exception)
+else ()
+  find_package(Boost 1.56.0 REQUIRED serialization)
+endif (WIN32)
 if (Boost_FOUND)
   message(STATUS "Boost headers found at ${Boost_INCLUDE_DIR}")
   message(STATUS "Boost library found at ${Boost_LIBRARIES}")
@@ -57,6 +62,8 @@ if (Boost_FOUND)
 else()
   message(FATAL_ERROR "Boost Not Found!")
 endif (Boost_FOUND)
+link_libraries(${Boost_LIBRARIES})
+
 
 find_package(OpenMP REQUIRED)
 if(OPENMP_FOUND)
@@ -65,6 +72,7 @@ if(OPENMP_FOUND)
   message(STATUS "OpenMP_HEADERS found at ${OpenMP_CXX_INCLUDE_DIRS}")
   message(STATUS "OpenMP_CXX_LIBRARIES found at ${OpenMP_CXX_LIBRARIES}")
 endif()
+link_libraries(${OpenMP_CXX_LIBRARIES})
 
 ### Set RPATH properties
 
@@ -126,10 +134,6 @@ add_library(FMMLIB SHARED
   $<TARGET_OBJECTS:NETWORK>
   $<TARGET_OBJECTS:IO>
   $<TARGET_OBJECTS:H3_OBJ>)
-
-target_link_libraries(FMMLIB
-          ${GDAL_LIBRARIES} ${Boost_LIBRARIES}
-          ${OpenMP_CXX_LIBRARIES})
 
 # Add executables
 

@@ -8,6 +8,25 @@
 #include <ctime>
 #include "mm/mm_type.hpp"
 
+#if defined BOOST_OS_WINDOWS && !defined S_ISDIR
+  #define S_ISDIR(m) (((m) & _S_IFDIR) == _S_IFDIR)
+#endif
+
+#ifdef BOOST_NO_EXCEPTIONS
+
+namespace boost {
+
+  BOOST_NORETURN void throw_exception(const std::exception & e) {
+    throw e;
+  }
+  BOOST_NORETURN void throw_exception(const std::exception & e, boost::source_location const & loc) {
+    throw e;
+  }
+
+} // namespace boost
+
+#endif // BOOST_NO_EXCEPTIONS
+
 namespace std {
 
 std::ostream &operator<<(std::ostream &os,

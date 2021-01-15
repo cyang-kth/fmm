@@ -10,10 +10,14 @@
 #ifndef FMM_SRC_MM_FMM_UBODT_GEN_ALGORITHM_HPP_
 #define FMM_SRC_MM_FMM_UBODT_GEN_ALGORITHM_HPP_
 
-#include <boost/archive/binary_oarchive.hpp>
 #include "mm/fmm/ubodt_gen_app_config.hpp"
 #include "network/network.hpp"
 #include "network/network_graph.hpp"
+
+#ifdef BOOST_OS_WINDOWS
+#include <boost/throw_exception.hpp>
+#endif
+#include <boost/archive/binary_oarchive.hpp>
 
 namespace FMM {
 namespace MM {
