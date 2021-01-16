@@ -90,18 +90,22 @@ void Network::read_ogr_file(const std::string &filename,
   int source_idx = ogrFDefn->GetFieldIndex(source_name.c_str());
   int target_idx = ogrFDefn->GetFieldIndex(target_name.c_str());
   if (source_idx < 0 || target_idx < 0 || id_idx < 0) {
-    SPDLOG_CRITICAL("Id, source or target column not found");
+    std::string error_message = fmt::format(
+      "Field not found: {} index {}, {} index {}, {} index {}",
+      id_name, id_idx, source_name, source_idx,
+      target_name, target_idx);
+    SPDLOG_CRITICAL(error_message);
     GDALClose(poDS);
-    throw std::runtime_error("Id, source or target column not found");
+    throw std::runtime_error(error_message);
   }
 
   if (wkbFlatten(ogrFDefn->GetGeomType()) != wkbLineString) {
-    const std::string message = (boost::format("Geometry type of network is %1%, should be linestring")
-        % OGRGeometryTypeToName(ogrFDefn->GetGeomType())).str();
-
-    SPDLOG_CRITICAL(message);
+    std::string error_message = fmt::format(
+      "Geometry type of network is {}, should be linestring",
+      OGRGeometryTypeToName(ogrFDefn->GetGeomType()));
+    SPDLOG_CRITICAL(error_message);
     GDALClose(poDS);
-    throw std::runtime_error(message);
+    throw std::runtime_error(error_message);
   } else {
     SPDLOG_DEBUG("Geometry type of network is {}",
                  OGRGeometryTypeToName(ogrFDefn->GetGeomType()));
