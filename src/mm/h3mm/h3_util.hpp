@@ -21,22 +21,27 @@ std::string hexs2wkt(const std::vector<HexIndex> &hexs, int precision=12){
     oss << "((";
     h3ToGeoBoundary(hexs[i], &boundary);
     for (int v = 0; v < boundary.numVerts; v++) {
-      oss << std::setprecision(precision) << radsToDegs(boundary.verts[v].lat)
-          << " " << radsToDegs(boundary.verts[v].lon) << ",";
+      oss << std::setprecision(precision) << radsToDegs(boundary.verts[v].lon)
+          << " " << radsToDegs(boundary.verts[v].lat) << ",";
     }
-    oss << std::setprecision(precision) << radsToDegs(boundary.verts[0].lat)
-          << " " << radsToDegs(boundary.verts[0].lon);
+    oss << std::setprecision(precision) << radsToDegs(boundary.verts[0].lon)
+          << " " << radsToDegs(boundary.verts[0].lat);
     oss << "))" << (i<hexs.size()-1?",":"");
   }
   oss << ")";
   return oss.str();
 };
 
-HexIndex xy2hex(double px, double py, int level){
+HexIndex latlng2hex(double lat, double lng, int level){
   GeoCoord location;
-  setGeoDegs(&location, px, py);
+  setGeoDegs(&location, lat, lng);
   HexIndex indexed = geoToH3(&location,level);
   return (HexIndex) indexed;
+};
+
+// The x is lng and y is the lat
+HexIndex xy2hex(double x, double y, int level){
+  return latlng2hex(y,x,level);
 };
 
 std::string hex2wkt(const HexIndex &index, int precision=12){
@@ -45,11 +50,11 @@ std::string hex2wkt(const HexIndex &index, int precision=12){
   oss << "POLYGON(";
   h3ToGeoBoundary(index, &boundary);
   for (int v = 0; v < boundary.numVerts; v++) {
-    oss << std::setprecision(precision) << radsToDegs(boundary.verts[v].lat)
-        << " " << radsToDegs(boundary.verts[v].lon) << ",";
+    oss << std::setprecision(precision) << radsToDegs(boundary.verts[v].lon)
+        << " " << radsToDegs(boundary.verts[v].lat) << ",";
   }
-  oss << std::setprecision(precision) << radsToDegs(boundary.verts[0].lat)
-        << " " << radsToDegs(boundary.verts[0].lon);
+  oss << std::setprecision(precision) << radsToDegs(boundary.verts[0].lon)
+        << " " << radsToDegs(boundary.verts[0].lat);
   oss << ")";
   return oss.str();
 };

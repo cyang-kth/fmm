@@ -19,10 +19,14 @@ struct H3MMConfig {
      h3level = h3level_arg;
      interpolate = interpolate_arg;
   };
-  int h3level;
-  bool interpolate;
   bool validate() const {
     return (h3level<=15 && h3level>=0);
+  };
+  std::string to_string() const{
+    std::ostringstream oss;
+    oss << "h3 level : " << h3level << "\n";
+    oss << "interpolate : " << (interpolate?"true":"false") << "\n";
+    return oss.str();
   };
   void print() const {
     SPDLOG_INFO("h3level: {} ",h3level);
@@ -56,6 +60,8 @@ struct H3MMConfig {
     oss<<"--h3level (optional) <int>: level of hex (15)\n";
     oss<<"--interpolate (optional): if specified, interpolate between points\n";
   };
+  int h3level;
+  bool interpolate;
 };
 
 
@@ -119,12 +125,17 @@ public:
         }
       } else {
         SPDLOG_DEBUG("No interpolate");
+        HexIndex prev_hex=0;
         for (int i = 0; i < NumberPoints; ++i) {
           // SPDLOG_DEBUG("Search candidates for point index {}",i);
           // Construct a bounding boost_box
           double px = traj.geom.get_x(i);
           double py = traj.geom.get_y(i);
-          hexs.push_back(xy2hex(px,py,config.h3level));
+          HexIndex hex = xy2hex(px,py,config.h3level);
+          if (i==0 || hex!=prev_hex){
+            hexs.push_back(hex);
+          }
+          prev_hex = hex;
         }
       }
     } else {
@@ -135,8 +146,8 @@ public:
   };
   static std::string match_gps_file(
     const FMM::CONFIG::GPSConfig &gps_config,
-    const H3MMConfig &config,
-    const H3MatchResultConfig &output_config,
+    const FMM::MM::H3MMConfig &config,
+    const FMM::MM::H3MatchResultConfig &output_config,
     bool use_omp = true){
     std::ostringstream oss;
     std::string status;

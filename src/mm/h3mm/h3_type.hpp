@@ -14,6 +14,7 @@ namespace FMM{
 namespace MM{
 
 typedef unsigned long long HexIndex;
+
 struct H3MatchResult {
   int traj_id;
   std::vector<HexIndex> hexs;
