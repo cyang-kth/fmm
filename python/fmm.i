@@ -28,6 +28,7 @@
 %{
 /* Put header files here or function declarations like below */
 #include "core/geometry.hpp"
+#include "core/gps.hpp"
 #include "network/type.hpp"
 #include "network/network.hpp"
 #include "network/network_graph.hpp"
@@ -61,6 +62,7 @@ using namespace FMM::CONFIG;
 // %template(IntSet) set<int>;
 
 %include "core/geometry.hpp"
+%include "core/gps.hpp"
 %include "mm/mm_type.hpp"
 %include "network/type.hpp"
 %include "network/network.hpp"
