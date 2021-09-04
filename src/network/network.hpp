@@ -43,12 +43,18 @@ public:
   /**
    * Item stored in a node of Rtree
    */
-  typedef std::pair<boost_box, Edge *> Item;
+  typedef std::pair<boost_box, EdgeIndex> Item;
   /**
    * Rtree of road edges
    */
   typedef boost::geometry::index::rtree<
       Item, boost::geometry::index::quadratic<16> > Rtree;
+
+  /**
+   * Construct an empty network. Nodes and edges can be added later by calling
+   * add_edge.
+   */
+  Network(int srid = 4326);
   /**
    *  Constructor of Network
    *
@@ -66,6 +72,7 @@ public:
         );
   Network(const CONFIG::NetworkConfig &config):Network(
     config.file,config.id,config.source,config.target){};
+
   /**
    * Get number of nodes in the network
    * @return number of nodes
@@ -205,10 +212,7 @@ private:
   static void append_segs_to_line(FMM::CORE::LineString *line,
                                   const FMM::CORE::LineString &segs,
                                   int offset = 0);
-  /**
-   * Build rtree for the network
-   */
-  void build_rtree_index();
+
   int srid;   // Spatial reference id
   Rtree rtree;   // Network rtree structure
   std::vector<Edge> edges;   // all edges in the network

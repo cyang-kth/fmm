@@ -27,6 +27,9 @@ bool Network::candidate_compare(const Candidate &a, const Candidate &b) {
   }
 }
 
+Network::Network(int srid): srid(srid), num_vertices(0L) {
+}
+
 Network::Network(const std::string &filename,
                  const std::string &id_name,
                  const std::string &source_name,
@@ -38,7 +41,7 @@ Network::Network(const std::string &filename,
     SPDLOG_CRITICAL(message);
     throw std::runtime_error(message);
   }
-};
+}
 
 void Network::add_edge(EdgeID edge_id, NodeID source, NodeID target,
                        const FMM::CORE::LineString &geom){
@@ -63,7 +66,14 @@ void Network::add_edge(EdgeID edge_id, NodeID source, NodeID target,
   EdgeIndex index = edges.size();
   edges.push_back({index, edge_id, s_idx, t_idx, geom.get_length(), geom});
   edge_map.insert({edge_id, index});
-};
+  num_vertices = node_id_vec.size();
+
+  // Add bounding box of this edge to rtree index
+  double x1, y1, x2, y2;
+  ALGORITHM::boundingbox_geometry(geom, &x1, &y1, &x2, &y2);
+  boost_box b(Point(x1, y1), Point(x2, y2));
+  rtree.insert(std::make_pair(b, index));
+}
 
 void Network::read_ogr_file(const std::string &filename,
                             const std::string &id_name,
@@ -124,7 +134,6 @@ void Network::read_ogr_file(const std::string &filename,
     SPDLOG_WARN("SRID is not found, set to 4326 by default");
   }
   // Read data from shapefile
-  EdgeIndex index = 0;
   while ((ogrFeature = ogrlayer->GetNextFeature()) != NULL) {
     EdgeID id = ogrFeature->GetFieldAsInteger64(id_idx);
     NodeID source = ogrFeature->GetFieldAsInteger64(source_idx);
@@ -142,35 +151,13 @@ void Network::read_ogr_file(const std::string &filename,
       SPDLOG_CRITICAL("Unknown geometry type for feature id {} s {} t {}",
                       id, source, target);
     }
-    NodeIndex s_idx, t_idx;
-    if (node_map.find(source) == node_map.end()) {
-      s_idx = node_id_vec.size();
-      node_id_vec.push_back(source);
-      node_map.insert({source, s_idx});
-      vertex_points.push_back(geom.get_point(0));
-    } else {
-      s_idx = node_map[source];
-    }
-    if (node_map.find(target) == node_map.end()) {
-      t_idx = node_id_vec.size();
-      node_id_vec.push_back(target);
-      node_map.insert({target, t_idx});
-      int npoints = geom.get_num_points();
-      vertex_points.push_back(geom.get_point(npoints - 1));
-    } else {
-      t_idx = node_map[target];
-    }
-    edges.push_back({index, id, s_idx, t_idx, geom.get_length(), geom});
-    edge_map.insert({id, index});
-    ++index;
+    add_edge(id, source, target, geom);
     OGRFeature::DestroyFeature(ogrFeature);
   }
   GDALClose(poDS);
-  num_vertices = node_id_vec.size();
   SPDLOG_INFO("Number of edges {} nodes {}", edges.size(), num_vertices);
   SPDLOG_INFO("Field index: id {} source {} target {}",
               id_idx, source_idx, target_idx);
-  build_rtree_index();
   SPDLOG_INFO("Read network done.");
 }    // Network constructor
 
@@ -189,11 +176,11 @@ const std::vector<Edge> &Network::get_edges() const {
 
 const Edge& Network::get_edge(EdgeID id) const {
   return edges[get_edge_index(id)];
-};
+}
 
 const Edge& Network::get_edge(EdgeIndex index) const {
   return edges[index];
-};
+}
 
 // Get the ID attribute of an edge according to its index
 EdgeID Network::get_edge_id(EdgeIndex index) const {
@@ -214,22 +201,6 @@ NodeIndex Network::get_node_index(NodeID id) const {
 
 Point Network::get_node_geom_from_idx(NodeIndex index) const {
   return vertex_points[index];
-}
-
-// Construct a Rtree using the vector of edges
-void Network::build_rtree_index() {
-  // Build an rtree for candidate search
-  SPDLOG_DEBUG("Create boost rtree");
-  // create some Items
-  for (std::size_t i = 0; i < edges.size(); ++i) {
-    // create a boost_box
-    Edge *edge = &edges[i];
-    double x1, y1, x2, y2;
-    ALGORITHM::boundingbox_geometry(edge->geom, &x1, &y1, &x2, &y2);
-    boost_box b(Point(x1, y1), Point(x2, y2));
-    rtree.insert(std::make_pair(b, edge));
-  }
-  SPDLOG_DEBUG("Create boost rtree done");
 }
 
 Traj_Candidates Network::search_tr_cs_knn(Trajectory &trajectory, std::size_t k,
@@ -259,7 +230,7 @@ Traj_Candidates Network::search_tr_cs_knn(const LineString &geom, std::size_t k,
     for (unsigned int j = 0; j < Nitems; ++j) {
       // Check for detailed intersection
       // The two edges are all in OGR_linestring
-      Edge *edge = temp[j].second;
+      const Edge *edge = &get_edge(temp[j].second);
       double offset;
       double dist;
       double closest_x, closest_y;
