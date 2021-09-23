@@ -7,20 +7,15 @@ else()
   message(FATAL_ERROR "Swig not found!\n")
 endif()
 
-find_package(PythonInterp REQUIRED)
-find_package(PythonLibs REQUIRED)
-if (PYTHONLIBS_FOUND)
-  message(STATUS "Python header found at ${PYTHON_INCLUDE_DIRS}")
-  message(STATUS "Python library found at ${PYTHON_LIBRARIES}")
-  include_directories(${PYTHON_INCLUDE_DIRS})
+find_package(Python COMPONENTS Interpreter Development)
+if (Python_FOUND)
+  message(STATUS "Python header found at ${Python_INCLUDE_DIRS}")
+  message(STATUS "Python library found at ${Python_LIBRARIES}")
+  message(STATUS "Python packages ${Python_SITELIB}")
+  include_directories(${Python_INCLUDE_DIRS})
 else()
   message(FATAL_ERROR "Python library not found!\n")
 endif()
-
-execute_process(
-  COMMAND python -c "from distutils.sysconfig import get_python_lib;print(get_python_lib())"
-  OUTPUT_VARIABLE PYTHON_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE)
-message(STATUS "Python packages ${PYTHON_SITE_PACKAGES}")
 
 set_source_files_properties(
 ${PROJECT_SOURCE_DIR}/python/fmm.i PROPERTIES CPLUSPLUS ON)
@@ -28,16 +23,16 @@ ${PROJECT_SOURCE_DIR}/python/fmm.i PROPERTIES CPLUSPLUS ON)
 if (${CMAKE_VERSION} VERSION_LESS 3.13.0)
   message(STATUS "Using swig add module")
   SWIG_ADD_MODULE(fmm python ${PROJECT_SOURCE_DIR}/python/fmm.i)
-  swig_link_libraries(fmm FMMLIB ${PYTHON_LIBRARIES})
-  install(TARGETS ${SWIG_MODULE_fmm_REAL_NAME} DESTINATION ${PYTHON_SITE_PACKAGES})
+  swig_link_libraries(fmm FMMLIB ${Python_LIBRARIES})
+  install(TARGETS ${SWIG_MODULE_fmm_REAL_NAME} DESTINATION ${Python_SITELIB})
 else()
   message(STATUS "Using swig add library")
   SWIG_ADD_LIBRARY(pyfmm
     LANGUAGE python
     SOURCES ${PROJECT_SOURCE_DIR}/python/fmm.i)
   set_property(TARGET pyfmm PROPERTY OUTPUT_NAME fmm)
-  swig_link_libraries(pyfmm FMMLIB ${PYTHON_LIBRARIES})
-  install(TARGETS pyfmm DESTINATION ${PYTHON_SITE_PACKAGES})
+  target_link_libraries(pyfmm FMMLIB Python::Module)
+  install(TARGETS pyfmm DESTINATION ${Python_SITELIB})
 endif()
 
-install(FILES ${CMAKE_BINARY_DIR}/python/fmm.py DESTINATION ${PYTHON_SITE_PACKAGES})
+install(FILES ${CMAKE_BINARY_DIR}/python/fmm.py DESTINATION ${Python_SITELIB})
