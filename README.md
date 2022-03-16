@@ -83,20 +83,14 @@ Please cite fmm in your publications if it helps your research:
 
 Bibtex file
 
-    @article{doi:10.1080/13658816.2017.1400548,
-    author = {Can Yang and Gyozo Gidofalvi},
-    title = {Fast map matching, an algorithm integrating hidden Markov model with precomputation},
-    journal = {International Journal of Geographical Information Science},
-    volume = {32},
-    number = {3},
-    pages = {547-570},
-    year  = {2018},
-    publisher = {Taylor & Francis},
-    doi = {10.1080/13658816.2017.1400548},
-    URL = {
-            https://doi.org/10.1080/13658816.2017.1400548
-    },
-    eprint = {
-            https://doi.org/10.1080/13658816.2017.1400548   
-    }
-    }
+```bibtex
+@article{Yang2018FastMM,
+  title={Fast map matching, an algorithm integrating hidden Markov model with precomputation},
+  author={Can Yang and Gyozo Gidofalvi},
+  journal={International Journal of Geographical Information Science},
+  year={2018},
+  volume={32},
+  number={3},
+  pages={547 - 570}
+}
+```
