@@ -30,7 +30,7 @@ struct Candidate
                         numeber of vertices in the graph */
   double offset; /**< offset distance from the start of polyline to p' */
   double dist; /**< distance from original point p to map matched point p' */
-  NETWORK::Edge *edge;  /**< candidate edge */
+  const NETWORK::Edge *edge;  /**< candidate edge */
   FMM::CORE::Point point; /**< boost point */
 };
 
