@@ -1,0 +1,42 @@
+FROM quay.io/pypa/manylinux2010_x86_64:latest
+
+RUN yum install -y wget curl-devel zlib-devel libzstd-devel libwebp-devel hdf5-devel expat-devel
+
+# Install sqlite3
+RUN mkdir -p /build/sqlite3 && \
+    cd /build/sqlite3 && \
+    wget https://www.sqlite.org/2021/sqlite-autoconf-3360000.tar.gz && \
+    tar xf sqlite-autoconf-3360000.tar.gz && \
+    cd sqlite-autoconf-3360000 && \
+    CFLAGS="-DSQLITE_ENABLE_COLUMN_METADATA=1" ./configure --prefix=/usr/local && \
+    make && make install && ldconfig
+
+# Install boost
+RUN mkdir -p /build/boost && \
+    cd /build/boost && \
+    wget https://boostorg.jfrog.io/artifactory/main/release/1.71.0/source/boost_1_71_0.tar.bz2 && \
+    tar xf boost_1_71_0.tar.bz2 && \
+    cd boost_1_71_0 && \
+    ./bootstrap.sh --prefix=/usr/local && \
+    ./b2 install --prefix=/usr/local --with=all || true && \
+    ldconfig  # some modules may fail to install, but it does not matter
+
+# Install proj6
+RUN mkdir -p /build/proj6 && \
+    cd /build/proj6 && \
+    wget https://download.osgeo.org/proj/proj-6.1.1.tar.gz && \
+    tar xf proj-6.1.1.tar.gz && \
+    cd proj-6.1.1 && \
+    ./configure --prefix=/usr/local && \
+    make -j4 && make install && ldconfig
+
+# Install gdal
+RUN mkdir -p /build/gdal && \
+    cd /build/gdal && \
+    wget https://download.osgeo.org/gdal/2.4.4/gdal-2.4.4.tar.gz && \
+    tar xf gdal-2.4.4.tar.gz && \
+    cd gdal-2.4.4 && \
+    ./configure --prefix=/usr/local && \
+    make -j4 && make install && \
+    strip /usr/local/lib/libgdal.so.20 && ldconfig && \
+    cd / && rm -rf /build

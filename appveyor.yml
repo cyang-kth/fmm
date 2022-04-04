@@ -19,6 +19,7 @@ init:
     - '%CYG_SH% "install apt-cyg /bin"'
     - '%CYG_SH% "apt-cyg install make gcc-g++ cmake gdal libboost-devel libgdal-devel"'
     - '%CYG_SH% "apt-cyg install swig python-devel"'
+    - '%CYG_SH% "python -m pip install setuptools wheel"'
 
 # clone directory
 clone_folder: C:/cygwin64/home/appveyor/fmm

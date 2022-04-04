@@ -7,23 +7,31 @@ jobs:
       dist: xenial
     - os: osx
       osx_image: xcode11
+    - sudo: required
+      services:
+        - docker
+      env: DOCKER_IMAGE=kontinuation/fmm-manylinux:latest
 before_install:
-  - chmod +x travis_install_dependency.sh
+  - if [ -z "$DOCKER_IMAGE" ]; then chmod +x travis_install_dependency.sh; fi
 install:
-  - ./travis_install_dependency.sh
-script:
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export PATH=/usr/bin:${PATH}; fi
-  - mkdir -p build
-  - cd build
-  - cmake ..
-  - make -j 4
-  - sudo make install
-  - fmm
-  - stmatch
-  - ubodt_gen
-  - cd ../example/python
-  - which python
-  - python fmm_test.py
+  - if [ -z "$DOCKER_IMAGE" ]; then ./travis_install_dependency.sh; else docker pull $DOCKER_IMAGE; fi
+script: |
+  if [ -n "$DOCKER_IMAGE" ]; then
+    docker run --rm -v `pwd`:/repo $DOCKER_IMAGE /repo/build_manylinux_wheel.sh;
+  else
+    if [ "$TRAVIS_OS_NAME" = "osx" ]; then export PATH=/usr/bin:${PATH}; fi
+    mkdir -p build
+    cd build
+    cmake ..
+    make -j 4
+    sudo make install
+    fmm
+    stmatch
+    ubodt_gen
+    cd ../example/python
+    which python
+    python fmm_test.py
+  fi
 branches:
   only:
   - master

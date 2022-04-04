@@ -18,9 +18,15 @@ else()
 endif()
 
 execute_process(
-  COMMAND python -c "from distutils.sysconfig import get_python_lib;print(get_python_lib())"
-  OUTPUT_VARIABLE PYTHON_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE)
-message(STATUS "Python packages ${PYTHON_SITE_PACKAGES}")
+  COMMAND python -c "from setup import get_wheel_name;print(get_wheel_name())"
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  OUTPUT_VARIABLE WHEEL_NAME OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+set(PYTHON_SOURCES
+  ${CMAKE_CURRENT_SOURCE_DIR}/setup.py
+  ${CMAKE_CURRENT_SOURCE_DIR}/_version.py
+  ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py)
+file(COPY ${PYTHON_SOURCES} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 set_source_files_properties(
 ${PROJECT_SOURCE_DIR}/python/fmm.i PROPERTIES CPLUSPLUS ON)
@@ -29,7 +35,14 @@ if (${CMAKE_VERSION} VERSION_LESS 3.13.0)
   message(STATUS "Using swig add module")
   SWIG_ADD_MODULE(fmm python ${PROJECT_SOURCE_DIR}/python/fmm.i)
   swig_link_libraries(fmm FMMLIB ${PYTHON_LIBRARIES})
-  install(TARGETS ${SWIG_MODULE_fmm_REAL_NAME} DESTINATION ${PYTHON_SITE_PACKAGES})
+  add_custom_target(${WHEEL_NAME} ALL
+    DEPENDS ${SWIG_MODULE_fmm_REAL_NAME}
+    ${CMAKE_CURRENT_BINARY_DIR}/setup.py
+    ${CMAKE_CURRENT_BINARY_DIR}/_version.py
+    ${CMAKE_CURRENT_BINARY_DIR}/__init__.py
+    COMMAND python setup.py bdist_wheel
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    COMMENT "Building wheel")
 else()
   message(STATUS "Using swig add library")
   SWIG_ADD_LIBRARY(pyfmm
@@ -37,7 +50,14 @@ else()
     SOURCES ${PROJECT_SOURCE_DIR}/python/fmm.i)
   set_property(TARGET pyfmm PROPERTY OUTPUT_NAME fmm)
   swig_link_libraries(pyfmm FMMLIB ${PYTHON_LIBRARIES})
-  install(TARGETS pyfmm DESTINATION ${PYTHON_SITE_PACKAGES})
+  add_custom_target(${WHEEL_NAME} ALL
+    DEPENDS pyfmm
+    ${CMAKE_CURRENT_BINARY_DIR}/setup.py
+    ${CMAKE_CURRENT_BINARY_DIR}/_version.py
+    ${CMAKE_CURRENT_BINARY_DIR}/__init__.py
+    COMMAND python setup.py bdist_wheel
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    COMMENT "Building wheel")
 endif()
 
-install(FILES ${CMAKE_BINARY_DIR}/python/fmm.py DESTINATION ${PYTHON_SITE_PACKAGES})
+install(CODE "execute_process(COMMAND python -m pip install --force-reinstall ${CMAKE_CURRENT_BINARY_DIR}/dist/${WHEEL_NAME})")
