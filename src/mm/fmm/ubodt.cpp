@@ -241,8 +241,11 @@ std::shared_ptr<UBODT> UBODT::read_ubodt_file(const std::string &filename,
 		NETWORK::NetworkGraph graph, int multiplier) {
   std::shared_ptr<UBODT> ubodt = nullptr;
   auto start_time = UTIL::get_current_time();
-  if (UTIL::check_file_extension(filename,"bin")){
-    ubodt = read_ubodt_binary(filename, graph, multiplier);
+  if(!UTIL::file_exists(filename)) {
+	  int buckets = find_prime_number(multiplier / LOAD_FACTOR);
+	  ubodt = std::make_shared<UBODT>(buckets, multiplier, graph);
+  } else if (UTIL::check_file_extension(filename,"bin")){
+    ubodt = read_ubodt_binary(filename,graph,multiplier);
   } else if (UTIL::check_file_extension(filename,"csv,txt")) {
     ubodt = read_ubodt_csv(filename, graph, multiplier);
   } else {
