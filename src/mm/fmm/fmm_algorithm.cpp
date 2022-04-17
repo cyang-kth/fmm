@@ -264,7 +264,7 @@ double FastMapMatch::get_sp_dist(
     // Transition on the same OD nodes
     sp_dist = ca->edge->length - ca->offset + cb->offset;
   } else {
-    Record *r = ubodt_->look_up(ca->edge->target, cb->edge->source);
+    Record *r = ubodt_->look_up_or_make(ca->edge->target, cb->edge->source);
     // No sp path exist from O to D.
     if (r == nullptr) return std::numeric_limits<double>::infinity();
     // calculate original SP distance

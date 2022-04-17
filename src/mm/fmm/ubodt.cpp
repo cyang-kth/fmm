@@ -18,8 +18,8 @@ using namespace FMM;
 using namespace FMM::CORE;
 using namespace FMM::NETWORK;
 using namespace FMM::MM;
-UBODT::UBODT(int buckets_arg, int multiplier_arg) :
-    buckets(buckets_arg), multiplier(multiplier_arg) {
+UBODT::UBODT(int buckets_arg, int multiplier_arg, NetworkGraph graph_arg) :
+    buckets(buckets_arg), multiplier(multiplier_arg), graph(graph_arg) {
   SPDLOG_TRACE("Intialization UBODT with buckets {} multiplier {}",
                buckets, multiplier);
   hashtable = (Record **) malloc(sizeof(Record *) * buckets);
@@ -59,11 +59,64 @@ Record *UBODT::look_up(NodeIndex source, NodeIndex target) const {
   return r;
 }
 
+Record* UBODT::look_up_or_make(NETWORK::NodeIndex source,
+		NETWORK::NodeIndex target) {
+	Record *r = look_up(source, target);
+	// No transition exist from source to target
+	if (r == nullptr) {
+		Heap Q;
+		PredecessorMap pmap;
+		DistanceMap dmap;
+
+		graph.shortest_path_dijkstra(&Q, &pmap, &dmap, this, source, target);
+
+		std::stack<NodeIndex> route;
+
+		for (auto iter = pmap.begin(); iter != pmap.end(); ++iter) {
+			NodeIndex cur_node = iter->first;
+			if (!Q.contain_node(cur_node) && !look_up(source, cur_node)) {
+				// If node isn't in the heap, it means that pmap and dmap hold truthful information about distance
+				// If there is no look_up value, it must be stored
+
+				NodeIndex prev_n = iter->second;
+				// Create a stack with the route from source to cur_node
+				for(NodeIndex u=cur_node; u != source; u=pmap[u])
+					route.push(u);
+
+				// Insert ods from the former to the latter
+				// The former is always the source
+				NodeIndex former = source;
+				while(former != cur_node && !look_up(former, cur_node)) {
+					// Repeat until the route reached cur_node
+					// or the rest of the route is already in the table
+
+					r = (Record*) malloc(sizeof(Record));
+					r->source = former;
+					r->target = cur_node;
+
+					// First node of this route will be the former of the next
+					NodeIndex s = former;
+					former = route.top();
+					route.pop();
+					r->first_n = former;
+					r->prev_n = prev_n;
+					r->next_e = graph.get_edge_index(s, former, dmap[former]-dmap[s]);
+					r->cost = dmap[cur_node]-dmap[s];
+					r->next = nullptr;
+					insert(r);
+				}
+			}
+		}
+		r = look_up(source, target);
+	}
+	return r;
+}
+
 std::vector<EdgeIndex> UBODT::look_sp_path(NodeIndex source,
-                                           NodeIndex target) const {
+                                           NodeIndex target) {
   std::vector<EdgeIndex> edges;
   if (source == target) { return edges; }
-  Record *r = look_up(source, target);
+  Record *r = look_up_or_make(source, target);
   // No transition exist from source to target
   if (r == nullptr) { return edges; }
   while (r->first_n != target) {
@@ -77,7 +130,7 @@ std::vector<EdgeIndex> UBODT::look_sp_path(NodeIndex source,
 C_Path UBODT::construct_complete_path(int traj_id, const TGOpath &path,
                                       const std::vector<Edge> &edges,
                                       std::vector<int> *indices,
-                                      double reverse_tolerance) const {
+                                      double reverse_tolerance) {
   C_Path cpath;
   if (!indices->empty()) indices->clear();
   if (path.empty()) return cpath;
@@ -185,13 +238,13 @@ int UBODT::find_prime_number(double value) {
 }
 
 std::shared_ptr<UBODT> UBODT::read_ubodt_file(const std::string &filename,
-    int multiplier) {
+		NETWORK::NetworkGraph graph, int multiplier) {
   std::shared_ptr<UBODT> ubodt = nullptr;
   auto start_time = UTIL::get_current_time();
   if (UTIL::check_file_extension(filename,"bin")){
-    ubodt = read_ubodt_binary(filename,multiplier);
+    ubodt = read_ubodt_binary(filename, graph, multiplier);
   } else if (UTIL::check_file_extension(filename,"csv,txt")) {
-    ubodt = read_ubodt_csv(filename,multiplier);
+    ubodt = read_ubodt_csv(filename, graph, multiplier);
   } else {
     std::string message = (boost::format("File format not supported: %1%") % filename).str();
     SPDLOG_CRITICAL(message);
@@ -204,13 +257,14 @@ std::shared_ptr<UBODT> UBODT::read_ubodt_file(const std::string &filename,
 }
 
 std::shared_ptr<UBODT> UBODT::read_ubodt_csv(const std::string &filename,
+                                             const NETWORK::NetworkGraph graph,
                                              int multiplier) {
   SPDLOG_INFO("Reading UBODT file (CSV format) from {}", filename);
   long rows = estimate_ubodt_rows(filename);
   int buckets = find_prime_number(rows / LOAD_FACTOR);
   SPDLOG_TRACE("Estimated buckets {}", buckets);
   int progress_step = 1000000;
-  std::shared_ptr<UBODT> table = std::make_shared<UBODT>(buckets, multiplier);
+  std::shared_ptr<UBODT> table = std::make_shared<UBODT>(buckets, multiplier, graph);
   FILE *stream = fopen(filename.c_str(), "r");
   long NUM_ROWS = 0;
   char line[BUFFER_LINE];
@@ -245,13 +299,14 @@ std::shared_ptr<UBODT> UBODT::read_ubodt_csv(const std::string &filename,
 }
 
 std::shared_ptr<UBODT> UBODT::read_ubodt_binary(const std::string &filename,
+                                                 const NETWORK::NetworkGraph graph,
                                                  int multiplier) {
   SPDLOG_INFO("Reading UBODT file (binary format) from {}", filename);
   long rows = estimate_ubodt_rows(filename);
   int progress_step = 1000000;
   SPDLOG_TRACE("Estimated rows is {}", rows);
   int buckets = find_prime_number(rows / LOAD_FACTOR);
-  std::shared_ptr<UBODT> table = std::make_shared<UBODT>(buckets, multiplier);
+  std::shared_ptr<UBODT> table = std::make_shared<UBODT>(buckets, multiplier, graph);
   long NUM_ROWS = 0;
   std::ifstream ifs(filename.c_str());
   // Check byte offset

@@ -11,6 +11,7 @@
 #define FMM_UBODT_H_
 
 #include "network/type.hpp"
+#include "network/network_graph.hpp"
 #include "mm/transition_graph.hpp"
 #include "util/debug.hpp"
 
@@ -42,8 +43,9 @@ class UBODT {
    * @param buckets_arg    Bucket number
    * @param multiplier_arg A multiplier used for querying, recommended to be
    * the number of nodes in the graph.
+   * @param network The NetworkGraph whose OD pairs the UBODT represents
    */
-  UBODT(int buckets_arg, int multiplier_arg);
+  UBODT(int buckets_arg, int multiplier_arg, NETWORK::NetworkGraph network);
   ~UBODT();
   /**
    * Look up the row according to a source node and a target node
@@ -55,6 +57,16 @@ class UBODT {
   Record *look_up(NETWORK::NodeIndex source, NETWORK::NodeIndex target) const;
 
   /**
+   * Look up the row according to a source node and a target node.
+   * If it hasn't been calculated, calculates it.
+   * @param  source source node
+   * @param  target target node
+   * @return  A row in the ubodt if the od pair is found, otherwise nullptr
+   * is returned.
+   */
+  Record *look_up_or_make(NETWORK::NodeIndex source, NETWORK::NodeIndex target);
+
+  /**
    * Look up a shortest path (SP) containing edges from source to target.
    * In case that SP is not found, empty is returned.
    * @param  source source node
@@ -62,7 +74,7 @@ class UBODT {
    * @return  a shortest path connecting source to target
    */
   std::vector<NETWORK::EdgeIndex> look_sp_path(NETWORK::NodeIndex source,
-      NETWORK::NodeIndex target) const;
+      NETWORK::NodeIndex target);
 
   /**
    * Construct the complete path (a vector of edge ID) from an optimal path
@@ -79,7 +91,7 @@ class UBODT {
   C_Path construct_complete_path(int traj_id, const TGOpath &path,
                                  const std::vector<NETWORK::Edge> &edges,
                                  std::vector<int> *indices,
-                                 double reverse_tolerance) const;
+                                 double reverse_tolerance);
   /**
    * Get the upperbound of the UBODT
    * @return upperbound value
@@ -112,6 +124,7 @@ class UBODT {
    * @return  A shared pointer to the UBODT data.
    */
   static std::shared_ptr<UBODT> read_ubodt_file(const std::string &filename,
+                                                const NETWORK::NetworkGraph graph,
                                                 int multiplier = 50000);
   /**
    * Read UBODT from a CSV file
@@ -120,6 +133,7 @@ class UBODT {
    * @return  A shared pointer to the UBODT data.
    */
   static std::shared_ptr<UBODT> read_ubodt_csv(const std::string &filename,
+                                               const NETWORK::NetworkGraph graph,
                                                int multiplier = 50000);
 
   /**
@@ -129,6 +143,7 @@ class UBODT {
    * @return  A shared pointer to the UBODT data.
    */
   static std::shared_ptr<UBODT> read_ubodt_binary(const std::string &filename,
+                                                  const NETWORK::NetworkGraph graph,
                                                   int multiplier = 50000);
   /**
    * Estimate the number of rows in a file
@@ -153,6 +168,7 @@ class UBODT {
   long long num_rows=0;   // multiplier to get a unique ID
   double delta = 0.0;
   Record **hashtable;
+  NETWORK::NetworkGraph graph;
 };
 }
 }
