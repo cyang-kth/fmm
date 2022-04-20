@@ -30,7 +30,7 @@ TEST_CASE( "fmm is tested", "[fmm]" ) {
     MatchResult result = model.match_traj(trajectory,config);
     LineString expected_mgeom = wkt2linestring(
       "LINESTRING(2 0.250988700565,2 1,2 2,3 2,4 2,4 2.45776836158)");
-    REQUIRE_THAT(result.cpath,Catch::Equals<int>({2,5,13,14,23}));
+    REQUIRE_THAT(result.cpath,Catch::Equals<FMM::NETWORK::EdgeID>({2,5,13,14,23}));
     REQUIRE(expected_mgeom==result.mgeom);
   }
 }

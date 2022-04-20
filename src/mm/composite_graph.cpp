@@ -30,8 +30,12 @@ DummyGraph::DummyGraph(const Traj_Candidates &traj_candidates,
                    n, c.edge->index, c.offset-iter->second->offset);
         } else if (iter->second->offset - c.offset <
                    c.edge->length * reverse_tolerance) {
+          // reverse movement is discouraged, so it has higher cost than normal
+          // movement.
+          double reverse_movement_cost =
+              (iter->second->offset - c.offset) * (2.0 - reverse_tolerance);
           add_edge(iter->second->index,
-                   n, c.edge->index, 0);
+                   n, c.edge->index, reverse_movement_cost);
         }
       }
     }
