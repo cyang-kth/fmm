@@ -242,7 +242,7 @@ std::shared_ptr<UBODT> UBODT::read_ubodt_file(const std::string &filename,
   std::shared_ptr<UBODT> ubodt = nullptr;
   auto start_time = UTIL::get_current_time();
   if(!UTIL::file_exists(filename)) {
-	  int buckets = find_prime_number(multiplier / LOAD_FACTOR);
+	  int buckets = find_prime_number(graph.get_num_vertices()*graph.get_num_vertices());
 	  ubodt = std::make_shared<UBODT>(buckets, multiplier, graph);
   } else if (UTIL::check_file_extension(filename,"bin")){
     ubodt = read_ubodt_binary(filename,graph,multiplier);
