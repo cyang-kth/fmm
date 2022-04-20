@@ -167,7 +167,7 @@ class UBODT {
   const int buckets;   // number of buckets
   long long num_rows=0;   // multiplier to get a unique ID
   double delta = 0.0;
-  Record **hashtable;
+  std::atomic<Record**> hashtable;
   NETWORK::NetworkGraph graph;
 };
 }

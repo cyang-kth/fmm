@@ -198,7 +198,7 @@ std::string FastMapMatch::match_gps_file(
       std::vector<Trajectory> trajectories =
         reader.read_next_N_trajectories(buffer_trajectories_size);
       int trajectories_fetched = trajectories.size();
-      #pragma omp parallel for
+      #pragma omp parallel for schedule (guided)
       for (int i = 0; i < trajectories_fetched; ++i) {
         Trajectory &trajectory = trajectories[i];
         int points_in_tr = trajectory.geom.get_num_points();
