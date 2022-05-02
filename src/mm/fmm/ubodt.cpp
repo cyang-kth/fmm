@@ -133,8 +133,8 @@ std::vector<std::vector<NETWORK::EdgeIndex>> UBODT::look_k_sp_path(
 	std::vector<std::vector<NETWORK::EdgeIndex>> returnV;
 	if (source == target) {return returnV;}
 
-	std::vector<std::vector<Record*>> routes;
-	routes.push_back({look_up_or_make(source, target)});
+	std::vector<std::vector<Record*>> routes(K);
+	routes.at(0) = {look_up_or_make(source, target)};
 
 	struct RoutesNode {
 		std::vector<Record*> index; /**< Index of a node in the heap */
@@ -247,9 +247,10 @@ std::vector<std::vector<NETWORK::EdgeIndex>> UBODT::look_k_sp_path(
 	};
 	/** End of lambda functions **/
 
+	int k=1;
 	// Implementation of Yen's algorithm
 	// https://doi.org/10.1287/mnsc.17.11.712
-	for(int k=1; k<K; k++){
+	for(; k<K; k++){
 		std::vector<Record*> latestRoute = routes.at(k-1);
 
 		// The spur node is the ith node of latestRoute
@@ -265,16 +266,16 @@ std::vector<std::vector<NETWORK::EdgeIndex>> UBODT::look_k_sp_path(
 
 			// Eliminate edges of the spurNode used by routes
 			// that use basePath integrally
-			for(auto route : routes) {
+			for(int i=0; i<k; i++) {
 				// Special case of spurNode=source
-				Record *r = route.front();
+				Record *r = routes.at(i).front();
 				if(basePath.empty()){
 					out_edges.erase(r->next_e);
 					continue;
 				}
 
 				// Erase edge of next
-				if(isSubRoute(route, basePath, r, spurNode))
+				if(isSubRoute(routes.at(i), basePath, r, spurNode))
 					out_edges.erase(r->next_e);
 			}
 
@@ -328,17 +329,15 @@ std::vector<std::vector<NETWORK::EdgeIndex>> UBODT::look_k_sp_path(
 			if(nodesUntilSpur.find(r->source) == nodesUntilSpur.end()) {
 				// Valid candidate
 				// Check if not already included
-				bool uniquePath = true;
-				for(auto route : routes) {
-					Record *r;
-					if(isSubRoute(route, topCandidate, r, target)) {
-						uniquePath = false;
+				int i = 0;
+				Record *r;
+				for(; i<k; i++)
+					if(isSubRoute(routes.at(i), topCandidate, r, target))
 						break;
-					}
-				}
+
 				//Route already included, trying again
-				if(uniquePath) {
-					routes.push_back(topCandidate);
+				if(i==k) {
+					routes.at(k) = topCandidate;
 					// End route_candidates loop
 					break;
 				}
@@ -378,10 +377,12 @@ std::vector<std::vector<NETWORK::EdgeIndex>> UBODT::look_k_sp_path(
 				}
 			}
 		}
+		if(route_candidates.empty())
+			break;
 	}
-	for (auto route: routes){
+	for (int i=0; i<k; i++){
 		std::vector<EdgeIndex> edges;
-		auto iterR = route.begin();
+		auto iterR = routes.at(i).begin();
 		Record *r = *iterR;
 		NodeIndex currentNode = r->source;
 		while(currentNode != target){
