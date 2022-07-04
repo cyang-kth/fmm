@@ -77,7 +77,7 @@ class UBODT {
       NETWORK::NodeIndex target);
 
   /**
-   * Returns a vector with, at most, the k shortest paths from a source ot target
+   * Returns a vector with, at most, the k shortest paths from source to target
    * In case that SP is not found, an empty vector is returned.
    * @param  source source node
    * @param  target target node
@@ -87,6 +87,17 @@ class UBODT {
 		  NETWORK::NodeIndex source,
       NETWORK::NodeIndex target,
 	  int k);
+
+  /**
+   * Returns a vector with paths from a source o target using the breadth-first search on link elimination
+   * @param  source source node
+   * @param  target target node
+   * @param  size size of generated set
+   * @return vector of vectors with the shortest paths connecting source to target
+   */
+  std::vector<std::vector<NETWORK::EdgeIndex>> look_bfs_le_path(
+		  NETWORK::NodeIndex source,
+      NETWORK::NodeIndex target, int size);
 
   /**
    * Construct the complete path (a vector of edge ID) from an optimal path
