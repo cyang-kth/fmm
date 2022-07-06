@@ -285,7 +285,7 @@ std::vector<std::vector<NETWORK::EdgeIndex>> UBODT::look_bfs_le_path(
 						}
 					}
 
-					while (!route_candidates.empty()) {
+					while (!route_candidates.empty() && route_candidates.n < 10e3) {
 						std::vector<Record*> topCandidate = route_candidates.top().index;
 						route_candidates.pop();
 
