@@ -11,24 +11,24 @@ class MapMatcherConfig(object):
                 "File for {} is missing.".format(config_json_file))
         with open(config_json_file) as f:
             data = json.load(f)
-        if (not data.has_key("model")):
+        if (not "model" in data):
             raise Exception("Model is missing.")
-        if (not data.has_key("input")):
+        if (not "input" in data):
             raise Exception("Input is missing.")
-        if (not data["input"].has_key("network")):
+        if ("network" not in data["input"]):
             raise Exception("Network is missing.")
-        if (not data["input"]["network"].has_key("file")):
+        if ("file" not in data["input"]["network"]):
             raise Exception("Network file is missing.")
         self.network_file = str(data["input"]["network"]["file"])
-        if data["input"]["network"].has_key("id"):
+        if "id" in data["input"]["network"]:
             self.network_id = str(data["input"]["network"]["id"])
         else:
             self.network_id = "id"
-        if data["input"]["network"].has_key("source"):
+        if "source" in data["input"]["network"]:
             self.network_source = str(data["input"]["network"]["source"])
         else:
             self.network_source = "source"
-        if data["input"]["network"].has_key("target"):
+        if "target" in data["input"]["network"]:
             self.network_target = str(data["input"]["network"]["target"])
         else:
             self.network_target = "target"
@@ -36,30 +36,30 @@ class MapMatcherConfig(object):
             self.model_tag = "stmatch"
             self.mm_config = STMATCHConfig()
             if data.has_key("parameters"):
-                if data["parameters"].has_key("k"):
+                if "k" in data["parameters"]:
                     self.mm_config.k = data["parameters"]["k"]
-                if data["parameters"].has_key("r"):
+                if "r" in data["parameters"]:
                     self.mm_config.radius = data["parameters"]["r"]
-                if data["parameters"].has_key("e"):
+                if "e" in data["parameters"]:
                     self.mm_config.gps_error = data["parameters"]["e"]
-                if data["parameters"].has_key("f"):
+                if "f" in data["parameters"]:
                     self.mm_config.factor = data["parameters"]["f"]
-                if data["parameters"].has_key("vmax"):
+                if "vmax" in data["parameters"]:
                     self.mm_config.vmax = data["parameters"]["vmax"]
         elif (str(data["model"])=="fmm"):
             self.model_tag = "fmm"
-            if (not data["input"].has_key("ubodt")):
+            if ("ubodt" not in data["input"]):
                 raise Exception("Ubodt is missing.")
-            if (not data["input"]["ubodt"].has_key("file")):
+            if ("file" not in data["input"]["ubodt"]):
                 raise Exception("Ubodt file is missing.")
             self.ubodt_file = str(data["input"]["ubodt"]["file"])
             self.mm_config = FastMapMatchConfig()
-            if data.has_key("parameters"):
-                if data["parameters"].has_key("k"):
+            if "parameters" in data:
+                if "k" in data["parameters"]:
                     self.mm_config.k = data["parameters"]["k"]
-                if data["parameters"].has_key("r"):
+                if "r" in data["parameters"]:
                     self.mm_config.radius = data["parameters"]["r"]
-                if data["parameters"].has_key("e"):
+                if "e" in data["parameters"]:
                     self.mm_config.gps_error = data["parameters"]["e"]
         else:
             raise Exception(

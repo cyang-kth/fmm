@@ -78,7 +78,7 @@ def start_from_terminal(app):
     parser.add_option(
         '-c', '--config',
         help="the model configuration file",action="store",dest="config_file",
-        type='string', default="config.json")
+        type='string', default="fmm_config.json")
     opts, args = parser.parse_args()
     app.mapmatcher = MapMatcher(opts.config_file)
     if opts.debug:
