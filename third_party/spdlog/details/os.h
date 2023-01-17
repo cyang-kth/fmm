@@ -6,9 +6,12 @@
 #include "spdlog/common.h"
 #include <ctime> // std::time_t
 
-namespace spdlog {
-namespace details {
-namespace os {
+namespace spdlog
+{
+namespace details
+{
+namespace os
+{
 
 spdlog::log_clock::time_point now() SPDLOG_NOEXCEPT;
 
@@ -45,7 +48,8 @@ bool fopen_s(FILE **fp, const filename_t &filename, const filename_t &mode);
 
 int remove(const filename_t &filename) SPDLOG_NOEXCEPT;
 
-int rename(const filename_t &filename1, const filename_t &filename2) SPDLOG_NOEXCEPT;
+int rename(const filename_t &filename1,
+           const filename_t &filename2) SPDLOG_NOEXCEPT;
 
 // Return if file exists
 bool file_exists(const filename_t &filename) SPDLOG_NOEXCEPT;
@@ -80,8 +84,11 @@ bool is_color_terminal() SPDLOG_NOEXCEPT;
 // Source: https://github.com/agauniyal/rang/
 bool in_terminal(FILE *file) SPDLOG_NOEXCEPT;
 
-#if (defined(SPDLOG_WCHAR_TO_UTF8_SUPPORT) || defined(SPDLOG_WCHAR_FILENAMES)) && defined(_WIN32)
-void wstr_to_utf8buf(basic_string_view_t<wchar_t> wstr, fmt::memory_buffer &target);
+#if (defined(SPDLOG_WCHAR_TO_UTF8_SUPPORT) ||                                  \
+     defined(SPDLOG_WCHAR_FILENAMES)) &&                                       \
+    defined(_WIN32)
+void wstr_to_utf8buf(basic_string_view_t<wchar_t> wstr,
+                     fmt::memory_buffer &target);
 #endif
 
 } // namespace os

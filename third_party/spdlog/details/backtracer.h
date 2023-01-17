@@ -12,29 +12,28 @@
 // Store log messages in circular buffer.
 // Useful for storing debug data in case of error/warning happens.
 
-namespace spdlog {
-namespace details {
+namespace spdlog
+{
+namespace details
+{
 class backtracer
 {
     std::mutex mutex_;
     size_t n_messages_;
     circular_q<log_msg_buffer> messages_;
 
-public:
+  public:
     explicit backtracer(size_t n_messages)
-        : n_messages_{n_messages}
-        , messages_{n_messages}
-    {}
+        : n_messages_{n_messages}, messages_{n_messages}
+    {
+    }
 
     backtracer(const backtracer &other)
-        : n_messages_{other.n_messages_}
-        , messages_{other.messages_}
-    {}
-
-    size_t n_messages() const
+        : n_messages_{other.n_messages_}, messages_{other.messages_}
     {
-        return n_messages_;
     }
+
+    size_t n_messages() const { return n_messages_; }
 
     void add(const log_msg &msg)
     {
@@ -46,8 +45,7 @@ public:
     void foreach_pop(std::function<void(const details::log_msg)> fun)
     {
         std::lock_guard<std::mutex> lock{mutex_};
-        while (!messages_.empty())
-        {
+        while (!messages_.empty()) {
             log_msg_buffer popped;
             messages_.pop_front(popped);
             fun(popped);

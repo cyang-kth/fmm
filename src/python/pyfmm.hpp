@@ -12,40 +12,45 @@
 
 #include "mm/mm_type.hpp"
 
-namespace FMM{
+namespace FMM
+{
 /**
  * Data type for Python API
  */
-namespace PYTHON{
+namespace PYTHON
+{
 /**
  * POD Candidate data type used in Python API
  */
-struct PyCandidate{
-  int index; /**< Index of the candidate, point index */
-  NETWORK::EdgeID edge_id; /**< Edge id matched */
-  NETWORK::NodeID source; /**< Edge source node ID */
-  NETWORK::NodeID target; /**< Edge target node ID */
-  double error; /**< Error of matching */
-  double offset; /**< Matched point distance to start node of edge */
-  double length; /**< Length of edge matched */
-  double ep; /**< emission probability */
-  double tp; /**< transition proability from previous matched candidate */
-  double spdist; /**< shortest path distance from previous matched candidate */
+struct PyCandidate
+{
+    int index;               /**< Index of the candidate, point index */
+    NETWORK::EdgeID edge_id; /**< Edge id matched */
+    NETWORK::NodeID source;  /**< Edge source node ID */
+    NETWORK::NodeID target;  /**< Edge target node ID */
+    double error;            /**< Error of matching */
+    double offset; /**< Matched point distance to start node of edge */
+    double length; /**< Length of edge matched */
+    double ep;     /**< emission probability */
+    double tp;     /**< transition proability from previous matched candidate */
+    double
+        spdist; /**< shortest path distance from previous matched candidate */
 };
 
 /**
  * POD Match result type used in Python API
  */
-struct PyMatchResult {
-  int id; /**< id of a trajectory */
-  MM::O_Path opath; /**< Edge ID matched for each point of the trajectory  */
-  MM::C_Path cpath; /**< Edge ID traversed by the matched path */
-  std::vector<PyCandidate> candidates; /**< Candidate matched to each point */
-  std::vector<int> indices; /**< index of matched edge in the cpath */
-  CORE::LineString mgeom; /**< Geometry of the matched path */
-  CORE::LineString pgeom; /**< Point position matched for each GPS point */
+struct PyMatchResult
+{
+    int id;           /**< id of a trajectory */
+    MM::O_Path opath; /**< Edge ID matched for each point of the trajectory  */
+    MM::C_Path cpath; /**< Edge ID traversed by the matched path */
+    std::vector<PyCandidate> candidates; /**< Candidate matched to each point */
+    std::vector<int> indices; /**< index of matched edge in the cpath */
+    CORE::LineString mgeom;   /**< Geometry of the matched path */
+    CORE::LineString pgeom;   /**< Point position matched for each GPS point */
 };
-}; // PYTHON
-}; // FMM
+}; // namespace PYTHON
+}; // namespace FMM
 
-#endif //FMM_SRC_PYTHON_PYFMM_HPP_
+#endif // FMM_SRC_PYTHON_PYFMM_HPP_

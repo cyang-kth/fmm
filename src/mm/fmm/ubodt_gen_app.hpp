@@ -19,33 +19,33 @@
 #endif
 #include <boost/archive/binary_oarchive.hpp>
 
-namespace FMM {
-namespace MM {
+namespace FMM
+{
+namespace MM
+{
 /**
  * ubodt_gen command line program
  */
-class UBODTGenApp {
-public:
-  /**
-   * Constructor
-   * @param config Configuration data
-   */
-  UBODTGenApp(const UBODTGenAppConfig &config) :
-    config_(config),
-    network_(config_.network_config),
-    ng_(network_) {
-  };
-  /**
-   * Run the precomputation
-   */
-  void run() const;
-private:
-  const UBODTGenAppConfig &config_;
-  NETWORK::Network network_;
-  NETWORK::NetworkGraph ng_;
+class UBODTGenApp
+{
+  public:
+    /**
+     * Constructor
+     * @param config Configuration data
+     */
+    UBODTGenApp(const UBODTGenAppConfig &config)
+        : config_(config), network_(config_.network_config), ng_(network_){};
+    /**
+     * Run the precomputation
+     */
+    void run() const;
 
+  private:
+    const UBODTGenAppConfig &config_;
+    NETWORK::Network network_;
+    NETWORK::NetworkGraph ng_;
 };
-}
-}
+} // namespace MM
+} // namespace FMM
 
-#endif //FMM_SRC_MM_FMM_UBODT_GEN_APP_HPP_
+#endif // FMM_SRC_MM_FMM_UBODT_GEN_APP_HPP_

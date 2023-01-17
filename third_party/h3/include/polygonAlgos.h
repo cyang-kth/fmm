@@ -54,7 +54,7 @@
 #define GENERIC_LOOP_ALGO(func) LOOP_ALGO_TJOIN(func, TYPE)
 
 /** Macro: Normalize longitude, dealing with transmeridian arcs */
-#define NORMALIZE_LON(lon, isTransmeridian) \
+#define NORMALIZE_LON(lon, isTransmeridian)                                    \
     (isTransmeridian && lon < 0 ? lon + (double)M_2PI : lon)
 
 /**
@@ -64,8 +64,9 @@
  * @param coord The coordinate to check
  * @return      Whether the point is contained
  */
-bool GENERIC_LOOP_ALGO(pointInside)(const TYPE* loop, const BBox* bbox,
-                                    const GeoCoord* coord) {
+bool GENERIC_LOOP_ALGO(pointInside)(const TYPE *loop, const BBox *bbox,
+                                    const GeoCoord *coord)
+{
     // fail fast if we're outside the bounding box
     if (!bboxContains(bbox, coord)) {
         return false;
@@ -134,7 +135,8 @@ bool GENERIC_LOOP_ALGO(pointInside)(const TYPE* loop, const BBox* bbox,
  * @param loop     Loop of coordinates
  * @param bbox     Output bbox
  */
-void GENERIC_LOOP_ALGO(bboxFrom)(const TYPE* loop, BBox* bbox) {
+void GENERIC_LOOP_ALGO(bboxFrom)(const TYPE *loop, BBox *bbox)
+{
     // Early exit if there are no vertices
     if (IS_EMPTY(loop)) {
         *bbox = (BBox){0};
@@ -161,14 +163,20 @@ void GENERIC_LOOP_ALGO(bboxFrom)(const TYPE* loop, BBox* bbox) {
 
         lat = coord.lat;
         lon = coord.lon;
-        if (lat < bbox->south) bbox->south = lat;
-        if (lon < bbox->west) bbox->west = lon;
-        if (lat > bbox->north) bbox->north = lat;
-        if (lon > bbox->east) bbox->east = lon;
+        if (lat < bbox->south)
+            bbox->south = lat;
+        if (lon < bbox->west)
+            bbox->west = lon;
+        if (lat > bbox->north)
+            bbox->north = lat;
+        if (lon > bbox->east)
+            bbox->east = lon;
         // Save the min positive and max negative longitude for
         // use in the transmeridian case
-        if (lon > 0 && lon < minPosLon) minPosLon = lon;
-        if (lon < 0 && lon > maxNegLon) maxNegLon = lon;
+        if (lon > 0 && lon < minPosLon)
+            minPosLon = lon;
+        if (lon < 0 && lon > maxNegLon)
+            maxNegLon = lon;
         // check for arcs > 180 degrees longitude, flagging as transmeridian
         if (fabs(lon - next.lon) > M_PI) {
             isTransmeridian = true;
@@ -188,8 +196,9 @@ void GENERIC_LOOP_ALGO(bboxFrom)(const TYPE* loop, BBox* bbox) {
  * @param isTransmeridian   Whether the loop crosses the antimeridian
  * @return                  Whether the loop is clockwise
  */
-static bool GENERIC_LOOP_ALGO(isClockwiseNormalized)(const TYPE* loop,
-                                                     bool isTransmeridian) {
+static bool GENERIC_LOOP_ALGO(isClockwiseNormalized)(const TYPE *loop,
+                                                     bool isTransmeridian)
+{
     double sum = 0;
     GeoCoord a;
     GeoCoord b;
@@ -216,6 +225,7 @@ static bool GENERIC_LOOP_ALGO(isClockwiseNormalized)(const TYPE* loop,
  * @param loop  The loop to check
  * @return      Whether the loop is clockwise
  */
-bool GENERIC_LOOP_ALGO(isClockwise)(const TYPE* loop) {
+bool GENERIC_LOOP_ALGO(isClockwise)(const TYPE *loop)
+{
     return GENERIC_LOOP_ALGO(isClockwiseNormalized)(loop, false);
 }

@@ -1,4 +1,4 @@
-cmake_minimum_required( VERSION 3.5.1)
+cmake_minimum_required(VERSION 3.5.1)
 
 project(fmm-contrib)
 
@@ -23,22 +23,22 @@ else()
 endif()
 
 find_package(GDAL 2.2 REQUIRED)
-if (GDAL_FOUND)
+if(GDAL_FOUND)
   message(STATUS "GDAL headers found at ${GDAL_INCLUDE_DIR}")
   message(STATUS "GDAL library found at ${GDAL_LIBRARIES}")
   include_directories(${GDAL_INCLUDE_DIR})
 else()
   message(FATAL_ERROR "GDAL Not Found!")
-endif (GDAL_FOUND)
+endif(GDAL_FOUND)
 
 find_package(Boost 1.56.0 REQUIRED serialization)
-if (Boost_FOUND)
+if(Boost_FOUND)
   message(STATUS "Boost headers found at ${Boost_INCLUDE_DIR}")
   message(STATUS "Boost library found at ${Boost_LIBRARIES}")
   message(STATUS "Boost library version ${Boost_LIB_VERSION}")
 else()
   message(FATAL_ERROR "Boost Not Found!")
-endif (Boost_FOUND)
+endif(Boost_FOUND)
 
 find_package(OpenMP REQUIRED)
 if(OPENMP_FOUND)
@@ -49,16 +49,16 @@ if(OPENMP_FOUND)
 endif()
 
 find_package(FMM REQUIRED)
-if (FMM_FOUND)
-    message(STATUS "FMM headers found at ${FMM_INCLUDE_DIR}")
-    message(STATUS "FMM library found at ${FMM_LIBRARY}")
-    include_directories(${FMM_INCLUDE_DIR})
-    include_directories(${FMM_INCLUDE_DIR}/fmm)
+if(FMM_FOUND)
+  message(STATUS "FMM headers found at ${FMM_INCLUDE_DIR}")
+  message(STATUS "FMM library found at ${FMM_LIBRARY}")
+  include_directories(${FMM_INCLUDE_DIR})
+  include_directories(${FMM_INCLUDE_DIR}/fmm)
 else()
-    message(FATAL_ERROR "FMM Not Found!")
-endif (FMM_FOUND)
+  message(FATAL_ERROR "FMM Not Found!")
+endif(FMM_FOUND)
 
-### Set RPATH properties
+# Set RPATH properties
 
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
 
@@ -69,8 +69,7 @@ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 add_executable(fmm_print_network main.cpp)
-target_link_libraries(fmm_print_network
-  ${FMM_LIBRARY} ${GDAL_LIBRARIES} ${Boost_LIBRARIES}
-  ${OpenMP_CXX_LIBRARIES})
+target_link_libraries(fmm_print_network ${FMM_LIBRARY} ${GDAL_LIBRARIES}
+                      ${Boost_LIBRARIES} ${OpenMP_CXX_LIBRARIES})
 
 install(TARGETS fmm_print_network DESTINATION bin)

@@ -32,14 +32,15 @@
  * @param  bbox Bounding box to inspect
  * @return      is transmeridian
  */
-bool bboxIsTransmeridian(const BBox* bbox) { return bbox->east < bbox->west; }
+bool bboxIsTransmeridian(const BBox *bbox) { return bbox->east < bbox->west; }
 
 /**
  * Get the center of a bounding box
  * @param bbox   Input bounding box
  * @param center Output center coordinate
  */
-void bboxCenter(const BBox* bbox, GeoCoord* center) {
+void bboxCenter(const BBox *bbox, GeoCoord *center)
+{
     center->lat = (bbox->north + bbox->south) / 2.0;
     // If the bbox crosses the antimeridian, shift east 360 degrees
     double east = bboxIsTransmeridian(bbox) ? bbox->east + M_2PI : bbox->east;
@@ -52,7 +53,8 @@ void bboxCenter(const BBox* bbox, GeoCoord* center) {
  * @param  point Point to test
  * @return       Whether the point is contained
  */
-bool bboxContains(const BBox* bbox, const GeoCoord* point) {
+bool bboxContains(const BBox *bbox, const GeoCoord *point)
+{
     return point->lat >= bbox->south && point->lat <= bbox->north &&
            (bboxIsTransmeridian(bbox) ?
                                       // transmeridian case
@@ -68,7 +70,8 @@ bool bboxContains(const BBox* bbox, const GeoCoord* point) {
  * @param  b2 Bounding box 2
  * @return    Whether the boxes are equal
  */
-bool bboxEquals(const BBox* b1, const BBox* b2) {
+bool bboxEquals(const BBox *b1, const BBox *b2)
+{
     return b1->north == b2->north && b1->south == b2->south &&
            b1->east == b2->east && b1->west == b2->west;
 }
@@ -79,7 +82,8 @@ bool bboxEquals(const BBox* b1, const BBox* b2) {
  * @param h3Index the index of the hexagon
  * @return the radius of the hexagon in Km
  */
-double _hexRadiusKm(H3Index h3Index) {
+double _hexRadiusKm(H3Index h3Index)
+{
     // There is probably a cheaper way to determine the radius of a
     // hexagon, but this way is conceptually simple
     GeoCoord h3Center;
@@ -97,7 +101,8 @@ double _hexRadiusKm(H3Index h3Index) {
  * @param res the resolution of the H3 hexagons to fill the bounding box
  * @return the estimated number of hexagons to fill the bounding box
  */
-int bboxHexEstimate(const BBox* bbox, int res) {
+int bboxHexEstimate(const BBox *bbox, int res)
+{
     // Get the area of the pentagon as the maximally-distorted area possible
     H3Index pentagons[12] = {0};
     H3_EXPORT(getPentagonIndexes)(res, pentagons);
@@ -123,7 +128,8 @@ int bboxHexEstimate(const BBox* bbox, int res) {
 
     // Divide the two to get an estimate of the number of hexagons needed
     int estimate = (int)ceil(a / pentagonAreaKm2);
-    if (estimate == 0) estimate = 1;
+    if (estimate == 0)
+        estimate = 1;
     return estimate;
 }
 
@@ -136,8 +142,9 @@ int bboxHexEstimate(const BBox* bbox, int res) {
  *  @param res the resolution of the H3 hexagons to trace the line
  *  @return the estimated number of hexagons required to trace the line
  */
-int lineHexEstimate(const GeoCoord* origin, const GeoCoord* destination,
-                    int res) {
+int lineHexEstimate(const GeoCoord *origin, const GeoCoord *destination,
+                    int res)
+{
     // Get the area of the pentagon as the maximally-distorted area possible
     H3Index pentagons[12] = {0};
     H3_EXPORT(getPentagonIndexes)(res, pentagons);
@@ -145,6 +152,7 @@ int lineHexEstimate(const GeoCoord* origin, const GeoCoord* destination,
 
     double dist = H3_EXPORT(pointDistKm)(origin, destination);
     int estimate = (int)ceil(dist / (2 * pentagonRadiusKm));
-    if (estimate == 0) estimate = 1;
+    if (estimate == 0)
+        estimate = 1;
     return estimate;
 }

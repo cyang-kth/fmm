@@ -9,35 +9,33 @@
 #include <mutex>
 #include <ostream>
 
-namespace spdlog {
-namespace sinks {
-template<typename Mutex>
-class ostream_sink final : public base_sink<Mutex>
+namespace spdlog
 {
-public:
+namespace sinks
+{
+template <typename Mutex> class ostream_sink final : public base_sink<Mutex>
+{
+  public:
     explicit ostream_sink(std::ostream &os, bool force_flush = false)
-        : ostream_(os)
-        , force_flush_(force_flush)
-    {}
+        : ostream_(os), force_flush_(force_flush)
+    {
+    }
     ostream_sink(const ostream_sink &) = delete;
     ostream_sink &operator=(const ostream_sink &) = delete;
 
-protected:
+  protected:
     void sink_it_(const details::log_msg &msg) override
     {
         fmt::memory_buffer formatted;
         base_sink<Mutex>::formatter_->format(msg, formatted);
-        ostream_.write(formatted.data(), static_cast<std::streamsize>(formatted.size()));
-        if (force_flush_)
-        {
+        ostream_.write(formatted.data(),
+                       static_cast<std::streamsize>(formatted.size()));
+        if (force_flush_) {
             ostream_.flush();
         }
     }
 
-    void flush_() override
-    {
-        ostream_.flush();
-    }
+    void flush_() override { ostream_.flush(); }
 
     std::ostream &ostream_;
     bool force_flush_;

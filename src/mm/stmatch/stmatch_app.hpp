@@ -15,31 +15,33 @@
 #include "io/gps_reader.hpp"
 #include "io/mm_writer.hpp"
 
-namespace FMM {
-namespace MM{
+namespace FMM
+{
+namespace MM
+{
 /**
  * Class of stmatch command line program
  */
-class STMATCHApp {
-public:
-  /**
-   * Create stmatch command application from configuration
-   * @param config configuration of the command line app
-   */
-  STMATCHApp(const STMATCHAppConfig &config):
-      config_(config),
-      network_(config_.network_config),
-      ng_(network_){};
-  /**
-   * Run the stmatch program
-   */
-  void run();
- private:
-  const STMATCHAppConfig &config_;
-  NETWORK::Network network_;
-  NETWORK::NetworkGraph ng_;
+class STMATCHApp
+{
+  public:
+    /**
+     * Create stmatch command application from configuration
+     * @param config configuration of the command line app
+     */
+    STMATCHApp(const STMATCHAppConfig &config)
+        : config_(config), network_(config_.network_config), ng_(network_){};
+    /**
+     * Run the stmatch program
+     */
+    void run();
+
+  private:
+    const STMATCHAppConfig &config_;
+    NETWORK::Network network_;
+    NETWORK::NetworkGraph ng_;
 };
-}
-}
+} // namespace MM
+} // namespace FMM
 
 #endif

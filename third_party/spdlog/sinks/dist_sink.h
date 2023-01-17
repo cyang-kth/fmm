@@ -16,13 +16,14 @@
 // Distribution sink (mux). Stores a vector of sinks which get called when log
 // is called
 
-namespace spdlog {
-namespace sinks {
-
-template<typename Mutex>
-class dist_sink : public base_sink<Mutex>
+namespace spdlog
 {
-public:
+namespace sinks
+{
+
+template <typename Mutex> class dist_sink : public base_sink<Mutex>
+{
+  public:
     dist_sink() = default;
     dist_sink(const dist_sink &) = delete;
     dist_sink &operator=(const dist_sink &) = delete;
@@ -36,7 +37,8 @@ public:
     void remove_sink(std::shared_ptr<sink> sink)
     {
         std::lock_guard<Mutex> lock(base_sink<Mutex>::mutex_);
-        sinks_.erase(std::remove(sinks_.begin(), sinks_.end(), sink), sinks_.end());
+        sinks_.erase(std::remove(sinks_.begin(), sinks_.end(), sink),
+                     sinks_.end());
     }
 
     void set_sinks(std::vector<std::shared_ptr<sink>> sinks)
@@ -45,18 +47,13 @@ public:
         sinks_ = std::move(sinks);
     }
 
-    std::vector<std::shared_ptr<sink>> &sinks()
-    {
-        return sinks_;
-    }
+    std::vector<std::shared_ptr<sink>> &sinks() { return sinks_; }
 
-protected:
+  protected:
     void sink_it_(const details::log_msg &msg) override
     {
-        for (auto &sink : sinks_)
-        {
-            if (sink->should_log(msg.level))
-            {
+        for (auto &sink : sinks_) {
+            if (sink->should_log(msg.level)) {
                 sink->log(msg);
             }
         }
@@ -64,22 +61,22 @@ protected:
 
     void flush_() override
     {
-        for (auto &sink : sinks_)
-        {
+        for (auto &sink : sinks_) {
             sink->flush();
         }
     }
 
     void set_pattern_(const std::string &pattern) override
     {
-        set_formatter_(details::make_unique<spdlog::pattern_formatter>(pattern));
+        set_formatter_(
+            details::make_unique<spdlog::pattern_formatter>(pattern));
     }
 
-    void set_formatter_(std::unique_ptr<spdlog::formatter> sink_formatter) override
+    void
+    set_formatter_(std::unique_ptr<spdlog::formatter> sink_formatter) override
     {
         base_sink<Mutex>::formatter_ = std::move(sink_formatter);
-        for (auto &sink : sinks_)
-        {
+        for (auto &sink : sinks_) {
             sink->set_formatter(base_sink<Mutex>::formatter_->clone());
         }
     }

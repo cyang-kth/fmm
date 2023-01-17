@@ -17,17 +17,17 @@
 #include "spdlog/sinks/rotating_file_sink.h"
 #include <string>
 
-
-namespace FMM {
-namespace UTIL{
+namespace FMM
+{
+namespace UTIL
+{
 
 /**
  * Log level strings for printing the log level information
  */
-static const std::vector<std::string>
-    LOG_LEVESLS {"0-trace","1-debug","2-info",
-                 "3-warn","4-err","5-critical","6-off"};
-}; // UTIL
-}; // FMM
+static const std::vector<std::string> LOG_LEVESLS{
+    "0-trace", "1-debug", "2-info", "3-warn", "4-err", "5-critical", "6-off"};
+}; // namespace UTIL
+}; // namespace FMM
 
 #endif // MM_DEBUG_HPP

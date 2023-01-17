@@ -16,8 +16,10 @@
 #include <unordered_map>
 #include "core/geometry.hpp"
 
-namespace FMM {
-namespace NETWORK{
+namespace FMM
+{
+namespace NETWORK
+{
 
 typedef long long NodeID; /**< Node ID in the network, can be discontinuous
                           int */
@@ -35,25 +37,25 @@ typedef std::vector<NodeID> NodeIDVec;
 /**
  * Map of node index
  */
-typedef std::unordered_map<NodeID,NodeIndex> NodeIndexMap;
+typedef std::unordered_map<NodeID, NodeIndex> NodeIndexMap;
 /**
  * Map of edge index
  */
-typedef std::unordered_map<EdgeID,EdgeIndex> EdgeIndexMap;
+typedef std::unordered_map<EdgeID, EdgeIndex> EdgeIndexMap;
 
 /**
  * Road edge class
  */
 struct Edge
 {
-  EdgeIndex index; /**< Index of an edge, which is continuous [0,N-1] */
-  EdgeID id; /**< Edge ID, can be discontinuous integers */
-  NodeIndex source; /**< source node index */
-  NodeIndex target; /**< target node index */
-  double length; /**< length of the edge polyline */
-  FMM::CORE::LineString geom; /**< the edge geometry */
+    EdgeIndex index;  /**< Index of an edge, which is continuous [0,N-1] */
+    EdgeID id;        /**< Edge ID, can be discontinuous integers */
+    NodeIndex source; /**< source node index */
+    NodeIndex target; /**< target node index */
+    double length;    /**< length of the edge polyline */
+    FMM::CORE::LineString geom; /**< the edge geometry */
 };
 
-} // NETWORK
-} // MM
+} // namespace NETWORK
+} // namespace FMM
 #endif /* MM_TYPES_HPP */

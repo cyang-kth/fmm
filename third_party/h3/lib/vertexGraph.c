@@ -34,9 +34,10 @@
  * @param  numBuckets Number of buckets to include in the graph
  * @param  res        Resolution of the hexagons whose vertices we're storing
  */
-void initVertexGraph(VertexGraph* graph, int numBuckets, int res) {
+void initVertexGraph(VertexGraph *graph, int numBuckets, int res)
+{
     if (numBuckets > 0) {
-        graph->buckets = H3_MEMORY(calloc)(numBuckets, sizeof(VertexNode*));
+        graph->buckets = H3_MEMORY(calloc)(numBuckets, sizeof(VertexNode *));
         assert(graph->buckets != NULL);
     } else {
         graph->buckets = NULL;
@@ -51,8 +52,9 @@ void initVertexGraph(VertexGraph* graph, int numBuckets, int res) {
  * responsible for freeing memory allocated to the VertexGraph struct itself.
  * @param graph Graph to destroy
  */
-void destroyVertexGraph(VertexGraph* graph) {
-    VertexNode* node;
+void destroyVertexGraph(VertexGraph *graph)
+{
+    VertexNode *node;
     while ((node = firstVertexNode(graph)) != NULL) {
         removeVertexNode(graph, node);
     }
@@ -70,15 +72,17 @@ void destroyVertexGraph(VertexGraph* graph) {
  * @param  numBuckets Number of buckets in the graph
  * @return            Integer hash
  */
-uint32_t _hashVertex(const GeoCoord* vertex, int res, int numBuckets) {
+uint32_t _hashVertex(const GeoCoord *vertex, int res, int numBuckets)
+{
     // Simple hash: Take the sum of the lat and lon with a precision level
     // determined by the resolution, converted to int, modulo bucket count.
     return (uint32_t)fmod(fabs((vertex->lat + vertex->lon) * pow(10, 15 - res)),
                           numBuckets);
 }
 
-void _initVertexNode(VertexNode* node, const GeoCoord* fromVtx,
-                     const GeoCoord* toVtx) {
+void _initVertexNode(VertexNode *node, const GeoCoord *fromVtx,
+                     const GeoCoord *toVtx)
+{
     node->from = *fromVtx;
     node->to = *toVtx;
     node->next = NULL;
@@ -91,16 +95,17 @@ void _initVertexNode(VertexNode* node, const GeoCoord* fromVtx,
  * @param toVtx   End vertex
  * @return        Pointer to the new node
  */
-VertexNode* addVertexNode(VertexGraph* graph, const GeoCoord* fromVtx,
-                          const GeoCoord* toVtx) {
+VertexNode *addVertexNode(VertexGraph *graph, const GeoCoord *fromVtx,
+                          const GeoCoord *toVtx)
+{
     // Make the new node
-    VertexNode* node = H3_MEMORY(malloc)(sizeof(VertexNode));
+    VertexNode *node = H3_MEMORY(malloc)(sizeof(VertexNode));
     assert(node != NULL);
     _initVertexNode(node, fromVtx, toVtx);
     // Determine location
     uint32_t index = _hashVertex(fromVtx, graph->res, graph->numBuckets);
     // Check whether there's an existing node in that spot
-    VertexNode* currentNode = graph->buckets[index];
+    VertexNode *currentNode = graph->buckets[index];
     if (currentNode == NULL) {
         // Set bucket to the new node
         graph->buckets[index] = node;
@@ -132,10 +137,11 @@ VertexNode* addVertexNode(VertexGraph* graph, const GeoCoord* fromVtx,
  * @param node  Node to remove
  * @return      0 on success, 1 on failure (node not found)
  */
-int removeVertexNode(VertexGraph* graph, VertexNode* node) {
+int removeVertexNode(VertexGraph *graph, VertexNode *node)
+{
     // Determine location
     uint32_t index = _hashVertex(&node->from, graph->res, graph->numBuckets);
-    VertexNode* currentNode = graph->buckets[index];
+    VertexNode *currentNode = graph->buckets[index];
     int found = 0;
     if (currentNode != NULL) {
         if (currentNode == node) {
@@ -168,12 +174,13 @@ int removeVertexNode(VertexGraph* graph, VertexNode* node) {
  * @param  toVtx   End vertex, or NULL if we don't care
  * @return         Pointer to the vertex node, if found
  */
-VertexNode* findNodeForEdge(const VertexGraph* graph, const GeoCoord* fromVtx,
-                            const GeoCoord* toVtx) {
+VertexNode *findNodeForEdge(const VertexGraph *graph, const GeoCoord *fromVtx,
+                            const GeoCoord *toVtx)
+{
     // Determine location
     uint32_t index = _hashVertex(fromVtx, graph->res, graph->numBuckets);
     // Check whether there's an existing node in that spot
-    VertexNode* node = graph->buckets[index];
+    VertexNode *node = graph->buckets[index];
     if (node != NULL) {
         // Look through the list and see if we find the edge
         do {
@@ -194,8 +201,8 @@ VertexNode* findNodeForEdge(const VertexGraph* graph, const GeoCoord* fromVtx,
  * @param  fromVtx Start vertex
  * @return         Pointer to the vertex node, if found
  */
-VertexNode* findNodeForVertex(const VertexGraph* graph,
-                              const GeoCoord* fromVtx) {
+VertexNode *findNodeForVertex(const VertexGraph *graph, const GeoCoord *fromVtx)
+{
     return findNodeForEdge(graph, fromVtx, NULL);
 }
 
@@ -204,8 +211,9 @@ VertexNode* findNodeForVertex(const VertexGraph* graph,
  * @param  graph Graph to iterate
  * @return       Vertex node, or NULL if at the end
  */
-VertexNode* firstVertexNode(const VertexGraph* graph) {
-    VertexNode* node = NULL;
+VertexNode *firstVertexNode(const VertexGraph *graph)
+{
+    VertexNode *node = NULL;
     int currentIndex = 0;
     while (node == NULL) {
         if (currentIndex < graph->numBuckets) {

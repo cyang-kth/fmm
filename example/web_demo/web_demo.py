@@ -3,17 +3,17 @@
     Author: Can Yang
 '''
 
-import os
-import tornado.wsgi
-import tornado.httpserver
-import time
-import optparse
 import logging
+import optparse
+import os
+import time
+
 import flask
+import numpy as np
+import tornado.httpserver
+import tornado.wsgi
 from flask import jsonify
 from mapmatcher import MapMatcher
-
-import numpy as np
 
 app = flask.Flask(__name__,static_url_path='/static')
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
@@ -58,8 +58,8 @@ def start_tornado(app, port=5000):
     http_server = tornado.httpserver.HTTPServer(
         tornado.wsgi.WSGIContainer(app))
     http_server.listen(port)
-    print("Tornado server starting on port {}".format(port))
-    print("Visit http://localhost:{} to check the demo".format(port))
+    print(f"Tornado server starting on port {port}")
+    print(f"Visit http://localhost:{port} to check the demo")
     tornado.ioloop.IOLoop.instance().start()
 def start_from_terminal(app):
     """

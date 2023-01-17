@@ -97,8 +97,8 @@
 /**
  * Sets the highest bit of the h3 to v.
  */
-#define H3_SET_HIGH_BIT(h3, v)                 \
-    (h3) = (((h3)&H3_HIGH_BIT_MASK_NEGATIVE) | \
+#define H3_SET_HIGH_BIT(h3, v)                                                 \
+    (h3) = (((h3)&H3_HIGH_BIT_MASK_NEGATIVE) |                                 \
             (((uint64_t)(v)) << H3_MAX_OFFSET))
 
 /**
@@ -109,7 +109,7 @@
 /**
  * Sets the integer mode of h3 to v.
  */
-#define H3_SET_MODE(h3, v) \
+#define H3_SET_MODE(h3, v)                                                     \
     (h3) = (((h3)&H3_MODE_MASK_NEGATIVE) | (((uint64_t)(v)) << H3_MODE_OFFSET))
 
 /**
@@ -120,7 +120,7 @@
 /**
  * Sets the integer base cell of h3 to bc.
  */
-#define H3_SET_BASE_CELL(h3, bc) \
+#define H3_SET_BASE_CELL(h3, bc)                                               \
     (h3) = (((h3)&H3_BC_MASK_NEGATIVE) | (((uint64_t)(bc)) << H3_BC_OFFSET))
 
 /**
@@ -131,37 +131,37 @@
 /**
  * Sets the integer resolution of h3.
  */
-#define H3_SET_RESOLUTION(h3, res) \
+#define H3_SET_RESOLUTION(h3, res)                                             \
     (h3) = (((h3)&H3_RES_MASK_NEGATIVE) | (((uint64_t)(res)) << H3_RES_OFFSET))
 
 /**
  * Gets the resolution res integer digit (0-7) of h3.
  */
-#define H3_GET_INDEX_DIGIT(h3, res)                                        \
-    ((Direction)((((h3) >> ((MAX_H3_RES - (res)) * H3_PER_DIGIT_OFFSET)) & \
+#define H3_GET_INDEX_DIGIT(h3, res)                                            \
+    ((Direction)((((h3) >> ((MAX_H3_RES - (res)) * H3_PER_DIGIT_OFFSET)) &     \
                   H3_DIGIT_MASK)))
 
 /**
  * Sets a value in the reserved space. Setting to non-zero may produce invalid
  * indexes.
  */
-#define H3_SET_RESERVED_BITS(h3, v)            \
-    (h3) = (((h3)&H3_RESERVED_MASK_NEGATIVE) | \
+#define H3_SET_RESERVED_BITS(h3, v)                                            \
+    (h3) = (((h3)&H3_RESERVED_MASK_NEGATIVE) |                                 \
             (((uint64_t)(v)) << H3_RESERVED_OFFSET))
 
 /**
  * Gets a value in the reserved space. Should always be zero for valid indexes.
  */
-#define H3_GET_RESERVED_BITS(h3) \
+#define H3_GET_RESERVED_BITS(h3)                                               \
     ((int)((((h3)&H3_RESERVED_MASK) >> H3_RESERVED_OFFSET)))
 
 /**
  * Sets the resolution res digit of h3 to the integer digit (0-7)
  */
-#define H3_SET_INDEX_DIGIT(h3, res, digit)                                  \
-    (h3) = (((h3) & ~((H3_DIGIT_MASK                                        \
-                       << ((MAX_H3_RES - (res)) * H3_PER_DIGIT_OFFSET)))) | \
-            (((uint64_t)(digit))                                            \
+#define H3_SET_INDEX_DIGIT(h3, res, digit)                                     \
+    (h3) = (((h3) & ~((H3_DIGIT_MASK                                           \
+                       << ((MAX_H3_RES - (res)) * H3_PER_DIGIT_OFFSET)))) |    \
+            (((uint64_t)(digit))                                               \
              << ((MAX_H3_RES - (res)) * H3_PER_DIGIT_OFFSET)))
 
 /**
@@ -179,14 +179,14 @@
 #define COMPACT_DUPLICATE -2
 #define COMPACT_ALLOC_FAILED -3
 
-void setH3Index(H3Index* h, int res, int baseCell, Direction initDigit);
+void setH3Index(H3Index *h, int res, int baseCell, Direction initDigit);
 int isResClassIII(int res);
 
 // Internal functions
 
-int _h3ToFaceIjkWithInitializedFijk(H3Index h, FaceIJK* fijk);
-void _h3ToFaceIjk(H3Index h, FaceIJK* fijk);
-H3Index _faceIjkToH3(const FaceIJK* fijk, int res);
+int _h3ToFaceIjkWithInitializedFijk(H3Index h, FaceIJK *fijk);
+void _h3ToFaceIjk(H3Index h, FaceIJK *fijk);
+H3Index _faceIjkToH3(const FaceIJK *fijk, int res);
 Direction _h3LeadingNonZeroDigit(H3Index h);
 H3Index _h3RotatePent60ccw(H3Index h);
 H3Index _h3RotatePent60cw(H3Index h);

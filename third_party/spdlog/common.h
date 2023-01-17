@@ -66,11 +66,10 @@
 
 #ifdef SPDLOG_NO_EXCEPTIONS
 #define SPDLOG_TRY
-#define SPDLOG_THROW(ex)                                                                                                                   \
-    do                                                                                                                                     \
-    {                                                                                                                                      \
-        printf("spdlog fatal error: %s\n", ex.what());                                                                                     \
-        std::abort();                                                                                                                      \
+#define SPDLOG_THROW(ex)                                                       \
+    do {                                                                       \
+        printf("spdlog fatal error: %s\n", ex.what());                         \
+        std::abort();                                                          \
     } while (0)
 #define SPDLOG_CATCH_ALL()
 #else
@@ -79,11 +78,13 @@
 #define SPDLOG_CATCH_ALL() catch (...)
 #endif
 
-namespace spdlog {
+namespace spdlog
+{
 
 class formatter;
 
-namespace sinks {
+namespace sinks
+{
 class sink;
 }
 
@@ -100,8 +101,7 @@ using sink_ptr = std::shared_ptr<sinks::sink>;
 using sinks_init_list = std::initializer_list<sink_ptr>;
 using err_handler = std::function<void(const std::string &err_msg)>;
 
-template<typename T>
-using basic_string_view_t = fmt::basic_string_view<T>;
+template <typename T> using basic_string_view_t = fmt::basic_string_view<T>;
 
 using string_view_t = basic_string_view_t<char>;
 
@@ -111,14 +111,15 @@ using string_view_t = basic_string_view_t<char>;
 #else
 using wstring_view_t = basic_string_view_t<wchar_t>;
 
-template<typename T>
+template <typename T>
 struct is_convertible_to_wstring_view : std::is_convertible<T, wstring_view_t>
-{};
+{
+};
 #endif // _WIN32
 #else
-template<typename>
-struct is_convertible_to_wstring_view : std::false_type
-{};
+template <typename> struct is_convertible_to_wstring_view : std::false_type
+{
+};
 #endif // SPDLOG_WCHAR_TO_UTF8_SUPPORT
 
 #if defined(SPDLOG_NO_ATOMIC_LEVELS)
@@ -140,7 +141,8 @@ using level_t = std::atomic<int>;
 #endif
 
 // Log level enum
-namespace level {
+namespace level
+{
 enum level_enum
 {
     trace = SPDLOG_LEVEL_TRACE,
@@ -153,17 +155,17 @@ enum level_enum
 };
 
 #if !defined(SPDLOG_LEVEL_NAMES)
-#define SPDLOG_LEVEL_NAMES                                                                                                                 \
-    {                                                                                                                                      \
-        "trace", "debug", "info", "warning", "error", "critical", "off"                                                                    \
+#define SPDLOG_LEVEL_NAMES                                                     \
+    {                                                                          \
+        "trace", "debug", "info", "warning", "error", "critical", "off"        \
     }
 #endif
 
 #if !defined(SPDLOG_SHORT_LEVEL_NAMES)
 
-#define SPDLOG_SHORT_LEVEL_NAMES                                                                                                           \
-    {                                                                                                                                      \
-        "T", "D", "I", "W", "E", "C", "O"                                                                                                  \
+#define SPDLOG_SHORT_LEVEL_NAMES                                               \
+    {                                                                          \
+        "T", "D", "I", "W", "E", "C", "O"                                      \
     }
 #endif
 
@@ -199,41 +201,39 @@ enum class pattern_time_type
 //
 class spdlog_ex : public std::exception
 {
-public:
+  public:
     explicit spdlog_ex(std::string msg);
     spdlog_ex(const std::string &msg, int last_errno);
     const char *what() const SPDLOG_NOEXCEPT override;
 
-private:
+  private:
     std::string msg_;
 };
 
 struct source_loc
 {
     SPDLOG_CONSTEXPR source_loc() = default;
-    SPDLOG_CONSTEXPR source_loc(const char *filename_in, int line_in, const char *funcname_in)
-        : filename{filename_in}
-        , line{line_in}
-        , funcname{funcname_in}
-    {}
-
-    SPDLOG_CONSTEXPR bool empty() const SPDLOG_NOEXCEPT
+    SPDLOG_CONSTEXPR source_loc(const char *filename_in, int line_in,
+                                const char *funcname_in)
+        : filename{filename_in}, line{line_in}, funcname{funcname_in}
     {
-        return line == 0;
     }
+
+    SPDLOG_CONSTEXPR bool empty() const SPDLOG_NOEXCEPT { return line == 0; }
     const char *filename{nullptr};
     int line{0};
     const char *funcname{nullptr};
 };
 
-namespace details {
+namespace details
+{
 // make_unique support for pre c++14
 
 #if __cplusplus >= 201402L // C++14 and beyond
 using std::make_unique;
 #else
-template<typename T, typename... Args>
-std::unique_ptr<T> make_unique(Args &&... args)
+template <typename T, typename... Args>
+std::unique_ptr<T> make_unique(Args &&...args)
 {
     static_assert(!std::is_array<T>::value, "arrays not supported");
     return std::unique_ptr<T>(new T(std::forward<Args>(args)...));

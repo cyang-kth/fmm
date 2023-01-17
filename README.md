@@ -16,7 +16,7 @@ Check the [online demo](https://fmm-demo.herokuapp.com/).
 
 - **High performance**: C++ implementation using Rtree, optimized routing, parallel computing (OpenMP).
 - **Python API**: [jupyter-notebook](example/notebook) and [web app](example/web_demo)
-- **Scalibility**: millions of GPS points and millions of road edges.  
+- **Scalibility**: millions of GPS points and millions of road edges.
 - **Multiple data format**:
   - Road network in OpenStreetMap or ESRI shapefile.
   - GPS data in Point CSV, Trajectory CSV and Trajectory Shapefile ([more details](https://fmm-wiki.github.io/docs/documentation/input/#gps-data)).
@@ -74,7 +74,7 @@ Email: cyang(at)kth.se
 
 Homepage: https://people.kth.se/~cyang/
 
-FMM originates from an implementation of this paper [Fast map matching, an algorithm integrating hidden Markov model with precomputation](http://www.tandfonline.com/doi/full/10.1080/13658816.2017.1400548). A post-print version of the paper can be downloaded at [link](https://people.kth.se/~cyang/bib/fmm.pdf). Substaintial new features have been added compared with the original paper.  
+FMM originates from an implementation of this paper [Fast map matching, an algorithm integrating hidden Markov model with precomputation](http://www.tandfonline.com/doi/full/10.1080/13658816.2017.1400548). A post-print version of the paper can be downloaded at [link](https://people.kth.se/~cyang/bib/fmm.pdf). Substaintial new features have been added compared with the original paper.
 
 Please cite fmm in your publications if it helps your research:
 

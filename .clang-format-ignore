@@ -1,0 +1,4 @@
+build/*
+docs/*
+python/*
+third_party/*

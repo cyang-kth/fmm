@@ -29,91 +29,81 @@
 #include <unordered_map>
 #include <algorithm>
 
-template<class T, class Comp = std::less<T>>
+template <class T, class Comp = std::less<T>>
 class FibQueue : public FibHeap<T, Comp>
 {
- public:
-  using Heap = FibHeap<T, Comp>;
-  using Node = typename Heap::FibNode;
-  using KeyNodeIter = typename std::unordered_map<T, Node*>::iterator;
+  public:
+    using Heap = FibHeap<T, Comp>;
+    using Node = typename Heap::FibNode;
+    using KeyNodeIter = typename std::unordered_map<T, Node *>::iterator;
 
-  FibQueue()
-    : Heap()
+    FibQueue() : Heap() {}
+
+    FibQueue(Comp comp) : Heap(comp) {}
+
+    ~FibQueue() {}
+
+    void decrease_key(Node *x, T k)
     {
+        KeyNodeIter mit = find(x->key);
+        fstore.erase(mit);
+        fstore.insert({k, x});
+        Heap::decrease_key(x, std::move(k));
     }
 
-  FibQueue(Comp comp)
-      : Heap(comp)
-  {
-  }
-
-  ~FibQueue()
+    Node *push(T k, void *pl)
     {
+        Node *x = Heap::push(std::move(k), pl);
+        fstore.insert({k, x});
+        return x;
     }
 
-  void decrease_key(Node *x, T k)
-  {
-    KeyNodeIter mit = find(x->key);
-    fstore.erase(mit);
-    fstore.insert({ k, x });
-    Heap::decrease_key(x,std::move(k));
-  }
+    Node *push(T k) { return push(std::move(k), NULL); }
 
-  Node* push(T k, void *pl)
-  {
-    Node *x = Heap::push(std::move(k),pl);
-    fstore.insert({ k, x });
-    return x;
-  }
+    KeyNodeIter find(const T &k)
+    {
+        KeyNodeIter mit = fstore.find(k);
+        return mit;
+    }
 
-  Node* push(T k)
-  {
-    return push(std::move(k),NULL);
-  }
+    int count(const T &k)
+    {
+        KeyNodeIter mit = fstore.find(k);
+        return mit != fstore.end();
+    }
 
-  KeyNodeIter find(const T& k)
-  {
-    KeyNodeIter mit = fstore.find(k);
-    return mit;
-  }
+    Node *findNode(const T &k)
+    {
+        KeyNodeIter mit = find(k);
+        return mit->second;
+    }
 
-  int count(const T& k)
-  {
-      KeyNodeIter mit = fstore.find(k);
-      return mit != fstore.end();
-  }
+    void pop()
+    {
+        if (Heap::empty())
+            return;
+        Node *x = Heap::extract_min();
+        if (!x)
+            return; // should not happen.
+        auto range = fstore.equal_range(x->key);
+        auto mit = std::find_if(
+            range.first, range.second,
+            [x](const std::pair<T, Node *> &ele) { return ele.second == x; });
+        if (mit != range.second)
+            fstore.erase(mit);
+        else
+            std::cerr << "[Error]: key " << x->key
+                      << " cannot be found in FiboQueue fast store\n";
+        delete x;
+    }
 
-  Node* findNode(const T& k)
-  {
-    KeyNodeIter mit = find(k);
-    return mit->second;
-  }
+    void clear()
+    {
+        Heap::clear();
+        fstore.clear();
+    }
 
-  void pop()
-  {
-    if (Heap::empty())
-      return;
-    Node *x = Heap::extract_min();
-    if (!x)
-      return; // should not happen.
-    auto range = fstore.equal_range(x->key);
-    auto mit = std::find_if(range.first, range.second,
-                            [x](const std::pair<T, Node*> &ele){
-                                return ele.second == x;
-                            }
-    );
-    if (mit != range.second)
-      fstore.erase(mit);
-    else std::cerr << "[Error]: key " << x->key << " cannot be found in FiboQueue fast store\n";
-    delete x;
-  }
-
-  void clear() {
-      Heap::clear();
-      fstore.clear();
-  }
-
-  std::unordered_multimap<T, Node*> fstore;
+    std::unordered_multimap<T, Node *> fstore;
 };
 
 #endif

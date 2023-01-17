@@ -13,18 +13,19 @@
 #include <mutex>
 #include <string>
 
-namespace spdlog {
-namespace sinks {
+namespace spdlog
+{
+namespace sinks
+{
 /*
  * MSVC sink (logging using OutputDebugStringA)
  */
-template<typename Mutex>
-class msvc_sink : public base_sink<Mutex>
+template <typename Mutex> class msvc_sink : public base_sink<Mutex>
 {
-public:
+  public:
     explicit msvc_sink() {}
 
-protected:
+  protected:
     void sink_it_(const details::log_msg &msg) override
     {
 

@@ -95,3 +95,5 @@ sync.sh
 .ipynb_checkpoints
 */.ipynb_checkpoints/*
 *.pyc
+mr.txt
+third_party/h3/include/h3api.h

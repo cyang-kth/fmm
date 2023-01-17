@@ -6,8 +6,10 @@
 #include "spdlog/details/null_mutex.h"
 #include <mutex>
 
-namespace spdlog {
-namespace details {
+namespace spdlog
+{
+namespace details
+{
 
 struct console_mutex
 {

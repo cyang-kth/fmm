@@ -27,10 +27,12 @@
  *
  * @return the exponentiated value
  */
-int _ipow(int base, int exp) {
+int _ipow(int base, int exp)
+{
     int result = 1;
     while (exp) {
-        if (exp & 1) result *= base;
+        if (exp & 1)
+            result *= base;
         exp >>= 1;
         base *= base;
     }

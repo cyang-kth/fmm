@@ -47,7 +47,8 @@
  * @param polygon Input GeoPolygon
  * @param bboxes  Output bboxes, one for the outer loop and one for each hole
  */
-void bboxesFromGeoPolygon(const GeoPolygon* polygon, BBox* bboxes) {
+void bboxesFromGeoPolygon(const GeoPolygon *polygon, BBox *bboxes)
+{
     bboxFromGeofence(&polygon->geofence, &bboxes[0]);
     for (int i = 0; i < polygon->numHoles; i++) {
         bboxFromGeofence(&polygon->holes[i], &bboxes[i + 1]);
@@ -63,8 +64,9 @@ void bboxesFromGeoPolygon(const GeoPolygon* polygon, BBox* bboxes) {
  * @param coord      The coordinate to check
  * @return           Whether the point is contained
  */
-bool pointInsidePolygon(const GeoPolygon* geoPolygon, const BBox* bboxes,
-                        const GeoCoord* coord) {
+bool pointInsidePolygon(const GeoPolygon *geoPolygon, const BBox *bboxes,
+                        const GeoCoord *coord)
+{
     // Start with contains state of primary geofence
     bool contains =
         pointInsideGeofence(&(geoPolygon->geofence), &bboxes[0], coord);

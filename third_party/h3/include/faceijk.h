@@ -32,19 +32,21 @@
  * @brief Face number and ijk coordinates on that face-centered coordinate
  * system
  */
-typedef struct {
-    int face;        ///< face number
-    CoordIJK coord;  ///< ijk coordinates on that face
+typedef struct
+{
+    int face;       ///< face number
+    CoordIJK coord; ///< ijk coordinates on that face
 } FaceIJK;
 
 /** @struct FaceOrientIJK
  * @brief Information to transform into an adjacent face IJK system
  */
-typedef struct {
-    int face;            ///< face number
-    CoordIJK translate;  ///< res 0 translation relative to primary face
-    int ccwRot60;  ///< number of 60 degree ccw rotations relative to primary
-                   /// face
+typedef struct
+{
+    int face;           ///< face number
+    CoordIJK translate; ///< res 0 translation relative to primary face
+    int ccwRot60; ///< number of 60 degree ccw rotations relative to primary
+                  /// face
 } FaceOrientIJK;
 
 extern const GeoCoord faceCenterGeo[NUM_ICOSA_FACES];
@@ -61,7 +63,8 @@ extern const GeoCoord faceCenterGeo[NUM_ICOSA_FACES];
 #define INVALID_FACE -1
 
 /** Digit representing overage type */
-typedef enum {
+typedef enum
+{
     /** No overage (on original face) */
     NO_OVERAGE = 0,
     /** On face edge (only occurs on substrate grids) */
@@ -72,18 +75,18 @@ typedef enum {
 
 // Internal functions
 
-void _geoToFaceIjk(const GeoCoord* g, int res, FaceIJK* h);
-void _geoToHex2d(const GeoCoord* g, int res, int* face, Vec2d* v);
-void _faceIjkToGeo(const FaceIJK* h, int res, GeoCoord* g);
-void _faceIjkToGeoBoundary(const FaceIJK* h, int res, int start, int length,
-                           GeoBoundary* g);
-void _faceIjkPentToGeoBoundary(const FaceIJK* h, int res, int start, int length,
-                               GeoBoundary* g);
-void _faceIjkToVerts(FaceIJK* fijk, int* res, FaceIJK* fijkVerts);
-void _faceIjkPentToVerts(FaceIJK* fijk, int* res, FaceIJK* fijkVerts);
-void _hex2dToGeo(const Vec2d* v, int face, int res, int substrate, GeoCoord* g);
-Overage _adjustOverageClassII(FaceIJK* fijk, int res, int pentLeading4,
+void _geoToFaceIjk(const GeoCoord *g, int res, FaceIJK *h);
+void _geoToHex2d(const GeoCoord *g, int res, int *face, Vec2d *v);
+void _faceIjkToGeo(const FaceIJK *h, int res, GeoCoord *g);
+void _faceIjkToGeoBoundary(const FaceIJK *h, int res, int start, int length,
+                           GeoBoundary *g);
+void _faceIjkPentToGeoBoundary(const FaceIJK *h, int res, int start, int length,
+                               GeoBoundary *g);
+void _faceIjkToVerts(FaceIJK *fijk, int *res, FaceIJK *fijkVerts);
+void _faceIjkPentToVerts(FaceIJK *fijk, int *res, FaceIJK *fijkVerts);
+void _hex2dToGeo(const Vec2d *v, int face, int res, int substrate, GeoCoord *g);
+Overage _adjustOverageClassII(FaceIJK *fijk, int res, int pentLeading4,
                               int substrate);
-Overage _adjustPentVertOverage(FaceIJK* fijk, int res);
+Overage _adjustPentVertOverage(FaceIJK *fijk, int res);
 
 #endif

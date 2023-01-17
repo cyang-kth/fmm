@@ -45,7 +45,8 @@ static const PentagonDirectionFaces pentagonDirectionFaces[NUM_PENTAGONS] = {
  * compared to the directional layout of its neighbors.
  * @return Number of CCW rotations for the cell
  */
-int vertexRotations(H3Index cell) {
+int vertexRotations(H3Index cell)
+{
     // Get the face and other info for the origin
     FaceIJK fijk;
     _h3ToFaceIjk(cell, &fijk);
@@ -111,7 +112,8 @@ static const int directionToVertexNumPent[NUM_DIGITS] = {
  * @returns The number for the first topological vertex, or INVALID_VERTEX_NUM
  *          if the direction is not valid for this cell
  */
-int vertexNumForDirection(const H3Index origin, const Direction direction) {
+int vertexNumForDirection(const H3Index origin, const Direction direction)
+{
     int isPentagon = H3_EXPORT(h3IsPentagon)(origin);
     // Check for invalid directions
     if (direction == CENTER_DIGIT || direction >= INVALID_DIGIT ||

@@ -37,7 +37,8 @@
  * @param j The desired j component value.
  * @param k The desired k component value.
  */
-void _setIJK(CoordIJK* ijk, int i, int j, int k) {
+void _setIJK(CoordIJK *ijk, int i, int j, int k)
+{
     ijk->i = i;
     ijk->j = j;
     ijk->k = k;
@@ -50,7 +51,8 @@ void _setIJK(CoordIJK* ijk, int i, int j, int k) {
  * @param v The 2D cartesian coordinate vector.
  * @param h The ijk+ coordinates of the containing hex.
  */
-void _hex2dToCoordIJK(const Vec2d* v, CoordIJK* h) {
+void _hex2dToCoordIJK(const Vec2d *v, CoordIJK *h)
+{
     double a1, a2;
     double x1, x2;
     int m1, m2;
@@ -123,7 +125,7 @@ void _hex2dToCoordIJK(const Vec2d* v, CoordIJK* h) {
     // now fold across the axes if necessary
 
     if (v->x < 0.0L) {
-        if ((h->j % 2) == 0)  // even
+        if ((h->j % 2) == 0) // even
         {
             long long int axisi = h->j / 2;
             long long int diff = h->i - axisi;
@@ -149,7 +151,8 @@ void _hex2dToCoordIJK(const Vec2d* v, CoordIJK* h) {
  * @param h The ijk coordinates of the hex.
  * @param v The 2D cartesian coordinates of the hex center point.
  */
-void _ijkToHex2d(const CoordIJK* h, Vec2d* v) {
+void _ijkToHex2d(const CoordIJK *h, Vec2d *v)
+{
     int i = h->i - h->k;
     int j = h->j - h->k;
 
@@ -165,7 +168,8 @@ void _ijkToHex2d(const CoordIJK* h, Vec2d* v) {
  * @param c2 The second set of ijk coordinates.
  * @return 1 if the two addresses match, 0 if they do not.
  */
-int _ijkMatches(const CoordIJK* c1, const CoordIJK* c2) {
+int _ijkMatches(const CoordIJK *c1, const CoordIJK *c2)
+{
     return (c1->i == c2->i && c1->j == c2->j && c1->k == c2->k);
 }
 
@@ -176,7 +180,8 @@ int _ijkMatches(const CoordIJK* c1, const CoordIJK* c2) {
  * @param h2 The second set of ijk coordinates.
  * @param sum The sum of the two sets of ijk coordinates.
  */
-void _ijkAdd(const CoordIJK* h1, const CoordIJK* h2, CoordIJK* sum) {
+void _ijkAdd(const CoordIJK *h1, const CoordIJK *h2, CoordIJK *sum)
+{
     sum->i = h1->i + h2->i;
     sum->j = h1->j + h2->j;
     sum->k = h1->k + h2->k;
@@ -189,7 +194,8 @@ void _ijkAdd(const CoordIJK* h1, const CoordIJK* h2, CoordIJK* sum) {
  * @param h2 The second set of ijk coordinates.
  * @param diff The difference of the two sets of ijk coordinates (h1 - h2).
  */
-void _ijkSub(const CoordIJK* h1, const CoordIJK* h2, CoordIJK* diff) {
+void _ijkSub(const CoordIJK *h1, const CoordIJK *h2, CoordIJK *diff)
+{
     diff->i = h1->i - h2->i;
     diff->j = h1->j - h2->j;
     diff->k = h1->k - h2->k;
@@ -201,7 +207,8 @@ void _ijkSub(const CoordIJK* h1, const CoordIJK* h2, CoordIJK* diff) {
  * @param c The ijk coordinates to scale.
  * @param factor The scaling factor.
  */
-void _ijkScale(CoordIJK* c, int factor) {
+void _ijkScale(CoordIJK *c, int factor)
+{
     c->i *= factor;
     c->j *= factor;
     c->k *= factor;
@@ -213,7 +220,8 @@ void _ijkScale(CoordIJK* c, int factor) {
  *
  * @param c The ijk coordinates to normalize.
  */
-void _ijkNormalize(CoordIJK* c) {
+void _ijkNormalize(CoordIJK *c)
+{
     // remove any negative values
     if (c->i < 0) {
         c->j -= c->i;
@@ -235,8 +243,10 @@ void _ijkNormalize(CoordIJK* c) {
 
     // remove the min value if needed
     int min = c->i;
-    if (c->j < min) min = c->j;
-    if (c->k < min) min = c->k;
+    if (c->j < min)
+        min = c->j;
+    if (c->k < min)
+        min = c->k;
     if (min > 0) {
         c->i -= min;
         c->j -= min;
@@ -251,7 +261,8 @@ void _ijkNormalize(CoordIJK* c) {
  * @return The H3 digit (0-6) corresponding to the ijk unit vector, or
  * INVALID_DIGIT on failure.
  */
-Direction _unitIjkToDigit(const CoordIJK* ijk) {
+Direction _unitIjkToDigit(const CoordIJK *ijk)
+{
     CoordIJK c = *ijk;
     _ijkNormalize(&c);
 
@@ -272,7 +283,8 @@ Direction _unitIjkToDigit(const CoordIJK* ijk) {
  *
  * @param ijk The ijk coordinates.
  */
-void _upAp7(CoordIJK* ijk) {
+void _upAp7(CoordIJK *ijk)
+{
     // convert to CoordIJ
     int i = ijk->i - ijk->k;
     int j = ijk->j - ijk->k;
@@ -289,7 +301,8 @@ void _upAp7(CoordIJK* ijk) {
  *
  * @param ijk The ijk coordinates.
  */
-void _upAp7r(CoordIJK* ijk) {
+void _upAp7r(CoordIJK *ijk)
+{
     // convert to CoordIJ
     int i = ijk->i - ijk->k;
     int j = ijk->j - ijk->k;
@@ -307,7 +320,8 @@ void _upAp7r(CoordIJK* ijk) {
  *
  * @param ijk The ijk coordinates.
  */
-void _downAp7(CoordIJK* ijk) {
+void _downAp7(CoordIJK *ijk)
+{
     // res r unit vectors in res r+1
     CoordIJK iVec = {3, 0, 1};
     CoordIJK jVec = {1, 3, 0};
@@ -329,7 +343,8 @@ void _downAp7(CoordIJK* ijk) {
  *
  * @param ijk The ijk coordinates.
  */
-void _downAp7r(CoordIJK* ijk) {
+void _downAp7r(CoordIJK *ijk)
+{
     // res r unit vectors in res r+1
     CoordIJK iVec = {3, 1, 0};
     CoordIJK jVec = {0, 3, 1};
@@ -352,7 +367,8 @@ void _downAp7r(CoordIJK* ijk) {
  * @param ijk The ijk coordinates.
  * @param digit The digit direction from the original ijk coordinates.
  */
-void _neighbor(CoordIJK* ijk, Direction digit) {
+void _neighbor(CoordIJK *ijk, Direction digit)
+{
     if (digit > CENTER_DIGIT && digit < NUM_DIGITS) {
         _ijkAdd(ijk, &UNIT_VECS[digit], ijk);
         _ijkNormalize(ijk);
@@ -364,7 +380,8 @@ void _neighbor(CoordIJK* ijk, Direction digit) {
  *
  * @param ijk The ijk coordinates.
  */
-void _ijkRotate60ccw(CoordIJK* ijk) {
+void _ijkRotate60ccw(CoordIJK *ijk)
+{
     // unit vector rotations
     CoordIJK iVec = {1, 1, 0};
     CoordIJK jVec = {0, 1, 1};
@@ -385,7 +402,8 @@ void _ijkRotate60ccw(CoordIJK* ijk) {
  *
  * @param ijk The ijk coordinates.
  */
-void _ijkRotate60cw(CoordIJK* ijk) {
+void _ijkRotate60cw(CoordIJK *ijk)
+{
     // unit vector rotations
     CoordIJK iVec = {1, 0, 1};
     CoordIJK jVec = {1, 1, 0};
@@ -406,22 +424,23 @@ void _ijkRotate60cw(CoordIJK* ijk) {
  *
  * @param digit Indexing digit (between 1 and 6 inclusive)
  */
-Direction _rotate60ccw(Direction digit) {
+Direction _rotate60ccw(Direction digit)
+{
     switch (digit) {
-        case K_AXES_DIGIT:
-            return IK_AXES_DIGIT;
-        case IK_AXES_DIGIT:
-            return I_AXES_DIGIT;
-        case I_AXES_DIGIT:
-            return IJ_AXES_DIGIT;
-        case IJ_AXES_DIGIT:
-            return J_AXES_DIGIT;
-        case J_AXES_DIGIT:
-            return JK_AXES_DIGIT;
-        case JK_AXES_DIGIT:
-            return K_AXES_DIGIT;
-        default:
-            return digit;
+    case K_AXES_DIGIT:
+        return IK_AXES_DIGIT;
+    case IK_AXES_DIGIT:
+        return I_AXES_DIGIT;
+    case I_AXES_DIGIT:
+        return IJ_AXES_DIGIT;
+    case IJ_AXES_DIGIT:
+        return J_AXES_DIGIT;
+    case J_AXES_DIGIT:
+        return JK_AXES_DIGIT;
+    case JK_AXES_DIGIT:
+        return K_AXES_DIGIT;
+    default:
+        return digit;
     }
 }
 
@@ -430,22 +449,23 @@ Direction _rotate60ccw(Direction digit) {
  *
  * @param digit Indexing digit (between 1 and 6 inclusive)
  */
-Direction _rotate60cw(Direction digit) {
+Direction _rotate60cw(Direction digit)
+{
     switch (digit) {
-        case K_AXES_DIGIT:
-            return JK_AXES_DIGIT;
-        case JK_AXES_DIGIT:
-            return J_AXES_DIGIT;
-        case J_AXES_DIGIT:
-            return IJ_AXES_DIGIT;
-        case IJ_AXES_DIGIT:
-            return I_AXES_DIGIT;
-        case I_AXES_DIGIT:
-            return IK_AXES_DIGIT;
-        case IK_AXES_DIGIT:
-            return K_AXES_DIGIT;
-        default:
-            return digit;
+    case K_AXES_DIGIT:
+        return JK_AXES_DIGIT;
+    case JK_AXES_DIGIT:
+        return J_AXES_DIGIT;
+    case J_AXES_DIGIT:
+        return IJ_AXES_DIGIT;
+    case IJ_AXES_DIGIT:
+        return I_AXES_DIGIT;
+    case I_AXES_DIGIT:
+        return IK_AXES_DIGIT;
+    case IK_AXES_DIGIT:
+        return K_AXES_DIGIT;
+    default:
+        return digit;
     }
 }
 
@@ -456,7 +476,8 @@ Direction _rotate60cw(Direction digit) {
  *
  * @param ijk The ijk coordinates.
  */
-void _downAp3(CoordIJK* ijk) {
+void _downAp3(CoordIJK *ijk)
+{
     // res r unit vectors in res r+1
     CoordIJK iVec = {2, 0, 1};
     CoordIJK jVec = {1, 2, 0};
@@ -478,7 +499,8 @@ void _downAp3(CoordIJK* ijk) {
  *
  * @param ijk The ijk coordinates.
  */
-void _downAp3r(CoordIJK* ijk) {
+void _downAp3r(CoordIJK *ijk)
+{
     // res r unit vectors in res r+1
     CoordIJK iVec = {2, 1, 0};
     CoordIJK jVec = {0, 2, 1};
@@ -500,7 +522,8 @@ void _downAp3r(CoordIJK* ijk) {
  * @param c1 The first set of ijk coordinates.
  * @param c2 The second set of ijk coordinates.
  */
-int ijkDistance(const CoordIJK* c1, const CoordIJK* c2) {
+int ijkDistance(const CoordIJK *c1, const CoordIJK *c2)
+{
     CoordIJK diff;
     _ijkSub(c1, c2, &diff);
     _ijkNormalize(&diff);
@@ -515,7 +538,8 @@ int ijkDistance(const CoordIJK* c1, const CoordIJK* c2) {
  * @param ijk The input IJK+ coordinates
  * @param ij The output IJ coordinates
  */
-void ijkToIj(const CoordIJK* ijk, CoordIJ* ij) {
+void ijkToIj(const CoordIJK *ijk, CoordIJ *ij)
+{
     ij->i = ijk->i - ijk->k;
     ij->j = ijk->j - ijk->k;
 }
@@ -527,7 +551,8 @@ void ijkToIj(const CoordIJK* ijk, CoordIJ* ij) {
  * @param ij The input IJ coordinates
  * @param ijk The output IJK+ coordinates
  */
-void ijToIjk(const CoordIJ* ij, CoordIJK* ijk) {
+void ijToIjk(const CoordIJ *ij, CoordIJK *ijk)
+{
     ijk->i = ij->i;
     ijk->j = ij->j;
     ijk->k = 0;
@@ -539,7 +564,8 @@ void ijToIjk(const CoordIJ* ij, CoordIJK* ijk) {
  * Convert IJK coordinates to cube coordinates, in place
  * @param ijk Coordinate to convert
  */
-void ijkToCube(CoordIJK* ijk) {
+void ijkToCube(CoordIJK *ijk)
+{
     ijk->i = -ijk->i + ijk->k;
     ijk->j = ijk->j - ijk->k;
     ijk->k = -ijk->i - ijk->j;
@@ -549,7 +575,8 @@ void ijkToCube(CoordIJK* ijk) {
  * Convert cube coordinates to IJK coordinates, in place
  * @param ijk Coordinate to convert
  */
-void cubeToIjk(CoordIJK* ijk) {
+void cubeToIjk(CoordIJK *ijk)
+{
     ijk->i = -ijk->i;
     ijk->k = 0;
     _ijkNormalize(ijk);

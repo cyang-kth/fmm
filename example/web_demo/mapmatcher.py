@@ -1,14 +1,15 @@
-import os
 import json
-from fmm import Network, NetworkGraph
-from fmm import FastMapMatch, FastMapMatchConfig, UBODT
-from fmm import STMATCH, STMATCHConfig
+import os
 
-class MapMatcherConfig(object):
+from fmm import (STMATCH, UBODT, FastMapMatch, FastMapMatchConfig, Network,
+                 NetworkGraph, STMATCHConfig)
+
+
+class MapMatcherConfig:
     def __init__(self, config_json_file):
         if not os.path.exists(config_json_file):
             raise Exception(
-                "File for {} is missing.".format(config_json_file))
+                f"File for {config_json_file} is missing.")
         with open(config_json_file) as f:
             data = json.load(f)
         if (not data.has_key("model")):
@@ -66,11 +67,11 @@ class MapMatcherConfig(object):
                 "Model not found for {} ".format(
                     data["model"]))
 
-class MapMatcher(object):
+class MapMatcher:
     def __init__(self, config_json_file):
         if not os.path.exists(config_json_file):
             raise Exception(
-                "File for {} is missing.".format(config_json_file))
+                f"File for {config_json_file} is missing.")
         config = MapMatcherConfig(config_json_file)
         self.network = Network(
             config.network_file,config.network_id,

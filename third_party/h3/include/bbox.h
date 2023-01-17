@@ -27,19 +27,20 @@
 /** @struct BBox
  *  @brief  Geographic bounding box with coordinates defined in radians
  */
-typedef struct {
-    double north;  ///< north latitude
-    double south;  ///< south latitude
-    double east;   ///< east longitude
-    double west;   ///< west longitude
+typedef struct
+{
+    double north; ///< north latitude
+    double south; ///< south latitude
+    double east;  ///< east longitude
+    double west;  ///< west longitude
 } BBox;
 
-bool bboxIsTransmeridian(const BBox* bbox);
-void bboxCenter(const BBox* bbox, GeoCoord* center);
-bool bboxContains(const BBox* bbox, const GeoCoord* point);
-bool bboxEquals(const BBox* b1, const BBox* b2);
-int bboxHexEstimate(const BBox* bbox, int res);
-int lineHexEstimate(const GeoCoord* origin, const GeoCoord* destination,
+bool bboxIsTransmeridian(const BBox *bbox);
+void bboxCenter(const BBox *bbox, GeoCoord *center);
+bool bboxContains(const BBox *bbox, const GeoCoord *point);
+bool bboxEquals(const BBox *b1, const BBox *b2);
+int bboxHexEstimate(const BBox *bbox, int res);
+int lineHexEstimate(const GeoCoord *origin, const GeoCoord *destination,
                     int res);
 
 #endif

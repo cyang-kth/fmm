@@ -32,18 +32,19 @@
 #define INIT_ITERATION_GEOFENCE int loopIndex = -1
 
 /** Macro: Increment Geofence loop iteration, or break if done. */
-#define ITERATE_GEOFENCE(geofence, vertexA, vertexB) \
-    if (++loopIndex >= geofence->numVerts) break;    \
-    vertexA = geofence->verts[loopIndex];            \
+#define ITERATE_GEOFENCE(geofence, vertexA, vertexB)                           \
+    if (++loopIndex >= geofence->numVerts)                                     \
+        break;                                                                 \
+    vertexA = geofence->verts[loopIndex];                                      \
     vertexB = geofence->verts[(loopIndex + 1) % geofence->numVerts]
 
 /** Macro: Whether a Geofence is empty */
 #define IS_EMPTY_GEOFENCE(geofence) geofence->numVerts == 0
 
 // Defined directly in polygon.c:
-void bboxesFromGeoPolygon(const GeoPolygon* polygon, BBox* bboxes);
-bool pointInsidePolygon(const GeoPolygon* geoPolygon, const BBox* bboxes,
-                        const GeoCoord* coord);
+void bboxesFromGeoPolygon(const GeoPolygon *polygon, BBox *bboxes);
+bool pointInsidePolygon(const GeoPolygon *geoPolygon, const BBox *bboxes,
+                        const GeoCoord *coord);
 
 // The following functions are created via macro in polygonAlgos.h,
 // so their signatures are documented here:
@@ -53,7 +54,7 @@ bool pointInsidePolygon(const GeoPolygon* geoPolygon, const BBox* bboxes,
  * @param geofence Input Geofence
  * @param bbox     Output bbox
  */
-void bboxFromGeofence(const Geofence* loop, BBox* bbox);
+void bboxFromGeofence(const Geofence *loop, BBox *bbox);
 
 /**
  * Take a given Geofence data structure and check if it
@@ -63,14 +64,14 @@ void bboxFromGeofence(const Geofence* loop, BBox* bbox);
  * @param coord         The coordinate to check
  * @return              Whether the point is contained
  */
-bool pointInsideGeofence(const Geofence* loop, const BBox* bbox,
-                         const GeoCoord* coord);
+bool pointInsideGeofence(const Geofence *loop, const BBox *bbox,
+                         const GeoCoord *coord);
 
 /**
  * Whether the winding order of a given Geofence is clockwise
  * @param loop  The loop to check
  * @return      Whether the loop is clockwise
  */
-bool isClockwiseGeofence(const Geofence* geofence);
+bool isClockwiseGeofence(const Geofence *geofence);
 
 #endif

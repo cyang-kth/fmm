@@ -36,13 +36,13 @@
  * No good default at 0.
  */
 const int PENTAGON_ROTATIONS[7][7] = {
-    {0, -1, 0, 0, 0, 0, 0},        // 0
-    {-1, -1, -1, -1, -1, -1, -1},  // 1
-    {0, -1, 0, 0, 0, 1, 0},        // 2
-    {0, -1, 0, 0, 1, 1, 0},        // 3
-    {0, -1, 0, 5, 0, 0, 0},        // 4
-    {0, -1, 5, 5, 0, 0, 0},        // 5
-    {0, -1, 0, 0, 0, 0, 0},        // 6
+    {0, -1, 0, 0, 0, 0, 0},       // 0
+    {-1, -1, -1, -1, -1, -1, -1}, // 1
+    {0, -1, 0, 0, 0, 1, 0},       // 2
+    {0, -1, 0, 0, 1, 1, 0},       // 3
+    {0, -1, 0, 5, 0, 0, 0},       // 4
+    {0, -1, 5, 5, 0, 0, 0},       // 5
+    {0, -1, 0, 0, 0, 0, 0},       // 6
 };
 /**
  * Reverse base cell direction -> leading index digit -> rotations 60 ccw.
@@ -50,13 +50,13 @@ const int PENTAGON_ROTATIONS[7][7] = {
  * the origin is on a pentagon (regardless of the base cell of the index.)
  */
 const int PENTAGON_ROTATIONS_REVERSE[7][7] = {
-    {0, 0, 0, 0, 0, 0, 0},         // 0
-    {-1, -1, -1, -1, -1, -1, -1},  // 1
-    {0, 1, 0, 0, 0, 0, 0},         // 2
-    {0, 1, 0, 0, 0, 1, 0},         // 3
-    {0, 5, 0, 0, 0, 0, 0},         // 4
-    {0, 5, 0, 5, 0, 0, 0},         // 5
-    {0, 0, 0, 0, 0, 0, 0},         // 6
+    {0, 0, 0, 0, 0, 0, 0},        // 0
+    {-1, -1, -1, -1, -1, -1, -1}, // 1
+    {0, 1, 0, 0, 0, 0, 0},        // 2
+    {0, 1, 0, 0, 0, 1, 0},        // 3
+    {0, 5, 0, 0, 0, 0, 0},        // 4
+    {0, 5, 0, 5, 0, 0, 0},        // 5
+    {0, 0, 0, 0, 0, 0, 0},        // 6
 };
 /**
  * Reverse base cell direction -> leading index digit -> rotations 60 ccw.
@@ -64,13 +64,13 @@ const int PENTAGON_ROTATIONS_REVERSE[7][7] = {
  * on a pentagon and the origin is not.
  */
 const int PENTAGON_ROTATIONS_REVERSE_NONPOLAR[7][7] = {
-    {0, 0, 0, 0, 0, 0, 0},         // 0
-    {-1, -1, -1, -1, -1, -1, -1},  // 1
-    {0, 1, 0, 0, 0, 0, 0},         // 2
-    {0, 1, 0, 0, 0, 1, 0},         // 3
-    {0, 5, 0, 0, 0, 0, 0},         // 4
-    {0, 1, 0, 5, 1, 1, 0},         // 5
-    {0, 0, 0, 0, 0, 0, 0},         // 6
+    {0, 0, 0, 0, 0, 0, 0},        // 0
+    {-1, -1, -1, -1, -1, -1, -1}, // 1
+    {0, 1, 0, 0, 0, 0, 0},        // 2
+    {0, 1, 0, 0, 0, 1, 0},        // 3
+    {0, 5, 0, 0, 0, 0, 0},        // 4
+    {0, 1, 0, 5, 1, 1, 0},        // 5
+    {0, 0, 0, 0, 0, 0, 0},        // 6
 };
 /**
  * Reverse base cell direction -> leading index digit -> rotations 60 ccw.
@@ -78,13 +78,13 @@ const int PENTAGON_ROTATIONS_REVERSE_NONPOLAR[7][7] = {
  * on a polar pentagon and the origin is not.
  */
 const int PENTAGON_ROTATIONS_REVERSE_POLAR[7][7] = {
-    {0, 0, 0, 0, 0, 0, 0},         // 0
-    {-1, -1, -1, -1, -1, -1, -1},  // 1
-    {0, 1, 1, 1, 1, 1, 1},         // 2
-    {0, 1, 0, 0, 0, 1, 0},         // 3
-    {0, 1, 0, 0, 1, 1, 1},         // 4
-    {0, 1, 0, 5, 1, 1, 0},         // 5
-    {0, 1, 1, 0, 1, 1, 1},         // 6
+    {0, 0, 0, 0, 0, 0, 0},        // 0
+    {-1, -1, -1, -1, -1, -1, -1}, // 1
+    {0, 1, 1, 1, 1, 1, 1},        // 2
+    {0, 1, 0, 0, 0, 1, 0},        // 3
+    {0, 1, 0, 0, 1, 1, 1},        // 4
+    {0, 1, 0, 5, 1, 1, 0},        // 5
+    {0, 1, 1, 0, 1, 1, 1},        // 6
 };
 
 /**
@@ -102,13 +102,13 @@ const int PENTAGON_ROTATIONS_REVERSE_POLAR[7][7] = {
  * than one icosahedron face is not permitted.
  */
 const bool FAILED_DIRECTIONS[7][7] = {
-    {false, false, false, false, false, false, false},  // 0
-    {false, false, false, false, false, false, false},  // 1
-    {false, false, false, false, true, true, false},    // 2
-    {false, false, false, false, true, false, true},    // 3
-    {false, false, true, true, false, false, false},    // 4
-    {false, false, true, false, false, false, true},    // 5
-    {false, false, false, true, false, true, false},    // 6
+    {false, false, false, false, false, false, false}, // 0
+    {false, false, false, false, false, false, false}, // 1
+    {false, false, false, false, true, true, false},   // 2
+    {false, false, false, false, true, false, true},   // 3
+    {false, false, true, true, false, false, false},   // 4
+    {false, false, true, false, false, false, true},   // 5
+    {false, false, false, true, false, true, false},   // 6
 };
 
 /**
@@ -128,7 +128,8 @@ const bool FAILED_DIRECTIONS[7][7] = {
  * @param out ijk+ coordinates of the index will be placed here on success
  * @return 0 on success, or another value on failure.
  */
-int h3ToLocalIjk(H3Index origin, H3Index h3, CoordIJK* out) {
+int h3ToLocalIjk(H3Index origin, H3Index h3, CoordIJK *out)
+{
     int res = H3_GET_RESOLUTION(origin);
 
     if (res != H3_GET_RESOLUTION(h3)) {
@@ -164,7 +165,8 @@ int h3ToLocalIjk(H3Index origin, H3Index h3, CoordIJK* out) {
                 h3 = _h3RotatePent60cw(h3);
 
                 revDir = _rotate60cw(revDir);
-                if (revDir == K_AXES_DIGIT) revDir = _rotate60cw(revDir);
+                if (revDir == K_AXES_DIGIT)
+                    revDir = _rotate60cw(revDir);
             }
         } else {
             for (int i = 0; i < baseCellRotations; i++) {
@@ -277,7 +279,8 @@ int h3ToLocalIjk(H3Index origin, H3Index h3, CoordIJK* out) {
  * @param out The index will be placed here on success
  * @return 0 on success, or another value on failure.
  */
-int localIjkToH3(H3Index origin, const CoordIJK* ijk, H3Index* out) {
+int localIjkToH3(H3Index origin, const CoordIJK *ijk, H3Index *out)
+{
     int res = H3_GET_RESOLUTION(origin);
     int originBaseCell = H3_GET_BASE_CELL(origin);
     int originOnPent = _isBaseCellPentagon(originBaseCell);
@@ -470,8 +473,8 @@ int localIjkToH3(H3Index origin, const CoordIJK* ijk, H3Index* out) {
  * @param out ij coordinates of the index will be placed here on success
  * @return 0 on success, or another value on failure.
  */
-int H3_EXPORT(experimentalH3ToLocalIj)(H3Index origin, H3Index h3,
-                                       CoordIJ* out) {
+int H3_EXPORT(experimentalH3ToLocalIj)(H3Index origin, H3Index h3, CoordIJ *out)
+{
     // This function is currently experimental. Once ready to be part of the
     // non-experimental API, this function (with the experimental prefix) will
     // be marked as deprecated and to be removed in the next major version. It
@@ -504,8 +507,9 @@ int H3_EXPORT(experimentalH3ToLocalIj)(H3Index origin, H3Index h3,
  * @param index Index will be placed here on success.
  * @return 0 on success, or another value on failure.
  */
-int H3_EXPORT(experimentalLocalIjToH3)(H3Index origin, const CoordIJ* ij,
-                                       H3Index* out) {
+int H3_EXPORT(experimentalLocalIjToH3)(H3Index origin, const CoordIJ *ij,
+                                       H3Index *out)
+{
     // This function is currently experimental. Once ready to be part of the
     // non-experimental API, this function (with the experimental prefix) will
     // be marked as deprecated and to be removed in the next major version. It
@@ -528,12 +532,13 @@ int H3_EXPORT(experimentalLocalIjToH3)(H3Index origin, const CoordIJ* ij,
  * @return The distance, or a negative number if the library could not
  * compute the distance.
  */
-int H3_EXPORT(h3Distance)(H3Index origin, H3Index h3) {
+int H3_EXPORT(h3Distance)(H3Index origin, H3Index h3)
+{
     CoordIJK originIjk, h3Ijk;
     if (h3ToLocalIjk(origin, origin, &originIjk)) {
         // Currently there are no tests that would cause getting the coordinates
         // for an index the same as the origin to fail.
-        return -1;  // LCOV_EXCL_LINE
+        return -1; // LCOV_EXCL_LINE
     }
     if (h3ToLocalIjk(origin, h3, &h3Ijk)) {
         return -1;
@@ -552,7 +557,8 @@ int H3_EXPORT(h3Distance)(H3Index origin, H3Index h3) {
  * @return Size of the line, or a negative number if the line cannot
  * be computed.
  */
-int H3_EXPORT(h3LineSize)(H3Index start, H3Index end) {
+int H3_EXPORT(h3LineSize)(H3Index start, H3Index end)
+{
     int distance = H3_EXPORT(h3Distance)(start, end);
     return distance >= 0 ? distance + 1 : distance;
 }
@@ -565,7 +571,8 @@ int H3_EXPORT(h3LineSize)(H3Index start, H3Index end) {
  * @param k   Floating-point K coord
  * @param ijk IJK coord struct, modified in place
  */
-static void cubeRound(double i, double j, double k, CoordIJK* ijk) {
+static void cubeRound(double i, double j, double k, CoordIJK *ijk)
+{
     int ri = round(i);
     int rj = round(j);
     int rk = round(k);
@@ -609,7 +616,8 @@ static void cubeRound(double i, double j, double k, CoordIJK* ijk) {
  * @param out Output array, which must be of size h3LineSize(start, end)
  * @return 0 on success, or another value on failure.
  */
-int H3_EXPORT(h3Line)(H3Index start, H3Index end, H3Index* out) {
+int H3_EXPORT(h3Line)(H3Index start, H3Index end, H3Index *out)
+{
     int distance = H3_EXPORT(h3Distance)(start, end);
     // Early exit if we can't calculate the line
     if (distance < 0) {

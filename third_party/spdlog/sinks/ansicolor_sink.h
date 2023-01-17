@@ -11,8 +11,10 @@
 #include <string>
 #include <unordered_map>
 
-namespace spdlog {
-namespace sinks {
+namespace spdlog
+{
+namespace sinks
+{
 
 /**
  * This sink prefixes the output with an ANSI escape sequence color code
@@ -21,10 +23,9 @@ namespace sinks {
  * If no color terminal detected, omit the escape codes.
  */
 
-template<typename ConsoleMutex>
-class ansicolor_sink : public sink
+template <typename ConsoleMutex> class ansicolor_sink : public sink
 {
-public:
+  public:
     using mutex_t = typename ConsoleMutex::mutex_t;
     ansicolor_sink(FILE *target_file, color_mode mode);
     ~ansicolor_sink() override = default;
@@ -38,7 +39,8 @@ public:
     void log(const details::log_msg &msg) override;
     void flush() override;
     void set_pattern(const std::string &pattern) final;
-    void set_formatter(std::unique_ptr<spdlog::formatter> sink_formatter) override;
+    void
+    set_formatter(std::unique_ptr<spdlog::formatter> sink_formatter) override;
 
     // Formatting codes
     const string_view_t reset = "\033[m";
@@ -75,35 +77,39 @@ public:
     const string_view_t red_bold = "\033[31m\033[1m";
     const string_view_t bold_on_red = "\033[1m\033[41m";
 
-private:
+  private:
     FILE *target_file_;
     mutex_t &mutex_;
     bool should_do_colors_;
     std::unique_ptr<spdlog::formatter> formatter_;
-    std::unordered_map<level::level_enum, string_view_t, level::level_hasher> colors_;
+    std::unordered_map<level::level_enum, string_view_t, level::level_hasher>
+        colors_;
     void print_ccode_(const string_view_t &color_code);
-    void print_range_(const fmt::memory_buffer &formatted, size_t start, size_t end);
+    void print_range_(const fmt::memory_buffer &formatted, size_t start,
+                      size_t end);
 };
 
-template<typename ConsoleMutex>
+template <typename ConsoleMutex>
 class ansicolor_stdout_sink : public ansicolor_sink<ConsoleMutex>
 {
-public:
+  public:
     explicit ansicolor_stdout_sink(color_mode mode = color_mode::automatic);
 };
 
-template<typename ConsoleMutex>
+template <typename ConsoleMutex>
 class ansicolor_stderr_sink : public ansicolor_sink<ConsoleMutex>
 {
-public:
+  public:
     explicit ansicolor_stderr_sink(color_mode mode = color_mode::automatic);
 };
 
 using ansicolor_stdout_sink_mt = ansicolor_stdout_sink<details::console_mutex>;
-using ansicolor_stdout_sink_st = ansicolor_stdout_sink<details::console_nullmutex>;
+using ansicolor_stdout_sink_st =
+    ansicolor_stdout_sink<details::console_nullmutex>;
 
 using ansicolor_stderr_sink_mt = ansicolor_stderr_sink<details::console_mutex>;
-using ansicolor_stderr_sink_st = ansicolor_stderr_sink<details::console_nullmutex>;
+using ansicolor_stderr_sink_st =
+    ansicolor_stderr_sink<details::console_nullmutex>;
 
 } // namespace sinks
 } // namespace spdlog

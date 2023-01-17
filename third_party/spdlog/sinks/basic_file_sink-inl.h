@@ -10,22 +10,26 @@
 #include "spdlog/common.h"
 #include "spdlog/details/os.h"
 
-namespace spdlog {
-namespace sinks {
+namespace spdlog
+{
+namespace sinks
+{
 
-template<typename Mutex>
-SPDLOG_INLINE basic_file_sink<Mutex>::basic_file_sink(const filename_t &filename, bool truncate)
+template <typename Mutex>
+SPDLOG_INLINE
+basic_file_sink<Mutex>::basic_file_sink(const filename_t &filename,
+                                        bool truncate)
 {
     file_helper_.open(filename, truncate);
 }
 
-template<typename Mutex>
+template <typename Mutex>
 SPDLOG_INLINE const filename_t &basic_file_sink<Mutex>::filename() const
 {
     return file_helper_.filename();
 }
 
-template<typename Mutex>
+template <typename Mutex>
 SPDLOG_INLINE void basic_file_sink<Mutex>::sink_it_(const details::log_msg &msg)
 {
     fmt::memory_buffer formatted;
@@ -33,8 +37,7 @@ SPDLOG_INLINE void basic_file_sink<Mutex>::sink_it_(const details::log_msg &msg)
     file_helper_.write(formatted);
 }
 
-template<typename Mutex>
-SPDLOG_INLINE void basic_file_sink<Mutex>::flush_()
+template <typename Mutex> SPDLOG_INLINE void basic_file_sink<Mutex>::flush_()
 {
     file_helper_.flush();
 }

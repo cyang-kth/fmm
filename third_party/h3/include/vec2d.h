@@ -25,16 +25,17 @@
 /** @struct Vec2d
  *  @brief 2D floating-point vector
  */
-typedef struct {
-    double x;  ///< x component
-    double y;  ///< y component
+typedef struct
+{
+    double x; ///< x component
+    double y; ///< y component
 } Vec2d;
 
 // Internal functions
 
-double _v2dMag(const Vec2d* v);
-void _v2dIntersect(const Vec2d* p0, const Vec2d* p1, const Vec2d* p2,
-                   const Vec2d* p3, Vec2d* inter);
-bool _v2dEquals(const Vec2d* p0, const Vec2d* p1);
+double _v2dMag(const Vec2d *v);
+void _v2dIntersect(const Vec2d *p0, const Vec2d *p1, const Vec2d *p2,
+                   const Vec2d *p3, Vec2d *inter);
+bool _v2dEquals(const Vec2d *p0, const Vec2d *p1);
 
 #endif

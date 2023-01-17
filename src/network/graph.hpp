@@ -7,7 +7,6 @@
  * @version: 2017.11.11
  */
 
-
 #ifndef FMM_GRAPH_TYPE_HPP
 #define FMM_GRAPH_TYPE_HPP
 
@@ -17,23 +16,26 @@
 
 #include "network/type.hpp"
 
-namespace FMM{
-namespace NETWORK{
+namespace FMM
+{
+namespace NETWORK
+{
 
 /**
  *  Road edge property.
  */
 struct EdgeProperty
 {
-  EdgeIndex index; /**< Index of the edge */
-  double length; /**< length of the edge */
+    EdgeIndex index; /**< Index of the edge */
+    double length;   /**< length of the edge */
 };
 
 /**
  *  Boost graph type
  */
-typedef boost::adjacency_list <boost::vecS, boost::vecS, boost::directedS,
-                               boost::no_property, EdgeProperty> Graph_T;
+typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::directedS,
+                              boost::no_property, EdgeProperty>
+    Graph_T;
 
 /**
  * Boost graph edge type
@@ -52,20 +54,20 @@ typedef boost::graph_traits<Graph_T>::out_edge_iterator OutEdgeIterator;
  * Predecessor Map. It stores for each node, the previous node
  * visited, which is part of the shortest path routing result.
  */
-typedef std::unordered_map<NodeIndex,NodeIndex> PredecessorMap;
+typedef std::unordered_map<NodeIndex, NodeIndex> PredecessorMap;
 
 /**
  * Successor Map. It stores for each node, the next node
  * visited, which is part of the bidirectional shortest path routing result.
  */
-typedef std::unordered_map<NodeIndex,NodeIndex> SuccessorMap;
+typedef std::unordered_map<NodeIndex, NodeIndex> SuccessorMap;
 
 /**
  * Distance map. It stores for each node, the distance visited from a source
  * node, which is part of the shortest path routing result.
  */
-typedef std::unordered_map<NodeIndex,double> DistanceMap;
-}
-}
+typedef std::unordered_map<NodeIndex, double> DistanceMap;
+} // namespace NETWORK
+} // namespace FMM
 
 #endif // FMM_GRAPH_TYPE_HPP

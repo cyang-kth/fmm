@@ -1,33 +1,34 @@
-cmake_minimum_required( VERSION 3.5.1)
+cmake_minimum_required(VERSION 3.5.1)
 
 message(STATUS "CMAKE version ${CMAKE_VERSION}")
 
-if (POLICY CMP0074)
-    message(STATUS "Set CMP0074 state to NEW")
-    cmake_policy(SET CMP0074 NEW)
+if(POLICY CMP0074)
+  message(STATUS "Set CMP0074 state to NEW")
+  cmake_policy(SET CMP0074 NEW)
 endif()
 
-if (POLICY CMP0086)
-    message(STATUS "Set CMP0086 state to NEW")
-    cmake_policy(SET CMP0086 NEW)
+if(POLICY CMP0086)
+  message(STATUS "Set CMP0086 state to NEW")
+  cmake_policy(SET CMP0086 NEW)
 endif()
 
-if (POLICY CMP0078)
-    message(STATUS "Set CMP0078 state to NEW")
-    cmake_policy(SET CMP0078 NEW)
+if(POLICY CMP0078)
+  message(STATUS "Set CMP0078 state to NEW")
+  cmake_policy(SET CMP0078 NEW)
 endif()
 
 # Prevent in source build
-set(CMAKE_DISABLE_SOURCE_CHANGES  OFF)
+set(CMAKE_DISABLE_SOURCE_CHANGES OFF)
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 project(fmm)
 
 set(CMAKE_BUILD_TYPE "Release")
 set(CMAKE_CXX_FLAGS "-O3 -DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE")
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build")
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
@@ -41,29 +42,28 @@ else()
 endif()
 
 find_package(GDAL 2.2 REQUIRED)
-if (GDAL_FOUND)
+if(GDAL_FOUND)
   message(STATUS "GDAL headers found at ${GDAL_INCLUDE_DIR}")
   message(STATUS "GDAL library found at ${GDAL_LIBRARIES}")
   include_directories(${GDAL_INCLUDE_DIR})
 else()
   message(FATAL_ERROR "GDAL Not Found!")
-endif (GDAL_FOUND)
+endif(GDAL_FOUND)
 link_libraries(${GDAL_LIBRARIES})
 
-if (WIN32)
+if(WIN32)
   find_package(Boost 1.56.0 REQUIRED serialization exception)
-else ()
+else()
   find_package(Boost 1.56.0 REQUIRED serialization)
-endif (WIN32)
-if (Boost_FOUND)
+endif(WIN32)
+if(Boost_FOUND)
   message(STATUS "Boost headers found at ${Boost_INCLUDE_DIR}")
   message(STATUS "Boost library found at ${Boost_LIBRARIES}")
   message(STATUS "Boost library version ${Boost_LIB_VERSION}")
 else()
   message(FATAL_ERROR "Boost Not Found!")
-endif (Boost_FOUND)
+endif(Boost_FOUND)
 link_libraries(${Boost_LIBRARIES})
-
 
 find_package(OpenMP REQUIRED)
 if(OPENMP_FOUND)
@@ -74,7 +74,7 @@ if(OPENMP_FOUND)
 endif()
 link_libraries(${OpenMP_CXX_LIBRARIES})
 
-### Set RPATH properties
+# Set RPATH properties
 
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
 
@@ -87,17 +87,16 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 # Build h3 objects
 
 set(UNCONFIGURED_API_HEADER
-  ${CMAKE_CURRENT_SOURCE_DIR}/third_party/h3/include/h3api.h.in)
+    ${CMAKE_CURRENT_SOURCE_DIR}/third_party/h3/include/h3api.h.in)
 set(CONFIGURED_API_HEADER
-  ${CMAKE_CURRENT_SOURCE_DIR}/third_party/h3/include/h3api.h)
+    ${CMAKE_CURRENT_SOURCE_DIR}/third_party/h3/include/h3api.h)
 configure_file(${UNCONFIGURED_API_HEADER} ${CONFIGURED_API_HEADER})
 
 # Creation of FMMLIB
 
 set(FMM_INCLUDE_PATH
-${CMAKE_CURRENT_SOURCE_DIR}/src
-${CMAKE_CURRENT_SOURCE_DIR}/third_party
-${CMAKE_CURRENT_SOURCE_DIR}/third_party/h3/include)
+    ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/third_party
+    ${CMAKE_CURRENT_SOURCE_DIR}/third_party/h3/include)
 
 include_directories(${FMM_INCLUDE_PATH})
 
@@ -123,7 +122,8 @@ add_library(FMM_OBJ OBJECT ${FMMGlob})
 add_library(STMATCH_OBJ OBJECT ${STMATCHGlob})
 add_library(H3_OBJ OBJECT ${h3Glob})
 
-add_library(FMMLIB SHARED
+add_library(
+  FMMLIB SHARED
   $<TARGET_OBJECTS:MM_OBJ>
   $<TARGET_OBJECTS:FMM_OBJ>
   $<TARGET_OBJECTS:STMATCH_OBJ>
@@ -158,36 +158,26 @@ install(TARGETS fmm ubodt_gen stmatch h3mm DESTINATION bin)
 if(FMM_INSTALL_HEADER)
   message(STATUS "Install fmm headers")
   set(FMM_DIST_INCLUDE_PATH
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/algorithm
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/config
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/core
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/io
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/mm
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/network
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/python
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/util
-  ${CMAKE_CURRENT_SOURCE_DIR}/third_party/cxxopts
-  ${CMAKE_CURRENT_SOURCE_DIR}/third_party/fiboheap
-  ${CMAKE_CURRENT_SOURCE_DIR}/third_party/h3
-  ${CMAKE_CURRENT_SOURCE_DIR}/third_party/spdlog)
-  set(FMM_API_HEADER
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/fmm-api.hpp
-  )
+      ${CMAKE_CURRENT_SOURCE_DIR}/src/algorithm
+      ${CMAKE_CURRENT_SOURCE_DIR}/src/config
+      ${CMAKE_CURRENT_SOURCE_DIR}/src/core
+      ${CMAKE_CURRENT_SOURCE_DIR}/src/io
+      ${CMAKE_CURRENT_SOURCE_DIR}/src/mm
+      ${CMAKE_CURRENT_SOURCE_DIR}/src/network
+      ${CMAKE_CURRENT_SOURCE_DIR}/src/python
+      ${CMAKE_CURRENT_SOURCE_DIR}/src/util
+      ${CMAKE_CURRENT_SOURCE_DIR}/third_party/cxxopts
+      ${CMAKE_CURRENT_SOURCE_DIR}/third_party/fiboheap
+      ${CMAKE_CURRENT_SOURCE_DIR}/third_party/h3
+      ${CMAKE_CURRENT_SOURCE_DIR}/third_party/spdlog)
+  set(FMM_API_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/src/fmm-api.hpp)
   install(
-      DIRECTORY
-      ${FMM_DIST_INCLUDE_PATH}
-      DESTINATION
-      "include/fmm"
-      FILES_MATCHING
-      PATTERN "*.hpp"
-      PATTERN "*.h"
-  )
-  install(
-      FILES
-      ${FMM_API_HEADER}
-      DESTINATION
-      "include/fmm"
-  )
+    DIRECTORY ${FMM_DIST_INCLUDE_PATH}
+    DESTINATION "include/fmm"
+    FILES_MATCHING
+    PATTERN "*.hpp"
+    PATTERN "*.h")
+  install(FILES ${FMM_API_HEADER} DESTINATION "include/fmm")
 else()
   message(STATUS "Not install fmm headers")
 endif()

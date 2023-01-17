@@ -27,7 +27,8 @@
 /**
  * Utility functions for writing data to std stream
  */
-namespace std {
+namespace std
+{
 
 /**
  * Print a vector of values
@@ -36,15 +37,15 @@ namespace std {
  * @param vec input vector
  * @return the stream with comma separated values of the vector written
  */
-template<typename T>
-std::ostream &operator<<(std::ostream &os,
-                         const std::vector<T> &vec) {
-  if (!vec.empty()) {
-    std::copy(vec.begin(), vec.end() - 1,
-              std::ostream_iterator<T>(os, ","));
-    os << vec.back();
-  }
-  return os;
+template <typename T>
+std::ostream &operator<<(std::ostream &os, const std::vector<T> &vec)
+{
+    if (!vec.empty()) {
+        std::copy(vec.begin(), vec.end() - 1,
+                  std::ostream_iterator<T>(os, ","));
+        os << vec.back();
+    }
+    return os;
 }
 
 /**
@@ -71,17 +72,18 @@ std::ostream &operator<<(std::ostream &os,
  * @param geom point
  * @return the stream with wkt point written.
  */
-std::ostream &operator<<(std::ostream &os,
-                         const FMM::CORE::Point &geom);
+std::ostream &operator<<(std::ostream &os, const FMM::CORE::Point &geom);
 
 } // namespace std
 
-namespace FMM {
+namespace FMM
+{
 
 /**
  * Utility functions
  */
-namespace UTIL {
+namespace UTIL
+{
 
 /**
  * Time point
@@ -97,8 +99,7 @@ TimePoint get_current_time();
  * Print a timestamp
  * @param timestamp timestamp point
  */
-void print_time(
-  const TimePoint &timestamp);
+void print_time(const TimePoint &timestamp);
 
 /**
  * Get the duration between two timestamps
@@ -106,7 +107,7 @@ void print_time(
  * @param  the ending timestamp
  * @return duration in seconds
  */
-double get_duration(const TimePoint &t1,const TimePoint &t2);
+double get_duration(const TimePoint &t1, const TimePoint &t2);
 
 /**
  * Check if file exist or not
@@ -145,8 +146,9 @@ bool string2bool(const std::string &str);
  * @param  value bool value
  * @return  "true" if value is true
  */
-inline std::string bool2string(bool value) {
-  return (value ? "true" : "false");
+inline std::string bool2string(bool value)
+{
+    return (value ? "true" : "false");
 }
 
 /**
@@ -163,16 +165,15 @@ bool check_file_extension(const std::string &filename,
  * @param  vec input vector
  * @return  a string of values in the vector delimited by ,
  */
-template<typename T>
-std::string vec2string(
-  const std::vector<T> &vec) {
-  std::ostringstream vts;
-  if (!vec.empty()) {
-    std::copy(vec.begin(), vec.end() - 1,
-              std::ostream_iterator<T>(vts, ","));
-    vts << vec.back();
-  }
-  return vts.str();
+template <typename T> std::string vec2string(const std::vector<T> &vec)
+{
+    std::ostringstream vts;
+    if (!vec.empty()) {
+        std::copy(vec.begin(), vec.end() - 1,
+                  std::ostream_iterator<T>(vts, ","));
+        vts << vec.back();
+    }
+    return vts.str();
 }
 
 /**
@@ -180,18 +181,17 @@ std::string vec2string(
  * @param  str a string containing a list of values separated by ,
  * @return  a vector of values
  */
-template<typename T>
-std::vector<T> string2vec(
-  const std::string &str) {
-  std::vector<T> vec;
-  std::stringstream ss(str);
-  T i;
-  while (ss >> i) {
-    vec.push_back(i);
-    if (ss.peek() == ',')
-      ss.ignore();
-  }
-  return vec;
+template <typename T> std::vector<T> string2vec(const std::string &str)
+{
+    std::vector<T> vec;
+    std::stringstream ss(str);
+    T i;
+    while (ss >> i) {
+        vec.push_back(i);
+        if (ss.peek() == ',')
+            ss.ignore();
+    }
+    return vec;
 }
 
 /**
@@ -204,8 +204,8 @@ std::vector<std::string> split_string(const std::string &str);
 /**
  * Get line correctly by handling `\r\n` line endings
  */
-std::istream& safe_get_line(std::istream& is, std::string& t, char delim);
+std::istream &safe_get_line(std::istream &is, std::string &t, char delim);
 
-} // Util
-} // FMM
+} // namespace UTIL
+} // namespace FMM
 #endif /* FMM_UTIL_HPP */

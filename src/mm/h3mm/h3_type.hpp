@@ -10,16 +10,19 @@
 #include <iomanip>
 #include <vector>
 
-namespace FMM{
-namespace MM{
+namespace FMM
+{
+namespace MM
+{
 
 typedef unsigned long long HexIndex;
 
-struct H3MatchResult {
-  int traj_id;
-  std::vector<HexIndex> hexs;
+struct H3MatchResult
+{
+    int traj_id;
+    std::vector<HexIndex> hexs;
 };
 
-};
-};
+}; // namespace MM
+}; // namespace FMM
 #endif

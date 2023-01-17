@@ -29,42 +29,44 @@
  *  @brief A single node in a vertex graph, part of a linked list
  */
 typedef struct VertexNode VertexNode;
-struct VertexNode {
+struct VertexNode
+{
     GeoCoord from;
     GeoCoord to;
-    VertexNode* next;
+    VertexNode *next;
 };
 
 /** @struct VertexGraph
  *  @brief A data structure to store a graph of vertices
  */
-typedef struct {
-    VertexNode** buckets;
+typedef struct
+{
+    VertexNode **buckets;
     int numBuckets;
     int size;
     int res;
 } VertexGraph;
 
-void initVertexGraph(VertexGraph* graph, int numBuckets, int res);
+void initVertexGraph(VertexGraph *graph, int numBuckets, int res);
 
-void destroyVertexGraph(VertexGraph* graph);
+void destroyVertexGraph(VertexGraph *graph);
 
-VertexNode* addVertexNode(VertexGraph* graph, const GeoCoord* fromVtx,
-                          const GeoCoord* toVtx);
+VertexNode *addVertexNode(VertexGraph *graph, const GeoCoord *fromVtx,
+                          const GeoCoord *toVtx);
 
-int removeVertexNode(VertexGraph* graph, VertexNode* node);
+int removeVertexNode(VertexGraph *graph, VertexNode *node);
 
-VertexNode* findNodeForEdge(const VertexGraph* graph, const GeoCoord* fromVtx,
-                            const GeoCoord* toVtx);
+VertexNode *findNodeForEdge(const VertexGraph *graph, const GeoCoord *fromVtx,
+                            const GeoCoord *toVtx);
 
-VertexNode* findNodeForVertex(const VertexGraph* graph,
-                              const GeoCoord* fromVtx);
+VertexNode *findNodeForVertex(const VertexGraph *graph,
+                              const GeoCoord *fromVtx);
 
-VertexNode* firstVertexNode(const VertexGraph* graph);
+VertexNode *firstVertexNode(const VertexGraph *graph);
 
 // Internal functions
-uint32_t _hashVertex(const GeoCoord* vertex, int res, int numBuckets);
-void _initVertexNode(VertexNode* node, const GeoCoord* fromVtx,
-                     const GeoCoord* toVtx);
+uint32_t _hashVertex(const GeoCoord *vertex, int res, int numBuckets);
+void _initVertexNode(VertexNode *node, const GeoCoord *fromVtx,
+                     const GeoCoord *toVtx);
 
 #endif

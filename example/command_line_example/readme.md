@@ -48,7 +48,7 @@
   fmm --ubodt ../data/ubodt.txt --network ../data/edges.shp --gps ../data/trips.csv -k 4 -r 0.4 -e 0.5 --output mr.txt
   ```
 
-- Matching GPS Points in CSV file using fmm  
+- Matching GPS Points in CSV file using fmm
 
   ```bash
   # XML configuration

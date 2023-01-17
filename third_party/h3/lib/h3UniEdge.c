@@ -33,7 +33,8 @@
  * @param destination The destination H3 index.
  * @return 1 if the indexes are neighbors, 0 otherwise;
  */
-int H3_EXPORT(h3IndexesAreNeighbors)(H3Index origin, H3Index destination) {
+int H3_EXPORT(h3IndexesAreNeighbors)(H3Index origin, H3Index destination)
+{
     // Make sure they're hexagon indexes
     if (H3_GET_MODE(origin) != H3_HEXAGON_MODE ||
         H3_GET_MODE(destination) != H3_HEXAGON_MODE) {
@@ -100,8 +101,8 @@ int H3_EXPORT(h3IndexesAreNeighbors)(H3Index origin, H3Index destination) {
  * @param destination The destination H3 hexagon index
  * @return The unidirectional edge H3Index, or H3_NULL on failure.
  */
-H3Index H3_EXPORT(getH3UnidirectionalEdge)(H3Index origin,
-                                           H3Index destination) {
+H3Index H3_EXPORT(getH3UnidirectionalEdge)(H3Index origin, H3Index destination)
+{
     // Short-circuit and return an invalid index value if they are not neighbors
     if (H3_EXPORT(h3IndexesAreNeighbors)(origin, destination) == 0) {
         return H3_NULL;
@@ -131,7 +132,7 @@ H3Index H3_EXPORT(getH3UnidirectionalEdge)(H3Index origin,
     }
 
     // This should be impossible, return H3_NULL in this case;
-    return H3_NULL;  // LCOV_EXCL_LINE
+    return H3_NULL; // LCOV_EXCL_LINE
 }
 
 /**
@@ -139,7 +140,8 @@ H3Index H3_EXPORT(getH3UnidirectionalEdge)(H3Index origin,
  * @param edge The edge H3 index
  * @return The origin H3 hexagon index, or H3_NULL on failure
  */
-H3Index H3_EXPORT(getOriginH3IndexFromUnidirectionalEdge)(H3Index edge) {
+H3Index H3_EXPORT(getOriginH3IndexFromUnidirectionalEdge)(H3Index edge)
+{
     if (H3_GET_MODE(edge) != H3_UNIEDGE_MODE) {
         return H3_NULL;
     }
@@ -154,7 +156,8 @@ H3Index H3_EXPORT(getOriginH3IndexFromUnidirectionalEdge)(H3Index edge) {
  * @param edge The edge H3 index
  * @return The destination H3 hexagon index, or H3_NULL on failure
  */
-H3Index H3_EXPORT(getDestinationH3IndexFromUnidirectionalEdge)(H3Index edge) {
+H3Index H3_EXPORT(getDestinationH3IndexFromUnidirectionalEdge)(H3Index edge)
+{
     if (H3_GET_MODE(edge) != H3_UNIEDGE_MODE) {
         return H3_NULL;
     }
@@ -171,7 +174,8 @@ H3Index H3_EXPORT(getDestinationH3IndexFromUnidirectionalEdge)(H3Index edge) {
  * @param edge The unidirectional edge H3Index
  * @return 1 if it is a unidirectional edge H3Index, otherwise 0.
  */
-int H3_EXPORT(h3UnidirectionalEdgeIsValid)(H3Index edge) {
+int H3_EXPORT(h3UnidirectionalEdgeIsValid)(H3Index edge)
+{
     if (H3_GET_MODE(edge) != H3_UNIEDGE_MODE) {
         return 0;
     }
@@ -196,7 +200,8 @@ int H3_EXPORT(h3UnidirectionalEdgeIsValid)(H3Index edge) {
  * IDs
  */
 void H3_EXPORT(getH3IndexesFromUnidirectionalEdge)(H3Index edge,
-                                                   H3Index* originDestination) {
+                                                   H3Index *originDestination)
+{
     originDestination[0] =
         H3_EXPORT(getOriginH3IndexFromUnidirectionalEdge)(edge);
     originDestination[1] =
@@ -209,7 +214,8 @@ void H3_EXPORT(getH3IndexesFromUnidirectionalEdge)(H3Index edge,
  * @param edges The memory to store all of the edges inside.
  */
 void H3_EXPORT(getH3UnidirectionalEdgesFromHexagon)(H3Index origin,
-                                                    H3Index* edges) {
+                                                    H3Index *edges)
+{
     // Determine if the origin is a pentagon and special treatment needed.
     int isPentagon = H3_EXPORT(h3IsPentagon)(origin);
 
@@ -232,7 +238,8 @@ void H3_EXPORT(getH3UnidirectionalEdgesFromHexagon)(H3Index origin,
  * @param edge The unidirectional edge H3Index
  * @param gb The geoboundary object to store the edge coordinates.
  */
-void H3_EXPORT(getH3UnidirectionalEdgeBoundary)(H3Index edge, GeoBoundary* gb) {
+void H3_EXPORT(getH3UnidirectionalEdgeBoundary)(H3Index edge, GeoBoundary *gb)
+{
     // Get the origin and neighbor direction from the edge
     Direction direction = H3_GET_RESERVED_BITS(edge);
     H3Index origin = H3_EXPORT(getOriginH3IndexFromUnidirectionalEdge)(edge);

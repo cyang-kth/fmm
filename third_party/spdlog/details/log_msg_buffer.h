@@ -6,8 +6,10 @@
 #include "spdlog/details/log_msg.h"
 #include "spdlog/fmt/bundled/core.h"
 
-namespace spdlog {
-namespace details {
+namespace spdlog
+{
+namespace details
+{
 
 // extend log_msg with internal buffer to store its payload.
 // this is needed since log_msg holds string_views that points to stack data.
@@ -21,19 +23,17 @@ class log_msg_buffer : public log_msg
         payload = string_view_t{logger_name.end(), payload.size()};
     }
 
-public:
+  public:
     log_msg_buffer() = default;
 
-    explicit log_msg_buffer(const log_msg &orig_msg)
-        : log_msg{orig_msg}
+    explicit log_msg_buffer(const log_msg &orig_msg) : log_msg{orig_msg}
     {
         buffer.append(logger_name.begin(), logger_name.end());
         buffer.append(payload.begin(), payload.end());
         update_string_views();
     }
 
-    log_msg_buffer(const log_msg_buffer &other)
-        : log_msg{other}
+    log_msg_buffer(const log_msg_buffer &other) : log_msg{other}
     {
         buffer.append(logger_name.begin(), logger_name.end());
         buffer.append(payload.begin(), payload.end());
@@ -41,8 +41,7 @@ public:
     }
 
     log_msg_buffer(log_msg_buffer &&other)
-        : log_msg{std::move(other)}
-        , buffer{std::move(other.buffer)}
+        : log_msg{std::move(other)}, buffer{std::move(other.buffer)}
     {
         update_string_views();
     }

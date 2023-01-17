@@ -33,34 +33,35 @@
 
 // Macros for use with polygonAlgos.h
 /** Macro: Init iteration vars for LinkedGeoLoop */
-#define INIT_ITERATION_LINKED_LOOP       \
-    LinkedGeoCoord* currentCoord = NULL; \
-    LinkedGeoCoord* nextCoord = NULL
+#define INIT_ITERATION_LINKED_LOOP                                             \
+    LinkedGeoCoord *currentCoord = NULL;                                       \
+    LinkedGeoCoord *nextCoord = NULL
 
 /** Macro: Get the next coord in a linked loop, wrapping if needed */
-#define GET_NEXT_COORD(loop, coordToCheck) \
+#define GET_NEXT_COORD(loop, coordToCheck)                                     \
     coordToCheck == NULL ? loop->first : currentCoord->next
 
 /** Macro: Increment LinkedGeoLoop iteration, or break if done. */
-#define ITERATE_LINKED_LOOP(loop, vertexA, vertexB)       \
-    currentCoord = GET_NEXT_COORD(loop, currentCoord);    \
-    if (currentCoord == NULL) break;                      \
-    vertexA = currentCoord->vertex;                       \
-    nextCoord = GET_NEXT_COORD(loop, currentCoord->next); \
+#define ITERATE_LINKED_LOOP(loop, vertexA, vertexB)                            \
+    currentCoord = GET_NEXT_COORD(loop, currentCoord);                         \
+    if (currentCoord == NULL)                                                  \
+        break;                                                                 \
+    vertexA = currentCoord->vertex;                                            \
+    nextCoord = GET_NEXT_COORD(loop, currentCoord->next);                      \
     vertexB = nextCoord->vertex
 
 /** Macro: Whether a LinkedGeoLoop is empty */
 #define IS_EMPTY_LINKED_LOOP(loop) loop->first == NULL
 
-int normalizeMultiPolygon(LinkedGeoPolygon* root);
-LinkedGeoPolygon* addNewLinkedPolygon(LinkedGeoPolygon* polygon);
-LinkedGeoLoop* addNewLinkedLoop(LinkedGeoPolygon* polygon);
-LinkedGeoLoop* addLinkedLoop(LinkedGeoPolygon* polygon, LinkedGeoLoop* loop);
-LinkedGeoCoord* addLinkedCoord(LinkedGeoLoop* loop, const GeoCoord* vertex);
-int countLinkedPolygons(LinkedGeoPolygon* polygon);
-int countLinkedLoops(LinkedGeoPolygon* polygon);
-int countLinkedCoords(LinkedGeoLoop* loop);
-void destroyLinkedGeoLoop(LinkedGeoLoop* loop);
+int normalizeMultiPolygon(LinkedGeoPolygon *root);
+LinkedGeoPolygon *addNewLinkedPolygon(LinkedGeoPolygon *polygon);
+LinkedGeoLoop *addNewLinkedLoop(LinkedGeoPolygon *polygon);
+LinkedGeoLoop *addLinkedLoop(LinkedGeoPolygon *polygon, LinkedGeoLoop *loop);
+LinkedGeoCoord *addLinkedCoord(LinkedGeoLoop *loop, const GeoCoord *vertex);
+int countLinkedPolygons(LinkedGeoPolygon *polygon);
+int countLinkedLoops(LinkedGeoPolygon *polygon);
+int countLinkedCoords(LinkedGeoLoop *loop);
+void destroyLinkedGeoLoop(LinkedGeoLoop *loop);
 
 // The following functions are created via macro in polygonAlgos.h,
 // so their signatures are documented here:
@@ -70,7 +71,7 @@ void destroyLinkedGeoLoop(LinkedGeoLoop* loop);
  * @param geofence Input Geofence
  * @param bbox     Output bbox
  */
-void bboxFromLinkedGeoLoop(const LinkedGeoLoop* loop, BBox* bbox);
+void bboxFromLinkedGeoLoop(const LinkedGeoLoop *loop, BBox *bbox);
 
 /**
  * Take a given LinkedGeoLoop data structure and check if it
@@ -80,14 +81,14 @@ void bboxFromLinkedGeoLoop(const LinkedGeoLoop* loop, BBox* bbox);
  * @param coord         The coordinate to check
  * @return              Whether the point is contained
  */
-bool pointInsideLinkedGeoLoop(const LinkedGeoLoop* loop, const BBox* bbox,
-                              const GeoCoord* coord);
+bool pointInsideLinkedGeoLoop(const LinkedGeoLoop *loop, const BBox *bbox,
+                              const GeoCoord *coord);
 
 /**
  * Whether the winding order of a given LinkedGeoLoop is clockwise
  * @param loop  The loop to check
  * @return      Whether the loop is clockwise
  */
-bool isClockwiseLinkedGeoLoop(const LinkedGeoLoop* loop);
+bool isClockwiseLinkedGeoLoop(const LinkedGeoLoop *loop);
 
 #endif
