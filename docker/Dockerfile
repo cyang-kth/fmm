@@ -24,5 +24,8 @@ RUN wget https://github.com/OSGeo/gdal/releases/download/v3.7.0/gdal-3.7.0.tar.g
         mkdir -p build && pushd build && cmake .. && make -j8 && make install && popd && \
     popd && rm -rf gdal-*
 
-# RUN add-apt-repository -y ppa:ubuntugis/ppa && apt-get -q update
-# RUN apt-get -y install gdal-bin libgdal-dev
+RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.82.0/source/boost_1_82_0.tar.bz2 && \
+    tar -xvjf boost_*.tar.bz2 && \
+    pushd boost_* && \
+        ./bootstrap.sh && ./b2 install && \
+    popd && rm -rf boost_*
