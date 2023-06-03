@@ -1,3 +1,16 @@
+How to use:
+
+```
+# use docker
+make docker_pull
+make test_in_fmm
+
+# build in docker
+make build
+```
+
+---
+
 <div align="center">
   <img src="img/fmm_social.jpg">
 </div>

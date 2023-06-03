@@ -37,11 +37,15 @@ test_in_mac:
 	docker run --rm -w `pwd` -v `pwd`:`pwd` -v `pwd`/build/mac:`pwd`/build -it $(DOCKER_TAG_MACOS) bash
 test_in_linux:
 	docker run --rm -w `pwd` -v `pwd`:`pwd` -v `pwd`/build/linux:`pwd`/build -it $(DOCKER_TAG_LINUX) bash
+test_in_fmm:
+	docker run --rm -w `pwd` -v `pwd`:`pwd` -v `pwd`/build/debug:`pwd`/build -it $(DOCKER_TAG_FMM) bash
 
 docker_build:
 	docker build -f docker/Dockerfile . -t $(DOCKER_TAG_FMM)
-test_in_fmm:
-	docker run --rm -w `pwd` -v `pwd`:`pwd` -v `pwd`/build/debug:`pwd`/build -it $(DOCKER_TAG_FMM) bash
+docker_push:
+	docker push $(DOCKER_TAG_FMM)
+docker_pull:
+	docker pull
 
 PYTHON ?= python3
 python_install:
