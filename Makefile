@@ -40,7 +40,6 @@ test_in_linux:
 
 docker_build:
 	docker build -f docker/Dockerfile . -t $(DOCKER_TAG_FMM)
-	docker run --rm -w `pwd` -v `pwd`:`pwd` -v `pwd`/build/linux:`pwd`/build -it $(DOCKER_TAG_LINUX) bash
 test_in_fmm:
 	docker run --rm -w `pwd` -v `pwd`:`pwd` -v `pwd`/build/debug:`pwd`/build -it $(DOCKER_TAG_FMM) bash
 
