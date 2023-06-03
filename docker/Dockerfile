@@ -18,5 +18,11 @@ RUN wget https://github.com/OSGeo/PROJ/releases/download/9.2.1/proj-9.2.1.tar.gz
         mkdir -p build && pushd build && cmake .. && make -j8 && make install && popd && \
     popd && rm -rf proj-*
 
+RUN wget https://github.com/OSGeo/gdal/releases/download/v3.7.0/gdal-3.7.0.tar.gz && \
+    tar xvzf gdal-*.tar.gz && \
+    pushd gdal-* && \
+        mkdir -p build && pushd build && cmake .. && make -j8 && make install && popd && \
+    popd && rm -rf gdal-*
+
 # RUN add-apt-repository -y ppa:ubuntugis/ppa && apt-get -q update
 # RUN apt-get -y install gdal-bin libgdal-dev
