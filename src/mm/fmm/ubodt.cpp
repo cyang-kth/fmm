@@ -212,6 +212,10 @@ std::shared_ptr<UBODT> UBODT::read_ubodt_csv(const std::string &filename,
   int progress_step = 1000000;
   std::shared_ptr<UBODT> table = std::make_shared<UBODT>(buckets, multiplier);
   FILE *stream = fopen(filename.c_str(), "r");
+  if (!stream) {
+    // Failed to open the file, throw an exception
+    throw std::runtime_error("Failed to open the CSV file.");
+  }
   long NUM_ROWS = 0;
   char line[BUFFER_LINE];
   if (fgets(line, BUFFER_LINE, stream)) {
