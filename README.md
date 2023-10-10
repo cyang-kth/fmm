@@ -8,9 +8,12 @@
 
 FMM is an open source map matching framework in C++ and Python. It solves the problem of matching noisy GPS data to a road network. The design considers maximizing performance, scalability and functionality.
 
-### Online demo
-
-Check the [online demo](https://fmm-demo.herokuapp.com/).
+### Table of Contents
+- [Features](#features)
+- [Screenshots of notebook](#screenshots-of-notebook)
+- [Documentation](#documentation)
+- [Code docs for developer](#code-docs-for-developer)
+- [Contact and citation](#contact-and-citation)
 
 ### Features
 
@@ -55,7 +58,7 @@ Explore the factor of hexagon level and interpolate
 
 Source code of these screenshots are available at https://github.com/cyang-kth/fmm-examples.
 
-### Installation, example, tutorial and API.
+### Documentation
 
 - Check [https://fmm-wiki.github.io/](https://fmm-wiki.github.io/) for installation, documentation.
 - Check [example](example) for simple examples of fmm.
