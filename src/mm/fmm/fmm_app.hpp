@@ -30,7 +30,7 @@ class FMMApp {
       config_(config),
       network_(config_.network_config),
       ng_(network_),
-      ubodt_(UBODT::read_ubodt_file(config_.ubodt_file)){};
+      ubodt_(UBODT::read_ubodt_file(config_.ubodt_file, ng_)){};
   /**
    * Run the fmm program
    */

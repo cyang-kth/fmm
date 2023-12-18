@@ -27,6 +27,9 @@
 #include "network/network.hpp"
 
 namespace FMM {
+
+namespace MM {class UBODT;}
+
 namespace NETWORK {
 /**
  * Graph class of the network
@@ -46,6 +49,16 @@ public:
    */
   std::vector<EdgeIndex> shortest_path_dijkstra(
     NodeIndex source, NodeIndex target) const;
+
+	/**
+	 * Dijkstra Shortest path query from source to target
+	 * @param source source node queried
+	 * @param target target node queried
+	 * @param pmap predecessor map updated to store the routing result
+	 * @param dmap distance map updated to store the routing result
+	 */
+	void shortest_path_dijkstra(Heap *Q, PredecessorMap *pmap,
+			DistanceMap *dmap, MM::UBODT *odTable, NodeIndex source, NodeIndex target) const;
   /**
    * Calculate heuristic distance from p1 to p2,which is used in Astar routing.
    * @param p1

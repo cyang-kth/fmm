@@ -1,0 +1,101 @@
+# folders
+bin/
+input/
+output/
+dist/
+test/bin/
+test/log/
+
+# Doc files
+
+docs/html
+
+# Mac
+
+**/.DS_Store
+
+# Mac
+
+**/.DS_Store
+
+# Cmake
+
+build/
+cmake-build-debug/
+CMakeLists.txt.user
+CMakeCache.txt
+CMakeFiles
+CMakeScripts
+Testing
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps
+
+# Projects
+*.cbp
+*.depend
+*.layout
+.kdev4/
+*.kdev4
+.idea/
+
+# log file
+*.log
+
+
+# Prerequisites
+*.d
+
+# Object files
+*.o
+*.ko
+*.obj
+*.elf
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Libraries
+*.lib
+*.a
+*.la
+*.lo
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+
+# Debug files
+*.dSYM/
+*.su
+
+# Binary files
+
+*.bin
+*.binary
+
+# bash file to sync file
+sync.sh
+
+
+# Jupyternotebook
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+*.pyc
+
+# Docker specifics
+Dockerfile
+.git
