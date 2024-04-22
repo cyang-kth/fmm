@@ -12,9 +12,9 @@ FMM provides Python and C++ APIs and can be used in the command line, in Jupyter
 
 ### Table of Contents
 - [Features](#features)
+- [Screenshots of notebook](#screenshots-of-notebook)
 - [Requirements](#requirements)
 - [Getting Started](#getting-started)
-- [Screenshots of notebook](#screenshots-of-notebook)
 - [Documentation](#documentation)
 - [Code docs for developer](#code-docs-for-developer)
 - [Contact and citation](#contact-and-citation)
@@ -33,6 +33,34 @@ FMM provides Python and C++ APIs and can be used in the command line, in Jupyter
 
 We encourage contribution with feature request, bug report or developping new map matching algorithms using the framework.
 
+### Screenshots of notebook
+
+Map match to OSM road network by drawing
+
+![fmm_draw](https://github.com/cyang-kth/fmm-examples/blob/master/img/fmm_draw.gif?raw=true)
+
+Explore the factor of candidate size k, search radius and GPS error
+
+![fmm_explore](https://github.com/cyang-kth/fmm-examples/blob/master/img/fmm_explore.gif?raw=true)
+
+Explore detailed map matching information
+
+![fmm_detail](https://github.com/cyang-kth/fmm-examples/blob/master/img/fmm_detail.gif?raw=true)
+
+Explore with dual map
+
+![dual_map](https://github.com/cyang-kth/fmm-examples/blob/master/img/dual_map.gif?raw=true)
+
+Map match to hexagon by drawing
+
+![hex_draw](https://github.com/cyang-kth/fmm-examples/blob/master/img/hex_draw.gif?raw=true)
+
+Explore the factor of hexagon level and interpolate
+
+![hex_explore](https://github.com/cyang-kth/fmm-examples/blob/master/img/hex_explore.gif?raw=true)
+
+Source code of these screenshots are available at https://github.com/cyang-kth/fmm-examples.
+
 ### Requirements
 - C++ Compiler supporting c++11 and OpenMP
 - CMake >=3.5: provides cross platform building tools
@@ -40,7 +68,8 @@ We encourage contribution with feature request, bug report or developping new ma
 - Boost Graph >= 1.54.0: routing algorithms used in UBODT Generator
 - Boost Geometry >= 1.54.0: Rtree, Geometry computation
 - Boost Serialization >= 1.54.0: Serialization of UBODT in binary format
-- Libosmium: a library for reading OpenStreetMap data. Requires expat and bz2.
+- ~~Libosmium: a library for reading OpenStreetMap data. Requires expat and bz2.~~ (The direct input with OSM file is removed since the raw dataset may contain
+topology errors. It is suggested to use shapefile input downloaded from osmnx.)
 - swig: used for building Python bindings
 
 ### Getting Started
@@ -121,34 +150,6 @@ These instructions are for the Ubuntu platform. For installation on Windows and 
       ```
 
     Refer to the [Q&A](https://fmm-wiki.github.io/docs/installation/qa) for any installation errors.
-
-### Screenshots of notebook
-
-Map match to OSM road network by drawing
-
-![fmm_draw](https://github.com/cyang-kth/fmm-examples/blob/master/img/fmm_draw.gif?raw=true)
-
-Explore the factor of candidate size k, search radius and GPS error
-
-![fmm_explore](https://github.com/cyang-kth/fmm-examples/blob/master/img/fmm_explore.gif?raw=true)
-
-Explore detailed map matching information
-
-![fmm_detail](https://github.com/cyang-kth/fmm-examples/blob/master/img/fmm_detail.gif?raw=true)
-
-Explore with dual map
-
-![dual_map](https://github.com/cyang-kth/fmm-examples/blob/master/img/dual_map.gif?raw=true)
-
-Map match to hexagon by drawing
-
-![hex_draw](https://github.com/cyang-kth/fmm-examples/blob/master/img/hex_draw.gif?raw=true)
-
-Explore the factor of hexagon level and interpolate
-
-![hex_explore](https://github.com/cyang-kth/fmm-examples/blob/master/img/hex_explore.gif?raw=true)
-
-Source code of these screenshots are available at https://github.com/cyang-kth/fmm-examples.
 
 ### Documentation
 
