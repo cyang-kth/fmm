@@ -36,6 +36,7 @@ find_package(Conda)
 if(CONDA_PREFIX)
   message(STATUS "Set CONDA_PREFIX ${CONDA_PREFIX}")
   set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${CONDA_PREFIX})
+  set(Python_FIND_STRATEGY LOCATION) # might want to prefer conda over system python
 else()
   message(STATUS "Non conda exist, search library in default path")
 endif()
