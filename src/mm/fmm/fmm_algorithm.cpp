@@ -198,7 +198,7 @@ std::string FastMapMatch::match_gps_file(
       std::vector<Trajectory> trajectories =
         reader.read_next_N_trajectories(buffer_trajectories_size);
       int trajectories_fetched = trajectories.size();
-      #pragma omp parallel for
+      #pragma omp parallel for schedule (guided)
       for (int i = 0; i < trajectories_fetched; ++i) {
         Trajectory &trajectory = trajectories[i];
         int points_in_tr = trajectory.geom.get_num_points();
@@ -264,7 +264,7 @@ double FastMapMatch::get_sp_dist(
     // Transition on the same OD nodes
     sp_dist = ca->edge->length - ca->offset + cb->offset;
   } else {
-    Record *r = ubodt_->look_up(ca->edge->target, cb->edge->source);
+    Record *r = ubodt_->look_up_or_make(ca->edge->target, cb->edge->source);
     // No sp path exist from O to D.
     if (r == nullptr) return std::numeric_limits<double>::infinity();
     // calculate original SP distance

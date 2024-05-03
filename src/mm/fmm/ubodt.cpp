@@ -18,8 +18,8 @@ using namespace FMM;
 using namespace FMM::CORE;
 using namespace FMM::NETWORK;
 using namespace FMM::MM;
-UBODT::UBODT(int buckets_arg, int multiplier_arg) :
-    buckets(buckets_arg), multiplier(multiplier_arg) {
+UBODT::UBODT(int buckets_arg, int multiplier_arg, NetworkGraph graph_arg) :
+    buckets(buckets_arg), multiplier(multiplier_arg), graph(graph_arg) {
   SPDLOG_TRACE("Intialization UBODT with buckets {} multiplier {}",
                buckets, multiplier);
   hashtable = (Record **) malloc(sizeof(Record *) * buckets);
@@ -59,11 +59,64 @@ Record *UBODT::look_up(NodeIndex source, NodeIndex target) const {
   return r;
 }
 
+Record* UBODT::look_up_or_make(NETWORK::NodeIndex source,
+		NETWORK::NodeIndex target) {
+	Record *r = look_up(source, target);
+	// No transition exist from source to target
+	if (r == nullptr) {
+		Heap Q;
+		PredecessorMap pmap;
+		DistanceMap dmap;
+
+		graph.shortest_path_dijkstra(&Q, &pmap, &dmap, this, source, target);
+
+		std::stack<NodeIndex> route;
+
+		for (auto iter = pmap.begin(); iter != pmap.end(); ++iter) {
+			NodeIndex cur_node = iter->first;
+			if (!Q.contain_node(cur_node) && !look_up(source, cur_node)) {
+				// If node isn't in the heap, it means that pmap and dmap hold truthful information about distance
+				// If there is no look_up value, it must be stored
+
+				NodeIndex prev_n = iter->second;
+				// Create a stack with the route from source to cur_node
+				for(NodeIndex u=cur_node; u != source; u=pmap[u])
+					route.push(u);
+
+				// Insert ods from the former to the latter
+				// The former is always the source
+				NodeIndex former = source;
+				while(former != cur_node && !look_up(former, cur_node)) {
+					// Repeat until the route reached cur_node
+					// or the rest of the route is already in the table
+
+					r = (Record*) malloc(sizeof(Record));
+					r->source = former;
+					r->target = cur_node;
+
+					// First node of this route will be the former of the next
+					NodeIndex s = former;
+					former = route.top();
+					route.pop();
+					r->first_n = former;
+					r->prev_n = prev_n;
+					r->next_e = graph.get_edge_index(s, former, dmap[former]-dmap[s]);
+					r->cost = dmap[cur_node]-dmap[s];
+					r->next = nullptr;
+					insert(r);
+				}
+			}
+		}
+		r = look_up(source, target);
+	}
+	return r;
+}
+
 std::vector<EdgeIndex> UBODT::look_sp_path(NodeIndex source,
-                                           NodeIndex target) const {
+                                           NodeIndex target) {
   std::vector<EdgeIndex> edges;
   if (source == target) { return edges; }
-  Record *r = look_up(source, target);
+  Record *r = look_up_or_make(source, target);
   // No transition exist from source to target
   if (r == nullptr) { return edges; }
   while (r->first_n != target) {
@@ -74,10 +127,552 @@ std::vector<EdgeIndex> UBODT::look_sp_path(NodeIndex source,
   return edges;
 }
 
+std::vector<std::vector<NETWORK::EdgeIndex>> UBODT::look_bfs_le_path(
+		  const NETWORK::NodeIndex source,
+    const NETWORK::NodeIndex target, int size) {
+	// Return empty list if target and source are the same
+		std::vector<std::vector<NETWORK::EdgeIndex>> returnV;
+		if (source == target) {return returnV;}
+
+		// depth will always be less than the size
+		std::vector<std::vector<std::vector<Record*>>> routes(size);
+		routes.at(0) = {{look_up_or_make(source, target)}};
+
+		struct RoutesNode {
+			std::vector<Record*> index; /**< Index of a node in the heap */
+			double value; /**< Value of a node in the heap */
+			bool operator<(const RoutesNode &rhs) const {
+				return value < rhs.value;
+			}
+		};
+
+		std::vector<std::unique_ptr<Record>> temporaryRecords;
+		int routesSize = 0;
+
+		const Graph_T g = graph.get_boost_graph();
+
+		/** Lambda functions to help code reusability inside the function **/
+		auto nextNode = [this](Record* &r, std::vector<Record*>::iterator &recordIterator, const NodeIndex currentNode){
+			// If at the end of an OD pair, get the next pair
+			if(currentNode == r->target)
+				r = *++recordIterator;
+
+			// get route from current node to the target, and get next node
+			r = look_up(currentNode, r->target);
+			return r-> first_n;
+		};
+
+		auto getOutEdges = [g](NodeIndex source){
+			static OutEdgeIterator out_i, out_end;
+			std::map<EdgeIndex, EdgeDescriptor> out_edges;
+			for(boost::tie(out_i, out_end) = boost::out_edges(source, g);
+					out_i != out_end; out_i++){
+				EdgeDescriptor e = *out_i;
+				out_edges[g[e].index] = e;
+			}
+			return out_edges;
+		};
+
+		auto getMinimalPathAfterEdge = [this, g, target, &temporaryRecords](const EdgeDescriptor e, const NodeIndex previousNode, const std::vector<Record*> &basePath){
+			NodeIndex nodeAfterEdge = boost::target(e, g);
+
+			if(nodeAfterEdge == previousNode)
+				throw std::invalid_argument("Loop edge");
+
+			if(!basePath.empty() && nodeAfterEdge == basePath.back()->prev_n)
+				throw std::invalid_argument("Edge goes backward");
+
+			Record *nextOD = look_up_or_make(nodeAfterEdge, target);
+			if (nextOD == nullptr)
+				throw std::invalid_argument("No od pair");
+
+			EdgeProperty eProperty = g[e];
+			RoutesNode returnV;
+			returnV.value = eProperty.length + nextOD -> cost;
+			for(Record* record : basePath) {
+				returnV.value += record->cost;
+				returnV.index.push_back(record);
+			}
+
+			// push the edge as a route
+			Record *edgeRecord = look_up_or_make(previousNode, nodeAfterEdge);
+			// If edge is not the sp, the edge must be pushed, mocking a sp
+			if(edgeRecord->next_e != eProperty.index) {
+				std::unique_ptr<Record> tempRecord(new Record);
+				tempRecord->source = previousNode;
+				tempRecord->prev_n = previousNode;
+				tempRecord->target = nodeAfterEdge;
+				tempRecord->first_n = nodeAfterEdge;
+				tempRecord->next_e = eProperty.index;
+				tempRecord->cost = eProperty.length;
+				tempRecord->next = nullptr;
+			    temporaryRecords.push_back(std::move(tempRecord));
+			    edgeRecord = temporaryRecords.back().get();
+			}
+			returnV.index.push_back(edgeRecord);
+			// Push the last part of the route
+			returnV.index.push_back(nextOD);
+			return returnV;
+		};
+
+		auto isSubRoute = [this, &nextNode](std::vector<Record*> &route1,
+				std::vector<Record*> &smallerRoute, Record* &r, const NodeIndex lastNodeBase) {
+			auto iterR = route1.begin();
+			r = *iterR;
+			auto iterBasePath = smallerRoute.begin();
+			Record *basePathRecord = *iterBasePath;
+
+			// basePath contains all record, from
+			// its source to its target. Then, advance
+			while (iterBasePath + 1 != smallerRoute.end() && r == basePathRecord) {
+				r = *++iterR;
+				basePathRecord = *++iterBasePath;
+			}
+
+			// Walk through route1 to check if the route matches it
+			NodeIndex nextNodeRoute = r->source;
+			NodeIndex nextNodeBase = basePathRecord->source;
+			while (nextNodeBase != lastNodeBase
+					&& nextNodeBase == nextNodeRoute) { // Path still didn't get to spurNode
+				nextNodeRoute = nextNode(r, iterR, nextNodeRoute);
+				nextNodeBase = nextNode(basePathRecord, iterBasePath,
+						nextNodeBase);
+			}
+
+			// Update r, if applicable
+			if(nextNodeRoute == r->target && iterR+1 != route1.end())
+				r = *++iterR;
+			if(r != nullptr && nextNodeRoute != r->target)
+				r = look_up(nextNodeRoute, r->target);
+
+			return nextNodeBase == nextNodeRoute;
+		};
+		/** End of lambda functions **/
+
+		for(int i=0; routesSize<size; i++) {
+			for(int j=0; j<routes.at(i).size() && routesSize<size; j++) {
+				std::vector<Record*> examinedRoute = routes.at(i).at(j);
+
+				// The spur node is the ith node of latestRoute
+				auto spurNodeIter = examinedRoute.begin();
+				Record* spurNodeRecord = *spurNodeIter;
+				NodeIndex spurNode = spurNodeRecord->source;
+				std::vector<Record*> basePath;
+				// Repeat until the last node
+				while(spurNode != target) {
+
+					// Load all edges that come out of the spur node
+					std::map<EdgeIndex, EdgeDescriptor> out_edges = getOutEdges(spurNode);
+
+					// Remove next edge
+					// Special case of spurNode=source
+					Record *r = examinedRoute.front();
+					if(basePath.empty()){
+						out_edges.erase(r->next_e);
+					} else if(isSubRoute(examinedRoute, basePath, r, spurNode)) {
+						out_edges.erase(r->next_e);
+					}
+
+					// Calculate shortest path from source to destination
+					//without some edges out of spurNode
+					FibHeap<RoutesNode> route_candidates;
+					for(auto edge: out_edges) {
+						try {
+							auto candidate = getMinimalPathAfterEdge(edge.second, spurNode, basePath);
+							route_candidates.push(candidate);
+						} catch (std::invalid_argument const& ex) {
+							continue;
+						}
+					}
+
+					while (!route_candidates.empty() && route_candidates.n < 10e3) {
+						std::vector<Record*> topCandidate = route_candidates.top().index;
+						route_candidates.pop();
+
+						auto lastIter = topCandidate.end()-2;
+						NodeIndex candidateSpurNode = (*lastIter++)->source;
+						auto candidateIter=topCandidate.begin();
+						Record *r = *candidateIter;
+
+						// Nodes before and including spur
+						std::set<NodeIndex> nodesUntilSpur;
+						while(candidateIter!=lastIter) {
+							nodesUntilSpur.insert(r->source);
+							while(r->first_n != r->target){
+								r = look_up(r->first_n, r->target);
+								nodesUntilSpur.insert(r->source);
+							}
+							r = *++candidateIter;
+						}
+
+						while(r->first_n != target && nodesUntilSpur.find(r->source) == nodesUntilSpur.end()) {
+							r = look_up(r->first_n, target);
+						}
+
+						if(nodesUntilSpur.find(r->source) == nodesUntilSpur.end()) {
+							// Valid candidate
+							// Check if not already included
+							bool isPathUnique = true;
+							Record *r;
+							for(int i2=0; i2<=i+1; i2++) {
+								for(int j2=0; j2<routes.at(i2).size(); j2++) {
+									if(isSubRoute(routes.at(i2).at(j2), topCandidate, r, target)) {
+										isPathUnique = false;
+										break;
+									}
+								}
+							}
+
+							//Route not included, pushing to tree
+							if(isPathUnique) {
+								routes.at(i+1).push_back(topCandidate);
+								routesSize++;
+								route_candidates.clear();
+								// End route_candidates loop
+								break;
+							}
+						} else {
+							// Candidate contains some node twice.
+							NodeIndex duplicatedNode = r->source;
+							// Get last record, since this is the record
+							// where the mistake is.
+							r = topCandidate.back();
+							//  The process of finding a new route consists
+							// of splitting the last record in from two to three records
+							// The source of the first one must be firstSource
+							NodeIndex firstSource = r->source;
+
+							while(r->source != duplicatedNode) { //Next lastSource must not be the duplicated node
+								// If there are three records, the last one's source will be lastSource
+								NodeIndex lastSource = r->source;
+
+								// make route as basepath-> (firstSource,newSource) -> (newSource,target)
+								// Append all route, except the last element
+								std::vector<Record*> candidateBasePath(topCandidate.begin(), candidateIter);
+								if(firstSource != lastSource)
+									candidateBasePath.push_back(look_up(firstSource, lastSource));
+
+								for(auto edge: getOutEdges(lastSource)) {
+									if(edge.first == r->next_e)
+										continue;
+
+									try {
+										auto newCandidate = getMinimalPathAfterEdge(edge.second, lastSource, candidateBasePath);
+										route_candidates.push(newCandidate);
+									} catch (std::invalid_argument const& ex) {
+										continue;
+									}
+								}
+								r = look_up(r->first_n, r->target);
+							}
+						}
+					}
+
+					/** Update spurnode and basepath **/
+					auto formerSpurNodeIter = spurNodeIter;
+					spurNode = nextNode(spurNodeRecord, spurNodeIter, spurNode);
+					// Check if the sp inside latestRoute changed
+					if(formerSpurNodeIter != spurNodeIter || basePath.empty())
+						basePath.push_back(look_up((*spurNodeIter)->source, spurNode));
+					else
+						basePath.back() = look_up((*spurNodeIter)->source, spurNode);
+				}
+			}
+		}
+
+			/** Test if the candidate is valid **/
+			// It will be invalid if the last od passes its spur node
+
+		for(int i=0; i<size; i++) {
+			for(int j=0; j<routes.at(i).size(); j++) {
+				std::vector<EdgeIndex> edges;
+				auto iterR = routes.at(i).at(j).begin();
+				Record *r = *iterR;
+				NodeIndex currentNode = r->source;
+				while(currentNode != target){
+					currentNode = nextNode(r, iterR, currentNode);
+					edges.push_back(r->next_e);
+				}
+				returnV.push_back(edges);
+			}
+		}
+
+		return returnV;//routes;
+}
+
+std::vector<std::vector<NETWORK::EdgeIndex>> UBODT::look_k_sp_path(
+		const NETWORK::NodeIndex source, const NETWORK::NodeIndex target, int K) {
+	// Return empty list if target and source are the same
+	std::vector<std::vector<NETWORK::EdgeIndex>> returnV;
+	if (source == target) {return returnV;}
+
+	std::vector<std::vector<Record*>> routes(K);
+	routes.at(0) = {look_up_or_make(source, target)};
+
+	struct RoutesNode {
+		std::vector<Record*> index; /**< Index of a node in the heap */
+		double value; /**< Value of a node in the heap */
+		bool operator<(const RoutesNode &rhs) const {
+			return value < rhs.value;
+		}
+	};
+	FibHeap<RoutesNode> route_candidates;
+
+	std::vector<std::unique_ptr<Record>> temporaryRecords;
+
+	const Graph_T g = graph.get_boost_graph();
+
+	/** Lambda functions to help code reusability inside the function **/
+	auto nextNode = [this](Record* &r, std::vector<Record*>::iterator &recordIterator, const NodeIndex currentNode){
+		// If at the end of an OD pair, get the next pair
+		if(currentNode == r->target)
+			r = *++recordIterator;
+
+		// get route from current node to the target, and get next node
+		r = look_up(currentNode, r->target);
+		return r-> first_n;
+	};
+
+	auto getOutEdges = [g](NodeIndex source){
+		static OutEdgeIterator out_i, out_end;
+		std::map<EdgeIndex, EdgeDescriptor> out_edges;
+		for(boost::tie(out_i, out_end) = boost::out_edges(source, g);
+				out_i != out_end; out_i++){
+			EdgeDescriptor e = *out_i;
+			out_edges[g[e].index] = e;
+		}
+		return out_edges;
+	};
+
+	auto getMinimalPathAfterEdge = [this, g, target, &temporaryRecords](const EdgeDescriptor e, const NodeIndex previousNode, const std::vector<Record*> &basePath){
+		NodeIndex nodeAfterEdge = boost::target(e, g);
+
+		if(nodeAfterEdge == previousNode)
+			throw std::invalid_argument("Loop edge");
+
+		if(!basePath.empty() && nodeAfterEdge == basePath.back()->prev_n)
+			throw std::invalid_argument("Edge goes backward");
+
+		Record *nextOD = look_up_or_make(nodeAfterEdge, target);
+		if (nextOD == nullptr)
+			throw std::invalid_argument("No od pair");
+
+		EdgeProperty eProperty = g[e];
+		RoutesNode returnV;
+		returnV.value = eProperty.length + nextOD -> cost;
+		for(Record* record : basePath) {
+			returnV.value += record->cost;
+			returnV.index.push_back(record);
+		}
+
+		// push the edge as a route
+		Record *edgeRecord = look_up_or_make(previousNode, nodeAfterEdge);
+		// If edge is not the sp, the edge must be pushed, mocking a sp
+		if(edgeRecord->next_e != eProperty.index) {
+			std::unique_ptr<Record> tempRecord(new Record);
+			tempRecord->source = previousNode;
+			tempRecord->prev_n = previousNode;
+			tempRecord->target = nodeAfterEdge;
+			tempRecord->first_n = nodeAfterEdge;
+			tempRecord->next_e = eProperty.index;
+			tempRecord->cost = eProperty.length;
+			tempRecord->next = nullptr;
+		    temporaryRecords.push_back(std::move(tempRecord));
+		    edgeRecord = temporaryRecords.back().get();
+		}
+		returnV.index.push_back(edgeRecord);
+		// Push the last part of the route
+		returnV.index.push_back(nextOD);
+		return returnV;
+	};
+
+	auto isSubRoute = [this, &nextNode](std::vector<Record*> &route1,
+			std::vector<Record*> &smallerRoute, Record* &r, const NodeIndex lastNodeBase) {
+		auto iterR = route1.begin();
+		r = *iterR;
+		auto iterBasePath = smallerRoute.begin();
+		Record *basePathRecord = *iterBasePath;
+
+		// basePath contains all record, from
+		// its source to its target. Then, advance
+		while (iterBasePath + 1 != smallerRoute.end() && r == basePathRecord) {
+			r = *++iterR;
+			basePathRecord = *++iterBasePath;
+		}
+
+		// Walk through route1 to check if the route matches it
+		NodeIndex nextNodeRoute = r->source;
+		NodeIndex nextNodeBase = basePathRecord->source;
+		while (nextNodeBase != lastNodeBase
+				&& nextNodeBase == nextNodeRoute) { // Path still didn't get to spurNode
+			nextNodeRoute = nextNode(r, iterR, nextNodeRoute);
+			nextNodeBase = nextNode(basePathRecord, iterBasePath,
+					nextNodeBase);
+		}
+
+		// Update r, if applicable
+		if(nextNodeRoute == r->target && iterR+1 != route1.end())
+			r = *++iterR;
+		if(r != nullptr && nextNodeRoute != r->target)
+			r = look_up(nextNodeRoute, r->target);
+
+		return nextNodeBase == nextNodeRoute;
+	};
+	/** End of lambda functions **/
+
+	int k=1;
+	// Implementation of Yen's algorithm
+	// https://doi.org/10.1287/mnsc.17.11.712
+	for(; k<K; k++){
+		std::vector<Record*> latestRoute = routes.at(k-1);
+
+		// The spur node is the ith node of latestRoute
+		auto spurNodeIter = latestRoute.begin();
+		Record* spurNodeRecord = *spurNodeIter;
+		NodeIndex spurNode = spurNodeRecord->source;
+		std::vector<Record*> basePath;
+		// Repeat until the last node
+		while(spurNode != target){
+
+			// Load all edges that come out of the spur node
+			std::map<EdgeIndex, EdgeDescriptor> out_edges = getOutEdges(spurNode);
+
+			// Eliminate edges of the spurNode used by routes
+			// that use basePath integrally
+			for(int i=0; i<k; i++) {
+				// Special case of spurNode=source
+				Record *r = routes.at(i).front();
+				if(basePath.empty()){
+					out_edges.erase(r->next_e);
+					continue;
+				}
+
+				// Erase edge of next
+				if(isSubRoute(routes.at(i), basePath, r, spurNode))
+					out_edges.erase(r->next_e);
+			}
+
+			// Calculate shortest path from source to destination
+			//without some edges out of spurNode
+			for(auto edge: out_edges) {
+				try {
+					auto candidate = getMinimalPathAfterEdge(edge.second, spurNode, basePath);
+					route_candidates.push(candidate);
+				} catch (std::invalid_argument const& ex) {
+					continue;
+				}
+			}
+
+			/** Update spurnode and basepath **/
+			auto formerSpurNodeIter = spurNodeIter;
+			spurNode = nextNode(spurNodeRecord, spurNodeIter, spurNode);
+			// Check if the sp inside latestRoute changed
+			if(formerSpurNodeIter != spurNodeIter || basePath.empty())
+				basePath.push_back(look_up((*spurNodeIter)->source, spurNode));
+			else
+				basePath.back() = look_up((*spurNodeIter)->source, spurNode);
+		}
+
+		/** Test if the candidate is valid **/
+		// It will be invalid if the last od passes its spur node
+		while (!route_candidates.empty()) {
+			std::vector<Record*> topCandidate = route_candidates.top().index;
+			route_candidates.pop();
+
+			auto lastIter = topCandidate.end()-2;
+			NodeIndex candidateSpurNode = (*lastIter++)->source;
+			auto candidateIter=topCandidate.begin();
+			Record *r = *candidateIter;
+
+			// Nodes before and including spur
+			std::set<NodeIndex> nodesUntilSpur;
+			while(candidateIter!=lastIter) {
+				nodesUntilSpur.insert(r->source);
+				while(r->first_n != r->target){
+					r = look_up(r->first_n, r->target);
+					nodesUntilSpur.insert(r->source);
+				}
+				r = *++candidateIter;
+			}
+
+			while(r->first_n != target && nodesUntilSpur.find(r->source) == nodesUntilSpur.end()) {
+				r = look_up(r->first_n, target);
+			}
+
+			if(nodesUntilSpur.find(r->source) == nodesUntilSpur.end()) {
+				// Valid candidate
+				// Check if not already included
+				int i = 0;
+				Record *r;
+				for(; i<k; i++)
+					if(isSubRoute(routes.at(i), topCandidate, r, target))
+						break;
+
+				//Route already included, trying again
+				if(i==k) {
+					routes.at(k) = topCandidate;
+					// End route_candidates loop
+					break;
+				}
+			} else {
+				// Candidate contains some node twice.
+				NodeIndex duplicatedNode = r->source;
+				// Get last record, since this is the record
+				// where the mistake is.
+				r = topCandidate.back();
+				//  The process of finding a new route consists
+				// of splitting the last record in from two to three records
+				// The source of the first one must be firstSource
+				NodeIndex firstSource = r->source;
+
+				while(r->source != duplicatedNode) { //Next lastSource must not be the duplicated node
+					// If there are three records, the last one's source will be lastSource
+					NodeIndex lastSource = r->source;
+
+					// make route as basepath-> (firstSource,newSource) -> (newSource,target)
+					// Append all route, except the last element
+					std::vector<Record*> candidateBasePath(topCandidate.begin(), candidateIter);
+					if(firstSource != lastSource)
+						candidateBasePath.push_back(look_up(firstSource, lastSource));
+
+					for(auto edge: getOutEdges(lastSource)) {
+						if(edge.first == r->next_e)
+							continue;
+
+						try {
+							auto newCandidate = getMinimalPathAfterEdge(edge.second, lastSource, candidateBasePath);
+							route_candidates.push(newCandidate);
+						} catch (std::invalid_argument const& ex) {
+							continue;
+						}
+					}
+					r = look_up(r->first_n, r->target);
+				}
+			}
+		}
+		if(route_candidates.empty())
+			break;
+	}
+	for (int i=0; i<k; i++){
+		std::vector<EdgeIndex> edges;
+		auto iterR = routes.at(i).begin();
+		Record *r = *iterR;
+		NodeIndex currentNode = r->source;
+		while(currentNode != target){
+			currentNode = nextNode(r, iterR, currentNode);
+			edges.push_back(r->next_e);
+		}
+		returnV.push_back(edges);
+	}
+
+	return returnV;//routes;
+
+}
+
 C_Path UBODT::construct_complete_path(int traj_id, const TGOpath &path,
                                       const std::vector<Edge> &edges,
                                       std::vector<int> *indices,
-                                      double reverse_tolerance) const {
+                                      double reverse_tolerance) {
   C_Path cpath;
   if (!indices->empty()) indices->clear();
   if (path.empty()) return cpath;
@@ -185,13 +780,16 @@ int UBODT::find_prime_number(double value) {
 }
 
 std::shared_ptr<UBODT> UBODT::read_ubodt_file(const std::string &filename,
-    int multiplier) {
+		NETWORK::NetworkGraph graph, int multiplier) {
   std::shared_ptr<UBODT> ubodt = nullptr;
   auto start_time = UTIL::get_current_time();
-  if (UTIL::check_file_extension(filename,"bin")){
-    ubodt = read_ubodt_binary(filename,multiplier);
+  if(!UTIL::file_exists(filename)) {
+	  int buckets = find_prime_number(graph.get_num_vertices()*graph.get_num_vertices());
+	  ubodt = std::make_shared<UBODT>(buckets, multiplier, graph);
+  } else if (UTIL::check_file_extension(filename,"bin")){
+    ubodt = read_ubodt_binary(filename,graph,multiplier);
   } else if (UTIL::check_file_extension(filename,"csv,txt")) {
-    ubodt = read_ubodt_csv(filename,multiplier);
+    ubodt = read_ubodt_csv(filename, graph, multiplier);
   } else {
     std::string message = (boost::format("File format not supported: %1%") % filename).str();
     SPDLOG_CRITICAL(message);
@@ -204,13 +802,14 @@ std::shared_ptr<UBODT> UBODT::read_ubodt_file(const std::string &filename,
 }
 
 std::shared_ptr<UBODT> UBODT::read_ubodt_csv(const std::string &filename,
+                                             const NETWORK::NetworkGraph graph,
                                              int multiplier) {
   SPDLOG_INFO("Reading UBODT file (CSV format) from {}", filename);
   long rows = estimate_ubodt_rows(filename);
   int buckets = find_prime_number(rows / LOAD_FACTOR);
   SPDLOG_TRACE("Estimated buckets {}", buckets);
   int progress_step = 1000000;
-  std::shared_ptr<UBODT> table = std::make_shared<UBODT>(buckets, multiplier);
+  std::shared_ptr<UBODT> table = std::make_shared<UBODT>(buckets, multiplier, graph);
   FILE *stream = fopen(filename.c_str(), "r");
   long NUM_ROWS = 0;
   char line[BUFFER_LINE];
@@ -245,13 +844,14 @@ std::shared_ptr<UBODT> UBODT::read_ubodt_csv(const std::string &filename,
 }
 
 std::shared_ptr<UBODT> UBODT::read_ubodt_binary(const std::string &filename,
+                                                 const NETWORK::NetworkGraph graph,
                                                  int multiplier) {
   SPDLOG_INFO("Reading UBODT file (binary format) from {}", filename);
   long rows = estimate_ubodt_rows(filename);
   int progress_step = 1000000;
   SPDLOG_TRACE("Estimated rows is {}", rows);
   int buckets = find_prime_number(rows / LOAD_FACTOR);
-  std::shared_ptr<UBODT> table = std::make_shared<UBODT>(buckets, multiplier);
+  std::shared_ptr<UBODT> table = std::make_shared<UBODT>(buckets, multiplier, graph);
   long NUM_ROWS = 0;
   std::ifstream ifs(filename.c_str());
   // Check byte offset

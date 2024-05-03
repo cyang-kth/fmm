@@ -3,6 +3,8 @@
 #include "network/network.hpp"
 #include "util/debug.hpp"
 
+#include "mm/fmm/ubodt.hpp"
+
 #include <cmath>
 #include <iostream>
 #include <algorithm>
@@ -58,42 +60,62 @@ std::vector<EdgeIndex> NetworkGraph::shortest_path_dijkstra(
   Heap Q;
   PredecessorMap pmap;
   DistanceMap dmap;
+
+  shortest_path_dijkstra(&Q, &pmap, &dmap, nullptr, source, target);
+  // Backtrack from target to source
+  return back_track(source, target, pmap, dmap);
+}
+
+void NetworkGraph::shortest_path_dijkstra(Heap *Q, PredecessorMap *pmap,
+		DistanceMap *dmap, MM::UBODT *odTable, NodeIndex source, NodeIndex target) const {
   // Initialization
-  Q.push(source, 0);
-  pmap.insert({source, source});
-  dmap.insert({source, 0});
+  Q->push(source, 0);
+  pmap->insert({source, source});
+  dmap->insert({source, 0});
   OutEdgeIterator out_i, out_end;
   double temp_dist = 0;
   // Dijkstra search
-  while (!Q.empty()) {
-    HeapNode node = Q.top();
-    Q.pop();
+  while (!Q->empty()) {
+    HeapNode node = Q->top();
+    Q->pop();
     NodeIndex u = node.index;
     if (u == target) break;
     for (boost::tie(out_i, out_end) = boost::out_edges(u, g);
          out_i != out_end; ++out_i) {
       EdgeDescriptor e = *out_i;
       NodeIndex v = boost::target(e, g);
-      temp_dist = node.value + g[e].length;
-      auto iter = dmap.find(v);
-      if (iter != dmap.end()) {
-        // dmap contains node v
-        if (iter->second > temp_dist) {
-          // a smaller distance is found for v
-          pmap[v] = u;
-          dmap[v] = temp_dist;
-          Q.decrease_key(v, temp_dist);
-        }
-      } else {
-        // dmap does not contain v
-        Q.push(v, temp_dist);
-        pmap.insert({v, u});
-        dmap.insert({v, temp_dist});
-      }
+
+		auto insert = [](NodeIndex u, NodeIndex v, double temp_dist,
+				Heap *Q, PredecessorMap *pmap, DistanceMap *dmap) {
+			auto iter = dmap->find(v);
+			if (iter != dmap->end()) {
+				// dmap contains node v
+				if (iter->second > temp_dist) {
+					// a smaller distance is found for v
+					(*pmap)[v] = u;
+					(*dmap)[v] = temp_dist;
+					Q->decrease_key(v, temp_dist);
+				}
+			} else {
+				// dmap does not contain v
+				Q->push(v, temp_dist);
+				pmap->insert( { v, u });
+				dmap->insert( { v, temp_dist });
+			}
+		};
+
+		// Check if a better path was already calculated
+		if (odTable != nullptr) {
+			MM::Record *r = odTable->look_up(u, v);
+			if (r != nullptr && r->cost < g[e].length) {
+				insert(r->prev_n, v, node.value + r->cost, Q, pmap, dmap);
+				continue;
+			}
+		}
+
+		insert(u, v, node.value + g[e].length, Q, pmap, dmap);
     }
   }
-  // Backtrack from target to source
-  return back_track(source, target, pmap, dmap);
 }
 
 double NetworkGraph::calc_heuristic_dist(

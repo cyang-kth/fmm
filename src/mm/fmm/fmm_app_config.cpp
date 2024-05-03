@@ -126,10 +126,6 @@ bool FMMAppConfig::validate() const
   if (!fmm_config.validate()) {
     return false;
   }
-  if (!UTIL::file_exists(ubodt_file)) {
-    SPDLOG_CRITICAL("UBODT file not exists {}", ubodt_file);
-    return false;
-  }
   SPDLOG_DEBUG("Validating done");
   return true;
 };
