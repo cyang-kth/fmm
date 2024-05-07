@@ -19,9 +19,12 @@ namespace boost {
   BOOST_NORETURN void throw_exception(const std::exception & e) {
     throw e;
   }
+
+#if (BOOST_VERSION / 100) >= 1073
   BOOST_NORETURN void throw_exception(const std::exception & e, boost::source_location const & loc) {
     throw e;
   }
+#endif
 
 } // namespace boost
 
