@@ -31,7 +31,8 @@ Network::Network(const std::string &filename,
                  const std::string &id_name,
                  const std::string &source_name,
                  const std::string &target_name) {
-  if (FMM::UTIL::check_file_extension(filename, "shp")) {
+  if (FMM::UTIL::check_file_extension(filename, "shp") ||
+      FMM::UTIL::check_file_extension(filename, "gpkg")) {
     read_ogr_file(filename,id_name,source_name,target_name);
   } else {
     std::string message = (boost::format("Network file not supported %1%") % filename).str();
