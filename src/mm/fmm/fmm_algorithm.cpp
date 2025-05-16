@@ -16,6 +16,18 @@ using namespace FMM::NETWORK;
 using namespace FMM::PYTHON;
 using namespace FMM::MM;
 
+//
+class MatchException : public std::runtime_error {
+public:
+  int traj_id;
+  int index1, index2;
+
+  MatchException(int traj_id, int i, int j)
+    : std::runtime_error("Unmatched trajectory ID=" + std::to_string(traj_id) +
+                         " at points " + std::to_string(i) + " and " + std::to_string(j)),
+      traj_id(traj_id), index1(i), index2(j) {}
+};
+
 FastMapMatchConfig::FastMapMatchConfig(int k_arg, double r_arg,
                                        double gps_error,
                                        double reverse_tolerance) :
@@ -285,15 +297,16 @@ void FastMapMatch::update_tg(
     bool connected = false;
     update_layer(i, &(layers[i]), &(layers[i + 1]),
                  eu_dists[i], reverse_tolerance, &connected);
-    if (!connected){
-      SPDLOG_WARN("Traj {} unmatched as point {} and {} not connected",
-        traj.id, i, i+1);
+    if (!connected) {
       tg->print_optimal_info();
-      break;
+      std::stringstream ss;
+      ss << "Unmatched trajectory " << traj.id << " at point " << i << " and " << (i + 1);
+      throw std::runtime_error(ss.str());
     }
   }
   SPDLOG_DEBUG("Update transition graph done");
 }
+
 
 void FastMapMatch::update_layer(int level,
                                 TGLayer *la_ptr,

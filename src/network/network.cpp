@@ -10,7 +10,7 @@
 
 // Data structures for Rtree
 #include <boost/geometry/index/rtree.hpp>
-#include <boost/function_output_iterator.hpp>
+#include <boost/iterator/function_output_iterator.hpp>
 
 #include <boost/format.hpp>
 
@@ -110,7 +110,7 @@ void Network::read_ogr_file(const std::string &filename,
     SPDLOG_DEBUG("Geometry type of network is {}",
                  OGRGeometryTypeToName(ogrFDefn->GetGeomType()));
   }
-  OGRSpatialReference *ogrsr = ogrFDefn->GetGeomFieldDefn(0)->GetSpatialRef();
+  const OGRSpatialReference *ogrsr = ogrFDefn->GetGeomFieldDefn(0)->GetSpatialRef();
   if (ogrsr != nullptr) {
     srid = ogrsr->GetEPSGGeogCS();
     if (srid == -1) {

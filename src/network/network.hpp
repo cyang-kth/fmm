@@ -24,7 +24,8 @@
 // Data structures for Rtree
 #include <boost/geometry/geometries/box.hpp>
 #include <boost/geometry/index/rtree.hpp>
-#include <boost/function_output_iterator.hpp>
+#include <boost/iterator/function_output_iterator.hpp>
+
 
 namespace FMM {
 /**
