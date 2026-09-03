@@ -8,6 +8,8 @@
 #include "util/debug.hpp"
 #include "io/gps_reader.hpp"
 #include "io/mm_writer.hpp"
+#include <future>
+#include <vector>
 
 
 using namespace FMM;
@@ -193,33 +195,46 @@ std::string FastMapMatch::match_gps_file(
   FMM::IO::CSVMatchResultWriter writer(result_config.file,
                                        result_config.output_config);
   if (use_omp){
-    int buffer_trajectories_size = 100000;
-    while (reader.has_next_trajectory()) {
-      std::vector<Trajectory> trajectories =
-        reader.read_next_N_trajectories(buffer_trajectories_size);
+    // Trajectories are matched in buffers. The next buffer is read from the
+    // file in the background while the current one is matched, so that the
+    // (sequential) parsing of the input overlaps with the matching.
+    const int buffer_trajectories_size = 10000;
+    auto read_buffer = [&reader, buffer_trajectories_size]() {
+      return reader.read_next_N_trajectories(buffer_trajectories_size);
+    };
+    std::vector<Trajectory> trajectories = read_buffer();
+    while (!trajectories.empty()) {
+      std::future<std::vector<Trajectory>> next_trajectories =
+        std::async(std::launch::async, read_buffer);
       int trajectories_fetched = trajectories.size();
-      #pragma omp parallel for
+      #pragma omp parallel for schedule(dynamic, 16)
       for (int i = 0; i < trajectories_fetched; ++i) {
         Trajectory &trajectory = trajectories[i];
         int points_in_tr = trajectory.geom.get_num_points();
         MM::MatchResult result = match_traj(
             trajectory, fmm_config);
         writer.write_result(trajectory,result);
+        // All the statistics are shared between threads: without the braces
+        // only the first statement would be inside the critical section.
         #pragma omp critical
-        if (!result.cpath.empty()) {
-          points_matched += points_in_tr;
-          traj_matched+=1;
-        }
-        total_points += points_in_tr;
-        total_trajs += 1;
-        ++progress;
-        if (progress % step_size == 0) {
-          std::stringstream buf;
-          buf << "Progress " << progress << '\n';
-          std::cout << buf.rdbuf();
+        {
+          if (!result.cpath.empty()) {
+            points_matched += points_in_tr;
+            traj_matched+=1;
+          }
+          total_points += points_in_tr;
+          total_trajs += 1;
+          ++progress;
+          if (progress % step_size == 0) {
+            std::stringstream buf;
+            buf << "\rProgress " << progress;
+            std::cout << buf.rdbuf() << std::flush;
+          }
         }
       }
+      trajectories = next_trajectories.get();
     }
+    if (progress >= step_size) std::cout << '\n';  // end the in-place progress line
   } else {
     while (reader.has_next_trajectory()) {
       if (progress % step_size == 0) {
@@ -304,13 +319,21 @@ void FastMapMatch::update_layer(int level,
   // SPDLOG_TRACE("Update layer");
   TGLayer &lb = *lb_ptr;
   bool layer_connected = false;
+  // log(ep) of a candidate of layer b does not depend on the candidate of
+  // layer a, compute it once per candidate instead of once per pair.
+  static thread_local std::vector<double> log_ep;
+  log_ep.resize(lb.size());
+  for (std::size_t j = 0; j < lb.size(); ++j) {
+    log_ep[j] = log(lb[j].ep);
+  }
   for (auto iter_a = la_ptr->begin(); iter_a != la_ptr->end(); ++iter_a) {
     NodeIndex source = iter_a->c->index;
-    for (auto iter_b = lb_ptr->begin(); iter_b != lb_ptr->end(); ++iter_b) {
+    for (std::size_t j = 0; j < lb.size(); ++j) {
+      auto iter_b = lb.begin() + j;
       double sp_dist = get_sp_dist(iter_a->c, iter_b->c,
         reverse_tolerance);
       double tp = TransitionGraph::calc_tp(sp_dist, eu_dist);
-      double temp = iter_a->cumu_prob + log(tp) + log(iter_b->ep);
+      double temp = iter_a->cumu_prob + log(tp) + log_ep[j];
       SPDLOG_TRACE("L {} f {} t {} sp {} dist {} tp {} ep {} fcp {} tcp {}",
         level, iter_a->c->edge->id,iter_b->c->edge->id,
         sp_dist, eu_dist, tp, iter_b->ep, iter_a->cumu_prob,

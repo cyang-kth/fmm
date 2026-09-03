@@ -14,6 +14,11 @@
 #include "mm/transition_graph.hpp"
 #include "util/debug.hpp"
 
+#include <cstddef>
+#include <limits>
+#include <memory>
+#include <vector>
+
 namespace FMM {
 namespace MM {
 
@@ -27,7 +32,7 @@ struct Record {
   NETWORK::NodeIndex prev_n; /**< last node visited before target */
   NETWORK::EdgeIndex next_e; /**< next edge visited from source to target */
   double cost; /**< distance from source to target */
-  Record *next; /**< the next record stored in hashtable */
+  Record *next; /**< unused, kept for API compatibility (always nullptr) */
 };
 
 /**
@@ -148,11 +153,29 @@ class UBODT {
   static const int BUFFER_LINE = 1024; /**< Number of characters to store in
                                             a line */
  private:
-  const long long multiplier;   // multiplier to get a unique ID
-  const int buckets;   // number of buckets
-  long long num_rows=0;   // multiplier to get a unique ID
+  /**
+   * Index of the slot where the search for (source, target) starts.
+   */
+  std::size_t slot(NETWORK::NodeIndex source, NETWORK::NodeIndex target) const;
+  /**
+   * Resize the table to capacity slots (a power of two) and reinsert all
+   * the records stored.
+   */
+  void rehash(std::size_t capacity);
+  const long long multiplier;   // kept for API compatibility, not used
+  const int buckets;   // initial size hint of the table
+  long long num_rows=0;   // number of records stored
   double delta = 0.0;
-  Record **hashtable;
+  /**
+   * Open addressing hash table with linear probing that stores the records
+   * inline, so that a lookup usually touches a single cache line. A slot is
+   * empty when its source equals EMPTY_KEY. The number of slots is a power
+   * of two and mask is that number minus one.
+   */
+  static constexpr NETWORK::NodeIndex EMPTY_KEY =
+    std::numeric_limits<NETWORK::NodeIndex>::max();
+  std::vector<Record> table;
+  std::size_t mask = 0;
 };
 }
 }

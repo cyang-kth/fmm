@@ -154,8 +154,10 @@ void FMM::ALGORITHM::boundingbox_geometry(
   int Npoints = linestring.get_num_points();
   *x1 = DBL_MAX;
   *y1 = DBL_MAX;
-  *x2 = DBL_MIN;
-  *y2 = DBL_MIN;
+  // DBL_MIN is the smallest positive double, so it is not a valid start
+  // value for a maximum when coordinates can be negative.
+  *x2 = -DBL_MAX;
+  *y2 = -DBL_MAX;
   double x, y;
   for (int i = 0; i < Npoints; ++i) {
     x = linestring.get_x(i);

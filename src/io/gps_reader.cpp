@@ -8,9 +8,11 @@
 #include "util/debug.hpp"
 #include "util/util.hpp"
 #include "config/gps_config.hpp"
+#include <charconv>
 #include <iostream>
 #include <stdexcept>
 #include <string>
+#include <system_error>
 
 #include <boost/format.hpp>
 
@@ -18,6 +20,41 @@ using namespace FMM;
 using namespace FMM::CORE;
 using namespace FMM::IO;
 using namespace FMM::UTIL;
+
+namespace {
+/**
+ * Convert line[start, end) to int exactly like std::stoi does with the
+ * token. std::from_chars handles the common case without allocating, and
+ * anything it does not fully accept (leading blanks or '+', trailing
+ * characters, out of range values) is delegated to std::stoi so that the
+ * value and the exceptions are the same as before.
+ */
+int parse_int_field(const std::string &line, std::size_t start,
+                    std::size_t end) {
+  int value = 0;
+  const char *first = line.data() + start;
+  const char *last = line.data() + end;
+  auto result = std::from_chars(first, last, value);
+  if (result.ec == std::errc() && result.ptr == last) return value;
+  return std::stoi(line.substr(start, end - start));
+}
+
+/**
+ * Convert line[start, end) to float exactly like std::stof does with the
+ * token (both are correctly rounded), see parse_int_field for the fallback.
+ * The value is deliberately parsed as float to keep the precision of the
+ * previous implementation.
+ */
+float parse_float_field(const std::string &line, std::size_t start,
+                        std::size_t end) {
+  float value = 0;
+  const char *first = line.data() + start;
+  const char *last = line.data() + end;
+  auto result = std::from_chars(first, last, value);
+  if (result.ec == std::errc() && result.ptr == last) return value;
+  return std::stof(line.substr(start, end - start));
+}
+} // namespace
 
 std::vector<Trajectory> ITrajectoryReader::read_next_N_trajectories(int N) {
   std::vector<Trajectory> trajectories;
@@ -271,25 +308,32 @@ Trajectory CSVPointReader::read_next_trajectory() {
       line = prev_line;
       prev_line.clear();
     }
-    std::stringstream ss(line);
     int id = 0;
     double x = 0, y = 0;
     double timestamp = 0;
     int index = 0;
-    while (std::getline(ss, intermediate, delim)) {
+    // Split the line on delim and convert the columns of interest. This is
+    // equivalent to tokenising with std::getline and converting the tokens
+    // with std::stoi/std::stof, without the overhead of a string stream.
+    std::size_t start = 0;
+    const std::size_t line_size = line.size();
+    while (start < line_size) {
+      std::size_t end = line.find(delim, start);
+      if (end == std::string::npos) end = line_size;
       if (index == id_idx) {
-        id = std::stoi(intermediate);
+        id = parse_int_field(line, start, end);
       }
       if (index == x_idx) {
-        x = std::stof(intermediate);
+        x = parse_float_field(line, start, end);
       }
       if (index == y_idx) {
-        y = std::stof(intermediate);
+        y = parse_float_field(line, start, end);
       }
       if (index == timestamp_idx) {
-        timestamp = std::stof(intermediate);
+        timestamp = parse_float_field(line, start, end);
       }
       ++index;
+      start = end + 1;
     }
     if (prev_id == id || first_observation) {
       geom.add_point(x, y);
@@ -306,19 +350,27 @@ Trajectory CSVPointReader::read_next_trajectory() {
       prev_line = line;
     }
   }
-  if (!has_next_trajectory()) {
+  if (on_same_trajectory) {
+    // The loop ended because the file is exhausted, so every point read belongs to
+    // the trajectory prev_id. When it ended because a new id showed up, trid was set
+    // above and prev_id already holds the new id (that line is buffered in prev_line).
+    // Checking the stream here instead would relabel the trajectory with the new id
+    // whenever the buffered line is the last line of the file.
     trid = prev_id;
   }
   return Trajectory{trid, geom, timestamps};
 }
 
 bool CSVPointReader::has_next_trajectory() {
-  return ifs.peek() != EOF;
+  // A line buffered by the previous call is still a pending trajectory, even
+  // when it is the last line of the file and the stream itself is at EOF.
+  return !prev_line.empty() || ifs.peek() != EOF;
 }
 
 void CSVPointReader::reset_cursor() {
   ifs.clear();
   ifs.seekg(0, std::ios::beg);
+  prev_line.clear();
   std::string line;
   std::getline(ifs, line);
 }

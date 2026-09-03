@@ -5,8 +5,11 @@
 #include "mm/fmm/ubodt.hpp"
 #include "util/util.hpp"
 
+#include <algorithm>
+#include <cstdint>
 #include <fstream>
 #include <stdexcept>
+#include <vector>
 
 #ifdef BOOST_OS_WINDOWS
 #include <boost/throw_exception.hpp>
@@ -19,44 +22,58 @@ using namespace FMM::CORE;
 using namespace FMM::NETWORK;
 using namespace FMM::MM;
 UBODT::UBODT(int buckets_arg, int multiplier_arg) :
-    buckets(buckets_arg), multiplier(multiplier_arg) {
+    multiplier(multiplier_arg), buckets(buckets_arg) {
   SPDLOG_TRACE("Intialization UBODT with buckets {} multiplier {}",
                buckets, multiplier);
-  hashtable = (Record **) malloc(sizeof(Record *) * buckets);
-  for (int i = 0; i < buckets; i++) {
-    hashtable[i] = nullptr;
+  std::size_t capacity = 16;
+  while (capacity < static_cast<std::size_t>(std::max(buckets_arg, 1))) {
+    capacity *= 2;
   }
+  rehash(capacity);
   SPDLOG_TRACE("Intialization UBODT finished");
 }
 
 UBODT::~UBODT() {
-  /* Clean hashtable */
   SPDLOG_TRACE("Clean UBODT");
-  int i;
-  for (i = 0; i < buckets; ++i) {
-    Record *head = hashtable[i];
-    Record *curr;
-    while ((curr = head) != nullptr) {
-      head = head->next;
-      free(curr);
+}
+
+std::size_t UBODT::slot(NodeIndex source, NodeIndex target) const {
+  std::uint64_t key = (static_cast<std::uint64_t>(source) << 32) | target;
+  // Finaliser of splitmix64, spreads consecutive ids over the table
+  key ^= key >> 30;
+  key *= 0xbf58476d1ce4e5b9ULL;
+  key ^= key >> 27;
+  key *= 0x94d049bb133111ebULL;
+  key ^= key >> 31;
+  return static_cast<std::size_t>(key) & mask;
+}
+
+void UBODT::rehash(std::size_t capacity) {
+  std::vector<Record> old_table;
+  old_table.swap(table);
+  Record empty{EMPTY_KEY, 0, 0, 0, 0, 0.0, nullptr};
+  table.assign(capacity, empty);
+  mask = capacity - 1;
+  for (const Record &r : old_table) {
+    if (r.source == EMPTY_KEY) continue;
+    std::size_t h = slot(r.source, r.target);
+    while (table[h].source != EMPTY_KEY) {
+      h = (h + 1) & mask;
     }
+    table[h] = r;
   }
-  // Destory hash table pointer
-  free(hashtable);
-  SPDLOG_TRACE("Clean UBODT finished");
 }
 
 Record *UBODT::look_up(NodeIndex source, NodeIndex target) const {
-  unsigned int h = cal_bucket_index(source, target);
-  Record *r = hashtable[h];
-  while (r != nullptr) {
-    if (r->source == source && r->target == target) {
-      return r;
-    } else {
-      r = r->next;
+  std::size_t h = slot(source, target);
+  while (true) {
+    const Record &r = table[h];
+    if (r.source == source && r.target == target) {
+      return const_cast<Record *>(&r);
     }
+    if (r.source == EMPTY_KEY) return nullptr;
+    h = (h + 1) & mask;
   }
-  return r;
 }
 
 std::vector<EdgeIndex> UBODT::look_sp_path(NodeIndex source,
@@ -133,17 +150,25 @@ double UBODT::get_delta() const {
 }
 
 unsigned int UBODT::cal_bucket_index(NodeIndex source, NodeIndex target) const {
-  return (source * multiplier + target) % buckets;
+  return static_cast<unsigned int>(slot(source, target));
 }
 
-
 void UBODT::insert(Record *r) {
-  //int h = (r->source*multiplier+r->target)%buckets ;
-  int h = cal_bucket_index(r->source, r->target);
-  r->next = hashtable[h];
-  hashtable[h] = r;
+  // Keep the load factor of the table below 0.7
+  if ((num_rows + 1) * 10 > static_cast<long long>(table.size()) * 7) {
+    rehash(table.size() * 2);
+  }
+  std::size_t h = slot(r->source, r->target);
+  while (table[h].source != EMPTY_KEY) {
+    // A record with the same key is replaced, which mirrors the previous
+    // implementation where the most recently inserted record was found.
+    if (table[h].source == r->source && table[h].target == r->target) break;
+    h = (h + 1) & mask;
+  }
+  if (table[h].source == EMPTY_KEY) ++num_rows;
+  table[h] = *r;
+  table[h].next = nullptr;
   if (r->cost > delta) delta = r->cost;
-  ++num_rows;
 }
 
 long UBODT::estimate_ubodt_rows(const std::string &filename) {
@@ -219,19 +244,19 @@ std::shared_ptr<UBODT> UBODT::read_ubodt_csv(const std::string &filename,
   }
   while (fgets(line, BUFFER_LINE, stream)) {
     ++NUM_ROWS;
-    Record *r = (Record *) malloc(sizeof(Record));
+    Record r{};
     /* Parse line into a Record */
     sscanf(
         line, "%d;%d;%d;%d;%d;%lf",
-        &r->source,
-        &r->target,
-        &r->first_n,
-        &r->prev_n,
-        &r->next_e,
-        &r->cost
+        &r.source,
+        &r.target,
+        &r.first_n,
+        &r.prev_n,
+        &r.next_e,
+        &r.cost
     );
-    r->next = nullptr;
-    table->insert(r);
+    r.next = nullptr;
+    table->insert(&r);
     if (NUM_ROWS % progress_step == 0) {
       SPDLOG_INFO("Read rows {}", NUM_ROWS);
     }
@@ -261,15 +286,15 @@ std::shared_ptr<UBODT> UBODT::read_ubodt_binary(const std::string &filename,
   boost::archive::binary_iarchive ia(ifs);
   while (ifs.tellg() < streamEnd) {
     ++NUM_ROWS;
-    Record *r = (Record *) malloc(sizeof(Record));
-    ia >> r->source;
-    ia >> r->target;
-    ia >> r->first_n;
-    ia >> r->prev_n;
-    ia >> r->next_e;
-    ia >> r->cost;
-    r->next = nullptr;
-    table->insert(r);
+    Record r{};
+    ia >> r.source;
+    ia >> r.target;
+    ia >> r.first_n;
+    ia >> r.prev_n;
+    ia >> r.next_e;
+    ia >> r.cost;
+    r.next = nullptr;
+    table->insert(&r);
     if (NUM_ROWS % progress_step == 0) {
       SPDLOG_INFO("Read rows {}", NUM_ROWS);
     }

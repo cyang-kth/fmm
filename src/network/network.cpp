@@ -4,13 +4,12 @@
 #include "algorithm/geom_algorithm.hpp"
 
 #include <ogrsf_frmts.h> // C++ API for GDAL
-#include <math.h> // Calulating probability
+#include <cmath> // Calulating probability
 #include <algorithm> // Partial sort copy
 #include <stdexcept>
 
 // Data structures for Rtree
 #include <boost/geometry/index/rtree.hpp>
-#include <boost/function_output_iterator.hpp>
 
 #include <boost/format.hpp>
 
@@ -110,7 +109,8 @@ void Network::read_ogr_file(const std::string &filename,
     SPDLOG_DEBUG("Geometry type of network is {}",
                  OGRGeometryTypeToName(ogrFDefn->GetGeomType()));
   }
-  OGRSpatialReference *ogrsr = ogrFDefn->GetGeomFieldDefn(0)->GetSpatialRef();
+  const OGRSpatialReference *ogrsr =
+    ogrFDefn->GetGeomFieldDefn(0)->GetSpatialRef();
   if (ogrsr != nullptr) {
     srid = ogrsr->GetEPSGGeogCS();
     if (srid == -1) {
@@ -237,60 +237,121 @@ Traj_Candidates Network::search_tr_cs_knn(Trajectory &trajectory, std::size_t k,
   return search_tr_cs_knn(trajectory.geom, k, radius);
 }
 
+namespace {
+/**
+ * Euclidean distance from the point (px, py) to an axis aligned box, 0 when
+ * the point lies inside the box. The box of an edge contains its geometry,
+ * so this is a lower bound of the distance from the point to the edge.
+ */
+inline double point_box_distance(double px, double py,
+                                 const Network::boost_box &box) {
+  namespace bg = boost::geometry;
+  double dx = 0, dy = 0;
+  double min_x = bg::get<bg::min_corner, 0>(box);
+  double max_x = bg::get<bg::max_corner, 0>(box);
+  double min_y = bg::get<bg::min_corner, 1>(box);
+  double max_y = bg::get<bg::max_corner, 1>(box);
+  if (px < min_x) {
+    dx = min_x - px;
+  } else if (px > max_x) {
+    dx = px - max_x;
+  }
+  if (py < min_y) {
+    dy = min_y - py;
+  } else if (py > max_y) {
+    dy = py - max_y;
+  }
+  return std::sqrt(dx * dx + dy * dy);
+}
+} // namespace
+
 Traj_Candidates Network::search_tr_cs_knn(const LineString &geom, std::size_t k,
                                           double radius) const {
   int NumberPoints = geom.get_num_points();
   Traj_Candidates tr_cs(NumberPoints);
   unsigned int current_candidate_index = num_vertices;
+  // Buffers reused for every point of the trajectory
+  std::vector<Item> temp;
+  Point_Candidates pcs;
+  // The rtree is queried with a box that is usually much smaller than the
+  // search radius and enlarged until the k best candidates are provably
+  // found (see the end of the loop below). The initial box size adapts to
+  // the density of edges around the previous point.
+  const double min_query_radius = radius / 1024;
+  double query_radius = radius / 16;
   for (int i = 0; i < NumberPoints; ++i) {
     // SPDLOG_DEBUG("Search candidates for point index {}",i);
-    // Construct a bounding boost_box
     double px = geom.get_x(i);
     double py = geom.get_y(i);
-    Point_Candidates pcs;
-    boost_box b(Point(geom.get_x(i) - radius, geom.get_y(i) - radius),
-                Point(geom.get_x(i) + radius, geom.get_y(i) + radius));
-    std::vector<Item> temp;
-    // Rtree can only detect intersect with a the bounding box of
-    // the geometry stored.
-    rtree.query(boost::geometry::index::intersects(b),
-                std::back_inserter(temp));
-    int Nitems = temp.size();
-    for (unsigned int j = 0; j < Nitems; ++j) {
-      // Check for detailed intersection
-      // The two edges are all in OGR_linestring
-      Edge *edge = temp[j].second;
-      double offset;
-      double dist;
-      double closest_x, closest_y;
-      ALGORITHM::linear_referencing(px, py, edge->geom,
-                                    &dist, &offset, &closest_x, &closest_y);
-      if (dist <= radius) {
+    // Tolerance added to the lower bound tests below. It is far above the
+    // rounding error of the distance computations (which scales with the
+    // magnitude of the coordinates) and far below any meaningful distance,
+    // so the pruning can never drop a candidate the exact test would keep.
+    const double tol = 1e-9 * std::max({std::fabs(px), std::fabs(py), 1.0});
+    while (true) {
+      // Construct a bounding boost_box
+      boost_box b(Point(px - query_radius, py - query_radius),
+                  Point(px + query_radius, py + query_radius));
+      temp.clear();
+      // Rtree can only detect intersect with a the bounding box of
+      // the geometry stored.
+      rtree.query(boost::geometry::index::intersects(b),
+                  std::back_inserter(temp));
+      // Keep the k best candidates in pcs, sorted by candidate_compare, so
+      // that pcs.back() is the current k-th best. candidate_compare is a
+      // total order, hence this yields exactly the same candidates in the
+      // same order as computing every candidate within radius and partially
+      // sorting them, but the exact distance is only computed for the edges
+      // whose bounding box is closer than the current k-th best candidate.
+      pcs.clear();
+      for (const Item &item : temp) {
+        double lower_bound = point_box_distance(px, py, item.first);
+        double threshold = pcs.size() < k ? radius : pcs.back().dist;
+        if (lower_bound > threshold + tol) continue;
+        // Check for detailed intersection
+        Edge *edge = item.second;
+        double offset;
+        double dist;
+        double closest_x, closest_y;
+        ALGORITHM::linear_referencing(px, py, edge->geom,
+                                      &dist, &offset, &closest_x, &closest_y);
+        if (dist > radius) continue;
         // index, offset, dist, edge, pseudo id, point
         Candidate c = {0,
                        offset,
                        dist,
                        edge,
                        Point(closest_x, closest_y)};
-        pcs.push_back(c);
+        if (pcs.size() >= k) {
+          if (!candidate_compare(c, pcs.back())) continue;
+          pcs.pop_back();
+        }
+        pcs.insert(std::upper_bound(pcs.begin(), pcs.end(), c,
+                                    candidate_compare), c);
       }
+      if (query_radius >= radius) break;
+      // Every edge outside the query box is farther than query_radius from
+      // the point. Once k candidates are found and the k-th one is closer
+      // than that, no edge outside the box can be among the k best and the
+      // result is the same as for a query with the full search radius.
+      if (pcs.size() >= k && pcs.back().dist + tol < query_radius) break;
+      query_radius = std::min(radius, query_radius * 4);
     }
-    SPDLOG_DEBUG("Candidate count point {}: {} (filter to k)",i,pcs.size());
+    // Start the search for the next point with a box of twice the distance
+    // of the k-th best candidate of this point.
+    if (pcs.size() >= k) {
+      query_radius = std::min(radius, std::max(min_query_radius,
+                                               2 * pcs.back().dist));
+    } else {
+      query_radius = radius;
+    }
+    SPDLOG_DEBUG("Candidate count point {}: {}", i, pcs.size());
     if (pcs.empty()) {
       SPDLOG_DEBUG("Candidate not found for point {}: {} {}",i,px,py);
       return Traj_Candidates();
     }
-    // KNN part
-    if (pcs.size() <= k) {
-      tr_cs[i] = pcs;
-    } else {
-      tr_cs[i] = Point_Candidates(k);
-      std::partial_sort_copy(
-        pcs.begin(), pcs.end(),
-        tr_cs[i].begin(), tr_cs[i].end(),
-        candidate_compare);
-    }
-    for (int m = 0; m < tr_cs[i].size(); ++m) {
+    tr_cs[i] = pcs;
+    for (std::size_t m = 0; m < tr_cs[i].size(); ++m) {
       tr_cs[i][m].index = current_candidate_index + m;
     }
     current_candidate_index += tr_cs[i].size();
