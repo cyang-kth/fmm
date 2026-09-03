@@ -1,21 +1,6 @@
-cmake_minimum_required( VERSION 3.5.1)
+cmake_minimum_required(VERSION 3.16...4.4)
 
 message(STATUS "CMAKE version ${CMAKE_VERSION}")
-
-if (POLICY CMP0074)
-    message(STATUS "Set CMP0074 state to NEW")
-    cmake_policy(SET CMP0074 NEW)
-endif()
-
-if (POLICY CMP0086)
-    message(STATUS "Set CMP0086 state to NEW")
-    cmake_policy(SET CMP0086 NEW)
-endif()
-
-if (POLICY CMP0078)
-    message(STATUS "Set CMP0078 state to NEW")
-    cmake_policy(SET CMP0078 NEW)
-endif()
 
 # Prevent in source build
 set(CMAKE_DISABLE_SOURCE_CHANGES  OFF)
@@ -23,56 +8,77 @@ set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-project(fmm)
+project(fmm LANGUAGES C CXX)
 
-set(CMAKE_BUILD_TYPE "Release")
-set(CMAKE_CXX_FLAGS "-O3 -DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE")
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build")
+# Default to an optimised build. An unknown build type would silently drop
+# the optimisation flags, so anything but the standard types is reset too.
+set(FMM_KNOWN_BUILD_TYPES Debug Release RelWithDebInfo MinSizeRel)
+if(NOT CMAKE_BUILD_TYPE IN_LIST FMM_KNOWN_BUILD_TYPES)
+  if(CMAKE_BUILD_TYPE)
+    message(STATUS "Unknown build type '${CMAKE_BUILD_TYPE}', using Release")
+  endif()
+  set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type" FORCE)
+endif()
+message(STATUS "Build type ${CMAKE_BUILD_TYPE}")
+
+# Boost.Geometry >= 1.75 requires C++14 and GDAL >= 3.9 headers require
+# C++17, so C++17 is the floor for building against a current toolchain.
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Compile-time log level of spdlog. Messages below this level are removed
+# from the binary entirely (SPDLOG_LEVEL_TRACE keeps everything and lets the
+# CLI --log_level flag switch them on at run time).
+set(FMM_SPDLOG_ACTIVE_LEVEL "SPDLOG_LEVEL_TRACE" CACHE STRING
+  "Compile-time spdlog level (SPDLOG_LEVEL_TRACE, SPDLOG_LEVEL_DEBUG, SPDLOG_LEVEL_INFO, ...)")
+add_compile_definitions(SPDLOG_ACTIVE_LEVEL=${FMM_SPDLOG_ACTIVE_LEVEL})
+
+# Optimise for the CPU of the build machine. The resulting binaries only run
+# on CPUs supporting the same instruction set extensions, so this is OFF by
+# default.
+option(FMM_NATIVE_ARCH "Compile with -march=native" OFF)
+if(FMM_NATIVE_ARCH)
+  add_compile_options(-march=native)
+endif()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
 find_package(Conda)
 if(CONDA_PREFIX)
   message(STATUS "Set CONDA_PREFIX ${CONDA_PREFIX}")
-  set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${CONDA_PREFIX})
+  list(APPEND CMAKE_PREFIX_PATH ${CONDA_PREFIX})
 else()
   message(STATUS "Non conda exist, search library in default path")
 endif()
 
 find_package(GDAL 2.2 REQUIRED)
-if (GDAL_FOUND)
-  message(STATUS "GDAL headers found at ${GDAL_INCLUDE_DIR}")
-  message(STATUS "GDAL library found at ${GDAL_LIBRARIES}")
-  include_directories(${GDAL_INCLUDE_DIR})
-else()
-  message(FATAL_ERROR "GDAL Not Found!")
-endif (GDAL_FOUND)
-link_libraries(${GDAL_LIBRARIES})
+message(STATUS "GDAL ${GDAL_VERSION} headers found at ${GDAL_INCLUDE_DIRS}")
+message(STATUS "GDAL library found at ${GDAL_LIBRARIES}")
 
 if (WIN32)
-  find_package(Boost 1.56.0 REQUIRED serialization exception)
+  find_package(Boost 1.70 REQUIRED COMPONENTS serialization exception)
 else ()
-  find_package(Boost 1.56.0 REQUIRED serialization)
+  find_package(Boost 1.70 REQUIRED COMPONENTS serialization)
 endif (WIN32)
-if (Boost_FOUND)
-  message(STATUS "Boost headers found at ${Boost_INCLUDE_DIR}")
-  message(STATUS "Boost library found at ${Boost_LIBRARIES}")
-  message(STATUS "Boost library version ${Boost_LIB_VERSION}")
+message(STATUS "Boost ${Boost_VERSION} headers found at ${Boost_INCLUDE_DIRS}")
+message(STATUS "Boost library found at ${Boost_LIBRARIES}")
+if(TARGET Boost::headers)
+  set(FMM_BOOST_HEADERS Boost::headers)
 else()
-  message(FATAL_ERROR "Boost Not Found!")
-endif (Boost_FOUND)
-link_libraries(${Boost_LIBRARIES})
-
+  set(FMM_BOOST_HEADERS Boost::boost)
+endif()
 
 find_package(OpenMP REQUIRED)
-if(OPENMP_FOUND)
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-  message(STATUS "OpenMP_HEADERS found at ${OpenMP_CXX_INCLUDE_DIRS}")
-  message(STATUS "OpenMP_CXX_LIBRARIES found at ${OpenMP_CXX_LIBRARIES}")
-endif()
-link_libraries(${OpenMP_CXX_LIBRARIES})
+message(STATUS "OpenMP ${OpenMP_CXX_VERSION} flags ${OpenMP_CXX_FLAGS}")
+
+# Every target below (object libraries, FMMLIB, executables and the python
+# module in the subdirectory) picks up include directories, compile flags and
+# link libraries from these imported targets.
+link_libraries(GDAL::GDAL Boost::serialization ${FMM_BOOST_HEADERS}
+  OpenMP::OpenMP_CXX)
+if (WIN32)
+  link_libraries(Boost::exception)
+endif (WIN32)
 
 ### Set RPATH properties
 
