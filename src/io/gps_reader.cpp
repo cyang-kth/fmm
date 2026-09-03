@@ -350,19 +350,27 @@ Trajectory CSVPointReader::read_next_trajectory() {
       prev_line = line;
     }
   }
-  if (!has_next_trajectory()) {
+  if (on_same_trajectory) {
+    // The loop ended because the file is exhausted, so every point read belongs to
+    // the trajectory prev_id. When it ended because a new id showed up, trid was set
+    // above and prev_id already holds the new id (that line is buffered in prev_line).
+    // Checking the stream here instead would relabel the trajectory with the new id
+    // whenever the buffered line is the last line of the file.
     trid = prev_id;
   }
   return Trajectory{trid, geom, timestamps};
 }
 
 bool CSVPointReader::has_next_trajectory() {
-  return ifs.peek() != EOF;
+  // A line buffered by the previous call is still a pending trajectory, even
+  // when it is the last line of the file and the stream itself is at EOF.
+  return !prev_line.empty() || ifs.peek() != EOF;
 }
 
 void CSVPointReader::reset_cursor() {
   ifs.clear();
   ifs.seekg(0, std::ios::beg);
+  prev_line.clear();
   std::string line;
   std::getline(ifs, line);
 }

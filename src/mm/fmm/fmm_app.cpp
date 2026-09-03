@@ -49,11 +49,12 @@ void FMMApp::run() {
         ++progress;
         if (progress % step_size == 0) {
           std::stringstream buf;
-          buf << "Progress " << progress << '\n';
-          std::cout << buf.rdbuf();
+          buf << "\rProgress " << progress;
+          std::cout << buf.rdbuf() << std::flush;
         }
       }
     }
+    if (progress >= step_size) std::cout << '\n';  // end the in-place progress line
   } else {
     SPDLOG_INFO("Run map matching in single thread");
     while (reader.has_next_trajectory()) {

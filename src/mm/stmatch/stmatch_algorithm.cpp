@@ -223,11 +223,12 @@ std::string STMATCH::match_gps_file(
         ++progress;
         if (progress % step_size == 0) {
           std::stringstream buf;
-          buf << "Progress " << progress << '\n';
-          std::cout << buf.rdbuf();
+          buf << "\rProgress " << progress;
+          std::cout << buf.rdbuf() << std::flush;
         }
       }
     }
+    if (progress >= step_size) std::cout << '\n';  // end the in-place progress line
   } else {
     while (reader.has_next_trajectory()) {
       if (progress % step_size == 0) {
