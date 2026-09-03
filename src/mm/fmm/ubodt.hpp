@@ -71,15 +71,19 @@ class UBODT {
    * @param path an optimal path
    * @param edges a vector of edges
    * @param indices the index of each optimal edge in the complete path
-   * @return a complete path (topologically connected).
-   * If there is a large gap in the optimal
+   * @param allow_disconnect if true, a pair of consecutive optimal edges
+   * that cannot be connected through the UBODT is kept as a gap in the
+   * complete path instead of failing the whole trajectory
+   * @return a complete path (topologically connected unless allow_disconnect
+   * is set). If there is a large gap in the optimal
    * path implying complete path cannot be found in UBDOT,
    * an empty path is returned
    */
   C_Path construct_complete_path(int traj_id, const TGOpath &path,
                                  const std::vector<NETWORK::Edge> &edges,
                                  std::vector<int> *indices,
-                                 double reverse_tolerance) const;
+                                 double reverse_tolerance,
+                                 bool allow_disconnect = false) const;
   /**
    * Get the upperbound of the UBODT
    * @return upperbound value

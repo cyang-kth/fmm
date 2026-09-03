@@ -77,7 +77,8 @@ std::vector<EdgeIndex> UBODT::look_sp_path(NodeIndex source,
 C_Path UBODT::construct_complete_path(int traj_id, const TGOpath &path,
                                       const std::vector<Edge> &edges,
                                       std::vector<int> *indices,
-                                      double reverse_tolerance) const {
+                                      double reverse_tolerance,
+                                      bool allow_disconnect) const {
   C_Path cpath;
   if (!indices->empty()) indices->clear();
   if (path.empty()) return cpath;
@@ -99,15 +100,18 @@ C_Path UBODT::construct_complete_path(int traj_id, const TGOpath &path,
         SPDLOG_DEBUG("Edges not found connecting a b");
         SPDLOG_DEBUG("reverse movement {} tolerance {}",
           a->offset - b->offset, a->edge->length * reverse_tolerance);
-        SPDLOG_WARN("Traj {} unmatched as edge {} L {} offset {}"
-          " and edge {} L {} offset {} disconnected",
-          traj_id, a->edge->id, a->edge->length, a->offset,
-          b->edge->id, b->edge->length, b->offset);
-
-        indices->clear();
-        return C_Path();
-      }
-      if (segs.empty()) {
+        if (!allow_disconnect) {
+          SPDLOG_WARN("Traj {} unmatched as edge {} L {} offset {}"
+            " and edge {} L {} offset {} disconnected",
+            traj_id, a->edge->id, a->edge->length, a->offset,
+            b->edge->id, b->edge->length, b->offset);
+          indices->clear();
+          return C_Path();
+        }
+        // Keep the gap: edge b simply follows edge a in the complete path.
+        SPDLOG_DEBUG("Traj {} keeps a gap between edge {} and edge {}",
+          traj_id, a->edge->id, b->edge->id);
+      } else if (segs.empty()) {
         SPDLOG_DEBUG("Edges ab are adjacent");
       } else {
         SPDLOG_DEBUG("Edges connecting ab are {}", segs);

@@ -18,15 +18,18 @@ using namespace FMM::MM;
 
 FastMapMatchConfig::FastMapMatchConfig(int k_arg, double r_arg,
                                        double gps_error,
-                                       double reverse_tolerance) :
+                                       double reverse_tolerance,
+                                       bool restart_on_disconnect) :
   k(k_arg), radius(r_arg), gps_error(gps_error),
-  reverse_tolerance(reverse_tolerance) {
+  reverse_tolerance(reverse_tolerance),
+  restart_on_disconnect(restart_on_disconnect) {
 };
 
 void FastMapMatchConfig::print() const {
   SPDLOG_INFO("FMMAlgorithmConfig");
-  SPDLOG_INFO("k {} radius {} gps_error {} reverse_tolerance {}",
-    k, radius, gps_error, reverse_tolerance);
+  SPDLOG_INFO("k {} radius {} gps_error {} reverse_tolerance {} "
+    "restart_on_disconnect {}",
+    k, radius, gps_error, reverse_tolerance, restart_on_disconnect);
 };
 
 FastMapMatchConfig FastMapMatchConfig::load_from_xml(
@@ -36,7 +39,10 @@ FastMapMatchConfig FastMapMatchConfig::load_from_xml(
   double gps_error = xml_data.get("config.parameters.gps_error", 50.0);
   double reverse_tolerance =
     xml_data.get("config.parameters.reverse_tolerance", 0.0);
-  return FastMapMatchConfig{k, radius, gps_error, reverse_tolerance};
+  bool restart_on_disconnect =
+    xml_data.get("config.parameters.restart_on_disconnect", false);
+  return FastMapMatchConfig{k, radius, gps_error, reverse_tolerance,
+                            restart_on_disconnect};
 };
 
 FastMapMatchConfig FastMapMatchConfig::load_from_arg(
@@ -45,7 +51,9 @@ FastMapMatchConfig FastMapMatchConfig::load_from_arg(
   double radius = arg_data["radius"].as<double>();
   double gps_error = arg_data["error"].as<double>();
   double reverse_tolerance = arg_data["reverse_tolerance"].as<double>();
-  return FastMapMatchConfig{k, radius, gps_error, reverse_tolerance};
+  bool restart_on_disconnect = arg_data["restart_on_disconnect"].as<bool>();
+  return FastMapMatchConfig{k, radius, gps_error, reverse_tolerance,
+                            restart_on_disconnect};
 };
 
 void FastMapMatchConfig::register_arg(cxxopts::Options &options){
@@ -56,6 +64,9 @@ void FastMapMatchConfig::register_arg(cxxopts::Options &options){
     cxxopts::value<double>()->default_value("300.0"))
     ("reverse_tolerance","Ratio of reverse movement allowed",
       cxxopts::value<double>()->default_value("0.0"))
+    ("restart_on_disconnect","Restart matching at a disconnected pair of "
+      "points instead of discarding the trajectory",
+      cxxopts::value<bool>()->default_value("false"))
     ("e,error","GPS error",
     cxxopts::value<double>()->default_value("50.0"));
 }
@@ -68,6 +79,9 @@ void FastMapMatchConfig::register_help(std::ostringstream &oss){
     "(network data unit) (50)\n";
   oss<<"--reverse_tolerance (optional) <double>: proportion "
       "of reverse movement allowed on an edge\n";
+  oss<<"--restart_on_disconnect (optional): restart the matching at a "
+      "disconnected pair of points instead of discarding the trajectory; "
+      "the point after a break gets sp_dist -1\n";
 };
 
 bool FastMapMatchConfig::validate() const {
@@ -93,7 +107,9 @@ MatchResult FastMapMatch::match_traj(const Trajectory &traj,
   TransitionGraph tg(tc, config.gps_error);
   SPDLOG_DEBUG("Update cost in transition graph");
   // The network will be used internally to update transition graph
-  update_tg(&tg, traj, config.reverse_tolerance);
+  int restarts = update_tg(&tg, traj, config.reverse_tolerance,
+                           config.restart_on_disconnect);
+  SPDLOG_DEBUG("Restarts at disconnected pairs {}", restarts);
   SPDLOG_DEBUG("Optimal path inference");
   TGOpath tg_opath = tg.backtrack();
   SPDLOG_DEBUG("Optimal path size {}", tg_opath.size());
@@ -115,7 +131,8 @@ MatchResult FastMapMatch::match_traj(const Trajectory &traj,
   const std::vector<Edge> &edges = network_.get_edges();
   C_Path cpath = ubodt_->construct_complete_path(traj.id, tg_opath, edges,
                                                  &indices,
-                                                 config.reverse_tolerance);
+                                                 config.reverse_tolerance,
+                                                 config.restart_on_disconnect);
   SPDLOG_DEBUG("Opath is {}", opath);
   SPDLOG_DEBUG("Indices is {}", indices);
   SPDLOG_DEBUG("Complete path is {}", cpath);
@@ -187,7 +204,20 @@ std::string FastMapMatch::match_gps_file(
   int total_points = 0;
   int traj_matched = 0;
   int total_trajs = 0;
+  int trajs_with_breaks = 0;
+  int total_breaks = 0;
   int step_size = 1000;
+  // Number of disconnected pairs kept in a result (restart_on_disconnect):
+  // the first point after a break carries sp_dist == -1. Regular transitions
+  // can produce tiny negative values from floating point noise, so test
+  // against -0.5 rather than 0.
+  auto count_breaks = [](const MM::MatchResult &result) {
+    int breaks = 0;
+    for (std::size_t j = 1; j < result.opt_candidate_path.size(); ++j) {
+      if (result.opt_candidate_path[j].sp_dist < -0.5) ++breaks;
+    }
+    return breaks;
+  };
   auto begin_time = UTIL::get_current_time();
   FMM::IO::GPSReader reader(gps_config);
   FMM::IO::CSVMatchResultWriter writer(result_config.file,
@@ -205,18 +235,25 @@ std::string FastMapMatch::match_gps_file(
         MM::MatchResult result = match_traj(
             trajectory, fmm_config);
         writer.write_result(trajectory,result);
+        int breaks = count_breaks(result);
         #pragma omp critical
-        if (!result.cpath.empty()) {
-          points_matched += points_in_tr;
-          traj_matched+=1;
-        }
-        total_points += points_in_tr;
-        total_trajs += 1;
-        ++progress;
-        if (progress % step_size == 0) {
-          std::stringstream buf;
-          buf << "Progress " << progress << '\n';
-          std::cout << buf.rdbuf();
+        {
+          if (!result.cpath.empty()) {
+            points_matched += points_in_tr;
+            traj_matched+=1;
+          }
+          if (breaks > 0) {
+            trajs_with_breaks += 1;
+            total_breaks += breaks;
+          }
+          total_points += points_in_tr;
+          total_trajs += 1;
+          ++progress;
+          if (progress % step_size == 0) {
+            std::stringstream buf;
+            buf << "Progress " << progress << '\n';
+            std::cout << buf.rdbuf();
+          }
         }
       }
     }
@@ -234,6 +271,11 @@ std::string FastMapMatch::match_gps_file(
         points_matched += points_in_tr;
         traj_matched+=1;
       }
+      int breaks = count_breaks(result);
+      if (breaks > 0) {
+        trajs_with_breaks += 1;
+        total_breaks += breaks;
+      }
       total_points += points_in_tr;
       total_trajs += 1;
       ++progress;
@@ -246,6 +288,10 @@ std::string FastMapMatch::match_gps_file(
   oss<<"Total points " << total_points << " matched "<< points_matched <<"\n";
   oss<<"Total trajectories " << total_trajs << " matched "
      << traj_matched <<"\n";
+  if (fmm_config.restart_on_disconnect) {
+    oss<<"Trajectories with disconnected pairs " << trajs_with_breaks
+       << " breaks " << total_breaks <<"\n";
+  }
   oss<<"Map match percentage " << points_matched / (double) total_points <<"\n";
   oss<<"Map match speed " << points_matched / duration << " points/s \n";
   return oss.str();
@@ -273,26 +319,45 @@ double FastMapMatch::get_sp_dist(
   return sp_dist;
 }
 
-void FastMapMatch::update_tg(
+int FastMapMatch::update_tg(
   TransitionGraph *tg,
-  const Trajectory &traj, double reverse_tolerance) {
+  const Trajectory &traj, double reverse_tolerance,
+  bool restart_on_disconnect) {
   SPDLOG_DEBUG("Update transition graph");
   std::vector<TGLayer> &layers = tg->get_layers();
   std::vector<double> eu_dists = ALGORITHM::cal_eu_dist(traj.geom);
   int N = layers.size();
+  int restarts = 0;
   for (int i = 0; i < N - 1; ++i) {
     SPDLOG_DEBUG("Update layer {} ", i);
     bool connected = false;
     update_layer(i, &(layers[i]), &(layers[i + 1]),
                  eu_dists[i], reverse_tolerance, &connected);
     if (!connected){
-      SPDLOG_WARN("Traj {} unmatched as point {} and {} not connected",
-        traj.id, i, i+1);
-      tg->print_optimal_info();
-      break;
+      if (restart_on_disconnect) {
+        // No candidate of point i can reach any candidate of point i+1.
+        // Treat point i+1 as the start of a new sub-trajectory: its
+        // candidates keep only their emission probabilities and have no
+        // predecessor, which backtrack() recognises as a break. sp_dist is
+        // set to -1 so that the break is visible in the output.
+        SPDLOG_DEBUG("Traj {} restarted as point {} and {} not connected",
+          traj.id, i, i+1);
+        tg->reset_layer(&(layers[i + 1]));
+        for (auto &node : layers[i + 1]) {
+          node.tp = 0;
+          node.sp_dist = -1;
+        }
+        ++restarts;
+      } else {
+        SPDLOG_WARN("Traj {} unmatched as point {} and {} not connected",
+          traj.id, i, i+1);
+        tg->print_optimal_info();
+        break;
+      }
     }
   }
   SPDLOG_DEBUG("Update transition graph done");
+  return restarts;
 }
 
 void FastMapMatch::update_layer(int level,

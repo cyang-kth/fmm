@@ -79,8 +79,28 @@ TGOpath TransitionGraph::backtrack(){
     SPDLOG_TRACE("Optimal candidate {} edge id {} sp {} tp {} cp {}",
         i,track_cand->c->edge->id,track_cand->sp_dist,track_cand->tp,
         track_cand->cumu_prob);
-    // Iterate from tail to head to assign path
-    while ((track_cand=track_cand->prev)!=nullptr) {
+    // Iterate from tail to head to assign path. i is the layer index of
+    // track_cand; the loop stops once the first layer has been added.
+    while (i > 0) {
+      TGNode *prev = track_cand->prev;
+      if (prev == nullptr) {
+        // The matching was restarted at this layer (see
+        // FastMapMatch::update_tg with restart_on_disconnect): the two
+        // sub-trajectories are stitched by continuing from the most
+        // probable candidate of the previous layer.
+        TGLayer &prev_layer = layers[i - 1];
+        prev = const_cast<TGNode *>(find_optimal_candidate(prev_layer));
+        if (prev == nullptr) {
+          // Every candidate of the previous layer has zero probability
+          // (all farther than the emission model can express). Fall back to
+          // the nearest candidate so that the path keeps one node per point.
+          prev = &prev_layer.front();
+          for (auto &node : prev_layer) {
+            if (node.c->dist < prev->c->dist) prev = &node;
+          }
+        }
+      }
+      track_cand = prev;
       opath.push_back(track_cand);
       --i;
       SPDLOG_TRACE("Optimal candidate {} edge id {} sp {} tp {} cp {}",

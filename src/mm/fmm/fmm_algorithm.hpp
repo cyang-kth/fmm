@@ -36,14 +36,20 @@ struct FastMapMatchConfig{
    * @param r_arg the search radius, in map unit, which is the same as
    * GPS data and network data.
    * @param gps_error the gps error, in map unit
-   *
+   * @param reverse_tolerance ratio of reverse movement allowed on an edge
+   * @param restart_on_disconnect when two consecutive points cannot be
+   * connected through the network, restart the matching at the second point
+   * instead of discarding the whole trajectory. The break is marked with
+   * sp_dist == -1 on the first point after it.
    */
   FastMapMatchConfig(int k_arg = 8, double r_arg = 300, double gps_error = 50,
-    double reverse_tolerance = 0.0);
+    double reverse_tolerance = 0.0, bool restart_on_disconnect = false);
   int k; /**< Number of candidates */
   double radius; /**< Search radius*/
   double gps_error; /**< GPS error */
   double reverse_tolerance;
+  bool restart_on_disconnect; /**< Restart instead of discarding a trajectory
+                                   at a disconnected pair of points */
   /**
    * Check if the configuration is valid or not
    * @return true if valid
@@ -139,11 +145,17 @@ class FastMapMatch {
    * Update probabilities in a transition graph
    * @param tg transition graph
    * @param traj raw trajectory
-   * @param config map match configuration
+   * @param reverse_tolerance ratio of reverse movement allowed on an edge
+   * @param restart_on_disconnect if true, a layer that cannot be reached from
+   * the previous layer is re-initialised from its emission probabilities and
+   * the update continues; if false, the update stops there and the
+   * trajectory ends up unmatched.
+   * @return number of disconnected pairs at which the matching was restarted
    */
-  void update_tg(TransitionGraph *tg,
-                 const CORE::Trajectory &traj,
-                 double reverse_tolerance = 0);
+  int update_tg(TransitionGraph *tg,
+                const CORE::Trajectory &traj,
+                double reverse_tolerance = 0,
+                bool restart_on_disconnect = false);
   /**
    * Update probabilities between two layers a and b in the transition graph
    * @param level   the index of layer a
